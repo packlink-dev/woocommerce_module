@@ -1084,18 +1084,23 @@
 }
 
 .pl-mapping-page-select-section {
-    display: flex;
+    display: inline;
     width: 350px;
     line-height: 50px;
     align-items: center;
+    text-align: center;
+    font-size: 14px;
 }
 
 .pl-mapping-page-select-section input {
     width: inherit;
+    padding: 5px
 }
 
 .pl-mapping-page-select-section select {
     width: inherit;
+    padding: 5px;
+    height: unset;
 }
 
 .pl-mapping-page-wrapper-equals {
@@ -1410,7 +1415,7 @@ body {
     text-align: left;
     text-decoration: none;
     text-shadow: none;
-    text-transform: none;
+    text-transform: uppercase;
     border: 1px solid #2095f2;
     border-radius: 4px;
     background: #fff;
@@ -1527,10 +1532,6 @@ body {
 
 #pl-system-info-panel a{
     text-decoration: none;
-}
-
-#pl-system-info-panel .button.button-primary{
-    text-transform: uppercase;
 }
 
 .pl-system-info-panel.loading .pl-system-info-panel-loader {

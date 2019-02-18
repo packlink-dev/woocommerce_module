@@ -932,10 +932,8 @@ $data = $this->resolve_view_arguments();
             </div>
 
             <div>
-                <div class="pl-mapping-page-select-section">
-                    <button class="button button-primary btn-lg" id="pl-save-mappings-btn">
-						<?php echo __( 'Save changes', 'packlink-pro-shipping' ); ?></button>
-                </div>
+                <button class="button button-primary btn-lg" id="pl-save-mappings-btn">
+                    <?php echo __( 'Save changes', 'packlink-pro-shipping' ); ?></button>
             </div>
         </div>
     </div>
