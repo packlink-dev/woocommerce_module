@@ -1,0 +1,34 @@
+{
+  "name": "packlink/woocommerce",
+  "description": "Packlink WooCommerce Integration",
+  "type": "library",
+  "repositories": [
+    {
+      "type": "vcs",
+      "no-api": true,
+      "url": "git@github.com:logeecom/pl_module_core.git"
+    }
+  ],
+  "require": {
+    "php": ">=5.3",
+    "packlink/integration-core": "dev-dev",
+    "ext-json": "*",
+    "ext-curl": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "Packlink\\WooCommerce\\": ""
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Logeecom\\Tests\\Infrastructure\\": "vendor/packlink/integration-core/tests/Infrastructure",
+      "Logeecom\\Tests\\BusinessLogic\\": "vendor/packlink/integration-core/tests/BusinessLogic",
+      "Logeecom\\Tests\\Common\\": "vendor/packlink/integration-core/tests/Common",
+      "Packlink\\WooCommerce\\Tests\\": "../tests"
+    }
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^4.8.35"
+  }
+}

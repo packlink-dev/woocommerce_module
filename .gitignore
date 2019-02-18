@@ -1,0 +1,8 @@
+vendor
+*.zip
+!PluginInstallation/**/*.zip
+.idea/*
+!.idea/encodings.xml
+!.idea/codeStyles
+!.idea/inspectionProfiles
+wp-cli.phar
