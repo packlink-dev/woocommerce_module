@@ -68,6 +68,7 @@ class Packlink_Index extends Packlink_Base_Controller {
 			'Order_Overview',
 			'Checkout',
 			'Order_Details',
+			'Debug',
 		);
 
 		return in_array( $controller_name, $allowed_controllers, true );

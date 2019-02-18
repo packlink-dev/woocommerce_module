@@ -120,4 +120,17 @@ class Shop_Helper {
 	public static function get_plugin_base_url() {
 		return plugins_url() . '/packlink-pro-shipping/';
 	}
+
+	/**
+	 * Converts CamelCase to hyphen-case.
+	 *
+	 * @param string $camel CamelCase string.
+	 *
+	 * @return string|null Returns hyphen case or null on failure.
+	 */
+	public static function camel_case_to_hyphen_case( $camel ) {
+		$str = preg_replace( '/([a-z])([A-Z])/', '$1-$2', $camel );
+
+		return $str ? strtolower( $str ) : null;
+	}
 }

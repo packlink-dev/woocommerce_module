@@ -121,9 +121,11 @@ class Plugin {
 		if ( $this->plugin_already_initialized() ) {
 			Task_Queue::wakeup();
 			$this->copy_resource_images();
+			$this->copy_resource_js();
 			Shipping_Method_Helper::enable_packlink_shipping_methods();
 		} elseif ( $is_network_wide && is_multisite() ) {
 			$this->copy_resource_images();
+			$this->copy_resource_js();
 			foreach ( get_sites() as $site ) {
 				switch_to_blog( $site->blog_id );
 				/** @noinspection DisconnectedForeachInstructionInspection */
@@ -138,6 +140,7 @@ class Plugin {
 			$this->init_database();
 			$this->init_config();
 			$this->copy_resource_images();
+			$this->copy_resource_js();
 			$this->create_schedules();
 		}
 	}
@@ -280,6 +283,32 @@ class Plugin {
 				'core'
 			);
 		}
+	}
+
+	/**
+	 * Creates schedules.
+	 *
+	 * @return bool
+	 */
+	protected function create_schedules() {
+		$schedule = new WeeklySchedule( new UpdateShippingServicesTask() );
+
+		$schedule->setQueueName( $this->get_config_service()->getDefaultQueueName() );
+		$schedule->setDay( 1 );
+		$schedule->setHour( 2 );
+		$schedule->setNextSchedule();
+
+		try {
+			$repository = RepositoryRegistry::getRepository( Schedule::CLASS_NAME );
+		} catch ( RepositoryNotRegisteredException $e ) {
+			Logger::logError( 'Schedule repository not registered.', 'Integration' );
+
+			return false;
+		}
+
+		$repository->save( $schedule );
+
+		return true;
 	}
 
 	/**
@@ -482,6 +511,27 @@ class Plugin {
 		$source = plugin_dir_path( __FILE__ ) . 'vendor/packlink/integration-core/src/BusinessLogic/Resources/img/carriers';
 		$dest   = plugin_dir_path( __FILE__ ) . 'resources/images/carriers';
 
+		$this->copy( $source, $dest );
+	}
+
+	/**
+	 * Copies core resource javascript from vendor to resources.
+	 */
+	private function copy_resource_js() {
+		$source = plugin_dir_path( __FILE__ ) . 'vendor/packlink/integration-core/src/BusinessLogic/Resources/js';
+		$dest   = plugin_dir_path( __FILE__ ) . 'resources/js/core';
+
+		$this->copy( $source, $dest, true );
+	}
+
+	/**
+	 * Performs copying of directory with all files.
+	 *
+	 * @param string $source Source directory.
+	 * @param string $dest Destination directory
+	 * @param bool $transform Transform file names to hyphen case.
+	 */
+	private function copy( $source, $dest, $transform = false ) {
 		if ( ! is_dir( $dest ) && ! mkdir( $dest, 0755 ) && ! is_dir( $dest ) ) {
 			throw new \RuntimeException( sprintf( 'Directory "%s" was not created', $dest ) );
 		}
@@ -492,7 +542,13 @@ class Plugin {
 				\RecursiveIteratorIterator::SELF_FIRST ) as $item
 		) {
 			/** @var \RecursiveDirectoryIterator $iterator */
-			$path = $dest . DIRECTORY_SEPARATOR . $iterator->getSubPathname();
+			$path = $dest . DIRECTORY_SEPARATOR . $iterator->getSubPath();
+			$name = $iterator->getFilename();
+			if ( $transform ) {
+				$name = Shop_Helper::camel_case_to_hyphen_case( 'packlink' . $name );
+			}
+
+			$path = rtrim( $path, DIRECTORY_SEPARATOR ) . DIRECTORY_SEPARATOR . $name;
 			if ( $item->isDir() ) {
 				if ( is_dir( $path ) ) {
 					continue;
@@ -505,31 +561,5 @@ class Plugin {
 				copy( $item, $path );
 			}
 		}
-	}
-
-	/**
-	 * Creates schedules.
-	 *
-	 * @return bool
-	 */
-	protected function create_schedules() {
-		$schedule = new WeeklySchedule( new UpdateShippingServicesTask() );
-
-		$schedule->setQueueName( $this->get_config_service()->getDefaultQueueName() );
-		$schedule->setDay( 1 );
-		$schedule->setHour( 2 );
-		$schedule->setNextSchedule();
-
-		try {
-			$repository = RepositoryRegistry::getRepository( Schedule::CLASS_NAME );
-		} catch ( RepositoryNotRegisteredException $e ) {
-			Logger::logError( 'Schedule repository not registered.', 'Integration' );
-
-			return false;
-		}
-
-		$repository->save( $schedule );
-
-		return true;
 	}
 }

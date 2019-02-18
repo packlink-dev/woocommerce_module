@@ -110,19 +110,7 @@ $data = $this->resolve_view_arguments();
         </div>
     </div>
 
-    <div class="row pl-footer-row">
-        <div class="pl-footer-wrapper">
-            <div class="pl-footer-system-info-wrapper">
-                v2.0 (system info)
-            </div>
-            <div class="pl-footer-copyright-wrapper">
-                <a href="<?php echo $data['terms_url']; ?>" class="pl-link" target="_blank">
-					<?php echo __( 'General conditions', 'packlink-pro-shipping' ) ?>
-                </a>
-                <p><?php echo __( 'Developed and managed by Packlink', 'packlink-pro-shipping' ) ?></p>
-            </div>
-        </div>
-    </div>
+    <div id="pl-footer-extension-point"></div>
 </div>
 
 <div class="pl-template-section">
@@ -952,6 +940,52 @@ $data = $this->resolve_view_arguments();
         </div>
     </div>
 
+    <div id="pl-footer-template">
+        <div class="pl-footer-row">
+            <div class="pl-system-info-panel hidden loading" id="pl-system-info-panel">
+                <div class="pl-system-info-panel-close" id="pl-system-info-close-btn">
+                    <svg viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
+                        <g fill="none" fill-rule="evenodd">
+                            <path d="M7.5 7.5l8 7M15.5 7.5l-8 7" stroke="#627482" stroke-linecap="square"/>
+                        </g>
+                    </svg>
+                </div>
+
+                <div class="pl-system-info-panel-content">
+                    <div class="md-checkbox">
+                        <label class="pl-form-section-input-checkbox-label">
+                            <input type="checkbox" id="pl-debug-mode-checkbox">
+                            <b><?php echo __( 'Debug mode', 'packlink-pro-shipping' ); ?></b>
+                        </label>
+                    </div>
+
+                    <a href="<?php echo $data['debug_url']; ?>" value="packlink-debug-data.zip" download>
+                        <button type="button" class="button button-primary"><?php echo __( 'Download system info file', 'packlink-pro-shipping' ); ?></button>
+                    </a>
+                </div>
+
+                <div class="pl-system-info-panel-loader">
+                    <b><?php echo __( 'Loading...', 'packlink-pro-shipping' ); ?></b>
+                </div>
+
+            </div>
+
+
+            <div class="pl-footer-wrapper">
+                <div class="pl-footer-system-info-wrapper">
+                    v<?php echo $data['plugin_version']; ?> <span class="pl-system-info-open-btn"
+                                            id="pl-system-info-open-btn">(<?php echo __( 'system info', 'packlink-pro-shipping' ); ?>)</span>
+                </div>
+                <div class="pl-footer-copyright-wrapper">
+                    <a href="<?php echo $data['terms_url']; ?>" target="_blank">
+	                    <?php echo __( 'General conditions', 'packlink-pro-shipping' ); ?>
+                    </a>
+                    <p><?php echo __( 'Developed and managed by Packlink', 'packlink-pro-shipping' ); ?></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 <script type="application/javascript">
@@ -988,7 +1022,9 @@ $data = $this->resolve_view_arguments();
                 shippingMethodsSaveUrl: "<?php echo Shop_Helper::get_controller_url( 'Frontend', 'save_shipping_method' ) ?>",
                 getSystemOrderStatusesUrl: "<?php echo Shop_Helper::get_controller_url( 'Frontend', 'get_system_order_statuses' ) ?>",
                 orderStatusMappingsGetUrl: "<?php echo Shop_Helper::get_controller_url( 'Frontend', 'get_order_status_mappings' ) ?>",
-                orderStatusMappingsSaveUrl: "<?php echo Shop_Helper::get_controller_url( 'Frontend', 'save_order_status_mapping' ) ?>"
+                orderStatusMappingsSaveUrl: "<?php echo Shop_Helper::get_controller_url( 'Frontend', 'save_order_status_mapping' ) ?>",
+                debugGetStatusUrl: "<?php echo Shop_Helper::get_controller_url( 'Frontend', 'get_debug_status' ) ?>",
+                debugSetStatusUrl: "<?php echo Shop_Helper::get_controller_url( 'Frontend', 'set_debug_status' ) ?>"
             }
         );
         Packlink.state.display();
@@ -1015,11 +1051,11 @@ $data = $this->resolve_view_arguments();
                 localOffset += footer.clientHeight;
             }
 
-            let alerts = document.getElementsByClassName('alert');
+            let alerts = document.getElementsByClassName('update-nag');
 
             for (let alert of alerts) {
                 if (alert.clientHeight) {
-                    localOffset += 71;
+                    localOffset += alert.clientHeight;
                 }
             }
 

@@ -100,7 +100,7 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	 */
 	public function login() {
 		$result = false;
-		$this->validate( 'yes' );
+		$this->validate( 'yes', true );
 		$api_key = $this->get_param( 'api_key' );
 		if ( $api_key ) {
 			/** @var UserAccountService $user_service */
@@ -115,7 +115,7 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	 * Returns dashboard status.
 	 */
 	public function get_status() {
-		$this->validate();
+		$this->validate( 'no', true );
 
 		/** @var DashboardController $dashboard_controller */
 		$dashboard_controller = ServiceRegister::getService( DashboardController::CLASS_NAME );
@@ -125,10 +125,34 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	}
 
 	/**
+	 * Returns debug status.
+	 */
+	public function get_debug_status() {
+		$this->validate( 'no', true );
+
+		$this->return_json( array( 'status' => $this->configuration->isDebugModeEnabled() ) );
+	}
+
+	/**
+	 * Saves debug status.
+	 */
+	public function set_debug_status() {
+		$this->validate( 'yes', true );
+		$raw_json = $this->get_raw_input();
+		$payload  = json_decode( $raw_json, true );
+		if ( ! isset( $payload['status'] ) && ! is_bool( $payload['status'] ) ) {
+			$this->return_json( array( 'success' => false ), 400 );
+		}
+
+		$this->configuration->setDebugModeEnabled( $payload['status'] );
+		$this->return_json( array( 'status' => $payload['status'] ) );
+	}
+
+	/**
 	 * Returns default parcel.
 	 */
 	public function get_default_parcel() {
-		$this->validate();
+		$this->validate( 'no', true );
 
 		/** @var Configuration $configuration */
 		$configuration = ServiceRegister::getService( Configuration::CLASS_NAME );
@@ -141,7 +165,7 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	 * Saves default parcel.
 	 */
 	public function save_default_parcel() {
-		$this->validate( 'yes' );
+		$this->validate( 'yes', true );
 
 		$raw_json = $this->get_raw_input();
 		$payload  = json_decode( $raw_json, true );
@@ -163,7 +187,7 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	 * Returns default warehouse.
 	 */
 	public function get_default_warehouse() {
-		$this->validate();
+		$this->validate( 'no', true );
 
 		/** @var Configuration $configuration */
 		$configuration = ServiceRegister::getService( Configuration::CLASS_NAME );
@@ -176,7 +200,7 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	 * Saves default warehouse.
 	 */
 	public function save_default_warehouse() {
-		$this->validate( 'yes' );
+		$this->validate( 'yes', true );
 
 		$raw_json = $this->get_raw_input();
 		$payload  = json_decode( $raw_json, true );
@@ -203,7 +227,7 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	 * Returns all shipping methods.
 	 */
 	public function get_all_shipping_methods() {
-		$this->validate();
+		$this->validate( 'no', true );
 
 		/** @var ShippingMethodController $controller */
 		$controller = ServiceRegister::getService( ShippingMethodController::CLASS_NAME );
@@ -222,7 +246,7 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	 * Activates shipping method.
 	 */
 	public function activate_shipping_method() {
-		$this->validate( 'yes' );
+		$this->validate( 'yes', true );
 
 		$this->change_shipping_status();
 	}
@@ -231,7 +255,7 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	 * Deactivates shipping method.
 	 */
 	public function deactivate_shipping_method() {
-		$this->validate( 'yes' );
+		$this->validate( 'yes', true );
 
 		$this->change_shipping_status( 'no' );
 	}
@@ -240,7 +264,7 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	 * Saves shipping method configuration.
 	 */
 	public function save_shipping_method() {
-		$this->validate();
+		$this->validate( 'yes', true );
 
 		$raw_json = $this->get_raw_input();
 		$payload  = json_decode( $raw_json, true );
@@ -269,7 +293,7 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	 * Returns list of WooCommerce statuses.
 	 */
 	public function get_system_order_statuses() {
-		$this->validate();
+		$this->validate( 'no', true );
 
 		$result = array();
 		foreach ( wc_get_order_statuses() as $code => $label ) {
@@ -283,7 +307,7 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	 * Returns map of order and Packlink shipping statuses.
 	 */
 	public function get_order_status_mappings() {
-		$this->validate();
+		$this->validate( 'no', true );
 
 		$this->return_json( $this->configuration->getOrderStatusMappings() ?: array() );
 	}
@@ -292,7 +316,7 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	 * Saves map of order and Packlink shipping statuses.
 	 */
 	public function save_order_status_mapping() {
-		$this->validate( 'yes' );
+		$this->validate( 'yes', true );
 
 		$raw_json   = $this->get_raw_input();
 		$status_map = json_decode( $raw_json, true );
@@ -323,6 +347,8 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 			'dashboard_icon' => Shop_Helper::get_plugin_base_url() . 'resources/images/dashboard.png',
 			'terms_url'      => static::$terms_and_conditions_urls[ $locale ],
 			'help_url'       => static::$help_urls[ $locale ],
+			'plugin_version' => Shop_Helper::get_plugin_version(),
+			'debug_url'      => Shop_Helper::get_controller_url( 'Debug', 'download' ),
 		);
 	}
 
@@ -352,6 +378,7 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 		$base_url     = Shop_Helper::get_plugin_base_url() . 'resources/js/';
 		$js_resources = array(
 			'packlink_ajax'                    => 'core/packlink-ajax-service.js',
+			'packlink_footer_controller'       => 'core/packlink-footer-controller.js',
 			'packlink_default_parcel'          => 'core/packlink-default-parcel-controller.js',
 			'packlink_default_warehouse'       => 'core/packlink-default-warehouse-controller.js',
 			'packlink_order_state_mapping'     => 'core/packlink-order-state-mapping-controller.js',

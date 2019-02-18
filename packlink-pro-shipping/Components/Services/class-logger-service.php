@@ -68,7 +68,7 @@ class Logger_Service extends Singleton implements LoggerAdapter {
 			$message .= sprintf( static::CONTEXT_DEF, $item->getName(), $item->getValue() );
 		}
 
-		$context = array( 'source' => 'packlink_' . date( 'Y_m_d' ) );
+		$context = array( 'source' => 'packlink' );
 		$logger->log( $level, $message, $context );
 	}
 }

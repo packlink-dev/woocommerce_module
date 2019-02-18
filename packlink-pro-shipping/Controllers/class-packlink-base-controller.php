@@ -123,13 +123,18 @@ class Packlink_Base_Controller {
 	 * Validates if plugin is enabled and if it is post request.
 	 *
 	 * @param string $post Is post request.
+	 * @param bool $only_admin Only admin should have access.
 	 */
-	protected function validate( $post = 'no' ) {
+	protected function validate( $post = 'no', $only_admin = false ) {
 		if ( ! Shop_Helper::is_plugin_enabled() ) {
 			exit();
 		}
 
 		if ( $post === 'yes' && ! $this->is_post() ) {
+			$this->redirect404();
+		}
+
+		if ( $only_admin && ! current_user_can( 'administrator' ) ) {
 			$this->redirect404();
 		}
 	}
