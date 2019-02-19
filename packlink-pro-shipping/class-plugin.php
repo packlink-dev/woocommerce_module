@@ -8,13 +8,8 @@
 namespace Packlink\WooCommerce;
 
 use Logeecom\Infrastructure\Logger\Logger;
-use Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException;
-use Logeecom\Infrastructure\ORM\RepositoryRegistry;
 use Logeecom\Infrastructure\ServiceRegister;
 use Logeecom\Infrastructure\TaskExecution\Exceptions\TaskRunnerStatusStorageUnavailableException;
-use Packlink\BusinessLogic\Scheduler\Models\Schedule;
-use Packlink\BusinessLogic\Scheduler\Models\WeeklySchedule;
-use Packlink\BusinessLogic\Tasks\UpdateShippingServicesTask;
 use Packlink\WooCommerce\Components\Bootstrap_Component;
 use Packlink\WooCommerce\Components\Checkout\Checkout_Handler;
 use Packlink\WooCommerce\Components\Order\Order_Details_Helper;
@@ -132,8 +127,6 @@ class Plugin {
 				$this->init_database();
 				/** @noinspection DisconnectedForeachInstructionInspection */
 				$this->init_config();
-				/** @noinspection DisconnectedForeachInstructionInspection */
-				$this->create_schedules();
 				restore_current_blog();
 			}
 		} else {
@@ -141,7 +134,6 @@ class Plugin {
 			$this->init_config();
 			$this->copy_resource_images();
 			$this->copy_resource_js();
-			$this->create_schedules();
 		}
 	}
 
@@ -283,32 +275,6 @@ class Plugin {
 				'core'
 			);
 		}
-	}
-
-	/**
-	 * Creates schedules.
-	 *
-	 * @return bool
-	 */
-	protected function create_schedules() {
-		$schedule = new WeeklySchedule( new UpdateShippingServicesTask() );
-
-		$schedule->setQueueName( $this->get_config_service()->getDefaultQueueName() );
-		$schedule->setDay( 1 );
-		$schedule->setHour( 2 );
-		$schedule->setNextSchedule();
-
-		try {
-			$repository = RepositoryRegistry::getRepository( Schedule::CLASS_NAME );
-		} catch ( RepositoryNotRegisteredException $e ) {
-			Logger::logError( 'Schedule repository not registered.', 'Integration' );
-
-			return false;
-		}
-
-		$repository->save( $schedule );
-
-		return true;
 	}
 
 	/**
