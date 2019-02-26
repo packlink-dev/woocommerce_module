@@ -277,6 +277,23 @@ $data = $this->resolve_view_arguments();
 
     <div id="pl-shipping-methods-page-template">
 
+        <!-- DELETE SHIPPING METHODS MODAL -->
+
+        <div class="pl-dashboard-modal-wrapper hidden" id="pl-delete-methods-modal-wrapper">
+            <div class="pl-dashboard-modal pl-delete-methods-modal" id="pl-delete-methods-modal">
+                <div class="pl-shipping-modal-title">
+	                <?php echo __( 'Congrats! Your first Shipping Method has been successfully created.', 'packlink-pro-shipping' ); ?>
+                </div>
+                <div class="pl-shipping-modal-body">
+	                <?php echo __( 'In order to offer you the best possible service, its importatnt to delete your previous carriers. Do you want us to delete them? (recommended)', 'packlink-pro-shipping' ); ?>
+                </div>
+                <div class="pl-shipping-modal-row">
+                    <button class="button pl-shipping-modal-btn" id="pl-delete-methods-modal-cancel"><?php echo __( 'Cancel', 'packlink-pro-shipping' ); ?></button>
+                    <button class="button button-primary" id="pl-delete-methods-modal-accept"><?php echo __( 'Accept', 'packlink-pro-shipping' ); ?></button>
+                </div>
+            </div>
+        </div>
+
         <!-- DASHBOARD MODAL SECTION -->
 
         <div class="pl-dashboard-modal-wrapper hidden" id="pl-dashboard-modal-wrapper">
@@ -1018,6 +1035,8 @@ $data = $this->resolve_view_arguments();
                 shippingMethodsActivateUrl: "<?php echo Shop_Helper::get_controller_url( 'Frontend', 'activate_shipping_method' ) ?>",
                 shippingMethodsDeactivateUrl: "<?php echo Shop_Helper::get_controller_url( 'Frontend', 'deactivate_shipping_method' ) ?>",
                 shippingMethodsSaveUrl: "<?php echo Shop_Helper::get_controller_url( 'Frontend', 'save_shipping_method' ) ?>",
+                shopShippingMethodCountGetUrl: "<?php echo Shop_Helper::get_controller_url( 'Frontend', 'get_shipping_method_count' ) ?>",
+                shopShippingMethodsDeleteUrl: "<?php echo Shop_Helper::get_controller_url( 'Frontend', 'delete_shop_shipping_methods' ) ?>",
                 getSystemOrderStatusesUrl: "<?php echo Shop_Helper::get_controller_url( 'Frontend', 'get_system_order_statuses' ) ?>",
                 orderStatusMappingsGetUrl: "<?php echo Shop_Helper::get_controller_url( 'Frontend', 'get_order_status_mappings' ) ?>",
                 orderStatusMappingsSaveUrl: "<?php echo Shop_Helper::get_controller_url( 'Frontend', 'save_order_status_mapping' ) ?>",
@@ -1026,7 +1045,7 @@ $data = $this->resolve_view_arguments();
             }
         );
         Packlink.state.display();
-        calculateContentHeight(20);
+        calculateContentHeight(10);
 
         /**
          * Calculates content height.

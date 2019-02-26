@@ -261,6 +261,26 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	}
 
 	/**
+	 * Returns count of active shop shipping methods.
+	 */
+	public function get_shipping_method_count() {
+		$this->validate( 'no', true );
+
+		$this->return_json( array( 'count' => Shipping_Method_Helper::get_shop_shipping_method_count() ) );
+	}
+
+	/**
+	 * Disables active shop shipping methods.
+	 */
+	public function delete_shop_shipping_methods() {
+		$this->validate( 'no', true );
+
+		Shipping_Method_Helper::disable_shop_shipping_methods();
+
+		$this->return_json( array( 'success' => true ) );
+	}
+
+	/**
 	 * Saves shipping method configuration.
 	 */
 	public function save_shipping_method() {

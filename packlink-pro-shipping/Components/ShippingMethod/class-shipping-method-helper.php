@@ -57,6 +57,53 @@ class Shipping_Method_Helper {
 	}
 
 	/**
+	 * Returns count of active shop shipping methods.
+	 *
+	 * @return int Count of shop active shipping methods.
+	 */
+	public static function get_shop_shipping_method_count() {
+		$count = 0;
+
+		foreach ( self::get_all_shipping_zone_ids() as $zone_id ) {
+			$zone = \WC_Shipping_Zones::get_zone( $zone_id );
+			if ( ! $zone ) {
+				continue;
+			}
+
+			foreach ( $zone->get_shipping_methods( true ) as $item ) {
+				if ( $item->id !== Packlink_Shipping_Method::PACKLINK_SHIPPING_METHOD ) {
+					$count ++;
+				}
+			}
+		}
+
+		return $count;
+	}
+
+	/**
+	 * Disables all active shop shipping methods.
+	 */
+	public static function disable_shop_shipping_methods() {
+		global $wpdb;
+
+		foreach ( self::get_all_shipping_zone_ids() as $zone_id ) {
+			$zone = \WC_Shipping_Zones::get_zone( $zone_id );
+			if ( ! $zone ) {
+				continue;
+			}
+
+			/** @var \WC_Shipping_Method $item */
+			foreach ( $zone->get_shipping_methods( true ) as $item ) {
+				if ( ( $item->id !== Packlink_Shipping_Method::PACKLINK_SHIPPING_METHOD )
+				     && $wpdb->update( "{$wpdb->prefix}woocommerce_shipping_zone_methods", array( 'is_enabled' => 0 ), array( 'instance_id' => absint( $item->instance_id ) ) )
+				) {
+					do_action( 'woocommerce_shipping_zone_method_status_toggled', $item->instance_id, $item->id, $zone_id, 0 );
+				}
+			}
+		}
+	}
+
+	/**
 	 * Fully remove Packlink added shipping methods.
 	 */
 	public static function remove_packlink_shipping_methods() {
@@ -70,6 +117,22 @@ class Shipping_Method_Helper {
 				delete_option( $option_key );
 			}
 		}
+	}
+
+	/**
+	 * Return array of all zone ids.
+	 *
+	 * @return int[] Zone ids.
+	 */
+	public static function get_all_shipping_zone_ids() {
+		$all_zones = \WC_Shipping_Zones::get_zones();
+		$zone_ids  = array_column( $all_zones, 'zone_id' );
+		// Locations not covered by other zones
+		if ( ! in_array( 0, $zone_ids, true ) ) {
+			$zone_ids[] = 0;
+		}
+
+		return $zone_ids;
 	}
 
 	/**

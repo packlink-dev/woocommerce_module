@@ -246,6 +246,21 @@ class Plugin {
 	}
 
 	/**
+	 * Show action links on the plugin screen.
+	 *
+	 * @param array $links Plugin Action links.
+	 *
+	 * @return array
+	 */
+	public function create_configuration_link( array $links ) {
+		$action_links = array(
+			'configuration' => '<a href="' . admin_url( 'admin.php?page=packlink-pro-shipping/index.php' ) . '" aria-label="' . esc_attr__( 'View Packlink configuration', 'packlink-pro-shipping' ) . '">' . esc_html__( 'Configuration', 'packlink-pro-shipping' ) . '</a>',
+		);
+
+		return array_merge( $action_links, $links );
+	}
+
+	/**
 	 * Adds Packlink PRO Shipping method to the list of all shipping methods.
 	 *
 	 * @param array $methods List of all shipping methods.
@@ -284,6 +299,7 @@ class Plugin {
 		Bootstrap_Component::init();
 		$this->load_plugin_init_hooks();
 		if ( Shop_Helper::is_plugin_enabled() ) {
+			$this->add_settings_link();
 			$this->load_admin_menu();
 			$this->shipping_method_hooks_and_actions();
 			$this->load_plugin_text_domain();
@@ -527,5 +543,12 @@ class Plugin {
 				copy( $item, $path );
 			}
 		}
+	}
+
+	/**
+	 * Register filter for links on the plugin screen.
+	 */
+	private function add_settings_link() {
+		add_filter( 'plugin_action_links_' . plugin_basename( Shop_Helper::PLUGIN_ID ), array( $this, 'create_configuration_link' ) );
 	}
 }

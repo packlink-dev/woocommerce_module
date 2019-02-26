@@ -19,7 +19,6 @@ use Packlink\BusinessLogic\Order\Objects\Address;
 use Packlink\BusinessLogic\Order\Objects\Item;
 use Packlink\BusinessLogic\Order\Objects\Order;
 use Packlink\BusinessLogic\Order\Objects\Shipment;
-use Packlink\BusinessLogic\Order\Objects\Shipping;
 use Packlink\BusinessLogic\Order\Objects\TrackingHistory;
 use Packlink\WooCommerce\Components\Services\Config_Service;
 use WC_Order;
@@ -77,7 +76,6 @@ class Order_Repository extends Singleton implements OrderRepository {
 		$order->setTotalPrice( $wc_order->get_total() );
 		$order->setShippingPrice( $wc_order->get_shipping_total() );
 		$order->setItems( $this->get_order_items( $wc_order ) );
-		$order->setShipping( $this->get_order_shipping( $wc_order ) );
 		$order->setShipment( $this->get_order_shipment( $wc_order ) );
 		$order->setPacklinkShipmentLabels( $wc_order->get_meta( Order_Meta_Keys::LABELS ) ?: array() );
 
@@ -86,7 +84,6 @@ class Order_Repository extends Singleton implements OrderRepository {
 
 		if ( $wc_order->meta_exists( Order_Meta_Keys::DROP_OFF_ID ) ) {
 			$order->setShippingDropOffId( $wc_order->get_meta( Order_Meta_Keys::DROP_OFF_ID ) );
-			$order->setShippingDropOffAddress( $this->get_drop_off_address( $wc_order ) );
 		}
 
 		return $order;
@@ -294,29 +291,6 @@ class Order_Repository extends Singleton implements OrderRepository {
 	}
 
 	/**
-	 * Builds Shipping object for provided order.
-	 *
-	 * @param WC_Order $wc_order WooCommerce order.
-	 *
-	 * @return Shipping Shipping.
-	 */
-	private function get_order_shipping( WC_Order $wc_order ) {
-		$shipping_method = Order_Details_Helper::get_packlink_shipping_method( $wc_order );
-		if ( null === $shipping_method ) {
-			return null;
-		}
-
-		$shipping = new Shipping();
-		$shipping->setId( $shipping_method->getId() );
-		$shipping->setCarrierName( $shipping_method->getCarrierName() );
-		$shipping->setName( $shipping_method->getTitle() );
-		$shipping->setShippingServiceName( $shipping_method->getServiceName() );
-		$shipping->setShippingServiceId( $shipping_method->getServiceId() );
-
-		return $shipping;
-	}
-
-	/**
 	 * Builds Shipment object for provided order.
 	 *
 	 * @param WC_Order $wc_order WooCommerce order.
@@ -424,5 +398,26 @@ class Order_Repository extends Singleton implements OrderRepository {
 		$address->setPhone( $raw_address['phone'] );
 
 		return $address;
+	}
+
+	/**
+	 * Returns shipment references of the orders that have not yet been completed.
+	 *
+	 * @return array Array of shipment references.
+	 */
+	public function getIncompleteOrderReferences() {
+		// TODO: Implement getIncompleteOrderReferences() method.
+	}
+
+	/**
+	 * Sets shipping price to an order by shipment reference.
+	 *
+	 * @param string $shipmentReference Packlink shipment reference.
+	 * @param float $price Shipment price.
+	 *
+	 * @throws \Packlink\BusinessLogic\Order\Exceptions\OrderNotFound When order with provided reference is not found.
+	 */
+	public function setShippingPriceByReference( $shipmentReference, $price ) {
+		// TODO: Implement setShippingPriceByReference() method.
 	}
 }

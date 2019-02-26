@@ -52,17 +52,10 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 	 * @return bool TRUE if activation succeeded; otherwise, FALSE.
 	 */
 	public function add( ShippingMethod $shipping_method ) {
-		$all_zones = \WC_Shipping_Zones::get_zones();
-		$zone_ids  = array_column( $all_zones, 'zone_id' );
-		// Locations not covered by other zones
-		if ( ! in_array( 0, $zone_ids, true ) ) {
-			$zone_ids[] = 0;
-		}
-
 		$pricing_policy = $this->get_shipping_method_pricing_policy( $shipping_method );
 
 		try {
-			foreach ( $zone_ids as $zone_id ) {
+			foreach ( Shipping_Method_Helper::get_all_shipping_zone_ids() as $zone_id ) {
 				$zone        = new \WC_Shipping_Zone( $zone_id );
 				$instance_id = $zone->add_shipping_method( 'packlink_shipping_method' );
 

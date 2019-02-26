@@ -433,6 +433,14 @@
     margin: 0 auto;
 }
 
+.pl-delete-methods-modal {
+    position: absolute;
+    width: 300px;
+    border-radius: 0;
+    border: 1px #d5d5d5 solid;
+    padding: 20px 10px;
+}
+
 .pl-configure-shipping-method-wrapper {
     padding: 0 !important;
     box-sizing: content-box;
@@ -973,7 +981,6 @@
     margin: 0;
     padding: 0;
     position: relative;
-    width: 540px;
     color: #5d5d5d;
 }
 
@@ -983,28 +990,23 @@
 }
 
 .pl-login-form-title-wrapper {
-    margin-left: 70px;
     margin-bottom: 25px;
     padding: 0;
-    color: #2095f2;
     font-size: 25px;
-    width: 400px;
     text-align: center;
     font-weight: bold;
     line-height: 30px;
 }
 
-.pl-login-form-text-wrapper {
-    color: #2095f2;
+.pl-login-form-label-wrapper {
+    margin: 0 0 15px;
+    padding: 0;
+    font-size: 20px;
+    text-transform: uppercase;
 }
 
-.pl-login-form-label-wrapper {
-    margin: 0;
-    padding: 0;
-    color: #2095f2;
-    font-size: 20px;
-    font-weight: bold;
-    text-transform: uppercase;
+.pl-login-form-text-wrapper {
+    font-size: 14px;
 }
 
 .pl-register-form-wrapper {
@@ -1017,6 +1019,7 @@
     display: flex;
     align-items: center;
     color: #5d5d5d;
+    font-size: 14px;
 }
 
 .pl-register-country-section-wrapper {
@@ -1538,4 +1541,45 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+.pl-dashboard-modal-wrapper {
+    position: absolute;
+    top: -20px;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 20px;
+    background-color: rgba(0, 0, 0, 0.4);
+    z-index: 450;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pl-dashboard-modal-wrapper.hidden {
+    display: none !important;
+}
+
+.pl-shipping-modal-title {
+    font-size: 1.32em;
+    color: #5d5d5d;
+    line-height: 18px;
+    margin-bottom: 20px;
+}
+
+.pl-shipping-modal-body {
+    font-size: 1.05em;
+    line-height: 14px;
+    color: #5d5d5d;
+    margin-bottom: 20px;
+}
+
+#pl-main-page-holder .button.pl-shipping-modal-btn {
+    margin-right: 15px;
+}
+
+.pl-configure-shipping-method-wrapper {
+    padding: 0 !important;
+    box-sizing: content-box;
 }

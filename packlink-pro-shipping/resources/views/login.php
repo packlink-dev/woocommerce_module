@@ -16,11 +16,6 @@ $data = $this->resolve_view_arguments();
 ?>
 
 <div class="pl-login-page" id="pl-main-page-holder">
-    <div class="pl-login-page-side-img-wrapper pl-collapse">
-        <img src="<?php echo $data['dashboard_logo']; ?>" class="pl-login-icon">
-        <img src="<?php echo $data['image_base']; ?>login.png" class="pl-login-image"
-             alt="<?php echo __( 'Packlink PRO Shipping', 'packlink-pro-shipping' ); ?>">
-    </div>
     <div class="pl-login-page-content-wrapper">
         <div class="pl-register-form-wrapper">
             <div class="pl-register-btn-section-wrapper">
@@ -74,7 +69,7 @@ $data = $this->resolve_view_arguments();
         <div>
             <div class="pl-login-form-header">
                 <div class="pl-login-form-title-wrapper">
-					<?php echo __( 'Allow WooCommerce to connect to PacklinkPRO account', 'packlink-pro-shipping' ); ?>
+					<?php echo __( 'Allow WooCommerce to connect to PacklinkPRO', 'packlink-pro-shipping' ); ?>
                 </div>
                 <div class="pl-login-form-text-wrapper">
 					<?php echo __( 'Your API key can be found under', 'packlink-pro-shipping' ); ?>
