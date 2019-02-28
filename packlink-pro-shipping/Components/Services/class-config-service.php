@@ -8,6 +8,7 @@
 namespace Packlink\WooCommerce\Components\Services;
 
 use Packlink\BusinessLogic\Configuration;
+use Packlink\BusinessLogic\ShippingMethod\Models\ShippingMethod;
 use Packlink\WooCommerce\Components\Utility\Shop_Helper;
 
 /**
@@ -92,5 +93,25 @@ class Config_Service extends Configuration {
 	 */
 	public function get_database_version() {
 		return $this->getConfigValue( 'PACKLINK_DATABASE_VERSION' );
+	}
+
+	/**
+	 * Returns default shipping method.
+	 *
+	 * @return ShippingMethod|null Shipping method.
+	 */
+	public function get_default_shipping_method() {
+		$value = $this->getConfigValue('Default_Shipping');
+
+		return $value && is_array($value) ? ShippingMethod::fromArray($value) : null;
+	}
+
+	/**
+	 * Saves default shipping method.
+	 *
+	 * @param ShippingMethod $shipping_method Shipping method.
+	 */
+	public function set_default_shipping_method( ShippingMethod $shipping_method = null ) {
+		$this->saveConfigValue('Default_Shipping', $shipping_method ? $shipping_method->toArray() : null);
 	}
 }

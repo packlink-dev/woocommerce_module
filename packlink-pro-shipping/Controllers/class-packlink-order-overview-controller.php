@@ -158,7 +158,6 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 	 */
 	protected function merge_labels( array $labels ) {
 		try {
-			$pdf        = new PdfMerge();
 			$upload_dir = wp_get_upload_dir();
 			$path       = $upload_dir['path'];
 			$paths      = array();
@@ -166,12 +165,13 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 				$realpath = realpath( "$path/$index.pdf" );
 				file_put_contents( $realpath, fopen( $label, 'rb' ) );
 				$paths[] = $realpath;
-
-				$pdf->addPDF( $realpath );
 			}
 
-			$now = date( 'Y-m-d' );
-			$pdf->merge( "Packlink-bulk-shipment-label_$now.pdf" );
+			$file = PdfMerge::merge( $paths );
+			if ( $file ) {
+				$this->return_file( $file );
+			}
+
 			$this->delete_local_files( $paths );
 		} catch ( \Exception $e ) {
 			Logger::logError( __( 'Unable to create bulk labels file', 'packlink-pro-shipping' ), 'Integration', array( 'labels' => $labels ) );
@@ -212,5 +212,20 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 		foreach ( $paths as $path ) {
 			unlink( $path );
 		}
+	}
+
+	/**
+	 * Prints file to output and sets download headers.
+	 *
+	 * @param string $file File path.
+	 */
+	private function return_file( $file ) {
+		header( 'Content-type:application/pdf' );
+
+		$now  = date( 'Y-m-d' );
+		$name = sys_get_temp_dir() . "/Packlink-bulk-shipment-label_$now.pdf";
+		header( "Content-Disposition:attachment;filename='$name'" );
+
+		readfile( $file );
 	}
 }

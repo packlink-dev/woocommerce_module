@@ -233,6 +233,20 @@ $data = $this->resolve_view_arguments();
                         <div class="row">
                             <div class=" pl-basic-settings-page-form-input-item">
                                 <div class=" pl-form-section-input pl-text-input">
+                                    <input
+                                            type="text"
+                                            class="pl-warehouse-input"
+                                            id="pl-default-warehouse-country"
+                                            value="<?php echo $data['warehouse_country']; ?>"
+                                            readonly
+                                    />
+                                    <span class="pl-text-input-label"><?php echo __( 'Country', 'packlink-pro-shipping' ); ?></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class=" pl-basic-settings-page-form-input-item">
+                                <div class=" pl-form-section-input pl-text-input">
                                     <input type="text" class="pl-warehouse-input"
                                            id="pl-default-warehouse-postal_code"/>
                                     <span class="pl-text-input-label"><?php echo __( 'Postal code', 'packlink-pro-shipping' ); ?></span>
@@ -279,17 +293,19 @@ $data = $this->resolve_view_arguments();
 
         <!-- DELETE SHIPPING METHODS MODAL -->
 
-        <div class="pl-dashboard-modal-wrapper hidden" id="pl-delete-methods-modal-wrapper">
-            <div class="pl-dashboard-modal pl-delete-methods-modal" id="pl-delete-methods-modal">
+        <div class="pl-dashboard-modal-wrapper hidden" id="pl-disable-methods-modal-wrapper">
+            <div class="pl-dashboard-modal pl-disable-methods-modal" id="pl-disable-methods-modal">
                 <div class="pl-shipping-modal-title">
-	                <?php echo __( 'Congrats! Your first Shipping Method has been successfully created.', 'packlink-pro-shipping' ); ?>
+					<?php echo __( 'Congrats! Your first Shipping Method has been successfully created.', 'packlink-pro-shipping' ); ?>
                 </div>
                 <div class="pl-shipping-modal-body">
-	                <?php echo __( 'In order to offer you the best possible service, its importatnt to delete your previous carriers. Do you want us to delete them? (recommended)', 'packlink-pro-shipping' ); ?>
+					<?php echo __( 'In order to offer you the best possible service, its important to disable your previous carriers. Do you want us to disable them? (recommended)', 'packlink-pro-shipping' ); ?>
                 </div>
                 <div class="pl-shipping-modal-row">
-                    <button class="button pl-shipping-modal-btn" id="pl-delete-methods-modal-cancel"><?php echo __( 'Cancel', 'packlink-pro-shipping' ); ?></button>
-                    <button class="button button-primary" id="pl-delete-methods-modal-accept"><?php echo __( 'Accept', 'packlink-pro-shipping' ); ?></button>
+                    <button class="button pl-shipping-modal-btn"
+                            id="pl-disable-methods-modal-cancel"><?php echo __( 'Cancel', 'packlink-pro-shipping' ); ?></button>
+                    <button class="button button-primary"
+                            id="pl-disable-methods-modal-accept"><?php echo __( 'Accept', 'packlink-pro-shipping' ); ?></button>
                 </div>
             </div>
         </div>
@@ -404,7 +420,7 @@ $data = $this->resolve_view_arguments();
             <div class="pl-filter-method-item">
                 <div class="md-checkbox">
                     <label>
-                        <input type="checkbox" data-pl-shipping-methods-filter="title-national">
+                        <input type="checkbox" data-pl-shipping-methods-filter="title-national" tabindex="-1">
 						<?php echo __( 'National', 'packlink-pro-shipping' ); ?>
                     </label>
                 </div>
@@ -414,7 +430,7 @@ $data = $this->resolve_view_arguments();
             <div class="pl-filter-method-item">
                 <div class="md-checkbox">
                     <label>
-                        <input type="checkbox" data-pl-shipping-methods-filter="title-international">
+                        <input type="checkbox" data-pl-shipping-methods-filter="title-international" tabindex="-1">
 						<?php echo __( 'International', 'packlink-pro-shipping' ); ?>
                     </label>
                 </div>
@@ -430,7 +446,7 @@ $data = $this->resolve_view_arguments();
             <div class="pl-filter-method-item">
                 <div class="md-checkbox">
                     <label>
-                        <input type="checkbox" data-pl-shipping-methods-filter="deliveryType-economic">
+                        <input type="checkbox" data-pl-shipping-methods-filter="deliveryType-economic" tabindex="-1">
 						<?php echo __( 'Economic', 'packlink-pro-shipping' ); ?>
                     </label>
                 </div>
@@ -440,7 +456,7 @@ $data = $this->resolve_view_arguments();
             <div class="pl-filter-method-item">
                 <div class="md-checkbox">
                     <label>
-                        <input type="checkbox" data-pl-shipping-methods-filter="deliveryType-express">
+                        <input type="checkbox" data-pl-shipping-methods-filter="deliveryType-express" tabindex="-1">
 						<?php echo __( 'Express', 'packlink-pro-shipping' ); ?>
                     </label>
                 </div>
@@ -456,7 +472,7 @@ $data = $this->resolve_view_arguments();
             <div class="pl-filter-method-item">
                 <div class="md-checkbox">
                     <label>
-                        <input type="checkbox" data-pl-shipping-methods-filter="parcelOrigin-pickup">
+                        <input type="checkbox" data-pl-shipping-methods-filter="parcelOrigin-pickup" tabindex="-1">
 						<?php echo __( 'Collection', 'packlink-pro-shipping' ); ?>
                     </label>
                 </div>
@@ -466,7 +482,7 @@ $data = $this->resolve_view_arguments();
             <div class=" pl-filter-method-item">
                 <div class="md-checkbox">
                     <label>
-                        <input type="checkbox" data-pl-shipping-methods-filter="parcelOrigin-dropoff">
+                        <input type="checkbox" data-pl-shipping-methods-filter="parcelOrigin-dropoff" tabindex="-1">
 						<?php echo __( 'Drop off', 'packlink-pro-shipping' ); ?>
                     </label>
                 </div>
@@ -482,7 +498,7 @@ $data = $this->resolve_view_arguments();
             <div class=" pl-filter-method-item">
                 <div class="md-checkbox">
                     <label>
-                        <input type="checkbox" data-pl-shipping-methods-filter="parcelDestination-home">
+                        <input type="checkbox" data-pl-shipping-methods-filter="parcelDestination-home" tabindex="-1">
 						<?php echo __( 'Delivery', 'packlink-pro-shipping' ); ?>
                     </label>
                 </div>
@@ -492,7 +508,7 @@ $data = $this->resolve_view_arguments();
             <div class=" pl-filter-method-item">
                 <div class="md-checkbox">
                     <label>
-                        <input type="checkbox" data-pl-shipping-methods-filter="parcelDestination-dropoff">
+                        <input type="checkbox" data-pl-shipping-methods-filter="parcelDestination-dropoff" tabindex="-1">
 						<?php echo __( 'Pick up', 'packlink-pro-shipping' ); ?>
                     </label>
                 </div>
@@ -602,12 +618,12 @@ $data = $this->resolve_view_arguments();
         <tbody id="pl-shipping-methods-row-template">
         <tr class="pl-table-row-wrapper">
             <td>
-                <div id="pl-shipping-method-select-btn" class="pl-switch">
+                <div id="pl-shipping-method-select-btn" class="pl-switch" tabindex="-1">
                     <div class="pl-empty-checkbox">
-                        <input type="checkbox"/>
+                        <input type="checkbox" tabindex="-1" />
                     </div>
                     <div class="pl-checked-checkbox">
-                        <input type="checkbox" checked="checked"/>
+                        <input type="checkbox" checked="checked" tabindex="-1" />
                     </div>
                 </div>
             </td>
@@ -716,7 +732,7 @@ $data = $this->resolve_view_arguments();
                 </div>
             </td>
             <td>
-                <a href="#" class="pl-link" id="pl-shipping-method-config-btn">
+                <a href="#" class="pl-link" id="pl-shipping-method-config-btn" tabindex="-1">
 					<?php echo __( 'Configure', 'packlink-pro-shipping' ); ?>
                 </a>
             </td>
@@ -727,10 +743,10 @@ $data = $this->resolve_view_arguments();
     <div id="pl-shipping-methods-nav-template">
         <div class="row">
             <div class=" pl-nav-wrapper">
-                <div class="pl-nav-item selected" data-pl-shipping-methods-nav-button="all">
+                <div class="pl-nav-item selected" data-pl-shipping-methods-nav-button="all" tabindex="-1">
 					<?php echo __( 'All shipping services', 'packlink-pro-shipping' ); ?>
                 </div>
-                <div class="pl-nav-item" data-pl-shipping-methods-nav-button="selected">
+                <div class="pl-nav-item" data-pl-shipping-methods-nav-button="selected" tabindex="-1">
 					<?php echo __( 'Selected shipping services', 'packlink-pro-shipping' ); ?>
                 </div>
             </div>
@@ -817,7 +833,7 @@ $data = $this->resolve_view_arguments();
             <div class="row">
                 <div class=" pl-form-section-input-wrapper pl-fixed-price-wrapper">
                     <div class="form-group pl-form-section-input pl-text-input">
-                        <input type="text" data-pl-fixed-price="from" disabled/>
+                        <input type="text" data-pl-fixed-price="from" disabled tabindex="-1" />
                         <span class="pl-text-input-label">
 	                    <?php echo __( 'FROM', 'packlink-pro-shipping' ); ?> (kg)</span>
                     </div>
@@ -950,7 +966,7 @@ $data = $this->resolve_view_arguments();
 
             <div>
                 <button class="button button-primary btn-lg" id="pl-save-mappings-btn">
-                    <?php echo __( 'Save changes', 'packlink-pro-shipping' ); ?></button>
+					<?php echo __( 'Save changes', 'packlink-pro-shipping' ); ?></button>
             </div>
         </div>
     </div>
@@ -975,7 +991,8 @@ $data = $this->resolve_view_arguments();
                     </div>
 
                     <a href="<?php echo $data['debug_url']; ?>" value="packlink-debug-data.zip" download>
-                        <button type="button" class="button button-primary"><?php echo __( 'Download system info file', 'packlink-pro-shipping' ); ?></button>
+                        <button type="button"
+                                class="button button-primary"><?php echo __( 'Download system info file', 'packlink-pro-shipping' ); ?></button>
                     </a>
                 </div>
 
@@ -989,11 +1006,11 @@ $data = $this->resolve_view_arguments();
             <div class="pl-footer-wrapper">
                 <div class="pl-footer-system-info-wrapper">
                     v<?php echo $data['plugin_version']; ?> <span class="pl-system-info-open-btn"
-                                            id="pl-system-info-open-btn">(<?php echo __( 'system info', 'packlink-pro-shipping' ); ?>)</span>
+                                                                  id="pl-system-info-open-btn">(<?php echo __( 'system info', 'packlink-pro-shipping' ); ?>)</span>
                 </div>
                 <div class="pl-footer-copyright-wrapper">
                     <a href="<?php echo $data['terms_url']; ?>" target="_blank">
-	                    <?php echo __( 'General conditions', 'packlink-pro-shipping' ); ?>
+						<?php echo __( 'General conditions', 'packlink-pro-shipping' ); ?>
                     </a>
                     <p><?php echo __( 'Developed and managed by Packlink', 'packlink-pro-shipping' ); ?></p>
                 </div>
@@ -1036,7 +1053,7 @@ $data = $this->resolve_view_arguments();
                 shippingMethodsDeactivateUrl: "<?php echo Shop_Helper::get_controller_url( 'Frontend', 'deactivate_shipping_method' ) ?>",
                 shippingMethodsSaveUrl: "<?php echo Shop_Helper::get_controller_url( 'Frontend', 'save_shipping_method' ) ?>",
                 shopShippingMethodCountGetUrl: "<?php echo Shop_Helper::get_controller_url( 'Frontend', 'get_shipping_method_count' ) ?>",
-                shopShippingMethodsDeleteUrl: "<?php echo Shop_Helper::get_controller_url( 'Frontend', 'delete_shop_shipping_methods' ) ?>",
+                shopShippingMethodsDisableUrl: "<?php echo Shop_Helper::get_controller_url( 'Frontend', 'disable_shop_shipping_methods' ) ?>",
                 getSystemOrderStatusesUrl: "<?php echo Shop_Helper::get_controller_url( 'Frontend', 'get_system_order_statuses' ) ?>",
                 orderStatusMappingsGetUrl: "<?php echo Shop_Helper::get_controller_url( 'Frontend', 'get_order_status_mappings' ) ?>",
                 orderStatusMappingsSaveUrl: "<?php echo Shop_Helper::get_controller_url( 'Frontend', 'save_order_status_mapping' ) ?>",

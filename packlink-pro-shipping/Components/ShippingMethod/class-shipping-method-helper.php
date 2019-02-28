@@ -26,8 +26,9 @@ class Shipping_Method_Helper {
 	 * @return string Carrier image url.
 	 */
 	public static function get_carrier_logo( $carrier_name ) {
+		$file_path = dirname(dirname(__DIR__)) . '/resources/images/carriers/';
 		$base_path = Shop_Helper::get_plugin_base_url() . 'resources/images/carriers/';
-		$default   = $base_path . 'carrier.jpg';
+		$default   = Shop_Helper::get_plugin_base_url() . 'resources/images/box.svg';
 
 		/** @var Config_Service $configService */
 		$configService = ServiceRegister::getService( Config_Service::CLASS_NAME );
@@ -38,8 +39,9 @@ class Shipping_Method_Helper {
 
 		$file_name  = \strtolower( str_replace( ' ', '-', $carrier_name ) );
 		$image_path = $base_path . \strtolower( $user_info->country ) . '/' . $file_name . '.png';
+		$file_path  = $file_path . \strtolower( $user_info->country ) . '/' . $file_name . '.png';
 
-		return $image_path ?: $default;
+		return file_exists($file_path) ? $image_path : $default;
 	}
 
 	/**

@@ -477,6 +477,7 @@ class Plugin {
 	private function checkout_hooks_and_actions() {
 		$handler = new Checkout_Handler();
 
+		add_filter( 'woocommerce_package_rates', array( $handler, 'check_additional_packlink_rate' ) );
 		add_action( 'woocommerce_after_shipping_rate', array( $handler, 'after_shipping_rate' ), 10, 2 );
 		add_action( 'woocommerce_after_shipping_calculator', array( $handler, 'after_shipping_calculator' ) );
 		add_action( 'woocommerce_review_order_after_shipping', array( $handler, 'after_shipping' ) );
@@ -500,9 +501,18 @@ class Plugin {
 	 * Copies core resource javascript from vendor to resources.
 	 */
 	private function copy_resource_js() {
-		$source = plugin_dir_path( __FILE__ ) . 'vendor/packlink/integration-core/src/BusinessLogic/Resources/js';
-		$dest   = plugin_dir_path( __FILE__ ) . 'resources/js/core';
+		$resources = plugin_dir_path( __FILE__ ) . 'vendor/packlink/integration-core/src/BusinessLogic/Resources/';
 
+		$source = $resources . 'js';
+		$dest   = plugin_dir_path( __FILE__ ) . 'resources/js/core';
+		$this->copy( $source, $dest, true );
+
+		$source = $resources . 'LocationPicker/js';
+		$dest   = plugin_dir_path( __FILE__ ) . 'resources/js/location-picker';
+		$this->copy( $source, $dest, true );
+
+		$source = $resources . 'LocationPicker/css';
+		$dest   = plugin_dir_path( __FILE__ ) . 'resources/css';
 		$this->copy( $source, $dest, true );
 	}
 
@@ -527,7 +537,7 @@ class Plugin {
 			$path = $dest . DIRECTORY_SEPARATOR . $iterator->getSubPath();
 			$name = $iterator->getFilename();
 			if ( $transform ) {
-				$name = Shop_Helper::camel_case_to_hyphen_case( 'packlink' . $name );
+				$name = Shop_Helper::camel_case_to_hyphen_case( 'packlink' . ucfirst( $name ) );
 			}
 
 			$path = rtrim( $path, DIRECTORY_SEPARATOR ) . DIRECTORY_SEPARATOR . $name;
@@ -549,6 +559,9 @@ class Plugin {
 	 * Register filter for links on the plugin screen.
 	 */
 	private function add_settings_link() {
-		add_filter( 'plugin_action_links_' . plugin_basename( Shop_Helper::PLUGIN_ID ), array( $this, 'create_configuration_link' ) );
+		add_filter( 'plugin_action_links_' . plugin_basename( Shop_Helper::PLUGIN_ID ), array(
+			$this,
+			'create_configuration_link'
+		) );
 	}
 }

@@ -11,9 +11,12 @@ use Logeecom\Infrastructure\Logger\Logger;
 use Logeecom\Infrastructure\ORM\Interfaces\RepositoryInterface;
 use Logeecom\Infrastructure\ORM\QueryFilter\QueryFilter;
 use Logeecom\Infrastructure\ORM\RepositoryRegistry;
+use Logeecom\Infrastructure\ServiceRegister;
 use Logeecom\Infrastructure\Singleton;
 use Packlink\BusinessLogic\ShippingMethod\Interfaces\ShopShippingMethodService;
 use Packlink\BusinessLogic\ShippingMethod\Models\ShippingMethod;
+use Packlink\WooCommerce\Components\Checkout\Checkout_Handler;
+use Packlink\WooCommerce\Components\Services\Config_Service;
 
 /**
  * Class Shop_Shipping_Method_Service
@@ -69,6 +72,10 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 					$_REQUEST['instance_id'] = $instance_id;
 					$new->process_admin_options();
 					$this->add_to_shipping_method_map( $instance_id, $shipping_method->getId(), $zone_id );
+
+					if ( -1 !== $shipping_method->getId() && 1 === $this->repository->count() ) {
+						$this->add_default_shipping_method( $shipping_method );
+					}
 				}
 			}
 		} catch ( \Exception $e ) {
@@ -76,6 +83,7 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 
 			return false;
 		}
+
 
 		return true;
 	}
@@ -111,6 +119,8 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 	}
 
 	/**
+	 * @noinspection PhpDocMissingThrowsInspection
+	 *
 	 * Deletes shipping method in shop integration.
 	 *
 	 * @param ShippingMethod $shipping_method Shipping method.
@@ -136,6 +146,13 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 			Logger::logError( $e->getMessage(), 'Integration', $shipping_method->toArray() );
 
 			return false;
+		}
+
+		$filter = new QueryFilter();
+		/** @noinspection PhpUnhandledExceptionInspection */
+		$filter->where('packlinkShippingMethodId', '!=', -1);
+		if ( -1 !== $shipping_method->getId() && 0 === $this->repository->count($filter) ) {
+			$this->remove_default_shipping_method();
 		}
 
 		return true;
@@ -196,5 +213,52 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 		$entities = $this->repository->select( $filter );
 
 		return $entities;
+	}
+
+	/**
+	 * Adds default Packlink shipping method.
+	 *
+	 * @param ShippingMethod $shipping_method
+	 */
+	private function add_default_shipping_method( ShippingMethod $shipping_method ) {
+		$default = new ShippingMethod();
+		$default->setId( - 1 );
+		$default->setTitle( Checkout_Handler::DEFAULT_SHIPPING );
+		switch ( $shipping_method->getPricingPolicy() ) {
+			case ShippingMethod::PRICING_POLICY_PERCENT:
+				$default->setPercentPricePolicy( $shipping_method->getPercentPricePolicy() );
+				break;
+			case ShippingMethod::PRICING_POLICY_FIXED:
+				$default->setFixedPricePolicy( $shipping_method->getFixedPricePolicy() );
+				break;
+			default:
+				$default->setPacklinkPricePolicy();
+				break;
+		}
+
+		$this->add( $default );
+		$this->set_default_shipping_method( $default );
+	}
+
+	/**
+	 * Removes default Packlink shipping method.
+	 */
+	private function remove_default_shipping_method() {
+		$default = new ShippingMethod();
+		$default->setId( - 1 );
+
+		$this->delete( $default );
+		$this->set_default_shipping_method();
+	}
+
+	/**
+	 * Stores default shipping method into configuration.
+	 *
+	 * @param ShippingMethod|null $shipping_method Shipping method.
+	 */
+	private function set_default_shipping_method( ShippingMethod $shipping_method = null ) {
+		/** @var Config_Service $configuration */
+		$configuration = ServiceRegister::getService( Config_Service::CLASS_NAME );
+		$configuration->set_default_shipping_method( $shipping_method );
 	}
 }

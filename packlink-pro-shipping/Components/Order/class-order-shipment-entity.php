@@ -25,7 +25,7 @@ class Order_Shipment_Entity extends Entity {
 	 *
 	 * @var array
 	 */
-	protected $fields = array( 'id', 'woocommerceOrderId', 'packlinkShipmentReference' );
+	protected $fields = array( 'id', 'woocommerceOrderId', 'packlinkShipmentReference', 'status');
 	/**
 	 * WooCommerce order identifier.
 	 *
@@ -38,6 +38,12 @@ class Order_Shipment_Entity extends Entity {
 	 * @var string
 	 */
 	protected $packlinkShipmentReference;
+	/**
+	 * Packlink shipment status.
+	 *
+	 * @var string
+	 */
+	protected $status = '';
 
 	/**
 	 * Returns entity configuration object.
@@ -48,6 +54,7 @@ class Order_Shipment_Entity extends Entity {
 		$index_map = new IndexMap();
 		$index_map->addIntegerIndex( 'woocommerceOrderId' );
 		$index_map->addStringIndex( 'packlinkShipmentReference' );
+		$index_map->addStringIndex( 'status' );
 
 		return new EntityConfiguration( $index_map, 'OrderShipmentEntity' );
 	}
@@ -86,5 +93,23 @@ class Order_Shipment_Entity extends Entity {
 	 */
 	public function setPacklinkShipmentReference( $packlinkShipmentReference ) {
 		$this->packlinkShipmentReference = $packlinkShipmentReference;
+	}
+
+	/**
+	 * Returns shipment status.
+	 *
+	 * @return string Status.
+	 */
+	public function getStatus() {
+		return $this->status;
+	}
+
+	/**
+	 * Sets shipment status.
+	 *
+	 * @param string $status Status.
+	 */
+	public function setStatus( $status ) {
+		$this->status = $status;
 	}
 }

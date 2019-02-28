@@ -1,30 +1,32 @@
 var Packlink = window.Packlink || {};
 
 (function () {
-    let hooked = false;
     let hookedUpdate = false;
-    let modal, iframe;
+    let modal;
+    let closeButton;
     let updateButton;
     let privateData = {
         locations: [],
         endpoint: null,
         selectedLocation: null,
         isCart: false,
-        translations: {}
+        translations: {},
+        locale: 'en'
     };
 
     Packlink.checkout = {};
     Packlink.checkout.init = initialize;
     Packlink.checkout.setIsCart = setIsCart;
     Packlink.checkout.setLocations = setLocations;
+    Packlink.checkout.setLocale = setLocale;
     Packlink.checkout.setTranslations = setTranslations;
     Packlink.checkout.setSaveEndpoint = setSaveEndpoint;
     Packlink.checkout.setDropOffAddress = setDropOffAddress;
     Packlink.checkout.setSelectedLocationId = setSelectedLocationId;
 
     function initialize() {
-        iframe = document.getElementById('pl-drop-off-iframe');
         modal = document.getElementById('pl-picker-modal');
+        closeButton = document.getElementById('pl-picker-modal-close');
         updateButton = document.querySelector("[name='calc_shipping']");
 
         [].forEach.call(document.getElementsByName('packlink_show_image'), function (item) {
@@ -40,50 +42,39 @@ var Packlink = window.Packlink || {};
 
             if (isDropOff && button) {
                 button.addEventListener('click', function () {
-                    iframe.contentWindow.postMessage({type: 'locations', payload: privateData.locations}, '*');
                     modal.style.display = 'block';
                 });
             }
         });
 
-        if (modal && iframe && !hooked) {
-            window.addEventListener('message', function (event) {
+        if (modal) {
+            closeButton.addEventListener('click', function () {
+                modal.style.display = 'none';
+            });
+
+            Packlink.locationPicker.display(privateData.locations, function (id) {
                 let selected;
 
-                if (event.data.type === 'ready' && iframe.contentWindow) {
-                    iframe.contentWindow.postMessage({type: 'locations', payload: privateData.locations}, '*');
-                }
+                privateData.selectedLocation = id;
+                selected = findLocationById(id);
+                //document.getElementById('writer').innerHTML = "SELECTED: " + event.data.payload.id;
+                Packlink.ajaxService.post(privateData.endpoint, selected, function () {
+                    let button = document.querySelector('#packlink-drop-off-picker');
 
-                if (event.data.type === 'select') {
-                    privateData.selectedLocation = event.data.payload.id;
-                    selected = findLocationById(event.data.payload.id);
-                    //document.getElementById('writer').innerHTML = "SELECTED: " + event.data.payload.id;
-                    Packlink.ajaxService.post(privateData.endpoint, selected, function () {
-                        let button = document.querySelector('#packlink-drop-off-picker');
+                    if (button) {
+                        button.innerHTML = privateData.translations.changeDropOff;
+                    }
 
-                        if (button) {
-                            button.innerHTML = privateData.translations.changeDropOff;
-                        }
+                    if (!privateData.isCart) {
+                        setHiddenFields(selected);
+                    }
+                }, function () {
+                });
 
-                        if (!privateData.isCart) {
-                            setHiddenFields(selected);
-                        }
-                    }, function () {
-                    });
+                setDropOffAddress();
 
-                    setDropOffAddress();
-
-                    modal.style.display = 'none';
-                }
-            });
-
-            hooked = true;
-
-            document.addEventListener('click', function (event) {
-                if (modal && event.target.id !== 'packlink-drop-off-picker') {
-                    modal.style.display = 'none';
-                }
-            });
+                modal.style.display = 'none';
+            }, privateData.locale);
         }
 
         if (!hookedUpdate && updateButton && jQuery) {
@@ -176,6 +167,15 @@ var Packlink = window.Packlink || {};
      */
     function setTranslations(translations) {
         privateData.translations = translations;
+    }
+
+    /**
+     * Sets locale.
+     *
+     * @param {string} locale
+     */
+    function setLocale(locale) {
+        privateData.locale = locale;
     }
 
     /**

@@ -173,7 +173,7 @@ class Base_Repository implements RepositoryInterface {
 
 		$result = $this->db->get_results( $query, ARRAY_A );
 
-		return empty( $result ) ? 0 : $result[0]['total'];
+		return empty( $result ) ? 0 : (int) $result[0]['total'];
 	}
 
 	/**

@@ -24,11 +24,13 @@
 
 #pl-picker-modal svg {
     position: absolute;
-    top: 15px;
-    right: 15px;
+    top: -45px;
+    right: -45px;
     cursor: pointer;
     width: 45px;
+    border: 2px solid;
     height: 45px;
+    border-radius: 50%;
 }
 
 .pl-wide-shipping {

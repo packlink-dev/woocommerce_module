@@ -14,6 +14,7 @@ use Logeecom\Infrastructure\TaskExecution\QueueItem;
 use Logeecom\Infrastructure\TaskExecution\QueueService;
 use Packlink\BusinessLogic\ShippingMethod\Models\ShippingMethod;
 use Packlink\BusinessLogic\Tasks\SendDraftTask;
+use Packlink\WooCommerce\Components\Services\Config_Service;
 use Packlink\WooCommerce\Components\ShippingMethod\Shipping_Method_Helper;
 use Packlink\WooCommerce\Components\Utility\Task_Queue;
 use WC_Order;
@@ -103,7 +104,12 @@ class Order_Details_Helper {
 	 * @return ShippingMethod Shipping method.
 	 */
 	public static function get_packlink_shipping_method( WC_Order $order ) {
-		$packlink_shipping_method_id = $order->get_meta( Order_Meta_Keys::SHIPPING_ID );
+		$packlink_shipping_method_id = (int) $order->get_meta( Order_Meta_Keys::SHIPPING_ID );
+		if ( -1 === $packlink_shipping_method_id ) {
+			/** @var Config_Service $configuration */
+			$configuration = ServiceRegister::getService(Config_Service::CLASS_NAME);
+			return $configuration->get_default_shipping_method();
+		}
 
 		$query_filter = new QueryFilter();
 		/** @noinspection PhpUnhandledExceptionInspection */

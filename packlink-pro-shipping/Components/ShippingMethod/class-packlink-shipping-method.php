@@ -14,6 +14,7 @@ use Logeecom\Infrastructure\ServiceRegister;
 use Packlink\BusinessLogic\Http\DTO\Package;
 use Packlink\BusinessLogic\Http\DTO\ParcelInfo;
 use Packlink\BusinessLogic\ShippingMethod\Models\ShippingMethod;
+use Packlink\BusinessLogic\ShippingMethod\ShippingCostCalculator;
 use Packlink\BusinessLogic\ShippingMethod\ShippingMethodService;
 use Packlink\WooCommerce\Components\Services\Config_Service;
 use WC_Product;
@@ -143,10 +144,11 @@ class Packlink_Shipping_Method extends \WC_Shipping_Method {
 			return;
 		}
 
+		$id = $shipping_method->getId();
 		$this->add_rate( array(
 			'id'      => $this->get_rate_id(),
 			'label'   => $this->title,
-			'cost'    => static::$shipping_services[ $shipping_method->getServiceId() ],
+			'cost'    => -1 === $id ? min(static::$shipping_services) : static::$shipping_services[ $id ],
 			'package' => $package,
 		) );
 	}
@@ -182,7 +184,12 @@ class Packlink_Shipping_Method extends \WC_Shipping_Method {
 			return null;
 		}
 
-		return $this->shipping_method_service->getShippingMethod( $map_entry->getPacklinkShippingMethodId() );
+		$id = $map_entry->getPacklinkShippingMethodId();
+		if ( - 1 === $id ) {
+			return $this->configuration->get_default_shipping_method();
+		}
+
+		return $this->shipping_method_service->getShippingMethod( $id );
 	}
 
 	/**
@@ -230,10 +237,12 @@ class Packlink_Shipping_Method extends \WC_Shipping_Method {
 			return null;
 		}
 
+		$id = $shipping_method->getId();
 		$to_country = isset( $package['destination']['country'] ) ? $package['destination']['country'] : $warehouse->country;
 		$to_zip     = isset( $package['destination']['postcode'] ) ? $package['destination']['postcode'] : $warehouse->postalCode;
 		if ( ! static::$loaded ) {
-			static::$shipping_services = $this->shipping_method_service->getShippingCosts(
+			static::$shipping_services = ShippingCostCalculator::getShippingCosts(
+				$this->shipping_method_service->getAllMethods(),
 				$warehouse->country,
 				$warehouse->postalCode,
 				$to_country,
@@ -244,6 +253,6 @@ class Packlink_Shipping_Method extends \WC_Shipping_Method {
 			static::$loaded = true;
 		}
 
-		return array_key_exists( $shipping_method->getServiceId(), static::$shipping_services );
+		return array_key_exists( $id, static::$shipping_services ) || ( -1 === $id && ! empty(static::$shipping_services) );
 	}
 }

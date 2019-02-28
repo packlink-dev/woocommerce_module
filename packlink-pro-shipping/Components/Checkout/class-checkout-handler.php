@@ -7,17 +7,16 @@
 
 namespace Packlink\WooCommerce\Components\Checkout;
 
-use Logeecom\Infrastructure\Http\Exceptions\HttpBaseException;
-use Logeecom\Infrastructure\Logger\Logger;
 use Logeecom\Infrastructure\ORM\Interfaces\RepositoryInterface;
 use Logeecom\Infrastructure\ORM\QueryFilter\QueryFilter;
 use Logeecom\Infrastructure\ORM\RepositoryRegistry;
 use Logeecom\Infrastructure\ServiceRegister;
-use Packlink\BusinessLogic\Http\Proxy;
+use Packlink\BusinessLogic\Location\LocationService;
 use Packlink\BusinessLogic\ShippingMethod\Models\ShippingMethod;
 use Packlink\BusinessLogic\ShippingMethod\ShippingMethodService;
 use Packlink\WooCommerce\Components\Order\Order_Details_Helper;
 use Packlink\WooCommerce\Components\Order\Order_Meta_Keys;
+use Packlink\WooCommerce\Components\Services\Config_Service;
 use Packlink\WooCommerce\Components\ShippingMethod\Packlink_Shipping_Method;
 use Packlink\WooCommerce\Components\ShippingMethod\Shipping_Method_Helper;
 use Packlink\WooCommerce\Components\ShippingMethod\Shipping_Method_Map;
@@ -43,6 +42,10 @@ class Checkout_Handler {
 	 * Drop-off address hidden input name
 	 */
 	const PACKLINK_DROP_OFF_EXTRA = 'packlink_drop_off_extra';
+	/**
+	 * Default Packlink shipping title
+	 */
+	const DEFAULT_SHIPPING = 'shipping cost';
 	/**
 	 * Base repository.
 	 *
@@ -197,6 +200,32 @@ class Checkout_Handler {
 	}
 
 	/**
+	 * Checks if default Packlink shipping method should be removed.
+	 *
+	 * @param array $rates Shipping rates.
+	 *
+	 * @return array Filtered shipping rates.
+	 */
+	public function check_additional_packlink_rate( $rates ) {
+		if ( count( $rates ) === 1 ) {
+			return $rates;
+		}
+
+		/**
+		 * @var string $key
+		 * @var \WC_Shipping_Rate  $rate
+		 */
+		foreach ( $rates as $key => $rate ) {
+			if ( Packlink_Shipping_Method::PACKLINK_SHIPPING_METHOD === $rate->get_method_id() && self::DEFAULT_SHIPPING === $rate->get_label() ) {
+				unset( $rates[ $key ] );
+				break;
+			}
+		}
+
+		return $rates;
+	}
+
+	/**
 	 * Loads javascript and css resources
 	 */
 	public function load_scripts() {
@@ -204,6 +233,18 @@ class Checkout_Handler {
 		wp_enqueue_script(
 			'packlink_ajax',
 			esc_url( $base_url . 'js/core/packlink-ajax-service.js' ),
+			array(),
+			1
+		);
+		wp_enqueue_script(
+			'packlink_translations',
+			esc_url( $base_url . 'js/location-picker/packlink-translations.js' ),
+			array(),
+			1
+		);
+		wp_enqueue_script(
+			'packlink_location_picker',
+			esc_url( $base_url . 'js/location-picker/packlink-location-picker.js' ),
 			array(),
 			1
 		);
@@ -219,34 +260,28 @@ class Checkout_Handler {
 			array(),
 			1
 		);
+		wp_enqueue_style(
+			'packlink_location_picker_css',
+			esc_url( $base_url . 'css/packlink-location-picker.css' ),
+			array(),
+			1
+		);
 	}
 
 	/**
 	 * Returns array of locations for this shipping service.
 	 *
-	 * @param int $service_id Service identifier.
+	 * @param int $method_id Service identifier.
 	 *
 	 * @return array Locations.
 	 */
-	public function get_drop_off_locations( $service_id ) {
-		$result = array();
-		/** @var Proxy $proxy */
-		$proxy    = ServiceRegister::getService( Proxy::CLASS_NAME );
+	public function get_drop_off_locations( $method_id ) {
 		$customer = wc()->session->customer;
-		try {
-			$locations = $proxy->getLocations( $service_id, $customer['shipping_country'], $customer['shipping_postcode'] );
-			foreach ( $locations as $location ) {
-				$result[] = $location->toArray();
-			}
-		} catch ( HttpBaseException $e ) {
-			Logger::logError( $e->getMessage(), 'Integration', array(
-				'service_id'   => $service_id,
-				'country_code' => $customer['shipping_country'],
-				'postal_code'  => $customer['shipping_postcode'],
-			) );
-		}
 
-		return $result;
+		/** @var LocationService $location_service */
+		$location_service = ServiceRegister::getService( LocationService::CLASS_NAME );
+
+		return $location_service->getLocations( $method_id, $customer['shipping_country'], $customer['shipping_postcode'] );
 	}
 
 	/**
@@ -267,6 +302,13 @@ class Checkout_Handler {
 		$map_entry = $this->repository->selectOne( $filter );
 		if ( null === $map_entry ) {
 			return null;
+		}
+
+		$id = $map_entry->getPacklinkShippingMethodId();
+		if ( -1 === $id ) {
+			/** @var Config_Service $configuration */
+			$configuration = ServiceRegister::getService(Config_Service::CLASS_NAME);
+			return $configuration->get_default_shipping_method();
 		}
 
 		return $this->shipping_method_service->getShippingMethod( $map_entry->getPacklinkShippingMethodId() );

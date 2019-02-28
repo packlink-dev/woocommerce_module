@@ -15,6 +15,7 @@ namespace Packlink\WooCommerce\Controllers;
 
 use Logeecom\Infrastructure\ServiceRegister;
 use Logeecom\Infrastructure\Utility\Events\EventBus;
+use Packlink\BusinessLogic\ShippingMethod\Utility\ShipmentStatus;
 use Packlink\BusinessLogic\WebHook\Events\ShipmentLabelEvent;
 use Packlink\BusinessLogic\WebHook\Events\ShipmentStatusChangedEvent;
 use Packlink\BusinessLogic\WebHook\Events\TrackingInfoEvent;
@@ -57,10 +58,10 @@ class Packlink_Web_Hook_Controller extends Packlink_Base_Controller {
 		$reference_id = $payload['data']['shipment_reference'];
 		switch ( $payload['event'] ) {
 			case 'shipment.carrier.success':
-				$event_bus->fire( new ShipmentStatusChangedEvent( $reference_id, ShipmentStatusChangedEvent::STATUS_ACCEPTED ) );
+				$event_bus->fire( new ShipmentStatusChangedEvent( $reference_id, ShipmentStatus::STATUS_ACCEPTED ) );
 				break;
 			case 'shipment.delivered':
-				$event_bus->fire( new ShipmentStatusChangedEvent( $reference_id, ShipmentStatusChangedEvent::STATUS_DELIVERED ) );
+				$event_bus->fire( new ShipmentStatusChangedEvent( $reference_id, ShipmentStatus::STATUS_DELIVERED ) );
 				break;
 			case 'shipment.label.ready':
 				$event_bus->fire( new ShipmentLabelEvent( $reference_id ) );

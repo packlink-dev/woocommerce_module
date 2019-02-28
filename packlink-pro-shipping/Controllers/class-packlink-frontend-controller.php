@@ -57,6 +57,17 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 		'FR' => 'https://pro.packlink.fr/conditions-generales/',
 		'IT' => 'https://pro.packlink.it/termini-condizioni/',
 	);
+	/**
+	 * List of country names for different country codes.
+	 *
+	 * @var array
+	 */
+	private static $country_names = array(
+		'ES' => 'Spain',
+		'DE' => 'Germany',
+		'FR' => 'France',
+		'IT' => 'Italy',
+	);
 
 	/**
 	 * Configuration service instance.
@@ -272,7 +283,7 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	/**
 	 * Disables active shop shipping methods.
 	 */
-	public function delete_shop_shipping_methods() {
+	public function disable_shop_shipping_methods() {
 		$this->validate( 'no', true );
 
 		Shipping_Method_Helper::disable_shop_shipping_methods();
@@ -362,13 +373,14 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 		}
 
 		return array(
-			'image_base'     => Shop_Helper::get_plugin_base_url() . 'resources/images/',
-			'dashboard_logo' => Shop_Helper::get_plugin_base_url() . 'resources/images/logo-pl.svg',
-			'dashboard_icon' => Shop_Helper::get_plugin_base_url() . 'resources/images/dashboard.png',
-			'terms_url'      => static::$terms_and_conditions_urls[ $locale ],
-			'help_url'       => static::$help_urls[ $locale ],
-			'plugin_version' => Shop_Helper::get_plugin_version(),
-			'debug_url'      => Shop_Helper::get_controller_url( 'Debug', 'download' ),
+			'image_base'        => Shop_Helper::get_plugin_base_url() . 'resources/images/',
+			'dashboard_logo'    => Shop_Helper::get_plugin_base_url() . 'resources/images/logo-pl.svg',
+			'dashboard_icon'    => Shop_Helper::get_plugin_base_url() . 'resources/images/dashboard.png',
+			'terms_url'         => static::$terms_and_conditions_urls[ $locale ],
+			'help_url'          => static::$help_urls[ $locale ],
+			'plugin_version'    => Shop_Helper::get_plugin_version(),
+			'debug_url'         => Shop_Helper::get_controller_url( 'Debug', 'download' ),
+			'warehouse_country' => static::$country_names[ $locale ],
 		);
 	}
 

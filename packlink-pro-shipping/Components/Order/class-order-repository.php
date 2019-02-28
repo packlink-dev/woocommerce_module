@@ -7,6 +7,7 @@
 
 namespace Packlink\WooCommerce\Components\Order;
 
+use Logeecom\Infrastructure\ORM\QueryFilter\Operators;
 use Logeecom\Infrastructure\ORM\QueryFilter\QueryFilter;
 use Logeecom\Infrastructure\ORM\RepositoryRegistry;
 use Logeecom\Infrastructure\ServiceRegister;
@@ -20,6 +21,7 @@ use Packlink\BusinessLogic\Order\Objects\Item;
 use Packlink\BusinessLogic\Order\Objects\Order;
 use Packlink\BusinessLogic\Order\Objects\Shipment;
 use Packlink\BusinessLogic\Order\Objects\TrackingHistory;
+use Packlink\BusinessLogic\ShippingMethod\Utility\ShipmentStatus;
 use Packlink\WooCommerce\Components\Services\Config_Service;
 use WC_Order;
 use WP_Term;
@@ -81,6 +83,7 @@ class Order_Repository extends Singleton implements OrderRepository {
 
 		$order->setBillingAddress( $this->get_billing_address( $wc_order ) );
 		$order->setShippingAddress( $this->get_shipping_address( $wc_order ) );
+		$order->setShippingMethodId( $this->get_shipping_method_id( $wc_order ) );
 
 		if ( $wc_order->meta_exists( Order_Meta_Keys::DROP_OFF_ID ) ) {
 			$order->setShippingDropOffId( $wc_order->get_meta( Order_Meta_Keys::DROP_OFF_ID ) );
@@ -111,9 +114,12 @@ class Order_Repository extends Singleton implements OrderRepository {
 		$repository->save( $order_shipment );
 
 		$wc_order->update_meta_data( Order_Meta_Keys::SHIPMENT_REFERENCE, $shipment_reference );
-		$wc_order->update_meta_data( Order_Meta_Keys::SHIPMENT_STATUS, __( 'Draft created', 'packlink-pro-shipping' ) );
+		$status = __( 'Draft created', 'packlink-pro-shipping' );
+		$wc_order->update_meta_data( Order_Meta_Keys::SHIPMENT_STATUS, $status );
 		$wc_order->update_meta_data( Order_Meta_Keys::SHIPMENT_STATUS_TIME, time() );
+
 		$wc_order->save();
+		$this->update_order_shipment_status( $shipment_reference, $status );
 	}
 
 	/**
@@ -153,7 +159,6 @@ class Order_Repository extends Singleton implements OrderRepository {
 		}
 
 		if ( null !== $shipment_details ) {
-			$order->update_meta_data( Order_Meta_Keys::SHIPPING_ID, $shipment_details->serviceId );
 			$order->update_meta_data( Order_Meta_Keys::SHIPMENT_PRICE, $shipment_details->price );
 			$order->update_meta_data( Order_Meta_Keys::CARRIER_TRACKING_URL, $shipment_details->carrierTrackingUrl );
 			if ( ! empty( $shipment_details->trackingCodes ) ) {
@@ -185,6 +190,50 @@ class Order_Repository extends Singleton implements OrderRepository {
 		}
 
 		$order->save();
+		$this->update_order_shipment_status( $shipment_reference, $shipping_status );
+	}
+
+	/**
+	 * @noinspection PhpDocMissingThrowsInspection
+	 *
+	 * Returns shipment references of the orders that have not yet been completed.
+	 *
+	 * @return array Array of shipment references.
+	 */
+	public function getIncompleteOrderReferences() {
+		$filter     = new QueryFilter();
+		$references = array();
+
+		/** @noinspection PhpUnhandledExceptionInspection */
+		$repository = RepositoryRegistry::getRepository( Order_Shipment_Entity::CLASS_NAME );
+
+		/** @noinspection PhpUnhandledExceptionInspection */
+		$filter->where( 'status', Operators::NOT_EQUALS, ShipmentStatus::STATUS_DELIVERED );
+		/** @var Order_Shipment_Entity $orderDetails */
+		$orders = $repository->select( $filter );
+
+		foreach ( $orders as $orderDetails ) {
+			if ( null !== $orderDetails->getPacklinkShipmentReference() ) {
+				$references[] = $orderDetails->getPacklinkShipmentReference();
+			}
+		}
+
+		return $references;
+	}
+
+	/**
+	 * Sets shipping price to an order by shipment reference.
+	 *
+	 * @param string $shipment_reference Packlink shipment reference.
+	 * @param float $price Shipment price.
+	 *
+	 * @throws \Packlink\BusinessLogic\Order\Exceptions\OrderNotFound When order with provided reference is not found.
+	 */
+	public function setShippingPriceByReference( $shipment_reference, $price ) {
+		$order = $this->load_order_by_reference( $shipment_reference );
+		$order->update_meta_data( Order_Meta_Keys::SHIPMENT_PRICE, $price );
+
+		$order->save();
 	}
 
 	/**
@@ -209,26 +258,34 @@ class Order_Repository extends Singleton implements OrderRepository {
 	 *
 	 * Fetches and returns order instance.
 	 *
-	 * @param string $shipment_reference $orderId Unique order id.
+	 * @param string $shipment_reference Packlink shipment reference.
 	 *
 	 * @return WC_Order WooCommerce order object.
 	 * @throws \Packlink\BusinessLogic\Order\Exceptions\OrderNotFound When order with provided id is not found.
 	 */
 	private function load_order_by_reference( $shipment_reference ) {
-		/** @noinspection PhpUnhandledExceptionInspection */
-		$repository = RepositoryRegistry::getRepository( Order_Shipment_Entity::CLASS_NAME );
-
-		$query_filter = new QueryFilter();
-		/** @noinspection PhpUnhandledExceptionInspection */
-		$query_filter->where( 'packlinkShipmentReference', '=', $shipment_reference );
-		/** @var Order_Shipment_Entity $order_shipment */
-		$order_shipment = $repository->selectOne( $query_filter );
-
-		if ( null === $order_shipment ) {
-			throw new OrderNotFound( sprintf( __( 'Order with shipment reference(%s) not found!', 'packlink-pro-shipping' ), $shipment_reference ) );
-		}
+		$order_shipment = $this->get_order_shipment_entity( $shipment_reference );
 
 		return $this->load_order_by_id( $order_shipment->getWoocommerceOrderId() );
+	}
+
+	/**
+	 * @noinspection PhpDocMissingThrowsInspection
+	 *
+	 * Updates order shipment status.
+	 *
+	 * @param string $shipment_reference Packlink shipment reference.
+	 * @param string $status Shipment status
+	 *
+	 * @throws \Packlink\BusinessLogic\Order\Exceptions\OrderNotFound When order with provided id is not found.
+	 */
+	private function update_order_shipment_status( $shipment_reference, $status ) {
+		$order_shipment = $this->get_order_shipment_entity( $shipment_reference );
+		$order_shipment->setStatus( $status );
+
+		/** @noinspection PhpUnhandledExceptionInspection */
+		$repository = RepositoryRegistry::getRepository( Order_Shipment_Entity::CLASS_NAME );
+		$repository->save( $order_shipment );
 	}
 
 	/**
@@ -376,48 +433,42 @@ class Order_Repository extends Singleton implements OrderRepository {
 	}
 
 	/**
-	 * Returns drop-off address.
+	 * Returns Packlink shipping method id.
 	 *
-	 * @param WC_Order $order WooCommerce order.
+	 * @param WC_Order $wc_order WooCommerce order.
 	 *
-	 * @return null|Address Drop-off address.
+	 * @return int|null Returns shipping method id.
 	 */
-	private function get_drop_off_address( WC_Order $order ) {
-		$address      = new Address();
-		$json_address = $order->get_meta( Order_Meta_Keys::DROP_OFF_EXTRA );
-		$raw_address  = json_decode( stripslashes( $json_address ), true );
-		if ( empty( $json_address ) || ! is_array( $raw_address ) ) {
-			return null;
+	private function get_shipping_method_id( WC_Order $wc_order ) {
+		$method = Order_Details_Helper::get_packlink_shipping_method( $wc_order );
+
+		return $method ? $method->getId() : null;
+	}
+
+	/**
+	 * @noinspection PhpDocMissingThrowsInspection
+	 *
+	 * Fetches and returns order shipment entity.
+	 *
+	 * @param string $shipment_reference Shipment reference number.
+	 *
+	 * @return Order_Shipment_Entity Order shipment entity.
+	 * @throws \Packlink\BusinessLogic\Order\Exceptions\OrderNotFound When order with provided id is not found.
+	 */
+	private function get_order_shipment_entity( $shipment_reference ) {
+		/** @noinspection PhpUnhandledExceptionInspection */
+		$repository = RepositoryRegistry::getRepository( Order_Shipment_Entity::CLASS_NAME );
+
+		$query_filter = new QueryFilter();
+		/** @noinspection PhpUnhandledExceptionInspection */
+		$query_filter->where( 'packlinkShipmentReference', '=', $shipment_reference );
+		/** @var Order_Shipment_Entity $order_shipment */
+		$order_shipment = $repository->selectOne( $query_filter );
+
+		if ( null === $order_shipment ) {
+			throw new OrderNotFound( sprintf( __( 'Order with shipment reference(%s) not found!', 'packlink-pro-shipping' ), $shipment_reference ) );
 		}
 
-		$address->setCountry( $raw_address['countryCode'] );
-		$address->setStreet1( $raw_address['address'] );
-		$address->setZipCode( $raw_address['zip'] );
-		$address->setCity( $raw_address['city'] );
-		$address->setName( $raw_address['name'] );
-		$address->setPhone( $raw_address['phone'] );
-
-		return $address;
-	}
-
-	/**
-	 * Returns shipment references of the orders that have not yet been completed.
-	 *
-	 * @return array Array of shipment references.
-	 */
-	public function getIncompleteOrderReferences() {
-		// TODO: Implement getIncompleteOrderReferences() method.
-	}
-
-	/**
-	 * Sets shipping price to an order by shipment reference.
-	 *
-	 * @param string $shipmentReference Packlink shipment reference.
-	 * @param float $price Shipment price.
-	 *
-	 * @throws \Packlink\BusinessLogic\Order\Exceptions\OrderNotFound When order with provided reference is not found.
-	 */
-	public function setShippingPriceByReference( $shipmentReference, $price ) {
-		// TODO: Implement setShippingPriceByReference() method.
+		return $order_shipment;
 	}
 }
