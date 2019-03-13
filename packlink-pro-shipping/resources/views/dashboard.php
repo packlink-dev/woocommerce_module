@@ -249,7 +249,16 @@ $data = $this->resolve_view_arguments();
                                 <div class=" pl-form-section-input pl-text-input">
                                     <input type="text" class="pl-warehouse-input"
                                            id="pl-default-warehouse-postal_code"/>
-                                    <span class="pl-text-input-label"><?php echo __( 'Postal code', 'packlink-pro-shipping' ); ?></span>
+                                    <span class="pl-text-input-label"><?php echo __( 'City or postal code', 'packlink-pro-shipping' ); ?></span>
+                                    <span class="pl-input-search-icon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="31" viewBox="0 0 30 31">
+                                          <g fill="none" fill-rule="evenodd">
+                                            <polygon points=".794 .206 29.106 .206 29.106 30.226 .794 30.226"/>
+                                            <path fill="#444" d="M11.3050003,21.2060012 C11.0510005,21.2060012 10.7959995,21.1960029 10.5380001,21.1780014 C4.7639999,20.7610015 0.4049997,15.7240009 0.8220005,9.9490013 C1.2350006,4.2310009 6.2310009,-0.1849986 12.0510005,0.2330017 C14.8479995,0.4350013 17.3990001,1.7140016 19.2350006,3.8350019 C21.0699996,5.9560012 21.9689998,8.6650009 21.7680015,11.4620018 C21.3740005,16.9249992 16.7770004,21.2060012 11.3050003,21.2060012 Z M11.2849998,2.2040004 C6.8559989,2.2040004 3.137,5.6690006 2.8169994,10.0930004 C2.4789991,14.7680015 6.0079994,18.8460006 10.6829986,19.184 C15.3799991,19.5109996 19.4389991,15.9470005 19.7729988,11.3169994 C19.9369983,9.0529994 19.2089996,6.861 17.7229995,5.1429996 C16.2379989,3.4259996 14.1719989,2.3909997 11.907999,2.2269992 C11.6989994,2.2119998 11.4920005,2.2040004 11.2849998,2.2040004 Z"/>
+                                            <path fill="#444" d="M17.2810001 12.1369991C17.2569999 12.1369991 17.2329998 12.1359996 17.2080001 12.1339988 16.6569995 12.0949993 16.243 11.6149997 16.2830009 11.0649986 16.3790016 9.7329978 15.9510002 8.4439983 15.0770015 7.4339981 14.203001 6.4229984 12.9880008 5.8149986 11.656002 5.7179985 11.1050014 5.6789989 10.6910018 5.1989994 10.7300014 4.6489982 10.769001 4.0989971 11.2410011 3.6699981 11.7990016 3.723998 13.6640014 3.8579978 15.3650016 4.7109985 16.5890007 6.1239986 17.8129997 7.5379981 18.4120006 9.3439979 18.2770004 11.2089996 18.2390003 11.7350006 17.7999992 12.1369991 17.2810001 12.1369991zM26.361 30.2260017C25.5909996 30.2260017 24.8260002 29.9050025 24.2840003 29.2790031L15.2709999 19.6850032C14.8929996 19.2830028 14.9130001 18.6500034 15.3150005 18.2720031 15.7170009 17.8940029 16.3500003 17.9130039 16.729 18.3160037L25.7700004 27.9400024C26.0660018 28.281002 26.538002 28.3160018 26.848999 28.0450019 26.9990005 27.9150009 27.0900001 27.7340011 27.104 27.5350036 27.118 27.3370018 27.0540008 27.1440048 26.9239997 26.9940032L18.2679996 17.6810035C17.8920001 17.2770042 17.914999 16.6440029 18.3199996 16.2680034 18.723999 15.892004 19.3570003 15.9150028 19.7329998 16.3200035L28.413002 25.6600036C28.9160003 26.2400054 29.1520004 26.9490051 29.0990028 27.6810035 29.0460052 28.413002 28.7120018 29.0790023 28.1570014 29.5590019 27.6380004 30.0060005 26.998001 30.2260017 26.361 30.2260017z"/>
+                                          </g>
+                                        </svg>
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -1048,6 +1057,7 @@ $data = $this->resolve_view_arguments();
                 defaultParcelSubmitUrl: "<?php echo Shop_Helper::get_controller_url( 'Frontend', 'save_default_parcel' ) ?>",
                 defaultWarehouseGetUrl: "<?php echo Shop_Helper::get_controller_url( 'Frontend', 'get_default_warehouse' ) ?>",
                 defaultWarehouseSubmitUrl: "<?php echo Shop_Helper::get_controller_url( 'Frontend', 'save_default_warehouse' ) ?>",
+                defaultWarehouseSearchPostalCodesUrl: "<?php echo Shop_Helper::get_controller_url( 'Frontend', 'search_locations' ) ?>",
                 shippingMethodsGetAllUrl: "<?php echo Shop_Helper::get_controller_url( 'Frontend', 'get_all_shipping_methods' ) ?>",
                 shippingMethodsActivateUrl: "<?php echo Shop_Helper::get_controller_url( 'Frontend', 'activate_shipping_method' ) ?>",
                 shippingMethodsDeactivateUrl: "<?php echo Shop_Helper::get_controller_url( 'Frontend', 'deactivate_shipping_method' ) ?>",

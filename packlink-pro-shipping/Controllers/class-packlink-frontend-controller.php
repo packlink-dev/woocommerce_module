@@ -18,6 +18,7 @@ use Packlink\BusinessLogic\Controllers\DTO\ShippingMethodConfiguration;
 use Packlink\BusinessLogic\Controllers\ShippingMethodController;
 use Packlink\BusinessLogic\Http\DTO\ParcelInfo;
 use Packlink\BusinessLogic\Http\DTO\Warehouse;
+use Packlink\BusinessLogic\Location\LocationService;
 use Packlink\BusinessLogic\ShippingMethod\Models\FixedPricePolicy;
 use Packlink\BusinessLogic\ShippingMethod\Models\PercentPricePolicy;
 use Packlink\BusinessLogic\ShippingMethod\Models\ShippingMethod;
@@ -232,6 +233,41 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 		$configuration->setDefaultWarehouse( Warehouse::fromArray( $payload ) );
 
 		$this->return_json( array( 'success' => true ) );
+	}
+
+	/**
+	 * Performs locations search.
+	 */
+	public function search_locations() {
+		$this->validate( 'yes', true );
+
+		$raw_json = $this->get_raw_input();
+		$payload  = json_decode( $raw_json, true );
+
+		if ( empty( $payload['query'] ) ) {
+			$this->return_json( array(), 200 );
+		}
+
+		/** @var Configuration $configuration */
+		$configuration = ServiceRegister::getService( Configuration::CLASS_NAME );
+		$platform_country = $configuration->getUserInfo()->country;
+
+		/** @var LocationService $location_service */
+		$location_service = ServiceRegister::getService( LocationService::CLASS_NAME );
+
+		try {
+			$result = $location_service->searchLocations( $platform_country, $payload['query'] );
+		} catch ( \Exception $e ) {
+			$this->return_json( array(), 200 );
+		}
+
+		$result_as_array = array();
+
+		foreach ( $result as $item ) {
+			$result_as_array[] = $item->toArray();
+		}
+
+		$this->return_json( $result_as_array, 200 );
 	}
 
 	/**
