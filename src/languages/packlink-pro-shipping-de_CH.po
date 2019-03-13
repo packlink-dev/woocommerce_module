@@ -1,0 +1,665 @@
+# Copyright (C) 2019 Packlink PRO
+# This file is distributed under the same license as the Packlink PRO Shipping plugin.
+msgid ""
+msgstr ""
+"Project-Id-Version: Packlink PRO Shipping 2.0.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/packlink-pro-"
+"shipping\n"
+"Language-Team: German (Switzerland)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2019-03-12T09:51:26+01:00\n"
+"PO-Revision-Date: 2019-03-12 12:17+0100\n"
+"X-Generator: Poedit 2.2.1\n"
+"X-Domain: packlink-pro-shipping\n"
+"Last-Translator: Packlink PRO <support@packlink.com>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Language: de_CH\n"
+
+#. Plugin Name of the plugin
+#: resources/views/dashboard.php:33 class-plugin.php:286
+msgid "Packlink PRO Shipping"
+msgstr "Packlink PRO Shipping"
+
+#. Plugin URI of the plugin
+msgid "https://en.wordpress.org/plugins/packlink-pro-shipping/"
+msgstr "https://de.wordpress.org/plugins/packlink-pro-shipping/"
+
+#. Description of the plugin
+msgid ""
+"Save up to 70% on your shipping costs. No fixed fees, no minimum shipping "
+"volume required. Manage all your shipments in a single platform."
+msgstr ""
+"Sparen Sie bis zu 70% bei Ihren Versandkosten. Keine festen Gebühren, kein "
+"Mindestvolumen beim Versand. Verwalten Sie alle Ihre Sendungen auf einer "
+"einzigen Plattform."
+
+#. Author of the plugin
+msgid "Packlink PRO"
+msgstr "Packlink PRO"
+
+#. Author URI of the plugin
+msgid "https://pro.packlink.es/"
+msgstr "https://pro.packlink.de/"
+
+#: resources/views/shipping-method-drop-off.php:20
+#: resources/views/shipping-method-drop-off.php:26
+msgid "Change Drop-Off Location"
+msgstr "Abgabestelle ändern"
+
+#: resources/views/shipping-method-drop-off.php:20
+#: resources/views/shipping-method-drop-off.php:25
+msgid "Select Drop-Off Location"
+msgstr "Abgabestelle auswählen"
+
+#: resources/views/shipping-method-drop-off.php:27
+msgid "Package will be delivered to:"
+msgstr "Das Paket wird geliefert an:"
+
+#: resources/views/order-view-drop-off.php:19
+msgid "Drop-off address"
+msgstr "Zustelladresse"
+
+#: resources/views/login.php:22
+msgid "Don't have an account?"
+msgstr "Sie haben noch kein Benutzerkonto?"
+
+#: resources/views/login.php:24
+msgid "Register"
+msgstr "Registrieren"
+
+#: resources/views/login.php:39
+msgid "Select country to start"
+msgstr "Wählen Sie ein Land aus"
+
+#: resources/views/login.php:72
+msgid "Allow WooCommerce to connect to PacklinkPRO"
+msgstr ""
+"Erlauben Sie WooCommerce, sich mit dem Packlink PRO-Konto zu verbinden"
+
+#: resources/views/login.php:75
+msgid "Your API key can be found under"
+msgstr "Ihren API-Schlüssel finden Sie unter"
+
+#: resources/views/login.php:80
+msgid "API key was incorrect."
+msgstr "Falscher API-Schlüssel."
+
+#: resources/views/login.php:83
+msgid "Connect your account"
+msgstr "Benutzerkonto verbinden"
+
+#: resources/views/login.php:89
+msgid "Api key"
+msgstr "API-Schlüssel"
+
+#: resources/views/login.php:94
+msgid "Log in"
+msgstr "Login"
+
+#: resources/views/dashboard.php:52 resources/views/dashboard.php:763
+msgid "SHIPPING SERVICES"
+msgstr "Versanddienste"
+
+#: resources/views/dashboard.php:72
+msgid "BASIC SETTINGS"
+msgstr "Einstellungen"
+
+#: resources/views/dashboard.php:84
+msgid "Help"
+msgstr "Hilfe"
+
+#: resources/views/dashboard.php:102
+msgid "Contact us"
+msgstr "Kontaktieren Sie uns"
+
+#: resources/views/dashboard.php:120 resources/views/dashboard.php:876
+msgid "Map order statuses"
+msgstr "Bestellstatus synchronisieren"
+
+#: resources/views/dashboard.php:125
+msgid "Default warehouse"
+msgstr "Voreingestellte Adresse"
+
+#: resources/views/dashboard.php:130
+msgid "Default parcel"
+msgstr "Standardpaketen"
+
+#: resources/views/dashboard.php:140
+msgid "Set default parcel"
+msgstr "Standardpaketen einrichten"
+
+#: resources/views/dashboard.php:145
+msgid ""
+"We will use the default parcel in case any item has not defined dimensions "
+"and weight. You can edit anytime."
+msgstr ""
+"Wir verwenden das Daten des Standardpakets, wenn für ein Produkt keine "
+"Abmaße und kein Gewicht definiert wurden. Sie können Ihre Eingaben "
+"jederzeit ändern."
+
+#: resources/views/dashboard.php:154
+msgid "Weight"
+msgstr "Gewicht"
+
+#: resources/views/dashboard.php:162
+msgid "Length"
+msgstr "Länge"
+
+#: resources/views/dashboard.php:166
+msgid "Width"
+msgstr "Breite"
+
+#: resources/views/dashboard.php:170
+msgid "Height"
+msgstr "Höhe"
+
+#: resources/views/dashboard.php:177 resources/views/dashboard.php:283
+#: resources/views/dashboard.php:969
+msgid "Save changes"
+msgstr "Speichern"
+
+#: resources/views/dashboard.php:191
+msgid "Set default warehouse"
+msgstr "Voreingestellte Adresse einrichten"
+
+#: resources/views/dashboard.php:196
+msgid ""
+"We will use the default Warehouse address as your sender address. You can "
+"edit anytime."
+msgstr ""
+"Wir verwenden die voreingestellte Adresse als Absenderadresse. Sie können "
+"Ihre Eingaben jederzeit ändern."
+
+#: resources/views/dashboard.php:205
+msgid "Warehouse name"
+msgstr "Name der voreingestellten Adresse"
+
+#: resources/views/dashboard.php:213
+msgid "Contact person name"
+msgstr "Name der Kontaktperson"
+
+#: resources/views/dashboard.php:221
+msgid "Contact person surname"
+msgstr "Nachname der Kontaktperson"
+
+#: resources/views/dashboard.php:229
+msgid "Company name"
+msgstr "Unternehmen"
+
+#: resources/views/dashboard.php:243
+msgid "Country"
+msgstr "Land"
+
+#: resources/views/dashboard.php:252
+msgid "Postal code"
+msgstr "Postleitzahl"
+
+#: resources/views/dashboard.php:260
+msgid "Address"
+msgstr "Straße und Hausnummer"
+
+#: resources/views/dashboard.php:268
+msgid "Phone number"
+msgstr "Telefonnummer"
+
+#: resources/views/dashboard.php:276
+msgid "Email"
+msgstr "E-Mail-Adresse"
+
+#: resources/views/dashboard.php:299
+msgid "Congrats! Your first Shipping Method has been successfully created."
+msgstr "Glückwunsch! Ihre erste Versandart wurde erfolgreich erstellt."
+
+#: resources/views/dashboard.php:302
+msgid ""
+"In order to offer you the best possible service, its important to disable "
+"your previous carriers. Do you want us to disable them? (recommended)"
+msgstr ""
+"Um Ihnen den bestmöglichen Service zu bieten, ist es wichtig, dass Sie Ihre "
+"bisherigen Versanddienstleister deaktivieren. Möchten Sie, dass wir diese "
+"deaktivieren? (empfohlen)"
+
+#: resources/views/dashboard.php:306 resources/views/dashboard.php:609
+msgid "Cancel"
+msgstr "Abbrechen"
+
+#: resources/views/dashboard.php:308
+msgid "Accept"
+msgstr "Akzeptieren"
+
+#: resources/views/dashboard.php:319
+msgid "You're almost there!"
+msgstr "Fast geschafft!"
+
+#: resources/views/dashboard.php:322
+msgid "Details synced with your existing account"
+msgstr "Daten sind mit Ihrem Konto verknüpft"
+
+#: resources/views/dashboard.php:332
+msgid "Set default parcel details"
+msgstr "Standardpaketen einrichten"
+
+#: resources/views/dashboard.php:343
+msgid "Set default warehouse details"
+msgstr "Voreingestellte Adresse einrichten"
+
+#: resources/views/dashboard.php:347
+msgid "Just a few more steps to complete the setup"
+msgstr "Nur noch wenige Schritte, um die Einrichtung abzuschließen"
+
+#: resources/views/dashboard.php:357
+msgid "Select shipping services"
+msgstr "Versanddienste auswählen"
+
+#: resources/views/dashboard.php:400
+msgid ""
+"Getting available shipping services from Packlink PRO. Please wait a moment."
+msgstr ""
+"Wir suchen verfügbare Versanddienste von Packlink PRO, bitte haben Sie "
+"einen Moment Geduld."
+
+#: resources/views/dashboard.php:410
+msgid "Filter services"
+msgstr "Versanddienste filtern"
+
+#: resources/views/dashboard.php:416
+msgid "Type"
+msgstr "Typ"
+
+#: resources/views/dashboard.php:424 resources/views/dashboard.php:652
+msgid "National"
+msgstr "National"
+
+#: resources/views/dashboard.php:434 resources/views/dashboard.php:655
+msgid "International"
+msgstr "International"
+
+#: resources/views/dashboard.php:442 resources/views/dashboard.php:502
+#: resources/views/dashboard.php:718
+msgid "Delivery"
+msgstr "Versandart"
+
+#: resources/views/dashboard.php:450
+msgid "Economic"
+msgstr "Standard"
+
+#: resources/views/dashboard.php:460
+msgid "Express"
+msgstr "Express"
+
+#: resources/views/dashboard.php:468
+msgid "Parcel origin"
+msgstr "Absendeort des Pakets"
+
+#: resources/views/dashboard.php:476 resources/views/dashboard.php:676
+msgid "Collection"
+msgstr "Abholung an Adresse"
+
+#: resources/views/dashboard.php:486 resources/views/dashboard.php:688
+msgid "Drop off"
+msgstr "Abgabe im Paketshop"
+
+#: resources/views/dashboard.php:494
+msgid "Parcel destination"
+msgstr "Zielort des Pakets"
+
+#: resources/views/dashboard.php:512 resources/views/dashboard.php:730
+msgid "Pick up"
+msgstr "Abholung im Paketshop"
+
+#: resources/views/dashboard.php:530
+msgid "Add service title"
+msgstr "Name des Versanddienstes hinzufügen"
+
+#: resources/views/dashboard.php:539
+msgid "This title will be visible to your customers"
+msgstr "Dieser Name wird für Ihren Kunden sichtbar sein"
+
+#: resources/views/dashboard.php:546
+msgid "Service title"
+msgstr "Name des Versanddienstes"
+
+#: resources/views/dashboard.php:551
+msgid "Carrier logo"
+msgstr "Logo des Versandunternehmens"
+
+#: resources/views/dashboard.php:562
+msgid "Show carrier logo to my customers"
+msgstr "Meinen Kunden das Logo anzeigen"
+
+#: resources/views/dashboard.php:572
+msgid "Select pricing policy"
+msgstr "Preispolitik wählen"
+
+#: resources/views/dashboard.php:581
+msgid "Choose the pricing policy to show your customers"
+msgstr "Wählen Sie die Preispolitik, die Sie Ihren Kunden anzeigen möchten"
+
+#: resources/views/dashboard.php:588 resources/views/dashboard.php:634
+msgid "Packlink prices"
+msgstr "Packlink-Preise"
+
+#: resources/views/dashboard.php:589
+msgid "% of Packlink prices"
+msgstr "%-Satz der Packlink-Preise"
+
+#: resources/views/dashboard.php:590 resources/views/dashboard.php:640
+msgid "Fixed prices"
+msgstr "Feste Preise"
+
+#: resources/views/dashboard.php:606
+msgid "Save"
+msgstr "Speichern"
+
+#: resources/views/dashboard.php:637
+msgid "Packlink percent"
+msgstr "Packlink-Prozentsatz"
+
+#: resources/views/dashboard.php:736
+msgid "Configure"
+msgstr "Einstellen"
+
+#: resources/views/dashboard.php:747
+msgid "All shipping services"
+msgstr "Alle Versanddienste"
+
+#: resources/views/dashboard.php:750
+msgid "Selected shipping services"
+msgstr "Ausgewählte Versanddienste"
+
+#: resources/views/dashboard.php:761
+msgid "SELECT"
+msgstr "Auswählen"
+
+#: resources/views/dashboard.php:765
+msgid "CARRIER"
+msgstr "Versandpartner"
+
+#: resources/views/dashboard.php:767
+msgid "TRANSIT TIME"
+msgstr "Versandlaufzeit"
+
+#: resources/views/dashboard.php:769
+msgid "TYPE"
+msgstr "Typ"
+
+#: resources/views/dashboard.php:771
+msgid "ORIGIN"
+msgstr "Absender"
+
+#: resources/views/dashboard.php:774
+msgid "DESTINATION"
+msgstr "Empfänger"
+
+#: resources/views/dashboard.php:785
+msgid "Showing"
+msgstr "Es werden"
+
+#: resources/views/dashboard.php:786
+msgid "results"
+msgstr "Ergebnisse angezeigt"
+
+#: resources/views/dashboard.php:793
+msgid "Please set pricing rule"
+msgstr "Bitte legen Sie eine Preisregel fest"
+
+#: resources/views/dashboard.php:799
+msgid "Increase"
+msgstr "Erhöhen"
+
+#: resources/views/dashboard.php:802
+msgid "Reduce"
+msgstr "Reduzieren"
+
+#: resources/views/dashboard.php:806
+msgid "BY"
+msgstr "um"
+
+#: resources/views/dashboard.php:815
+msgid "Please add price for each weight criteria"
+msgstr "Bitte fügen Sie für jede Gewichtskategorie einen Preis hinzu"
+
+#: resources/views/dashboard.php:825
+msgid "Add price"
+msgstr "Preis hinzufügen"
+
+#: resources/views/dashboard.php:838
+msgid "FROM"
+msgstr "Von"
+
+#: resources/views/dashboard.php:843
+msgid "TO"
+msgstr "Bis"
+
+#: resources/views/dashboard.php:848
+msgid "PRICE"
+msgstr "Preis"
+
+#: resources/views/dashboard.php:881
+msgid ""
+"Packlink offers you the possibility to update your WooCommerce order status "
+"with the shipping info. You can\n"
+"                    edit anytime."
+msgstr ""
+"Packlink bietet Ihnen die Möglichkeit, den Status Ihren WooCommerce-"
+"Bestellungen mit den Versandinformationen zu aktualisieren. Sie können dies "
+"jederzeit bearbeiten."
+
+#: resources/views/dashboard.php:887
+msgid "Packlink PRO Shipping Status"
+msgstr "Versandstatus von Packlink PRO"
+
+#: resources/views/dashboard.php:892
+msgid "WooCommerce Order Status"
+msgstr "Bestellstatus von WooCommerce"
+
+#: resources/views/dashboard.php:898
+msgid "Pending"
+msgstr "Ausstehend"
+
+#: resources/views/dashboard.php:905 resources/views/dashboard.php:919
+#: resources/views/dashboard.php:934 resources/views/dashboard.php:948
+#: resources/views/dashboard.php:962
+msgid "None"
+msgstr "Keine"
+
+#: resources/views/dashboard.php:912
+msgid "Processing"
+msgstr "In Bearbeitung"
+
+#: resources/views/dashboard.php:926
+msgid "Ready for shipping"
+msgstr "Versandbereit"
+
+#: resources/views/dashboard.php:941
+msgid "In transit"
+msgstr "Unterwegs"
+
+#: resources/views/dashboard.php:955
+msgid "Delivered"
+msgstr "Zugestellt"
+
+#: resources/views/dashboard.php:989
+msgid "Debug mode"
+msgstr "Debug mode"
+
+#: resources/views/dashboard.php:995
+msgid "Download system info file"
+msgstr "Systeminfodatei herunterladen"
+
+#: resources/views/dashboard.php:1000
+msgid "Loading..."
+msgstr ""
+
+#: resources/views/dashboard.php:1009
+msgid "system info"
+msgstr "Systeminformationen"
+
+#: resources/views/dashboard.php:1013
+msgid "General conditions"
+msgstr "Allgemeine Bedingungen"
+
+#: resources/views/dashboard.php:1015
+msgid "Developed and managed by Packlink"
+msgstr "Entwickelt und verwaltet von Packlink"
+
+#: resources/views/dashboard.php:1028
+msgid "This field is required."
+msgstr "Dies ist ein Pflichtfeld."
+
+#: resources/views/dashboard.php:1029
+msgid "Value must be valid number."
+msgstr "Bitte geben Sie einen numerischen Wert ein."
+
+#: resources/views/dashboard.php:1030
+msgid "This field is not valid."
+msgstr "Ihre Eingabe ist ungültig."
+
+#: resources/views/dashboard.php:1031
+msgid "This field must be valid phone number."
+msgstr "Bitte geben Sie eine gültige Telefonnummer ein."
+
+#: resources/views/dashboard.php:1032
+msgid "Value must be greater than 0."
+msgstr "Der Wert muss größer als 0 sein."
+
+#: resources/views/dashboard.php:1036
+msgid "Shipping method successfully saved."
+msgstr "Versandart erfolgreich ausgewählt."
+
+#: resources/views/meta-post-box.php:36
+msgid "Carrier"
+msgstr "Versandpartner"
+
+#: resources/views/meta-post-box.php:43
+msgid "Carrier tracking codes:"
+msgstr "Trackingnummer des Versandunternehmens:"
+
+#: resources/views/meta-post-box.php:54
+msgid "Track it!"
+msgstr "Versand verfolgen"
+
+#: resources/views/meta-post-box.php:63
+msgid "Status"
+msgstr "Status"
+
+#: resources/views/meta-post-box.php:68
+msgid "Reference number"
+msgstr "Packlink Referenznummer"
+
+#: resources/views/meta-post-box.php:74
+msgid "Packlink shipping price"
+msgstr "Packlink Versandpreis"
+
+#: resources/views/meta-post-box.php:83
+msgid "View on Packlink PRO"
+msgstr "Auf Packlink PRO ansehen"
+
+#: resources/views/meta-post-box.php:90
+#: Controllers/class-packlink-order-overview-controller.php:73
+msgid "Print label"
+msgstr "Versandetikett drucken"
+
+#: resources/views/meta-post-box.php:100
+msgid "Previous attempt to create a draft failed. Error: %s"
+msgstr "Der Versuch der Entwurfserstellung ist fehlgeschlagen. Fehler: %s"
+
+#: resources/views/meta-post-box.php:108
+msgid "Create draft"
+msgstr "Entwurf erstellen"
+
+#: resources/views/meta-post-box.php:115
+msgid "Draft is currently being created in Packlink"
+msgstr "Der Entwurf wird gerade in Packlink erstellt"
+
+#: Components/Order/class-order-details-helper.php:171
+#: Components/Order/class-order-repository.php:117
+msgid "Draft created"
+msgstr ""
+
+#: Components/Order/class-order-repository.php:189
+msgid "Status set by Packlink PRO."
+msgstr ""
+
+#: Components/Order/class-order-repository.php:250
+msgid "Order with id(%s) not found!"
+msgstr "Die Bestellung mit der ID%s existiert nicht im Shop!"
+
+#: Components/Order/class-order-repository.php:469
+msgid "Order with shipment reference(%s) not found!"
+msgstr ""
+"Die Bestellung mit der Versandreferenznummer %s existiert nicht im Shop!"
+
+#: Components/Checkout/class-checkout-handler.php:139
+msgid "Please choose a drop-off location."
+msgstr ""
+
+#: Components/Repositories/class-base-repository.php:378
+msgid "Column is not id or index."
+msgstr ""
+
+#: Components/Validators/class-parcel-validator.php:41
+#: Components/Validators/class-warehouse-validator.php:56
+msgid "Field is required."
+msgstr "Dies ist ein Pflichtfeld."
+
+#: Components/Validators/class-parcel-validator.php:50
+msgid "Field must be valid whole number."
+msgstr "Das Feld muss eine ganze Zahl sein."
+
+#: Components/Validators/class-parcel-validator.php:55
+msgid "Field must be valid decimal number."
+msgstr "Bitte geben Sie einen numerischen Wert ein."
+
+#: Components/Validators/class-warehouse-validator.php:64
+#: Components/Validators/class-warehouse-validator.php:67
+msgid "Postal code is not correct."
+msgstr "Die Postleitzahl ist nicht korrekt."
+
+#: Components/Validators/class-warehouse-validator.php:72
+msgid "Field must be valid email."
+msgstr "Das Feld muss eine gültige E-Mail-Adresse sein."
+
+#: Components/Validators/class-warehouse-validator.php:84
+msgid "Field mus be valid phone number."
+msgstr "Bitte geben Sie eine gültige Telefonnummer ein."
+
+#: Controllers/class-packlink-order-overview-controller.php:40
+msgid "Packlink label"
+msgstr "Versandetiketten"
+
+#: Controllers/class-packlink-order-overview-controller.php:53
+msgid "Print labels"
+msgstr "Versandetikett drucken"
+
+#: Controllers/class-packlink-order-overview-controller.php:70
+msgid "Label is not yet available."
+msgstr ""
+
+#: Controllers/class-packlink-order-overview-controller.php:73
+msgid "Printed label"
+msgstr "Ausgedruckt"
+
+#: Controllers/class-packlink-order-overview-controller.php:177
+msgid "Unable to create bulk labels file"
+msgstr "Die Datei der Versandetiketten konnte nicht erstellt werden"
+
+#: class-plugin.php:97
+msgid ""
+"cURL is not installed or enabled in your PHP installation. This is required "
+"for background task to work. Please install it and then refresh this page."
+msgstr ""
+
+#: class-plugin.php:110
+msgid "Please install and activate WooCommerce."
+msgstr ""
+
+#: class-plugin.php:257
+msgid "View Packlink configuration"
+msgstr ""
+
+#: class-plugin.php:257
+msgid "Configuration"
+msgstr ""
