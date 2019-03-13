@@ -189,8 +189,8 @@ msgid "Country"
 msgstr "Nome del paese"
 
 #: resources/views/dashboard.php:252
-msgid "Postal code"
-msgstr "Codice postale"
+msgid "City or postal code"
+msgstr "Città o codice postale"
 
 #: resources/views/dashboard.php:260
 msgid "Address"
