@@ -168,9 +168,9 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 
 		/** @var Configuration $configuration */
 		$configuration = ServiceRegister::getService( Configuration::CLASS_NAME );
-		$parcel        = $configuration->getDefaultParcel() ?: ParcelInfo::defaultParcel();
+		$parcel        = $configuration->getDefaultParcel();
 
-		$this->return_json( $parcel->toArray() );
+		$this->return_json( $parcel ? $parcel->toArray() : array() );
 	}
 
 	/**
@@ -219,7 +219,7 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 
 		/** @var Configuration $configuration */
 		$configuration = ServiceRegister::getService( Configuration::CLASS_NAME );
-		if ( ! $payload['country'] ) {
+		if ( ! isset( $payload['country'] ) ) {
 			$user               = $configuration->getUserInfo();
 			$payload['country'] = $user ? $user->country : 'ES';
 		}
@@ -249,25 +249,24 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 		}
 
 		/** @var Configuration $configuration */
-		$configuration = ServiceRegister::getService( Configuration::CLASS_NAME );
+		$configuration    = ServiceRegister::getService( Configuration::CLASS_NAME );
 		$platform_country = $configuration->getUserInfo()->country;
 
 		/** @var LocationService $location_service */
 		$location_service = ServiceRegister::getService( LocationService::CLASS_NAME );
 
 		try {
-			$result = $location_service->searchLocations( $platform_country, $payload['query'] );
+			$result          = $location_service->searchLocations( $platform_country, $payload['query'] );
+			$result_as_array = array();
+
+			foreach ( $result as $item ) {
+				$result_as_array[] = $item->toArray();
+			}
+
+			$this->return_json( $result_as_array );
 		} catch ( \Exception $e ) {
-			$this->return_json( array(), 200 );
+			$this->return_json( array() );
 		}
-
-		$result_as_array = array();
-
-		foreach ( $result as $item ) {
-			$result_as_array[] = $item->toArray();
-		}
-
-		$this->return_json( $result_as_array, 200 );
 	}
 
 	/**

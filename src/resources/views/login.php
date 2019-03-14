@@ -16,6 +16,10 @@ $data = $this->resolve_view_arguments();
 ?>
 
 <div class="pl-login-page" id="pl-main-page-holder">
+    <div class="pl-login-page-side-img-wrapper pl-collapse">
+        <img src="<?php echo $data['dashboard_logo']; ?>" class="pl-login-icon"
+             alt="<?php echo __( 'Packlink PRO Shipping', 'packlink-pro-shipping' ); ?>" />
+    </div>
     <div class="pl-login-page-content-wrapper">
         <div class="pl-register-form-wrapper">
             <div class="pl-register-btn-section-wrapper">
@@ -24,7 +28,7 @@ $data = $this->resolve_view_arguments();
 					<?php echo __( 'Register', 'packlink-pro-shipping' ); ?>
                 </button>
             </div>
-            <div class="pl-register-country-section-wrapper" id="pl-register-form">
+            <div class="pl-register-country-section-wrapper" id="pl-register-form" style="display: none;">
                 <div class="pl-register-form-close-btn">
                     <svg id="pl-register-form-close-btn" width="24" height="24" viewBox="0 0 22 22"
                          xmlns="http://www.w3.org/2000/svg">

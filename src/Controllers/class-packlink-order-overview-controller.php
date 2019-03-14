@@ -21,6 +21,7 @@ use WC_Order;
 class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 
 	const COLUMN_ID = 'packlink_print_label';
+	const COLUMN_PACKLINK_ID = 'packlink_column';
 	const BULK_ACTION_ID = 'packlink_print_labels';
 	/**
 	 * Flag if hidden endpoint url is printed.
@@ -36,10 +37,19 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 	 *
 	 * @return array Columns.
 	 */
-	public function add_packlink_order_column( $columns ) {
-		$columns[ static::COLUMN_ID ] = __( 'Packlink label', 'packlink-pro-shipping' );
+	public function add_packlink_order_columns( $columns ) {
+		$result = array();
 
-		return $columns;
+		foreach ( $columns as $key => $value ) {
+			$result[ $key ] = $value;
+			if ( 'order_date' === $key ) {
+				$result[ static::COLUMN_PACKLINK_ID ] = __( 'Packlink PRO Shipping', 'packlink-pro-shipping' );
+			}
+		}
+
+		$result[ static::COLUMN_ID ] = __( 'Packlink label', 'packlink-pro-shipping' );
+
+		return $result;
 	}
 
 	/**
@@ -80,6 +90,14 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 					static::$url_added = true;
 				}
 			}
+		}
+
+		if ( static::COLUMN_PACKLINK_ID === $column && Order_Details_Helper::is_packlink_order( $post ) ) {
+			$src       = Shop_Helper::get_plugin_base_url() . 'resources/images/logo.gif';
+			$reference = get_post_meta( $post->ID, Order_Meta_Keys::SHIPMENT_REFERENCE, true );
+			$country   = Shop_Helper::get_country_code();
+			$url       = "https://pro.packlink.{$country}/private/shipments/{$reference}";
+			echo "<a class='pl-image-link' target='_blank' href='$url'><img src='$src' /></a>";
 		}
 	}
 
@@ -122,10 +140,11 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 			}
 		}
 
-		$this->merge_labels( $labels );
-		$this->setDownloadCookie();
-
-		exit;
+		if ( ! empty( $labels ) ) {
+			$this->merge_labels( $labels );
+			$this->setDownloadCookie();
+			exit;
+		}
 	}
 
 	/**
@@ -148,6 +167,12 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 				array(),
 				1
 			);
+			wp_enqueue_style(
+				'packlink_order_css',
+				esc_url( $base_url . 'css/packlink-order-overview.css' ),
+				array(),
+				1
+			);
 		}
 	}
 
@@ -162,7 +187,7 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 			$path       = $upload_dir['path'];
 			$paths      = array();
 			foreach ( $labels as $index => $label ) {
-				$realpath = realpath( "$path/$index.pdf" );
+				$realpath = "$path/$index.pdf";
 				file_put_contents( $realpath, fopen( $label, 'rb' ) );
 				$paths[] = $realpath;
 			}
@@ -220,12 +245,18 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 	 * @param string $file File path.
 	 */
 	private function return_file( $file ) {
-		header( 'Content-type:application/pdf' );
+		$now     = date( 'Y-m-d' );
+		$name    = "Packlink-bulk-shipment-label_$now.pdf";
+		$content = file_get_contents( $file );
 
-		$now  = date( 'Y-m-d' );
-		$name = sys_get_temp_dir() . "/Packlink-bulk-shipment-label_$now.pdf";
-		header( "Content-Disposition:attachment;filename='$name'" );
+		header( 'Content-Type: application/pdf' );
+		header( 'Content-Length: ' . strlen( $content ) );
+		header( 'Content-disposition: attachment; filename=' . $name );
+		header( 'Cache-Control: public, must-revalidate, max-age=0' );
+		header( 'Pragma: public' );
+		header( 'Expires: Sat, 26 Jul 1997 05:00:00 GMT' );
+		header( 'Last-Modified: ' . gmdate( 'D, d M Y H:i:s' ) . ' GMT' );
 
-		readfile( $file );
+		echo $content;
 	}
 }

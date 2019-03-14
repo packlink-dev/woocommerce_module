@@ -7,11 +7,24 @@
 
 namespace Packlink\WooCommerce\Components\Order;
 
+use Packlink\BusinessLogic\ShippingMethod\Utility\ShipmentStatus;
+
 /**
  * Class Order_Details
  * @package Packlink\WooCommerce\Components\Models
  */
 class Order_Details {
+
+	/**
+	 * @var array
+	 */
+	private static $status_translations = array(
+		ShipmentStatus::STATUS_PENDING    => 'Pending',
+		ShipmentStatus::STATUS_READY      => 'Ready for shipping',
+		ShipmentStatus::STATUS_IN_TRANSIT => 'In transit',
+		ShipmentStatus::STATUS_ACCEPTED   => 'Processing',
+		ShipmentStatus::STATUS_DELIVERED  => 'Delivered',
+	);
 	/**
 	 * Order identifier.
 	 *
@@ -180,6 +193,20 @@ class Order_Details {
 	 */
 	public function set_status( $status ) {
 		$this->status = $status;
+	}
+
+	/**
+	 * Returns shipment status label.
+	 *
+	 * @return string Shipment status label.
+	 */
+	public function get_status_translation() {
+		$code = $this->status ?: ShipmentStatus::STATUS_PENDING;
+		if ( ! array_key_exists($code, static::$status_translations) ) {
+			return $code;
+		}
+
+		return __( static::$status_translations[ $code ], 'packlink-pro-shipping' );
 	}
 
 	/**

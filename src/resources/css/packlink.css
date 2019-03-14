@@ -286,6 +286,7 @@
     margin: 0 !important;
     padding: 0 !important;
     width: 100%;
+    border-spacing: unset !important;
 }
 
 .pl-table-header-wrapper {
@@ -304,6 +305,8 @@
     position: sticky;
     top: 0;
     z-index: 400;
+    text-transform: uppercase;
+    text-align: left;
 }
 
 .pl-table-row-wrapper {
@@ -401,11 +404,12 @@
 
 .pl-table-row-arrow-wrapper {
     padding-right: 0 !important;
+    width: 80px !important;
 }
 
 .pl-table-row-arrow svg {
     fill: #2095F2 !important;
-    display: flex;
+    padding-left: 20px;
 }
 
 .pl-dashboard-modal-wrapper {
@@ -978,9 +982,7 @@
 }
 
 .pl-login-page-side-img-wrapper {
-    width: 25%;
     height: 100%;
-    background-color: lightgray;
     color: white;
 }
 

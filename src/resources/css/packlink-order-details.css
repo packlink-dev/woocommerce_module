@@ -59,6 +59,10 @@
     float: left;
 }
 
+#packlink-shipping-modal button.button.button-primary {
+    float: right;
+}
+
 #packlink-shipping-modal .pl-button-view.pl-carrier-button {
     float: right;
     margin-right: 20px;

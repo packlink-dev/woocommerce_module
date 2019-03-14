@@ -5,8 +5,6 @@
  * @package Packlink
  */
 
-use Logeecom\Infrastructure\ServiceRegister;
-use Packlink\WooCommerce\Components\Services\Config_Service;
 use Packlink\WooCommerce\Components\Utility\Shop_Helper;
 
 /** @var \Packlink\WooCommerce\Components\Order\Order_Details $order_details */
@@ -15,14 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-/** @var Config_Service $config */
-$config  = ServiceRegister::getService( Config_Service::CLASS_NAME );
-$country = 'es';
-$user    = $config->getUserInfo();
-if ( $user && $user->country ) {
-	$country = strtolower( $user->country );
-}
-
+$country       = Shop_Helper::get_country_code();
 $url           = "https://pro.packlink.{$country}/private/shipments/{$order_details->get_reference()}";
 $carrier_codes = $order_details->get_carrier_codes();
 
@@ -34,9 +25,11 @@ $carrier_codes = $order_details->get_carrier_codes();
 			<?php if ( $order_details->get_carrier_image() ) : ?>
                 <div class="pl-order-detail-section">
                     <h4><?php echo __( 'Carrier', 'packlink-pro-shipping' ); ?></h4>
-                    <img class="pl-carrier-image" src="<?php echo $order_details->get_carrier_image(); ?>"
-                         alt="carrier image"/>
-                    <span><?php echo $order_details->get_carrier_name(); ?></span>
+                    <div>
+                        <img class="pl-carrier-image" src="<?php echo $order_details->get_carrier_image(); ?>"
+                             alt="carrier image"/>
+                        <span><?php echo $order_details->get_carrier_name(); ?></span>
+                    </div>
 
 					<?php if ( ! empty( $carrier_codes ) ) : ?>
                         <dl>
@@ -61,7 +54,7 @@ $carrier_codes = $order_details->get_carrier_codes();
 
             <div class="pl-order-detail-section">
                 <h4><?php echo __( 'Status', 'packlink-pro-shipping' ); ?></h4>
-                <span class="pl-timestamp"><?php echo $order_details->get_status_time(); ?> <b><?php echo $order_details->get_status(); ?></b></span>
+                <span class="pl-timestamp"><?php echo $order_details->get_status_time(); ?> <b><?php echo $order_details->get_status_translation(); ?></b></span>
             </div>
 
             <div class="pl-order-detail-section">

@@ -106,6 +106,7 @@ class Order_Repository extends Singleton implements OrderRepository {
 		$wc_order = $this->load_order_by_id( $order_id );
 
 		$order_shipment = new Order_Shipment_Entity();
+		$order_shipment->setStatus(ShipmentStatus::STATUS_PENDING);
 		$order_shipment->setPacklinkShipmentReference( $shipment_reference );
 		$order_shipment->setWoocommerceOrderId( $order_id );
 
@@ -114,12 +115,10 @@ class Order_Repository extends Singleton implements OrderRepository {
 		$repository->save( $order_shipment );
 
 		$wc_order->update_meta_data( Order_Meta_Keys::SHIPMENT_REFERENCE, $shipment_reference );
-		$status = __( 'Draft created', 'packlink-pro-shipping' );
-		$wc_order->update_meta_data( Order_Meta_Keys::SHIPMENT_STATUS, $status );
+		$wc_order->update_meta_data( Order_Meta_Keys::SHIPMENT_STATUS, ShipmentStatus::STATUS_PENDING );
 		$wc_order->update_meta_data( Order_Meta_Keys::SHIPMENT_STATUS_TIME, time() );
 
 		$wc_order->save();
-		$this->update_order_shipment_status( $shipment_reference, $status );
 	}
 
 	/**

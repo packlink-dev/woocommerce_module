@@ -1038,7 +1038,9 @@ $data = $this->resolve_view_arguments();
             numeric: "<?php echo __( 'Value must be valid number.', 'packlink-pro-shipping' ) ?>",
             invalid: "<?php echo __( 'This field is not valid.', 'packlink-pro-shipping' ) ?>",
             phone: "<?php echo __( 'This field must be valid phone number.', 'packlink-pro-shipping' ) ?>",
-            greaterThanZero: "<?php echo __( 'Value must be greater than 0.', 'packlink-pro-shipping' ) ?>"
+            greaterThanZero: "<?php echo __( 'Value must be greater than 0.', 'packlink-pro-shipping' ) ?>",
+            numberOfDecimalPlaces: "<?php echo __( 'Field must have 2 decimal places.', 'packlink-pro-shipping' ) ?>",
+            integer: "<?php echo __( 'Field must be valid whole number.', 'packlink-pro-shipping' ) ?>"
         };
 
         Packlink.successMsgs = {

@@ -42,6 +42,7 @@ var Packlink = window.Packlink || {};
 
             if (isDropOff && button) {
                 button.addEventListener('click', function () {
+                    initLocationPicker();
                     modal.style.display = 'block';
                 });
             }
@@ -52,29 +53,7 @@ var Packlink = window.Packlink || {};
                 modal.style.display = 'none';
             });
 
-            Packlink.locationPicker.display(privateData.locations, function (id) {
-                let selected;
-
-                privateData.selectedLocation = id;
-                selected = findLocationById(id);
-                //document.getElementById('writer').innerHTML = "SELECTED: " + event.data.payload.id;
-                Packlink.ajaxService.post(privateData.endpoint, selected, function () {
-                    let button = document.querySelector('#packlink-drop-off-picker');
-
-                    if (button) {
-                        button.innerHTML = privateData.translations.changeDropOff;
-                    }
-
-                    if (!privateData.isCart) {
-                        setHiddenFields(selected);
-                    }
-                }, function () {
-                });
-
-                setDropOffAddress();
-
-                modal.style.display = 'none';
-            }, privateData.locale);
+            initLocationPicker();
         }
 
         if (!hookedUpdate && updateButton && jQuery) {
@@ -97,6 +76,7 @@ var Packlink = window.Packlink || {};
         }
 
         setHiddenFields(selected);
+        let button = document.querySelector('#packlink-drop-off-picker');
         let element = document.querySelector('p.woocommerce-shipping-destination');
         if (!element) {
             element = document.createElement('p');
@@ -106,11 +86,8 @@ var Packlink = window.Packlink || {};
         element.innerHTML = '<strong>' + privateData.translations.dropOffTitle + '</strong><br/>'
             + [selected.name, selected.address, selected.city].join(', ');
 
-        if (!privateData.isCart) {
-            let shippingMethodList = document.querySelector('#shipping_method');
-            if (shippingMethodList && shippingMethodList.parentElement) {
-                shippingMethodList.parentElement.appendChild(element);
-            }
+        if (button) {
+            button.parentNode.insertBefore(element, button.nextSibling);
         }
     }
 
@@ -148,7 +125,7 @@ var Packlink = window.Packlink || {};
      * @param {int} locationId
      */
     function setSelectedLocationId(locationId) {
-        privateData.selectedLocation = locationId;
+        privateData.selectedLocation = '' + locationId;
     }
 
     /**
@@ -205,5 +182,31 @@ var Packlink = window.Packlink || {};
 
         let label = imageSrcInput.parentElement.querySelector('label');
         label.prepend(image);
+    }
+
+    function initLocationPicker() {
+        Packlink.locationPicker.display(privateData.locations, function (id) {
+            let selected;
+
+            privateData.selectedLocation = id;
+            selected = findLocationById(id);
+            //document.getElementById('writer').innerHTML = "SELECTED: " + event.data.payload.id;
+            Packlink.ajaxService.post(privateData.endpoint, selected, function () {
+                let button = document.querySelector('#packlink-drop-off-picker');
+
+                if (button) {
+                    button.innerHTML = privateData.translations.changeDropOff;
+                }
+
+                if (!privateData.isCart) {
+                    setHiddenFields(selected);
+                }
+            }, function () {
+            });
+
+            setDropOffAddress();
+
+            modal.style.display = 'none';
+        }, privateData.selectedLocation, privateData.locale);
     }
 })();

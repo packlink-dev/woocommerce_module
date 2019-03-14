@@ -39,9 +39,10 @@ $locations = $this->get_drop_off_locations( $shipping_method->getId() );
     Packlink.checkout.setSaveEndpoint('<?php  echo Shop_Helper::get_controller_url( 'Checkout', 'save_selected' ); ?>');
 	<?php if ( ! is_cart() ) : ?>
     Packlink.checkout.setDropOffAddress();
-	<?php endif; ?>
+    <?php endif; ?>
 </script>
 
+<?php if ( ! is_cart() ) : ?>
 <button type="button" id="packlink-drop-off-picker"><?php echo $button_label; ?></button>
 
 <div id="pl-picker-modal">
@@ -50,7 +51,7 @@ $locations = $this->get_drop_off_locations( $shipping_method->getId() );
             <div class="lp-locations">
                 <div class="lp-input-wrapper">
                     <div class="input">
-                        <input type="text" data-lp-id="search-box">
+                        <input type="text" data-lp-id="search-box" required="required" title=""/>
                         <span class="label" data-lp-id="search-box-label"></span>
                     </div>
                 </div>
@@ -106,3 +107,4 @@ $locations = $this->get_drop_off_locations( $shipping_method->getId() );
         </div>
     </div>
 </location-picker-template>
+<?php endif; ?>

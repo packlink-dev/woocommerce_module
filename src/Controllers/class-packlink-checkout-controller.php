@@ -23,6 +23,13 @@ use Packlink\WooCommerce\Components\Order\Order_Meta_Keys;
 class Packlink_Checkout_Controller extends Packlink_Base_Controller {
 
 	/**
+	 * Is request call internal.
+	 *
+	 * @var bool
+	 */
+	protected $is_internal = false;
+
+	/**
 	 * Saves selected drop-off point to session.
 	 */
 	public function save_selected() {

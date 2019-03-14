@@ -19,7 +19,7 @@ class Config_Service extends Configuration {
 	/**
 	 * Threshold between two runs of scheduler.
 	 */
-	const SCHEDULER_TIME_THRESHOLD = 86400;
+	const SCHEDULER_TIME_THRESHOLD = 1800;
 
 	/**
 	 * Singleton instance of this class.

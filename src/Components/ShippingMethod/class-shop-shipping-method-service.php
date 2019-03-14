@@ -15,6 +15,7 @@ use Logeecom\Infrastructure\ServiceRegister;
 use Logeecom\Infrastructure\Singleton;
 use Packlink\BusinessLogic\ShippingMethod\Interfaces\ShopShippingMethodService;
 use Packlink\BusinessLogic\ShippingMethod\Models\ShippingMethod;
+use Packlink\BusinessLogic\ShippingMethod\ShippingMethodService;
 use Packlink\WooCommerce\Components\Checkout\Checkout_Handler;
 use Packlink\WooCommerce\Components\Services\Config_Service;
 
@@ -73,7 +74,7 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 					$new->process_admin_options();
 					$this->add_to_shipping_method_map( $instance_id, $shipping_method->getId(), $zone_id );
 
-					if ( -1 !== $shipping_method->getId() && 1 === $this->repository->count() ) {
+					if ( - 1 !== $shipping_method->getId() && 1 === $this->repository->count() ) {
 						$this->add_default_shipping_method( $shipping_method );
 					}
 				}
@@ -86,6 +87,32 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 
 
 		return true;
+	}
+
+	/**
+	 * Adds all active shipping methods to zone.
+	 *
+	 * @param \WC_Shipping_Zone $zone Shipping zone.
+	 */
+	public function add_active_methods_to_zone( \WC_Shipping_Zone $zone ) {
+		/** @var ShippingMethodService $service */
+		$service = ServiceRegister::getService( ShippingMethodService::CLASS_NAME );
+		foreach ( $service->getActiveMethods() as $shipping_method ) {
+			$pricing_policy = $this->get_shipping_method_pricing_policy( $shipping_method );
+			$instance_id    = $zone->add_shipping_method( 'packlink_shipping_method' );
+
+			if ( 0 !== $instance_id ) {
+				$new = new Packlink_Shipping_Method( $instance_id );
+				$new->set_post_data( array(
+					'woocommerce_packlink_shipping_method_title'        => $shipping_method->getTitle(),
+					'woocommerce_packlink_shipping_method_price_policy' => $pricing_policy,
+				) );
+
+				$_REQUEST['instance_id'] = $instance_id;
+				$new->process_admin_options();
+				$this->add_to_shipping_method_map( $instance_id, $shipping_method->getId(), $zone->get_id() );
+			}
+		}
 	}
 
 	/**
@@ -150,8 +177,8 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 
 		$filter = new QueryFilter();
 		/** @noinspection PhpUnhandledExceptionInspection */
-		$filter->where('packlinkShippingMethodId', '!=', -1);
-		if ( -1 !== $shipping_method->getId() && 0 === $this->repository->count($filter) ) {
+		$filter->where( 'packlinkShippingMethodId', '!=', - 1 );
+		if ( - 1 !== $shipping_method->getId() && 0 === $this->repository->count( $filter ) ) {
 			$this->remove_default_shipping_method();
 		}
 

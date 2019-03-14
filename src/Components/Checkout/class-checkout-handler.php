@@ -7,6 +7,7 @@
 
 namespace Packlink\WooCommerce\Components\Checkout;
 
+use Logeecom\Infrastructure\Logger\Logger;
 use Logeecom\Infrastructure\ORM\Interfaces\RepositoryInterface;
 use Logeecom\Infrastructure\ORM\QueryFilter\QueryFilter;
 use Logeecom\Infrastructure\ORM\RepositoryRegistry;
@@ -141,6 +142,33 @@ class Checkout_Handler {
 	}
 
 	/**
+	 * Substitutes order shipping address with drop-off address.
+	 *
+	 * @param \WC_Order $order WooCommerce order.
+	 * @param array $data Order data.
+	 */
+	public function checkout_update_shipping_address( \WC_Order $order, array $data ) {
+		$shipping_method = $this->get_shipping_method( $data );
+		if ( ! $shipping_method ) {
+			return;
+		}
+
+		$is_drop_off = $shipping_method->isDestinationDropOff();
+		if ( $is_drop_off ) {
+			try {
+				$drop_off_address = json_decode( stripslashes( $_POST[ static::PACKLINK_DROP_OFF_EXTRA ] ), true );
+				$order->set_shipping_company( $drop_off_address['name'] );
+				$order->set_shipping_city( $drop_off_address['city'] );
+				$order->set_shipping_postcode( $drop_off_address['zip'] );
+				$order->set_shipping_state( $drop_off_address['state'] );
+				$order->set_shipping_address_1( $drop_off_address['address'] );
+			} catch ( \WC_Data_Exception $e ) {
+				Logger::logError( 'Unable to substitute delivery address with drop-off location.', 'Integration', $data );
+			}
+		}
+	}
+
+	/**
 	 * @noinspection PhpDocMissingThrowsInspection
 	 *
 	 * This hook is used to update drop-off point value.
@@ -149,21 +177,13 @@ class Checkout_Handler {
 	 * @param array $data WooCommerce order meta data.
 	 */
 	public function checkout_update_order_meta( $order_id, array $data ) {
-		if ( empty( $data ) || ! isset( $data['shipping_method'][0] ) ) {
+		$shipping_method = $this->get_shipping_method( $data );
+		if ( ! $shipping_method ) {
 			return;
 		}
 
-		$parts       = explode( ':', $data['shipping_method'][0] );
-		$code        = $parts[0];
-		$instance_id = (int) $parts[1];
-
-		if ( $code !== Packlink_Shipping_Method::PACKLINK_SHIPPING_METHOD ) {
-			return;
-		}
-
-		$wc_order        = WC_Order_Factory::get_order( $order_id );
-		$shipping_method = $this->get_packlink_shipping_method( $instance_id );
-		$is_drop_off     = $shipping_method->isDestinationDropOff();
+		$wc_order    = WC_Order_Factory::get_order( $order_id );
+		$is_drop_off = $shipping_method->isDestinationDropOff();
 
 		$wc_order->update_meta_data( Order_Meta_Keys::IS_PACKLINK, 'yes' );
 		$wc_order->update_meta_data( Order_Meta_Keys::LABEL_PRINTED, 'no' );
@@ -176,27 +196,6 @@ class Checkout_Handler {
 
 		$wc_order->save();
 		Order_Details_Helper::queue_draft( $order_id, $wc_order );
-	}
-
-	/**
-	 * This hook is used to print drop-off point information to customer on order view page.
-	 *
-	 * @param int $order_id WooCommerce order identifier.
-	 */
-	public function after_customer_details( $order_id ) {
-		$wc_order = WC_Order_Factory::get_order( $order_id );
-		if ( ! $wc_order->meta_exists( Order_Meta_Keys::IS_PACKLINK ) ) {
-			return;
-		}
-
-		$shipping_method = Order_Details_Helper::get_packlink_shipping_method( $wc_order );
-		if ( $shipping_method && $shipping_method->isDestinationDropOff() ) {
-			$json = $wc_order->get_meta( Order_Meta_Keys::DROP_OFF_EXTRA );
-			/** @noinspection PhpUnusedLocalVariableInspection */
-			$location = json_decode( \stripslashes( $json ), true );
-
-			include dirname( __DIR__ ) . '/../resources/views/order-view-drop-off.php';
-		}
 	}
 
 	/**
@@ -213,7 +212,7 @@ class Checkout_Handler {
 
 		/**
 		 * @var string $key
-		 * @var \WC_Shipping_Rate  $rate
+		 * @var \WC_Shipping_Rate $rate
 		 */
 		foreach ( $rates as $key => $rate ) {
 			if ( Packlink_Shipping_Method::PACKLINK_SHIPPING_METHOD === $rate->get_method_id() && self::DEFAULT_SHIPPING === $rate->get_label() ) {
@@ -305,12 +304,36 @@ class Checkout_Handler {
 		}
 
 		$id = $map_entry->getPacklinkShippingMethodId();
-		if ( -1 === $id ) {
+		if ( - 1 === $id ) {
 			/** @var Config_Service $configuration */
-			$configuration = ServiceRegister::getService(Config_Service::CLASS_NAME);
+			$configuration = ServiceRegister::getService( Config_Service::CLASS_NAME );
+
 			return $configuration->get_default_shipping_method();
 		}
 
 		return $this->shipping_method_service->getShippingMethod( $map_entry->getPacklinkShippingMethodId() );
+	}
+
+	/**
+	 * Returns Packlink shipping method.
+	 *
+	 * @param array $data Order data.
+	 *
+	 * @return ShippingMethod|null Shipping method.
+	 */
+	private function get_shipping_method( array $data = array() ) {
+		if ( empty( $data ) || ! isset( $data['shipping_method'][0] ) ) {
+			return null;
+		}
+
+		$parts       = explode( ':', $data['shipping_method'][0] );
+		$code        = $parts[0];
+		$instance_id = (int) $parts[1];
+
+		if ( $code !== Packlink_Shipping_Method::PACKLINK_SHIPPING_METHOD ) {
+			return null;
+		}
+
+		return $this->get_packlink_shipping_method( $instance_id );
 	}
 }

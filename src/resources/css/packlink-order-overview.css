@@ -1,0 +1,9 @@
+#packlink_column {
+    text-align: center;
+}
+
+.pl-image-link img {
+    width: 25px;
+    margin: auto !important;
+    display: block;
+}

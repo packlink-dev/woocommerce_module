@@ -13,6 +13,7 @@ use Logeecom\Infrastructure\ServiceRegister;
 use Logeecom\Infrastructure\TaskExecution\QueueItem;
 use Logeecom\Infrastructure\TaskExecution\QueueService;
 use Packlink\BusinessLogic\ShippingMethod\Models\ShippingMethod;
+use Packlink\BusinessLogic\ShippingMethod\Utility\ShipmentStatus;
 use Packlink\BusinessLogic\Tasks\SendDraftTask;
 use Packlink\WooCommerce\Components\Services\Config_Service;
 use Packlink\WooCommerce\Components\ShippingMethod\Shipping_Method_Helper;
@@ -168,7 +169,7 @@ class Order_Details_Helper {
 			}
 		}
 
-		$order_details->set_status( $status ?: __( 'Draft created', 'packlink-pro-shipping' ) );
+		$order_details->set_status( $status ?: ShipmentStatus::STATUS_PENDING );
 		$order_details->set_status_time( $status_time ? date( get_option( 'links_updated_date_format' ), $status_time ) : '' );
 	}
 

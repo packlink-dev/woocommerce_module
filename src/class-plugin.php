@@ -10,12 +10,14 @@ namespace Packlink\WooCommerce;
 use Logeecom\Infrastructure\Logger\Logger;
 use Logeecom\Infrastructure\ServiceRegister;
 use Logeecom\Infrastructure\TaskExecution\Exceptions\TaskRunnerStatusStorageUnavailableException;
+use Packlink\BusinessLogic\ShippingMethod\Interfaces\ShopShippingMethodService;
 use Packlink\WooCommerce\Components\Bootstrap_Component;
 use Packlink\WooCommerce\Components\Checkout\Checkout_Handler;
 use Packlink\WooCommerce\Components\Order\Order_Details_Helper;
 use Packlink\WooCommerce\Components\Services\Config_Service;
 use Packlink\WooCommerce\Components\ShippingMethod\Packlink_Shipping_Method;
 use Packlink\WooCommerce\Components\ShippingMethod\Shipping_Method_Helper;
+use Packlink\WooCommerce\Components\ShippingMethod\Shop_Shipping_Method_Service;
 use Packlink\WooCommerce\Components\Utility\Database;
 use Packlink\WooCommerce\Components\Utility\Shop_Helper;
 use Packlink\WooCommerce\Components\Utility\Task_Queue;
@@ -268,6 +270,26 @@ class Plugin {
 	}
 
 	/**
+	 * Adds active shipping methods to newly created shipping zone.
+	 *
+	 * @param \WC_Shipping_Zone $zone Shipping zone.
+	 * @param \WC_Data_Store $data_store Shipping zone data store.
+	 */
+	public function on_zone_create( $zone, $data_store ) {
+		if ( null !== $zone->get_id() ) {
+			return;
+		}
+
+		$data_store->create( $zone );
+
+		if ( $zone->get_id() ) {
+			/** @var Shop_Shipping_Method_Service $service */
+			$service = ServiceRegister::getService( ShopShippingMethodService::CLASS_NAME );
+			$service->add_active_methods_to_zone( $zone );
+		}
+	}
+
+	/**
 	 * Adds Packlink PRO Shipping meta post box.
 	 *
 	 * @param string $page Current page type.
@@ -341,7 +363,11 @@ class Plugin {
 			Logger::logError( $e->getMessage(), 'Integration' );
 		}
 
-		$this->get_config_service()->set_database_version( Shop_Helper::get_plugin_version() );
+		$version = Shop_Helper::get_plugin_version();
+		$this->get_config_service()->set_database_version( $version );
+		if ( version_compare( $version, '2.0.0', '<=' ) ) {
+			require_once __DIR__ . '/database/migrations/migration.v.1.0.2.php';
+		}
 	}
 
 	/**
@@ -381,7 +407,7 @@ class Plugin {
 	private function update_plugin_on_single_site() {
 		if ( Shop_Helper::is_plugin_active_for_current_site() ) {
 			$version_file_reader = new Version_File_Reader(
-				realpath( dirname( __DIR__ ) ) . '/database/migrations',
+				__DIR__ . '/database/migrations',
 				$this->get_config_service()->get_database_version()
 			);
 
@@ -440,6 +466,7 @@ class Plugin {
 	 */
 	private function shipping_method_hooks_and_actions() {
 		add_filter( 'woocommerce_shipping_methods', array( $this, 'add_shipping_method' ) );
+		add_action( 'woocommerce_before_shipping_zone_object_save', array( $this, 'on_zone_create' ), 10, 2 );
 	}
 
 	/**
@@ -449,7 +476,7 @@ class Plugin {
 		$handler = new Packlink_Order_Overview_Controller();
 
 		add_action( 'add_meta_boxes', array( $this, 'add_packlink_shipping_box' ) );
-		add_filter( 'manage_edit-shop_order_columns', array( $handler, 'add_packlink_order_column' ) );
+		add_filter( 'manage_edit-shop_order_columns', array( $handler, 'add_packlink_order_columns' ) );
 		add_action( 'manage_shop_order_posts_custom_column', array( $handler, 'populate_packlink_column' ) );
 		add_filter( 'bulk_actions-edit-shop_order', array( $handler, 'add_packlink_bulk_action' ) );
 		add_filter( 'admin_action_packlink_print_labels', array( $handler, 'bulk_print_labels' ) );
@@ -476,8 +503,8 @@ class Plugin {
 		add_action( 'woocommerce_after_shipping_calculator', array( $handler, 'after_shipping_calculator' ) );
 		add_action( 'woocommerce_review_order_after_shipping', array( $handler, 'after_shipping' ) );
 		add_action( 'woocommerce_checkout_process', array( $handler, 'checkout_process' ) );
+		add_action( 'woocommerce_checkout_create_order', array( $handler, 'checkout_update_shipping_address' ), 10, 2 );
 		add_action( 'woocommerce_checkout_update_order_meta', array( $handler, 'checkout_update_order_meta' ), 10, 2 );
-		add_action( 'woocommerce_order_details_after_customer_details', array( $handler, 'after_customer_details' ) );
 		add_action( 'wp_enqueue_scripts', array( $handler, 'load_scripts' ) );
 	}
 
