@@ -198,7 +198,7 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 			case ShippingMethod::PRICING_POLICY_PERCENT:
 				$pricing_policy = __( '% of Packlink prices', 'packlink_pro_shipping' );
 				break;
-			case ShippingMethod::PRICING_POLICY_FIXED:
+			case ShippingMethod::PRICING_POLICY_FIXED_PRICE_BY_WEIGHT:
 				$pricing_policy = __( 'Fixed price', 'packlink_pro_shipping' );
 				break;
 		}
@@ -255,8 +255,11 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 			case ShippingMethod::PRICING_POLICY_PERCENT:
 				$default->setPercentPricePolicy( $shipping_method->getPercentPricePolicy() );
 				break;
-			case ShippingMethod::PRICING_POLICY_FIXED:
-				$default->setFixedPricePolicy( $shipping_method->getFixedPricePolicy() );
+			case ShippingMethod::PRICING_POLICY_FIXED_PRICE_BY_WEIGHT:
+				$default->setFixedPriceByWeightPolicy( $shipping_method->getFixedPriceByWeightPolicy() );
+				break;
+			case ShippingMethod::PRICING_POLICY_FIXED_PRICE_BY_VALUE:
+				$default->setFixedPriceByValuePolicy( $shipping_method->getFixedPriceByValuePolicy() );
 				break;
 			default:
 				$default->setPacklinkPricePolicy();

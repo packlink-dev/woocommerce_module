@@ -1,22 +1,24 @@
-# Copyright (C) 2019 Packlink PRO
+# Copyright (C) 2019 Packlink Shipping S.L.
 # This file is distributed under the same license as the Packlink PRO Shipping plugin.
 msgid ""
 msgstr ""
 "Project-Id-Version: Packlink PRO Shipping 2.0.0\n"
-"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/packlink-pro-shipping\n"
-"Last-Translator: Packlink PRO <support@packlink.com>\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/src\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2019-03-12T09:51:26+01:00\n"
+"POT-Creation-Date: 2019-03-15T16:04:17+01:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.1.0\n"
 "X-Domain: packlink-pro-shipping\n"
 
 #. Plugin Name of the plugin
+#: resources/views/login.php:21
 #: resources/views/dashboard.php:33
-#: class-plugin.php:286
+#: Controllers/class-packlink-order-overview-controller.php:46
+#: class-plugin.php:302
 msgid "Packlink PRO Shipping"
 msgstr ""
 
@@ -29,7 +31,7 @@ msgid "Save up to 70% on your shipping costs. No fixed fees, no minimum shipping
 msgstr ""
 
 #. Author of the plugin
-msgid "Packlink PRO"
+msgid "Packlink Shipping S.L."
 msgstr ""
 
 #. Author URI of the plugin
@@ -50,48 +52,44 @@ msgstr ""
 msgid "Package will be delivered to:"
 msgstr ""
 
-#: resources/views/order-view-drop-off.php:19
-msgid "Drop-off address"
-msgstr ""
-
-#: resources/views/login.php:22
+#: resources/views/login.php:26
 msgid "Don't have an account?"
 msgstr ""
 
-#: resources/views/login.php:24
+#: resources/views/login.php:28
 msgid "Register"
 msgstr ""
 
-#: resources/views/login.php:39
+#: resources/views/login.php:43
 msgid "Select country to start"
 msgstr ""
 
-#: resources/views/login.php:72
+#: resources/views/login.php:76
 msgid "Allow WooCommerce to connect to PacklinkPRO"
 msgstr ""
 
-#: resources/views/login.php:75
+#: resources/views/login.php:79
 msgid "Your API key can be found under"
 msgstr ""
 
-#: resources/views/login.php:80
+#: resources/views/login.php:84
 msgid "API key was incorrect."
 msgstr ""
 
-#: resources/views/login.php:83
+#: resources/views/login.php:87
 msgid "Connect your account"
 msgstr ""
 
-#: resources/views/login.php:89
+#: resources/views/login.php:93
 msgid "Api key"
 msgstr ""
 
-#: resources/views/login.php:94
+#: resources/views/login.php:98
 msgid "Log in"
 msgstr ""
 
 #: resources/views/dashboard.php:52
-#: resources/views/dashboard.php:763
+#: resources/views/dashboard.php:776
 msgid "SHIPPING SERVICES"
 msgstr ""
 
@@ -108,7 +106,7 @@ msgid "Contact us"
 msgstr ""
 
 #: resources/views/dashboard.php:120
-#: resources/views/dashboard.php:876
+#: resources/views/dashboard.php:942
 msgid "Map order statuses"
 msgstr ""
 
@@ -145,8 +143,8 @@ msgid "Height"
 msgstr ""
 
 #: resources/views/dashboard.php:177
-#: resources/views/dashboard.php:283
-#: resources/views/dashboard.php:969
+#: resources/views/dashboard.php:292
+#: resources/views/dashboard.php:1035
 msgid "Save changes"
 msgstr ""
 
@@ -182,401 +180,418 @@ msgstr ""
 msgid "City or postal code"
 msgstr ""
 
-#: resources/views/dashboard.php:260
+#: resources/views/dashboard.php:269
 msgid "Address"
 msgstr ""
 
-#: resources/views/dashboard.php:268
+#: resources/views/dashboard.php:277
 msgid "Phone number"
 msgstr ""
 
-#: resources/views/dashboard.php:276
+#: resources/views/dashboard.php:285
 msgid "Email"
 msgstr ""
 
-#: resources/views/dashboard.php:299
+#: resources/views/dashboard.php:308
 msgid "Congrats! Your first Shipping Method has been successfully created."
 msgstr ""
 
-#: resources/views/dashboard.php:302
+#: resources/views/dashboard.php:311
 msgid "In order to offer you the best possible service, its important to disable your previous carriers. Do you want us to disable them? (recommended)"
 msgstr ""
 
-#: resources/views/dashboard.php:306
-#: resources/views/dashboard.php:609
+#: resources/views/dashboard.php:315
+#: resources/views/dashboard.php:619
 msgid "Cancel"
 msgstr ""
 
-#: resources/views/dashboard.php:308
+#: resources/views/dashboard.php:317
 msgid "Accept"
 msgstr ""
 
-#: resources/views/dashboard.php:319
+#: resources/views/dashboard.php:328
 msgid "You're almost there!"
 msgstr ""
 
-#: resources/views/dashboard.php:322
+#: resources/views/dashboard.php:331
 msgid "Details synced with your existing account"
 msgstr ""
 
-#: resources/views/dashboard.php:332
+#: resources/views/dashboard.php:341
 msgid "Set default parcel details"
 msgstr ""
 
-#: resources/views/dashboard.php:343
+#: resources/views/dashboard.php:352
 msgid "Set default warehouse details"
 msgstr ""
 
-#: resources/views/dashboard.php:347
+#: resources/views/dashboard.php:356
 msgid "Just a few more steps to complete the setup"
 msgstr ""
 
-#: resources/views/dashboard.php:357
+#: resources/views/dashboard.php:366
 msgid "Select shipping services"
 msgstr ""
 
-#: resources/views/dashboard.php:400
+#: resources/views/dashboard.php:409
 msgid "Getting available shipping services from Packlink PRO. Please wait a moment."
 msgstr ""
 
-#: resources/views/dashboard.php:410
+#: resources/views/dashboard.php:419
 msgid "Filter services"
 msgstr ""
 
-#: resources/views/dashboard.php:416
+#: resources/views/dashboard.php:425
 msgid "Type"
 msgstr ""
 
-#: resources/views/dashboard.php:424
-#: resources/views/dashboard.php:652
+#: resources/views/dashboard.php:433
+#: resources/views/dashboard.php:665
 msgid "National"
 msgstr ""
 
-#: resources/views/dashboard.php:434
-#: resources/views/dashboard.php:655
+#: resources/views/dashboard.php:443
+#: resources/views/dashboard.php:668
 msgid "International"
 msgstr ""
 
-#: resources/views/dashboard.php:442
-#: resources/views/dashboard.php:502
-#: resources/views/dashboard.php:718
+#: resources/views/dashboard.php:451
+#: resources/views/dashboard.php:511
+#: resources/views/dashboard.php:731
 msgid "Delivery"
 msgstr ""
 
-#: resources/views/dashboard.php:450
+#: resources/views/dashboard.php:459
 msgid "Economic"
 msgstr ""
 
-#: resources/views/dashboard.php:460
+#: resources/views/dashboard.php:469
 msgid "Express"
 msgstr ""
 
-#: resources/views/dashboard.php:468
+#: resources/views/dashboard.php:477
 msgid "Parcel origin"
 msgstr ""
 
-#: resources/views/dashboard.php:476
-#: resources/views/dashboard.php:676
+#: resources/views/dashboard.php:485
+#: resources/views/dashboard.php:689
 msgid "Collection"
 msgstr ""
 
-#: resources/views/dashboard.php:486
-#: resources/views/dashboard.php:688
+#: resources/views/dashboard.php:495
+#: resources/views/dashboard.php:701
 msgid "Drop off"
 msgstr ""
 
-#: resources/views/dashboard.php:494
+#: resources/views/dashboard.php:503
 msgid "Parcel destination"
 msgstr ""
 
-#: resources/views/dashboard.php:512
-#: resources/views/dashboard.php:730
+#: resources/views/dashboard.php:521
+#: resources/views/dashboard.php:743
 msgid "Pick up"
 msgstr ""
 
-#: resources/views/dashboard.php:530
+#: resources/views/dashboard.php:539
 msgid "Add service title"
 msgstr ""
 
-#: resources/views/dashboard.php:539
+#: resources/views/dashboard.php:548
 msgid "This title will be visible to your customers"
 msgstr ""
 
-#: resources/views/dashboard.php:546
+#: resources/views/dashboard.php:555
 msgid "Service title"
 msgstr ""
 
-#: resources/views/dashboard.php:551
+#: resources/views/dashboard.php:560
 msgid "Carrier logo"
 msgstr ""
 
-#: resources/views/dashboard.php:562
+#: resources/views/dashboard.php:571
 msgid "Show carrier logo to my customers"
 msgstr ""
 
-#: resources/views/dashboard.php:572
+#: resources/views/dashboard.php:581
 msgid "Select pricing policy"
 msgstr ""
 
-#: resources/views/dashboard.php:581
+#: resources/views/dashboard.php:590
 msgid "Choose the pricing policy to show your customers"
 msgstr ""
 
-#: resources/views/dashboard.php:588
-#: resources/views/dashboard.php:634
+#: resources/views/dashboard.php:597
+#: resources/views/dashboard.php:644
 msgid "Packlink prices"
 msgstr ""
 
-#: resources/views/dashboard.php:589
+#: resources/views/dashboard.php:598
 msgid "% of Packlink prices"
 msgstr ""
 
-#: resources/views/dashboard.php:590
-#: resources/views/dashboard.php:640
-msgid "Fixed prices"
+#: resources/views/dashboard.php:599
+#: resources/views/dashboard.php:650
+msgid "Fixed prices based on total weight"
 msgstr ""
 
-#: resources/views/dashboard.php:606
+#: resources/views/dashboard.php:600
+#: resources/views/dashboard.php:653
+msgid "Fixed prices based on total price"
+msgstr ""
+
+#: resources/views/dashboard.php:616
 msgid "Save"
 msgstr ""
 
-#: resources/views/dashboard.php:637
+#: resources/views/dashboard.php:647
 msgid "Packlink percent"
 msgstr ""
 
-#: resources/views/dashboard.php:736
+#: resources/views/dashboard.php:749
 msgid "Configure"
 msgstr ""
 
-#: resources/views/dashboard.php:747
+#: resources/views/dashboard.php:760
 msgid "All shipping services"
 msgstr ""
 
-#: resources/views/dashboard.php:750
+#: resources/views/dashboard.php:763
 msgid "Selected shipping services"
 msgstr ""
 
-#: resources/views/dashboard.php:761
+#: resources/views/dashboard.php:774
 msgid "SELECT"
 msgstr ""
 
-#: resources/views/dashboard.php:765
+#: resources/views/dashboard.php:778
 msgid "CARRIER"
 msgstr ""
 
-#: resources/views/dashboard.php:767
+#: resources/views/dashboard.php:780
 msgid "TRANSIT TIME"
 msgstr ""
 
-#: resources/views/dashboard.php:769
+#: resources/views/dashboard.php:782
 msgid "TYPE"
 msgstr ""
 
-#: resources/views/dashboard.php:771
+#: resources/views/dashboard.php:784
 msgid "ORIGIN"
 msgstr ""
 
-#: resources/views/dashboard.php:774
+#: resources/views/dashboard.php:787
 msgid "DESTINATION"
 msgstr ""
 
-#: resources/views/dashboard.php:785
+#: resources/views/dashboard.php:798
 msgid "Showing"
 msgstr ""
 
-#: resources/views/dashboard.php:786
+#: resources/views/dashboard.php:799
 msgid "results"
 msgstr ""
 
-#: resources/views/dashboard.php:793
+#: resources/views/dashboard.php:806
 msgid "Please set pricing rule"
 msgstr ""
 
-#: resources/views/dashboard.php:799
+#: resources/views/dashboard.php:812
 msgid "Increase"
 msgstr ""
 
-#: resources/views/dashboard.php:802
+#: resources/views/dashboard.php:815
 msgid "Reduce"
 msgstr ""
 
-#: resources/views/dashboard.php:806
+#: resources/views/dashboard.php:819
 msgid "BY"
 msgstr ""
 
-#: resources/views/dashboard.php:815
+#: resources/views/dashboard.php:828
 msgid "Please add price for each weight criteria"
 msgstr ""
 
-#: resources/views/dashboard.php:825
+#: resources/views/dashboard.php:838
+#: resources/views/dashboard.php:891
 msgid "Add price"
 msgstr ""
 
-#: resources/views/dashboard.php:838
+#: resources/views/dashboard.php:851
+#: resources/views/dashboard.php:904
 msgid "FROM"
 msgstr ""
 
-#: resources/views/dashboard.php:843
+#: resources/views/dashboard.php:856
+#: resources/views/dashboard.php:909
 msgid "TO"
 msgstr ""
 
-#: resources/views/dashboard.php:848
+#: resources/views/dashboard.php:861
+#: resources/views/dashboard.php:914
 msgid "PRICE"
 msgstr ""
 
 #: resources/views/dashboard.php:881
+msgid "Please add price for each price criteria"
+msgstr ""
+
+#: resources/views/dashboard.php:947
 msgid ""
 "Packlink offers you the possibility to update your WooCommerce order status with the shipping info. You can\n"
 "                    edit anytime."
 msgstr ""
 
-#: resources/views/dashboard.php:887
+#: resources/views/dashboard.php:953
 msgid "Packlink PRO Shipping Status"
 msgstr ""
 
-#: resources/views/dashboard.php:892
+#: resources/views/dashboard.php:958
 msgid "WooCommerce Order Status"
 msgstr ""
 
-#: resources/views/dashboard.php:898
+#: resources/views/dashboard.php:964
 msgid "Pending"
 msgstr ""
 
-#: resources/views/dashboard.php:905
-#: resources/views/dashboard.php:919
-#: resources/views/dashboard.php:934
-#: resources/views/dashboard.php:948
-#: resources/views/dashboard.php:962
+#: resources/views/dashboard.php:971
+#: resources/views/dashboard.php:985
+#: resources/views/dashboard.php:1000
+#: resources/views/dashboard.php:1014
+#: resources/views/dashboard.php:1028
 msgid "None"
 msgstr ""
 
-#: resources/views/dashboard.php:912
+#: resources/views/dashboard.php:978
 msgid "Processing"
 msgstr ""
 
-#: resources/views/dashboard.php:926
+#: resources/views/dashboard.php:992
 msgid "Ready for shipping"
 msgstr ""
 
-#: resources/views/dashboard.php:941
+#: resources/views/dashboard.php:1007
 msgid "In transit"
 msgstr ""
 
-#: resources/views/dashboard.php:955
+#: resources/views/dashboard.php:1021
 msgid "Delivered"
 msgstr ""
 
-#: resources/views/dashboard.php:989
+#: resources/views/dashboard.php:1055
 msgid "Debug mode"
 msgstr ""
 
-#: resources/views/dashboard.php:995
+#: resources/views/dashboard.php:1061
 msgid "Download system info file"
 msgstr ""
 
-#: resources/views/dashboard.php:1000
+#: resources/views/dashboard.php:1066
 msgid "Loading..."
 msgstr ""
 
-#: resources/views/dashboard.php:1009
+#: resources/views/dashboard.php:1075
 msgid "system info"
 msgstr ""
 
-#: resources/views/dashboard.php:1013
+#: resources/views/dashboard.php:1079
 msgid "General conditions"
 msgstr ""
 
-#: resources/views/dashboard.php:1015
+#: resources/views/dashboard.php:1081
 msgid "Developed and managed by Packlink"
 msgstr ""
 
-#: resources/views/dashboard.php:1028
+#: resources/views/dashboard.php:1094
 msgid "This field is required."
 msgstr ""
 
-#: resources/views/dashboard.php:1029
+#: resources/views/dashboard.php:1095
 msgid "Value must be valid number."
 msgstr ""
 
-#: resources/views/dashboard.php:1030
+#: resources/views/dashboard.php:1096
 msgid "This field is not valid."
 msgstr ""
 
-#: resources/views/dashboard.php:1031
+#: resources/views/dashboard.php:1097
 msgid "This field must be valid phone number."
 msgstr ""
 
-#: resources/views/dashboard.php:1032
+#: resources/views/dashboard.php:1098
 msgid "Value must be greater than 0."
 msgstr ""
 
-#: resources/views/dashboard.php:1036
+#: resources/views/dashboard.php:1099
+msgid "Field must have 2 decimal places."
+msgstr ""
+
+#: resources/views/dashboard.php:1100
+#: Components/Validators/class-parcel-validator.php:50
+msgid "Field must be valid whole number."
+msgstr ""
+
+#: resources/views/dashboard.php:1104
 msgid "Shipping method successfully saved."
 msgstr ""
 
-#: resources/views/meta-post-box.php:36
+#: resources/views/meta-post-box.php:27
 msgid "Carrier"
 msgstr ""
 
-#: resources/views/meta-post-box.php:43
+#: resources/views/meta-post-box.php:36
 msgid "Carrier tracking codes:"
 msgstr ""
 
-#: resources/views/meta-post-box.php:54
+#: resources/views/meta-post-box.php:47
 msgid "Track it!"
 msgstr ""
 
-#: resources/views/meta-post-box.php:63
+#: resources/views/meta-post-box.php:56
 msgid "Status"
 msgstr ""
 
-#: resources/views/meta-post-box.php:68
+#: resources/views/meta-post-box.php:61
 msgid "Reference number"
 msgstr ""
 
-#: resources/views/meta-post-box.php:74
+#: resources/views/meta-post-box.php:67
 msgid "Packlink shipping price"
 msgstr ""
 
-#: resources/views/meta-post-box.php:83
+#: resources/views/meta-post-box.php:76
 msgid "View on Packlink PRO"
 msgstr ""
 
-#: resources/views/meta-post-box.php:90
-#: Controllers/class-packlink-order-overview-controller.php:73
+#: resources/views/meta-post-box.php:83
+#: Controllers/class-packlink-order-overview-controller.php:83
 msgid "Print label"
 msgstr ""
 
-#: resources/views/meta-post-box.php:100
+#: resources/views/meta-post-box.php:93
 msgid "Previous attempt to create a draft failed. Error: %s"
 msgstr ""
 
-#: resources/views/meta-post-box.php:108
+#: resources/views/meta-post-box.php:101
 msgid "Create draft"
 msgstr ""
 
-#: resources/views/meta-post-box.php:115
+#: resources/views/meta-post-box.php:108
 msgid "Draft is currently being created in Packlink"
 msgstr ""
 
-#: Components/Order/class-order-details-helper.php:171
-#: Components/Order/class-order-repository.php:117
-msgid "Draft created"
-msgstr ""
-
-#: Components/Order/class-order-repository.php:189
+#: Components/Order/class-order-repository.php:188
 msgid "Status set by Packlink PRO."
 msgstr ""
 
-#: Components/Order/class-order-repository.php:250
+#: Components/Order/class-order-repository.php:249
 msgid "Order with id(%s) not found!"
 msgstr ""
 
-#: Components/Order/class-order-repository.php:469
+#: Components/Order/class-order-repository.php:468
 msgid "Order with shipment reference(%s) not found!"
 msgstr ""
 
-#: Components/Checkout/class-checkout-handler.php:139
+#: Components/Checkout/class-checkout-handler.php:140
 msgid "Please choose a drop-off location."
 msgstr ""
 
@@ -587,10 +602,6 @@ msgstr ""
 #: Components/Validators/class-parcel-validator.php:41
 #: Components/Validators/class-warehouse-validator.php:56
 msgid "Field is required."
-msgstr ""
-
-#: Components/Validators/class-parcel-validator.php:50
-msgid "Field must be valid whole number."
 msgstr ""
 
 #: Components/Validators/class-parcel-validator.php:55
@@ -610,38 +621,38 @@ msgstr ""
 msgid "Field mus be valid phone number."
 msgstr ""
 
-#: Controllers/class-packlink-order-overview-controller.php:40
+#: Controllers/class-packlink-order-overview-controller.php:50
 msgid "Packlink label"
 msgstr ""
 
-#: Controllers/class-packlink-order-overview-controller.php:53
+#: Controllers/class-packlink-order-overview-controller.php:63
 msgid "Print labels"
 msgstr ""
 
-#: Controllers/class-packlink-order-overview-controller.php:70
+#: Controllers/class-packlink-order-overview-controller.php:80
 msgid "Label is not yet available."
 msgstr ""
 
-#: Controllers/class-packlink-order-overview-controller.php:73
+#: Controllers/class-packlink-order-overview-controller.php:83
 msgid "Printed label"
 msgstr ""
 
-#: Controllers/class-packlink-order-overview-controller.php:177
+#: Controllers/class-packlink-order-overview-controller.php:202
 msgid "Unable to create bulk labels file"
 msgstr ""
 
-#: class-plugin.php:97
+#: class-plugin.php:99
 msgid "cURL is not installed or enabled in your PHP installation. This is required for background task to work. Please install it and then refresh this page."
 msgstr ""
 
-#: class-plugin.php:110
+#: class-plugin.php:112
 msgid "Please install and activate WooCommerce."
 msgstr ""
 
-#: class-plugin.php:257
+#: class-plugin.php:253
 msgid "View Packlink configuration"
 msgstr ""
 
-#: class-plugin.php:257
+#: class-plugin.php:253
 msgid "Configuration"
 msgstr ""

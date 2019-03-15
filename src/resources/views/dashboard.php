@@ -596,7 +596,8 @@ $data = $this->resolve_view_arguments();
                                             <select id="pl-pricing-policy-selector">
                                                 <option value="1"><?php echo __( 'Packlink prices', 'packlink-pro-shipping' ); ?></option>
                                                 <option value="2"><?php echo __( '% of Packlink prices', 'packlink-pro-shipping' ); ?></option>
-                                                <option value="3"><?php echo __( 'Fixed prices', 'packlink-pro-shipping' ); ?></option>
+                                                <option value="3"><?php echo __( 'Fixed prices based on total weight', 'packlink-pro-shipping' ); ?></option>
+                                                <option value="4"><?php echo __( 'Fixed prices based on total price', 'packlink-pro-shipping' ); ?></option>
                                             </select>
                                         </div>
                                     </div>
@@ -645,8 +646,11 @@ $data = $this->resolve_view_arguments();
                 <p class="pl-price-indicator" data-pl-price-indicator="percent">
 					<?php echo __( 'Packlink percent', 'packlink-pro-shipping' ); ?>
                 </p>
-                <p class="pl-price-indicator" data-pl-price-indicator="fixed">
-					<?php echo __( 'Fixed prices', 'packlink-pro-shipping' ); ?>
+                <p class="pl-price-indicator" data-pl-price-indicator="fixed-weight">
+					<?php echo __( 'Fixed prices based on total weight', 'packlink-pro-shipping' ); ?>
+                </p>
+                <p class="pl-price-indicator" data-pl-price-indicator="fixed-value">
+					<?php echo __( 'Fixed prices based on total price', 'packlink-pro-shipping' ); ?>
                 </p>
             </td>
             <td>
@@ -818,7 +822,7 @@ $data = $this->resolve_view_arguments();
         </div>
     </div>
 
-    <div id="pl-fixed-prices-template">
+    <div id="pl-fixed-prices-by-weight-template">
         <div class="row">
             <div class=" pl-form-section-subtitle-wrapper">
 				<?php echo __( 'Please add price for each weight criteria', 'packlink-pro-shipping' ); ?>
@@ -837,7 +841,7 @@ $data = $this->resolve_view_arguments();
         </div>
     </div>
 
-    <div id="pl-fixed-price-criteria-template">
+    <div id="pl-fixed-price-by-weight-criteria-template">
         <div class="pl-fixed-price-criteria">
             <div class="row">
                 <div class=" pl-form-section-input-wrapper pl-fixed-price-wrapper">
@@ -850,6 +854,59 @@ $data = $this->resolve_view_arguments();
                         <input type="text" data-pl-fixed-price="to"/>
                         <span class="pl-text-input-label">
 	                    <?php echo __( 'TO', 'packlink-pro-shipping' ); ?> (kg)</span>
+                    </div>
+                    <div class="form-group pl-form-section-input pl-text-input">
+                        <input type="text" data-pl-fixed-price="amount"/>
+                        <span class="pl-text-input-label">
+	                    <?php echo __( 'PRICE', 'packlink-pro-shipping' ); ?> (€)</span>
+                    </div>
+                    <div class="pl-remove-fixed-price-criteria-btn">
+                        <svg width="24" height="24" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg"
+                             data-pl-remove="criteria">
+                            <g fill="none" fill-rule="evenodd">
+                                <path d="M11 21c5.523 0 10-4.477 10-10S16.523 1 11 1 1 5.477 1 11s4.477 10 10 10zm0 1C4.925 22 0 17.075 0 11S4.925 0 11 0s11 4.925 11 11-4.925 11-11 11z"
+                                      fill="#2095F2" fill-rule="nonzero"/>
+                                <path d="M7.5 7.5l8 7M15.5 7.5l-8 7" stroke="#2095F2" stroke-linecap="square"/>
+                            </g>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="pl-fixed-prices-by-value-template">
+        <div class="row">
+            <div class=" pl-form-section-subtitle-wrapper">
+				<?php echo __( 'Please add price for each price criteria', 'packlink-pro-shipping' ); ?>
+            </div>
+        </div>
+
+        <div class="row">
+            <div id="pl-fixed-price-criteria-extension-point" style="width: 100%"></div>
+        </div>
+        <div class="row">
+            <div class=" pl-form-section-input-wrapper">
+                <div class="pl-fixed-price-add-criteria-button" id="pl-fixed-price-add">
+                    + <?php echo __( 'Add price', 'packlink-pro-shipping' ); ?>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="pl-fixed-price-by-value-criteria-template">
+        <div class="pl-fixed-price-criteria">
+            <div class="row">
+                <div class=" pl-form-section-input-wrapper pl-fixed-price-wrapper">
+                    <div class="form-group pl-form-section-input pl-text-input">
+                        <input type="text" data-pl-fixed-price="from" disabled tabindex="-1" />
+                        <span class="pl-text-input-label">
+	                    <?php echo __( 'FROM', 'packlink-pro-shipping' ); ?> (€)</span>
+                    </div>
+                    <div class="form-group pl-form-section-input pl-text-input">
+                        <input type="text" data-pl-fixed-price="to"/>
+                        <span class="pl-text-input-label">
+	                    <?php echo __( 'TO', 'packlink-pro-shipping' ); ?> (€)</span>
                     </div>
                     <div class="form-group pl-form-section-input pl-text-input">
                         <input type="text" data-pl-fixed-price="amount"/>

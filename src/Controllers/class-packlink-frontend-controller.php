@@ -245,7 +245,7 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 		$payload  = json_decode( $raw_json, true );
 
 		if ( empty( $payload['query'] ) ) {
-			$this->return_json( array(), 200 );
+			$this->return_json( array() );
 		}
 
 		/** @var Configuration $configuration */
@@ -502,10 +502,15 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 		if ( $shipping_method->pricePolicy === ShippingMethod::PRICING_POLICY_PERCENT ) {
 			$percent_price_policy                = $payload['percentPricePolicy'];
 			$shipping_method->percentPricePolicy = new PercentPricePolicy( $percent_price_policy['increase'], $percent_price_policy['amount'] );
-		} elseif ( $shipping_method->pricePolicy === ShippingMethod::PRICING_POLICY_FIXED ) {
-			$shipping_method->fixedPricePolicy = array();
-			foreach ( $payload['fixedPricePolicy'] as $item ) {
-				$shipping_method->fixedPricePolicy[] = new FixedPricePolicy( $item['from'], $item['to'], $item['amount'] );
+		} elseif ( $shipping_method->pricePolicy === ShippingMethod::PRICING_POLICY_FIXED_PRICE_BY_WEIGHT ) {
+			$shipping_method->fixedPriceByWeightPolicy = array();
+			foreach ( $payload['fixedPriceByWeightPolicy'] as $item ) {
+				$shipping_method->fixedPriceByWeightPolicy[] = new FixedPricePolicy( $item['from'], $item['to'], $item['amount'] );
+			}
+		} elseif ( $shipping_method->pricePolicy === ShippingMethod::PRICING_POLICY_FIXED_PRICE_BY_VALUE ) {
+			$shipping_method->fixedPriceByValuePolicy = array();
+			foreach ( $payload['fixedPriceByValuePolicy'] as $item ) {
+				$shipping_method->fixedPriceByValuePolicy[] = new FixedPricePolicy( $item['from'], $item['to'], $item['amount'] );
 			}
 		}
 

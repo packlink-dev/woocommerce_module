@@ -247,7 +247,8 @@ class Packlink_Shipping_Method extends \WC_Shipping_Method {
 				$warehouse->postalCode,
 				$to_country,
 				$to_zip,
-				$this->build_parcels( $package, $default_parcel )
+				$this->build_parcels( $package, $default_parcel ),
+				$package['contents_cost']
 			);
 
 			static::$loaded = true;
