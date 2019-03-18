@@ -21,6 +21,7 @@ use Packlink\WooCommerce\Components\Services\Config_Service;
 
 /**
  * Class Shop_Shipping_Method_Service
+ *
  * @package Packlink\WooCommerce\Components\ShippingMethod
  */
 class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMethodService {
@@ -65,10 +66,12 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 
 				if ( 0 !== $instance_id ) {
 					$new = new Packlink_Shipping_Method( $instance_id );
-					$new->set_post_data( array(
-						'woocommerce_packlink_shipping_method_title'        => $shipping_method->getTitle(),
-						'woocommerce_packlink_shipping_method_price_policy' => $pricing_policy,
-					) );
+					$new->set_post_data(
+						array(
+							'woocommerce_packlink_shipping_method_title'        => $shipping_method->getTitle(),
+							'woocommerce_packlink_shipping_method_price_policy' => $pricing_policy,
+						)
+					);
 
 					$_REQUEST['instance_id'] = $instance_id;
 					$new->process_admin_options();
@@ -85,7 +88,6 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 			return false;
 		}
 
-
 		return true;
 	}
 
@@ -95,7 +97,11 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 	 * @param \WC_Shipping_Zone $zone Shipping zone.
 	 */
 	public function add_active_methods_to_zone( \WC_Shipping_Zone $zone ) {
-		/** @var ShippingMethodService $service */
+		/**
+		 * Shipping method service.
+		 *
+		 * @var ShippingMethodService $service
+		 */
 		$service = ServiceRegister::getService( ShippingMethodService::CLASS_NAME );
 		foreach ( $service->getActiveMethods() as $shipping_method ) {
 			$pricing_policy = $this->get_shipping_method_pricing_policy( $shipping_method );
@@ -103,10 +109,12 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 
 			if ( 0 !== $instance_id ) {
 				$new = new Packlink_Shipping_Method( $instance_id );
-				$new->set_post_data( array(
-					'woocommerce_packlink_shipping_method_title'        => $shipping_method->getTitle(),
-					'woocommerce_packlink_shipping_method_price_policy' => $pricing_policy,
-				) );
+				$new->set_post_data(
+					array(
+						'woocommerce_packlink_shipping_method_title'        => $shipping_method->getTitle(),
+						'woocommerce_packlink_shipping_method_price_policy' => $pricing_policy,
+					)
+				);
 
 				$_REQUEST['instance_id'] = $instance_id;
 				$new->process_admin_options();
@@ -131,10 +139,12 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 			$instance_id = $item->getWoocommerceShippingMethodId();
 
 			$packlink_shipping_method = new Packlink_Shipping_Method( $instance_id );
-			$packlink_shipping_method->set_post_data( array(
-				'woocommerce_packlink_shipping_method_title'        => $shipping_method->getTitle(),
-				'woocommerce_packlink_shipping_method_price_policy' => $pricing_policy,
-			) );
+			$packlink_shipping_method->set_post_data(
+				array(
+					'woocommerce_packlink_shipping_method_title'        => $shipping_method->getTitle(),
+					'woocommerce_packlink_shipping_method_price_policy' => $pricing_policy,
+				)
+			);
 
 			if ( $is_enabled !== $packlink_shipping_method->enabled ) {
 				$wpdb->update( "{$wpdb->prefix}woocommerce_shipping_zone_methods", array( 'is_enabled' => $is_enabled ), array( 'instance_id' => absint( $instance_id ) ) );
@@ -146,9 +156,9 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 	}
 
 	/**
-	 * @noinspection PhpDocMissingThrowsInspection
-	 *
 	 * Deletes shipping method in shop integration.
+	 *
+	 * @noinspection PhpDocMissingThrowsInspection
 	 *
 	 * @param ShippingMethod $shipping_method Shipping method.
 	 *
@@ -190,7 +200,7 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 	 *
 	 * @param ShippingMethod $shipping_method Shipping method object.
 	 *
-	 * @return string
+	 * @return string Pricing policy.
 	 */
 	private function get_shipping_method_pricing_policy( ShippingMethod $shipping_method ) {
 		$pricing_policy = __( 'Packlink prices', 'packlink_pro_shipping' );
@@ -223,9 +233,9 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 	}
 
 	/**
-	 * @noinspection PhpDocMissingThrowsInspection
-	 *
 	 * Returns a list of map items for provided Packlink shipping method identifier.
+	 *
+	 * @noinspection PhpDocMissingThrowsInspection
 	 *
 	 * @param int $packlink_method_id Packlink shipping method identifier.
 	 *
@@ -236,7 +246,11 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 		/** @noinspection PhpUnhandledExceptionInspection */
 		$filter->where( 'packlinkShippingMethodId', '=', $packlink_method_id );
 
-		/** @var Shipping_Method_Map[] $entities */
+		/**
+		 * Shipping method map entries.
+		 *
+		 * @var Shipping_Method_Map[] $entities
+		 */
 		$entities = $this->repository->select( $filter );
 
 		return $entities;
@@ -245,7 +259,7 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 	/**
 	 * Adds default Packlink shipping method.
 	 *
-	 * @param ShippingMethod $shipping_method
+	 * @param ShippingMethod $shipping_method Shipping method.
 	 */
 	private function add_default_shipping_method( ShippingMethod $shipping_method ) {
 		$default = new ShippingMethod();
@@ -287,7 +301,11 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 	 * @param ShippingMethod|null $shipping_method Shipping method.
 	 */
 	private function set_default_shipping_method( ShippingMethod $shipping_method = null ) {
-		/** @var Config_Service $configuration */
+		/**
+		 * Configuration service.
+		 *
+		 * @var Config_Service $configuration
+		 */
 		$configuration = ServiceRegister::getService( Config_Service::CLASS_NAME );
 		$configuration->set_default_shipping_method( $shipping_method );
 	}

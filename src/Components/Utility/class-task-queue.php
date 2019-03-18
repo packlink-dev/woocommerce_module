@@ -17,6 +17,7 @@ use Packlink\WooCommerce\Components\Services\Config_Service;
 
 /**
  * Class Task_Queue
+ *
  * @package Packlink\WooCommerce\Components\Utility
  */
 class Task_Queue {
@@ -32,11 +33,19 @@ class Task_Queue {
 	public static function enqueue( Task $task, $throw_exception = false ) {
 		$result = 0;
 		try {
-			/** @var Config_Service $config_service */
+			/**
+			 * Configuration service.
+			 *
+			 * @var Config_Service $config_service
+			 */
 			$config_service = ServiceRegister::getService( Config_Service::CLASS_NAME );
 			$access_token   = $config_service->getAuthorizationToken();
 			if ( null !== $access_token ) {
-				/** @var QueueService $queue_service */
+				/**
+				 * Queue service.
+				 *
+				 * @var QueueService $queue_service
+				 */
 				$queue_service = ServiceRegister::getService( QueueService::CLASS_NAME );
 				$queue_item    = $queue_service->enqueue( $config_service->getDefaultQueueName(), $task );
 				$result        = $queue_item->getId();

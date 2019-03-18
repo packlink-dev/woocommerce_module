@@ -57,7 +57,7 @@ class Database {
 	}
 
 	/**
-	 * Executes uninstallation scripts.
+	 * Executes uninstall scripts.
 	 */
 	public function uninstall() {
 		$queries = $this->prepare_queries_for_deleting();

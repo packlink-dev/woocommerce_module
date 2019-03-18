@@ -28,6 +28,7 @@ use WP_Term;
 
 /**
  * Class Order_Repository
+ *
  * @package Packlink\WooCommerce\Components\Repositories
  */
 class Order_Repository extends Singleton implements OrderRepository {
@@ -93,9 +94,9 @@ class Order_Repository extends Singleton implements OrderRepository {
 	}
 
 	/**
-	 * @noinspection PhpDocMissingThrowsInspection
-	 *
 	 * Sets order packlink reference number.
+	 *
+	 * @noinspection PhpDocMissingThrowsInspection
 	 *
 	 * @param string $order_id Unique order id.
 	 * @param string $shipment_reference Packlink shipment reference.
@@ -106,7 +107,7 @@ class Order_Repository extends Singleton implements OrderRepository {
 		$wc_order = $this->load_order_by_id( $order_id );
 
 		$order_shipment = new Order_Shipment_Entity();
-		$order_shipment->setStatus(ShipmentStatus::STATUS_PENDING);
+		$order_shipment->setStatus( ShipmentStatus::STATUS_PENDING );
 		$order_shipment->setPacklinkShipmentReference( $shipment_reference );
 		$order_shipment->setWoocommerceOrderId( $order_id );
 
@@ -124,7 +125,7 @@ class Order_Repository extends Singleton implements OrderRepository {
 	/**
 	 * Sets order packlink shipping labels to an order by shipment reference.
 	 *
-	 * @param string $shipment_reference Packlink shipment reference.
+	 * @param string   $shipment_reference Packlink shipment reference.
 	 * @param string[] $labels Packlink shipping labels.
 	 *
 	 * @throws \Packlink\BusinessLogic\Order\Exceptions\OrderNotFound When order with provided reference is not found.
@@ -139,8 +140,8 @@ class Order_Repository extends Singleton implements OrderRepository {
 	/**
 	 * Sets order packlink shipment tracking history to an order by shipment reference.
 	 *
-	 * @param string $shipment_reference Packlink shipment reference.
-	 * @param Tracking[] $tracking_history Shipment tracking history.
+	 * @param string       $shipment_reference Packlink shipment reference.
+	 * @param Tracking[]   $tracking_history Shipment tracking history.
 	 * @param Shipment_DTO $shipment_details Packlink shipment details.
 	 *
 	 * @throws \Packlink\BusinessLogic\Order\Exceptions\OrderNotFound When order with provided reference is not found.
@@ -148,9 +149,12 @@ class Order_Repository extends Singleton implements OrderRepository {
 	public function updateTrackingInfo( $shipment_reference, array $tracking_history, Shipment_DTO $shipment_details ) {
 		$order = $this->load_order_by_reference( $shipment_reference );
 
-		usort( $tracking_history, function ( Tracking $a, Tracking $b ) {
-			return $b->timestamp - $a->timestamp;
-		} );
+		usort(
+			$tracking_history,
+			function ( Tracking $a, Tracking $b ) {
+				return $b->timestamp - $a->timestamp;
+			}
+		);
 
 		$tracking = array();
 		foreach ( $tracking_history as $item ) {
@@ -165,7 +169,7 @@ class Order_Repository extends Singleton implements OrderRepository {
 			}
 		}
 
-		$order->update_meta_data( Order_Meta_Keys::TRACKING_HISTORY, json_encode( $tracking ) );
+		$order->update_meta_data( Order_Meta_Keys::TRACKING_HISTORY, wp_json_encode( $tracking ) );
 		$order->save();
 	}
 
@@ -193,9 +197,9 @@ class Order_Repository extends Singleton implements OrderRepository {
 	}
 
 	/**
-	 * @noinspection PhpDocMissingThrowsInspection
-	 *
 	 * Returns shipment references of the orders that have not yet been completed.
+	 *
+	 * @noinspection PhpDocMissingThrowsInspection
 	 *
 	 * @return array Array of shipment references.
 	 */
@@ -208,12 +212,16 @@ class Order_Repository extends Singleton implements OrderRepository {
 
 		/** @noinspection PhpUnhandledExceptionInspection */
 		$filter->where( 'status', Operators::NOT_EQUALS, ShipmentStatus::STATUS_DELIVERED );
-		/** @var Order_Shipment_Entity $orderDetails */
+		/**
+		 * Order shipment entity.
+		 *
+		 * @var Order_Shipment_Entity $order_details
+		 */
 		$orders = $repository->select( $filter );
 
-		foreach ( $orders as $orderDetails ) {
-			if ( null !== $orderDetails->getPacklinkShipmentReference() ) {
-				$references[] = $orderDetails->getPacklinkShipmentReference();
+		foreach ( $orders as $order_details ) {
+			if ( null !== $order_details->getPacklinkShipmentReference() ) {
+				$references[] = $order_details->getPacklinkShipmentReference();
 			}
 		}
 
@@ -224,9 +232,9 @@ class Order_Repository extends Singleton implements OrderRepository {
 	 * Sets shipping price to an order by shipment reference.
 	 *
 	 * @param string $shipment_reference Packlink shipment reference.
-	 * @param float $price Shipment price.
+	 * @param float  $price Shipment price.
 	 *
-	 * @throws \Packlink\BusinessLogic\Order\Exceptions\OrderNotFound When order with provided reference is not found.
+	 * @throws OrderNotFound When order with provided reference is not found.
 	 */
 	public function setShippingPriceByReference( $shipment_reference, $price ) {
 		$order = $this->load_order_by_reference( $shipment_reference );
@@ -241,11 +249,12 @@ class Order_Repository extends Singleton implements OrderRepository {
 	 * @param string $order_id $orderId Unique order id.
 	 *
 	 * @return WC_Order WooCommerce order object.
-	 * @throws \Packlink\BusinessLogic\Order\Exceptions\OrderNotFound When order with provided id is not found.
+	 * @throws OrderNotFound When order with provided id is not found.
 	 */
 	private function load_order_by_id( $order_id ) {
 		$wc_order = \WC_Order_Factory::get_order( $order_id );
 		if ( false === $wc_order ) {
+			/* translators: %s: order identifier */
 			throw new OrderNotFound( sprintf( __( 'Order with id(%s) not found!', 'packlink-pro-shipping' ), $order_id ) );
 		}
 
@@ -253,14 +262,14 @@ class Order_Repository extends Singleton implements OrderRepository {
 	}
 
 	/**
-	 * @noinspection PhpDocMissingThrowsInspection
-	 *
 	 * Fetches and returns order instance.
+	 *
+	 * @noinspection PhpDocMissingThrowsInspection
 	 *
 	 * @param string $shipment_reference Packlink shipment reference.
 	 *
 	 * @return WC_Order WooCommerce order object.
-	 * @throws \Packlink\BusinessLogic\Order\Exceptions\OrderNotFound When order with provided id is not found.
+	 * @throws OrderNotFound When order with provided id is not found.
 	 */
 	private function load_order_by_reference( $shipment_reference ) {
 		$order_shipment = $this->get_order_shipment_entity( $shipment_reference );
@@ -269,14 +278,14 @@ class Order_Repository extends Singleton implements OrderRepository {
 	}
 
 	/**
-	 * @noinspection PhpDocMissingThrowsInspection
-	 *
 	 * Updates order shipment status.
 	 *
-	 * @param string $shipment_reference Packlink shipment reference.
-	 * @param string $status Shipment status
+	 * @noinspection PhpDocMissingThrowsInspection
 	 *
-	 * @throws \Packlink\BusinessLogic\Order\Exceptions\OrderNotFound When order with provided id is not found.
+	 * @param string $shipment_reference Packlink shipment reference.
+	 * @param string $status Shipment status.
+	 *
+	 * @throws OrderNotFound When order with provided id is not found.
 	 */
 	private function update_order_shipment_status( $shipment_reference, $status ) {
 		$order_shipment = $this->get_order_shipment_entity( $shipment_reference );
@@ -314,7 +323,11 @@ class Order_Repository extends Singleton implements OrderRepository {
 	 */
 	private function get_order_items( WC_Order $wc_order ) {
 		$items = array();
-		/** @var \WC_Order_Item_Product $wc_item */
+		/**
+		 * WooCommerce order item.
+		 *
+		 * @var \WC_Order_Item_Product $wc_item
+		 */
 		foreach ( $wc_order->get_items() as $wc_item ) {
 			$product = $wc_item->get_product();
 			if ( $product->is_downloadable() || $product->is_virtual() ) {
@@ -445,14 +458,14 @@ class Order_Repository extends Singleton implements OrderRepository {
 	}
 
 	/**
-	 * @noinspection PhpDocMissingThrowsInspection
-	 *
 	 * Fetches and returns order shipment entity.
+	 *
+	 * @noinspection PhpDocMissingThrowsInspection
 	 *
 	 * @param string $shipment_reference Shipment reference number.
 	 *
 	 * @return Order_Shipment_Entity Order shipment entity.
-	 * @throws \Packlink\BusinessLogic\Order\Exceptions\OrderNotFound When order with provided id is not found.
+	 * @throws OrderNotFound When order with provided id is not found.
 	 */
 	private function get_order_shipment_entity( $shipment_reference ) {
 		/** @noinspection PhpUnhandledExceptionInspection */
@@ -461,10 +474,15 @@ class Order_Repository extends Singleton implements OrderRepository {
 		$query_filter = new QueryFilter();
 		/** @noinspection PhpUnhandledExceptionInspection */
 		$query_filter->where( 'packlinkShipmentReference', '=', $shipment_reference );
-		/** @var Order_Shipment_Entity $order_shipment */
+		/**
+		 * Order shipment entity.
+		 *
+		 * @var Order_Shipment_Entity $order_shipment
+		 */
 		$order_shipment = $repository->selectOne( $query_filter );
 
 		if ( null === $order_shipment ) {
+			/* translators: %s: order identifier */
 			throw new OrderNotFound( sprintf( __( 'Order with shipment reference(%s) not found!', 'packlink-pro-shipping' ), $shipment_reference ) );
 		}
 

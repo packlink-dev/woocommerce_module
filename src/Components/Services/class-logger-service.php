@@ -16,11 +16,12 @@ use Packlink\WooCommerce\Components\Utility\Shop_Helper;
 
 /**
  * Class Logger_Service
+ *
  * @package Packlink\WooCommerce\Components\Services
  */
 class Logger_Service extends Singleton implements LoggerAdapter {
 
-	const LOG_DEF = "[%s][%d][%s] %s\n";
+	const LOG_DEF     = "[%s][%d][%s] %s\n";
 	const CONTEXT_DEF = "\tContext[%s]: %s\n";
 
 	/**
@@ -31,12 +32,16 @@ class Logger_Service extends Singleton implements LoggerAdapter {
 	protected static $instance;
 
 	/**
-	 * Log message in system
+	 * Log message in system.
 	 *
-	 * @param LogData $data
+	 * @param LogData $data Log data.
 	 */
 	public function logMessage( LogData $data ) {
-		/** @var LoggerConfiguration $config_service */
+		/**
+		 * Logger configuration service.
+		 *
+		 * @var LoggerConfiguration $config_service
+		 */
 		$config_service = LoggerConfiguration::getInstance();
 		$min_log_level  = $config_service->getMinLogLevel();
 		$log_level      = $data->getLogLevel();
@@ -44,7 +49,7 @@ class Logger_Service extends Singleton implements LoggerAdapter {
 			return;
 		}
 
-		// min log level is actually max log level.
+		// Min log level is actually max log level.
 		if ( $log_level > $min_log_level ) {
 			return;
 		}

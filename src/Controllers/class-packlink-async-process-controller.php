@@ -17,6 +17,7 @@ use Packlink\WooCommerce\Components\Utility\Shop_Helper;
 
 /**
  * Class Packlink_Async_Process_Controller
+ *
  * @package Packlink\WooCommerce\Controllers
  */
 class Packlink_Async_Process_Controller extends Packlink_Base_Controller {
@@ -39,9 +40,13 @@ class Packlink_Async_Process_Controller extends Packlink_Base_Controller {
 			$this->redirect404();
 		}
 
-		/** @var AsyncProcessService $asyncProcessService */
-		$asyncProcessService = ServiceRegister::getService( AsyncProcessService::CLASS_NAME );
-		$asyncProcessService->runProcess( $this->get_param( 'guid' ) );
+		/**
+		 * Async process service.
+		 *
+		 * @var AsyncProcessService $service
+		 */
+		$service = ServiceRegister::getService( AsyncProcessService::CLASS_NAME );
+		$service->runProcess( $this->get_param( 'guid' ) );
 
 		exit();
 	}

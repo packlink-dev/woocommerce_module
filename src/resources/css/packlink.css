@@ -1,5 +1,6 @@
 .pl-main-wrapper {
     position: relative;
+    clear: both;
     padding: 0 !important;
     margin: 20px 0 0;
     height: 100%;
@@ -435,12 +436,14 @@
     margin: 0 auto;
 }
 
-.pl-delete-methods-modal {
+.pl-disable-methods-modal {
     position: absolute;
-    width: 300px;
-    border-radius: 0;
+    max-width: 550px;
+    height: 230px;
+    border-radius: 5px;
     border: 1px #d5d5d5 solid;
-    padding: 20px 10px;
+    box-sizing: border-box;
+    padding: 20px 70px;
 }
 
 .pl-configure-shipping-method-wrapper {
@@ -1605,17 +1608,22 @@ body {
 }
 
 .pl-shipping-modal-title {
-    font-size: 1.32em;
+    font-size: 22px;
     color: #5d5d5d;
-    line-height: 18px;
-    margin-bottom: 20px;
+    line-height: 28px;
+    margin-bottom: 22px;
+    text-align: center;
 }
 
 .pl-shipping-modal-body {
-    font-size: 1.05em;
-    line-height: 14px;
+    font-size: 0.96em;
+    line-height: 18px;
     color: #5d5d5d;
-    margin-bottom: 20px;
+}
+
+.pl-shipping-modal-row {
+    position: absolute;
+    bottom: 20px;
 }
 
 #pl-main-page-holder .button.pl-shipping-modal-btn {

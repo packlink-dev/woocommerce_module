@@ -9,6 +9,7 @@ namespace Packlink\WooCommerce\Components\Repositories;
 
 use Logeecom\Infrastructure\Logger\Logger;
 use Logeecom\Infrastructure\ORM\Entity;
+use Logeecom\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
 use Logeecom\Infrastructure\ORM\Interfaces\QueueItemRepository as QueueItemRepositoryInterface;
 use Logeecom\Infrastructure\ORM\QueryFilter\QueryFilter;
 use Logeecom\Infrastructure\ORM\Utility\IndexHelper;
@@ -24,9 +25,9 @@ use Logeecom\Infrastructure\TaskExecution\QueueItem;
 class Queue_Item_Repository extends Base_Repository implements QueueItemRepositoryInterface {
 
 	/**
-	 * @noinspection SenselessMethodDuplicationInspection
-	 *
 	 * Returns full class name.
+	 *
+	 * @noinspection SenselessMethodDuplicationInspection
 	 *
 	 * @return string Full class name.
 	 */
@@ -39,13 +40,17 @@ class Queue_Item_Repository extends Base_Repository implements QueueItemReposito
 	 *      - Queue must be without already running queue items
 	 *      - For one queue only one (oldest queued) item should be returned
 	 *
-	 * @param int $limit Result set limit. By default max 10 earliest queue items will be returned
+	 * @param int $limit Result set limit. By default max 10 earliest queue items will be returned.
 	 *
 	 * @return QueueItem[] Found queue item list
 	 */
 	public function findOldestQueuedItems( $limit = 10 ) {
-		/** @var Entity $entity */
-		$entity    = new $this->entity_class;
+		/**
+		 * Entity object.
+		 *
+		 * @var Entity $entity
+		 */
+		$entity    = new $this->entity_class();
 		$type      = $this->escape_value( $entity->getConfig()->getType() );
 		$index_map = IndexHelper::mapFieldsToIndexes( $entity );
 
@@ -53,7 +58,7 @@ class Queue_Item_Repository extends Base_Repository implements QueueItemReposito
 		$queue_name_index = 'index_' . $index_map['queueName'];
 
 		$running_queues_query = "SELECT $queue_name_index FROM `$this->table_name` q2 WHERE q2.`$status_index` = '"
-		                        . QueueItem::IN_PROGRESS . "' AND q2.`type` = $type";
+								. QueueItem::IN_PROGRESS . "' AND q2.`type` = $type";
 
 		$sql = "SELECT queueTable.* 
 	            FROM (
@@ -71,17 +76,14 @@ class Queue_Item_Repository extends Base_Repository implements QueueItemReposito
 	}
 
 	/**
-	 * Creates or updates given queue item. If queue item id is not set, new queue item will be created otherwise
-	 * update will be performed.
+	 * Creates or updates given queue item. If queue item id is not set, new queue item will be created otherwise update will be performed.
 	 *
-	 * @param QueueItem $queue_item Item to save
-	 * @param array $additional_where List of key/value pairs that must be satisfied upon saving queue item. Key is
-	 *                               queue item property and value is condition value for that property. Example for MySql storage:
-	 *                               $storage->save($queueItem, array('status' => 'queued')) should produce query
-	 *                               UPDATE queue_storage_table SET .... WHERE .... AND status => 'queued'
+	 * @param QueueItem $queue_item Item to save.
+	 * @param array     $additional_where List of key/value pairs that must be satisfied upon saving queue item.
+	 *                                    Key is queue item property and value is condition value for that property.
 	 *
-	 * @return int Id of saved queue item
-	 * @throws \Logeecom\Infrastructure\TaskExecution\Exceptions\QueueItemSaveException if queue item could not be saved.
+	 * @return int Id of saved queue item.
+	 * @throws QueueItemSaveException If queue item could not be saved.
 	 */
 	public function saveWithCondition( QueueItem $queue_item, array $additional_where = array() ) {
 		$item_id = null;
@@ -108,9 +110,10 @@ class Queue_Item_Repository extends Base_Repository implements QueueItemReposito
 	 * Updates database record with data from provided $queueItem.
 	 *
 	 * @param QueueItem $queue_item Queue item.
-	 * @param array $conditions Array of update conditions.
+	 * @param array     $conditions Array of update conditions.
 	 *
-	 * @throws \Logeecom\Infrastructure\TaskExecution\Exceptions\QueueItemSaveException Queue item save exception.
+	 * @throws QueueItemSaveException Queue item save exception.
+	 * @throws QueryFilterInvalidParamException If filter condition is invalid.
 	 */
 	private function update_queue_item( QueueItem $queue_item, array $conditions = array() ) {
 		$conditions = array_merge( $conditions, array( 'id' => $queue_item->getId() ) );
@@ -129,16 +132,21 @@ class Queue_Item_Repository extends Base_Repository implements QueueItemReposito
 	 * @param array $conditions Array of update conditions.
 	 *
 	 * @return QueueItem|null First found entity or NULL.
+	 * @throws QueryFilterInvalidParamException If filter condition is invalid.
 	 */
 	private function select_for_update( array $conditions ) {
-		/** @var Entity $entity */
-		$entity          = new $this->entity_class;
+		/**
+		 * Entity object.
+		 *
+		 * @var Entity $entity
+		 */
+		$entity          = new $this->entity_class();
 		$type            = $entity->getConfig()->getType();
 		$field_index_map = IndexHelper::mapFieldsToIndexes( $entity );
 
 		$filter = $this->build_query_filter( $conditions );
 
-		$query = "SELECT * FROM {$this->table_name} WHERE type = '$type' ";
+		$query  = "SELECT * FROM {$this->table_name} WHERE type = '$type' ";
 		$query .= $this->apply_query_filter( $filter, $field_index_map );
 		$query .= ' FOR UPDATE';
 
@@ -150,9 +158,9 @@ class Queue_Item_Repository extends Base_Repository implements QueueItemReposito
 	}
 
 	/**
-	 * @noinspection PhpDocMissingThrowsInspection
-	 *
 	 * Builds query filter from conditions array.
+	 *
+	 * @noinspection PhpDocMissingThrowsInspection
 	 *
 	 * @param array $conditions Array of conditions.
 	 *
@@ -180,7 +188,7 @@ class Queue_Item_Repository extends Base_Repository implements QueueItemReposito
 	 *
 	 * @param QueueItem $item Queue item.
 	 *
-	 * @throws \Logeecom\Infrastructure\TaskExecution\Exceptions\QueueItemSaveException Queue item save exception.
+	 * @throws QueueItemSaveException Queue item save exception.
 	 */
 	private function check_if_record_exists( QueueItem $item = null ) {
 		if ( null === $item ) {
@@ -195,7 +203,7 @@ class Queue_Item_Repository extends Base_Repository implements QueueItemReposito
 	 * Updates single record.
 	 *
 	 * @param QueueItem $item Queue item.
-	 * @param array $conditions List of simple search filters as key-value pair to find records to update.
+	 * @param array     $conditions List of simple search filters as key-value pair to find records to update.
 	 *
 	 * @return bool TRUE if operation succeeded; otherwise, FALSE.
 	 *
@@ -214,7 +222,7 @@ class Queue_Item_Repository extends Base_Repository implements QueueItemReposito
 			}
 		}
 
-		// only one record should be updated
+		// Only one record should be updated.
 		return 1 === $this->db->update( $this->table_name, $prepared, $indexed_conditions );
 	}
 }

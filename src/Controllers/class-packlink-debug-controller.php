@@ -15,6 +15,7 @@ use Packlink\WooCommerce\Components\Utility\Debug_Helper;
 
 /**
  * Class Packlink_Debug_Controller
+ *
  * @package Packlink\WooCommerce\Controllers
  */
 class Packlink_Debug_Controller extends Packlink_Base_Controller {
@@ -37,11 +38,11 @@ class Packlink_Debug_Controller extends Packlink_Base_Controller {
 	 * @param string $output_file_name Output file name.
 	 */
 	private function return_file( $file_path, $output_file_name = '' ) {
-		$fileName = $output_file_name !== '' ? $output_file_name : basename( $file_path );
+		$file_name = '' !== $output_file_name ? $output_file_name : basename( $file_path );
 
 		header( 'Content-Description: File Transfer' );
 		header( 'Content-Type: application/octet-stream' );
-		header( 'Content-Disposition: attachment; filename=' . $fileName );
+		header( 'Content-Disposition: attachment; filename=' . $file_name );
 		header( 'Expires: 0' );
 		header( 'Cache-Control: must-revalidate' );
 		header( 'Pragma: public' );

@@ -9,10 +9,15 @@ namespace Packlink\WooCommerce\Components\Validators;
 
 /**
  * Class Parcel_Validator
+ *
  * @package Packlink\WooCommerce\Components\Validators
  */
 class Parcel_Validator {
-
+	/**
+	 * Allowed fields.
+	 *
+	 * @var string[]
+	 */
 	private static $fields = array(
 		'weight',
 		'width',
@@ -20,6 +25,11 @@ class Parcel_Validator {
 		'length',
 	);
 
+	/**
+	 * Integer fields.
+	 *
+	 * @var string[]
+	 */
 	private static $int_fields = array(
 		'width',
 		'height',

@@ -13,11 +13,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 namespace Packlink\WooCommerce\Controllers;
 
-
 use Packlink\WooCommerce\Components\Order\Order_Meta_Keys;
 
 /**
  * Class Packlink_Checkout_Controller
+ *
  * @package Packlink\WooCommerce\Controllers
  */
 class Packlink_Checkout_Controller extends Packlink_Base_Controller {

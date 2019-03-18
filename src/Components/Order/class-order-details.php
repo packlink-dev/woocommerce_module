@@ -11,11 +11,14 @@ use Packlink\BusinessLogic\ShippingMethod\Utility\ShipmentStatus;
 
 /**
  * Class Order_Details
+ *
  * @package Packlink\WooCommerce\Components\Models
  */
 class Order_Details {
 
 	/**
+	 * Shipment status translation map.
+	 *
 	 * @var array
 	 */
 	private static $status_translations = array(
@@ -202,7 +205,7 @@ class Order_Details {
 	 */
 	public function get_status_translation() {
 		$code = $this->status ?: ShipmentStatus::STATUS_PENDING;
-		if ( ! array_key_exists($code, static::$status_translations) ) {
+		if ( ! array_key_exists( $code, static::$status_translations ) ) {
 			return $code;
 		}
 
@@ -354,7 +357,9 @@ class Order_Details {
 	}
 
 	/**
-	 * @param bool $creating
+	 * Sets creating flag.
+	 *
+	 * @param bool $creating Creating flag.
 	 */
 	public function set_creating( $creating ) {
 		$this->creating = $creating;

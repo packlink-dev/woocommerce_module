@@ -248,7 +248,7 @@ $data = $this->resolve_view_arguments();
                             <div class=" pl-basic-settings-page-form-input-item">
                                 <div class=" pl-form-section-input pl-text-input">
                                     <input type="text" class="pl-warehouse-input"
-                                           id="pl-default-warehouse-postal_code"/>
+                                           id="pl-default-warehouse-postal_code" autocomplete="new-password" />
                                     <span class="pl-text-input-label"><?php echo __( 'City or postal code', 'packlink-pro-shipping' ); ?></span>
                                     <span class="pl-input-search-icon">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="30" height="31" viewBox="0 0 30 31">

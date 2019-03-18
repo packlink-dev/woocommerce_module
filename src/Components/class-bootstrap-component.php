@@ -12,6 +12,7 @@ use Logeecom\Infrastructure\Configuration\Configuration;
 use Logeecom\Infrastructure\Http\CurlHttpClient;
 use Logeecom\Infrastructure\Http\HttpClient;
 use Logeecom\Infrastructure\Logger\Interfaces\ShopLoggerAdapter;
+use Logeecom\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use Logeecom\Infrastructure\ORM\RepositoryRegistry;
 use Logeecom\Infrastructure\ServiceRegister;
 use Logeecom\Infrastructure\TaskExecution\Process;
@@ -36,35 +37,51 @@ use Packlink\WooCommerce\Components\ShippingMethod\Shop_Shipping_Method_Service;
  */
 class Bootstrap_Component extends \Packlink\BusinessLogic\BootstrapComponent {
 	/**
-	 * @inheritdoc
+	 * Initializes services and utilities.
 	 */
 	protected static function initServices() {
 		parent::initServices();
 
-		ServiceRegister::registerService( Configuration::CLASS_NAME, function () {
-			return Config_Service::getInstance();
-		} );
+		ServiceRegister::registerService(
+			Configuration::CLASS_NAME,
+			function () {
+				return Config_Service::getInstance();
+			}
+		);
 
-		ServiceRegister::registerService( ShopLoggerAdapter::CLASS_NAME, function () {
-			return Logger_Service::getInstance();
-		} );
+		ServiceRegister::registerService(
+			ShopLoggerAdapter::CLASS_NAME,
+			function () {
+				return Logger_Service::getInstance();
+			}
+		);
 
-		ServiceRegister::registerService( ShopShippingMethodService::CLASS_NAME, function () {
-			return Shop_Shipping_Method_Service::getInstance();
-		} );
+		ServiceRegister::registerService(
+			ShopShippingMethodService::CLASS_NAME,
+			function () {
+				return Shop_Shipping_Method_Service::getInstance();
+			}
+		);
 
-		ServiceRegister::registerService( OrderRepository::CLASS_NAME, function () {
-			return Order_Repository::getInstance();
-		} );
+		ServiceRegister::registerService(
+			OrderRepository::CLASS_NAME,
+			function () {
+				return Order_Repository::getInstance();
+			}
+		);
 
-		ServiceRegister::registerService( HttpClient::CLASS_NAME, function () {
-			return new CurlHttpClient();
-		} );
+		ServiceRegister::registerService(
+			HttpClient::CLASS_NAME,
+			function () {
+				return new CurlHttpClient();
+			}
+		);
 	}
 
 	/**
-	 * @inheritdoc
-	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\RepositoryClassException
+	 * Initializes repositories.
+	 *
+	 * @throws RepositoryClassException If repository class is not instance of repository interface.
 	 */
 	protected static function initRepositories() {
 		parent::initRepositories();

@@ -68,7 +68,7 @@ class Packlink_Base_Controller {
 	 * Sets response header content type to json, echos supplied $data as a json string and terminates request.
 	 *
 	 * @param array $data Array to be returned as a json response.
-	 * @param int $status_code Response status code.
+	 * @param int   $status_code Response status code.
 	 */
 	protected function return_json( array $data, $status_code = 200 ) {
 		wp_send_json( $data, $status_code );
@@ -123,14 +123,14 @@ class Packlink_Base_Controller {
 	 * Validates if plugin is enabled and if it is post request.
 	 *
 	 * @param string $post Is post request.
-	 * @param bool $only_admin Only admin should have access.
+	 * @param bool   $only_admin Only admin should have access.
 	 */
 	protected function validate( $post = 'no', $only_admin = false ) {
 		if ( ! Shop_Helper::is_plugin_enabled() ) {
 			exit();
 		}
 
-		if ( $post === 'yes' && ! $this->is_post() ) {
+		if ( 'yes' === $post && ! $this->is_post() ) {
 			$this->redirect404();
 		}
 

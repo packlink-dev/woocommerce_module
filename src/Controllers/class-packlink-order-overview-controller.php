@@ -16,13 +16,14 @@ use WC_Order;
 
 /**
  * Class Packlink_Order_Overview_Controller
+ *
  * @package Packlink\WooCommerce\Components\Order
  */
 class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 
-	const COLUMN_ID = 'packlink_print_label';
+	const COLUMN_ID          = 'packlink_print_label';
 	const COLUMN_PACKLINK_ID = 'packlink_column';
-	const BULK_ACTION_ID = 'packlink_print_labels';
+	const BULK_ACTION_ID     = 'packlink_print_labels';
 	/**
 	 * Flag if hidden endpoint url is printed.
 	 *
@@ -77,7 +78,7 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 			$status = Order_Details_Helper::get_label_status( $post );
 
 			if ( ! $status['available'] ) {
-				echo __( 'Label is not yet available.', 'packlink-pro-shipping' );
+				echo esc_html( __( 'Label is not yet available.', 'packlink-pro-shipping' ) );
 			} else {
 				$class     = 'pl-print-label button ' . ( $status['printed'] ? '' : 'button-primary' );
 				$label     = $status['printed'] ? __( 'Printed label', 'packlink-pro-shipping' ) : __( 'Print label', 'packlink-pro-shipping' );
@@ -126,7 +127,7 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 	 * Handles bulk printing of labels.
 	 */
 	public function bulk_print_labels() {
-		// if an array with order IDs is not presented, exit the function
+		// if an array with order IDs is not presented, exit the function.
 		if ( ! isset( $_REQUEST['post'] ) && ! is_array( $_REQUEST['post'] ) ) {
 			return;
 		}

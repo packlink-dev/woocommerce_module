@@ -13,6 +13,7 @@ use Logeecom\Infrastructure\ORM\Entity;
 
 /**
  * Class Shipping_Method_Map
+ *
  * @package Packlink\WooCommerce\Components\ShippingMethod
  */
 class Shipping_Method_Map extends Entity {
@@ -75,10 +76,10 @@ class Shipping_Method_Map extends Entity {
 	/**
 	 * Sets WooCommerce shipping method identifier.
 	 *
-	 * @param int WooCommerce shipping method identifier.
+	 * @param int $woocommerce_shipping_method_id WooCommerce shipping method identifier.
 	 */
-	public function setWoocommerceShippingMethodId( $woocommerceShippingMethodId ) {
-		$this->woocommerceShippingMethodId = $woocommerceShippingMethodId;
+	public function setWoocommerceShippingMethodId( $woocommerce_shipping_method_id ) {
+		$this->woocommerceShippingMethodId = $woocommerce_shipping_method_id;
 	}
 
 	/**
@@ -93,10 +94,10 @@ class Shipping_Method_Map extends Entity {
 	/**
 	 * Sets Packlink shipping method identifier.
 	 *
-	 * @param int Packlink shipping method identifier.
+	 * @param int $packlink_shipping_method_id Packlink shipping method identifier.
 	 */
-	public function setPacklinkShippingMethodId( $packlinkShippingMethodId ) {
-		$this->packlinkShippingMethodId = $packlinkShippingMethodId;
+	public function setPacklinkShippingMethodId( $packlink_shipping_method_id ) {
+		$this->packlinkShippingMethodId = $packlink_shipping_method_id;
 	}
 
 	/**
@@ -111,9 +112,9 @@ class Shipping_Method_Map extends Entity {
 	/**
 	 * Sets zone identifier.
 	 *
-	 * @param int $zoneId Zone identifier.
+	 * @param int $zone_id Zone identifier.
 	 */
-	public function setZoneId( $zoneId ) {
-		$this->zoneId = $zoneId;
+	public function setZoneId( $zone_id ) {
+		$this->zoneId = $zone_id;
 	}
 }

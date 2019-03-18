@@ -21,13 +21,14 @@ use WC_Product;
 
 /**
  * Class Packlink_Shipping_Method
+ *
  * @package Packlink\WooCommerce\Components\ShippingMethod
  */
 class Packlink_Shipping_Method extends \WC_Shipping_Method {
 	/**
 	 * Fully qualified name of this interface.
 	 */
-	const CLASS_NAME = __CLASS__;
+	const CLASS_NAME               = __CLASS__;
 	const PACKLINK_SHIPPING_METHOD = 'packlink_shipping_method';
 
 	/**
@@ -35,13 +36,13 @@ class Packlink_Shipping_Method extends \WC_Shipping_Method {
 	 *
 	 * @var array
 	 */
-	static private $shipping_services = array();
+	private static $shipping_services = array();
 	/**
 	 * Available shipping services loaded.
 	 *
 	 * @var bool
 	 */
-	static private $loaded = false;
+	private static $loaded = false;
 	/**
 	 * Pricing policy.
 	 *
@@ -68,9 +69,9 @@ class Packlink_Shipping_Method extends \WC_Shipping_Method {
 	private $repository;
 
 	/**
-	 * @noinspection PhpDocMissingThrowsInspection
-	 *
 	 * Constructor.
+	 *
+	 * @noinspection PhpDocMissingThrowsInspection
 	 *
 	 * @param int $instance_id Instance ID.
 	 */
@@ -100,19 +101,21 @@ class Packlink_Shipping_Method extends \WC_Shipping_Method {
 	 * Initialize settings.
 	 */
 	public function init() {
-		// Load the settings API
+		// Load the settings API.
 		$this->init_form_fields();
 		$this->init_settings();
 
 		$this->title        = $this->get_option( 'title', __( 'Packlink Shipping', 'packlink_pro_shipping' ) );
 		$this->price_policy = $this->get_option( 'price_policy', __( 'Packlink prices', 'packlink_pro_shipping' ) );
 
-		// Save settings in admin if you have any defined
+		// Save settings in admin if you have any defined.
 		add_action( 'woocommerce_update_options_shipping_' . $this->id, array( $this, 'process_admin_options' ) );
 	}
 
 	/**
-	 * @inheritdoc
+	 * Initialise settings form fields.
+	 *
+	 * Add an array of fields to be displayed on the gateway's settings screen.
 	 */
 	public function init_form_fields() {
 		$this->instance_form_fields = array(
@@ -145,12 +148,14 @@ class Packlink_Shipping_Method extends \WC_Shipping_Method {
 		}
 
 		$id = $shipping_method->getId();
-		$this->add_rate( array(
-			'id'      => $this->get_rate_id(),
-			'label'   => $this->title,
-			'cost'    => -1 === $id ? min(static::$shipping_services) : static::$shipping_services[ $id ],
-			'package' => $package,
-		) );
+		$this->add_rate(
+			array(
+				'id'      => $this->get_rate_id(),
+				'label'   => $this->title,
+				'cost'    => -1 === $id ? min( static::$shipping_services ) : static::$shipping_services[ $id ],
+				'package' => $package,
+			)
+		);
 	}
 
 	/**
@@ -167,9 +172,9 @@ class Packlink_Shipping_Method extends \WC_Shipping_Method {
 	}
 
 	/**
-	 * @noinspection PhpDocMissingThrowsInspection
-	 *
 	 * Returns Packlink shipping method that is assigned to this WooCommerce shipping method.
+	 *
+	 * @noinspection PhpDocMissingThrowsInspection
 	 *
 	 * @return ShippingMethod Shipping method.
 	 */
@@ -178,7 +183,11 @@ class Packlink_Shipping_Method extends \WC_Shipping_Method {
 		/** @noinspection PhpUnhandledExceptionInspection */
 		$filter->where( 'woocommerceShippingMethodId', '=', $this->instance_id );
 
-		/** @var Shipping_Method_Map $map_entry */
+		/**
+		 * Shipping method map.
+		 *
+		 * @var Shipping_Method_Map $map_entry
+		 */
 		$map_entry = $this->repository->selectOne( $filter );
 		if ( null === $map_entry ) {
 			return null;
@@ -195,7 +204,7 @@ class Packlink_Shipping_Method extends \WC_Shipping_Method {
 	/**
 	 * Builds parcels out of shipping packages.
 	 *
-	 * @param array $package Packages.
+	 * @param array      $package Packages.
 	 * @param ParcelInfo $default Default parcel.
 	 *
 	 * @return Package[] Array of parcels.
@@ -204,7 +213,11 @@ class Packlink_Shipping_Method extends \WC_Shipping_Method {
 		$parcels  = array();
 		$contents = isset( $package['contents'] ) ? $package['contents'] : array();
 		foreach ( $contents as $item ) {
-			/** @var WC_Product $product */
+			/**
+			 * WooCommerce product.
+			 *
+			 * @var WC_Product $product
+			 */
 			$product = $item['data'];
 			for ( $i = 0; $i < $item['quantity']; $i ++ ) {
 				$parcel = new Package();
@@ -224,7 +237,7 @@ class Packlink_Shipping_Method extends \WC_Shipping_Method {
 	/**
 	 * Loads shipping costs.
 	 *
-	 * @param array $package Package.
+	 * @param array          $package Package.
 	 * @param ShippingMethod $shipping_method Shipping method.
 	 *
 	 * @return bool Success indicator.
@@ -237,7 +250,7 @@ class Packlink_Shipping_Method extends \WC_Shipping_Method {
 			return null;
 		}
 
-		$id = $shipping_method->getId();
+		$id         = $shipping_method->getId();
 		$to_country = isset( $package['destination']['country'] ) ? $package['destination']['country'] : $warehouse->country;
 		$to_zip     = isset( $package['destination']['postcode'] ) ? $package['destination']['postcode'] : $warehouse->postalCode;
 		if ( ! static::$loaded ) {
@@ -254,6 +267,6 @@ class Packlink_Shipping_Method extends \WC_Shipping_Method {
 			static::$loaded = true;
 		}
 
-		return array_key_exists( $id, static::$shipping_services ) || ( -1 === $id && ! empty(static::$shipping_services) );
+		return array_key_exists( $id, static::$shipping_services ) || ( -1 === $id && ! empty( static::$shipping_services ) );
 	}
 }

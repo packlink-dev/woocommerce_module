@@ -20,6 +20,7 @@ use WP_Post;
 
 /**
  * Class Packlink_Order_Detail
+ *
  * @package Packlink\WooCommerce\Controllers
  */
 class Packlink_Order_Details_Controller extends Packlink_Base_Controller {

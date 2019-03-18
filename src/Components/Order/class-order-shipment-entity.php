@@ -13,6 +13,7 @@ use Logeecom\Infrastructure\ORM\Entity;
 
 /**
  * Class Order_Shipment_Entity
+ *
  * @package Packlink\WooCommerce\Components\Order
  */
 class Order_Shipment_Entity extends Entity {
@@ -25,7 +26,7 @@ class Order_Shipment_Entity extends Entity {
 	 *
 	 * @var array
 	 */
-	protected $fields = array( 'id', 'woocommerceOrderId', 'packlinkShipmentReference', 'status');
+	protected $fields = array( 'id', 'woocommerceOrderId', 'packlinkShipmentReference', 'status' );
 	/**
 	 * WooCommerce order identifier.
 	 *
@@ -71,10 +72,10 @@ class Order_Shipment_Entity extends Entity {
 	/**
 	 * Sets WooCommerce order identifier.
 	 *
-	 * @param int $woocommerceOrderId Order identifier.
+	 * @param int $woocommerce_order_id Order identifier.
 	 */
-	public function setWoocommerceOrderId( $woocommerceOrderId ) {
-		$this->woocommerceOrderId = $woocommerceOrderId;
+	public function setWoocommerceOrderId( $woocommerce_order_id ) {
+		$this->woocommerceOrderId = $woocommerce_order_id;
 	}
 
 	/**
@@ -89,10 +90,10 @@ class Order_Shipment_Entity extends Entity {
 	/**
 	 * Sets Packlink shipment reference.
 	 *
-	 * @param string Shipment reference.
+	 * @param string $packlink_shipment_reference Shipment reference.
 	 */
-	public function setPacklinkShipmentReference( $packlinkShipmentReference ) {
-		$this->packlinkShipmentReference = $packlinkShipmentReference;
+	public function setPacklinkShipmentReference( $packlink_shipment_reference ) {
+		$this->packlinkShipmentReference = $packlink_shipment_reference;
 	}
 
 	/**

@@ -13,6 +13,7 @@ use Packlink\WooCommerce\Components\Utility\Shop_Helper;
 
 /**
  * Class Config_Service
+ *
  * @package Packlink\WooCommerce\Components\Services
  */
 class Config_Service extends Configuration {
@@ -63,9 +64,13 @@ class Config_Service extends Configuration {
 	 * @return string Formatted URL of async process starter endpoint.
 	 */
 	public function getAsyncProcessUrl( $guid ) {
-		return Shop_Helper::get_controller_url( 'Async_Process', 'run', array(
-			'guid' => $guid
-		) );
+		return Shop_Helper::get_controller_url(
+			'Async_Process',
+			'run',
+			array(
+				'guid' => $guid,
+			)
+		);
 	}
 
 	/**
@@ -101,9 +106,9 @@ class Config_Service extends Configuration {
 	 * @return ShippingMethod|null Shipping method.
 	 */
 	public function get_default_shipping_method() {
-		$value = $this->getConfigValue('Default_Shipping');
+		$value = $this->getConfigValue( 'Default_Shipping' );
 
-		return $value && is_array($value) ? ShippingMethod::fromArray($value) : null;
+		return $value && is_array( $value ) ? ShippingMethod::fromArray( $value ) : null;
 	}
 
 	/**
@@ -112,6 +117,6 @@ class Config_Service extends Configuration {
 	 * @param ShippingMethod $shipping_method Shipping method.
 	 */
 	public function set_default_shipping_method( ShippingMethod $shipping_method = null ) {
-		$this->saveConfigValue('Default_Shipping', $shipping_method ? $shipping_method->toArray() : null);
+		$this->saveConfigValue( 'Default_Shipping', $shipping_method ? $shipping_method->toArray() : null );
 	}
 }

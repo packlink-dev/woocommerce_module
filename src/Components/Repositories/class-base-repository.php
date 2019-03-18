@@ -59,11 +59,11 @@ class Base_Repository implements RepositoryInterface {
 	}
 
 	/**
-	 * @noinspection PhpDocMissingThrowsInspection
-	 *
 	 * Sets repository entity
 	 *
-	 * @param string $entity_class
+	 * @noinspection PhpDocMissingThrowsInspection
+	 *
+	 * @param string $entity_class Entity class.
 	 */
 	public function setEntityClass( $entity_class ) {
 		$this->entity_class = $entity_class;
@@ -75,11 +75,15 @@ class Base_Repository implements RepositoryInterface {
 	 * @param QueryFilter $filter Filter for query.
 	 *
 	 * @return Entity[] A list of found entities ot empty array.
-	 * @throws QueryFilterInvalidParamException
+	 * @throws QueryFilterInvalidParamException If filter condition is invalid.
 	 */
 	public function select( QueryFilter $filter = null ) {
-		/** @var Entity $entity */
-		$entity = new $this->entity_class;
+		/**
+		 * Entity object.
+		 *
+		 * @var Entity $entity
+		 */
+		$entity = new $this->entity_class();
 		$type   = $entity->getConfig()->getType();
 
 		$query = "SELECT * FROM {$this->table_name} WHERE type = '$type' ";
@@ -98,7 +102,7 @@ class Base_Repository implements RepositoryInterface {
 	 * @param QueryFilter $filter Filter for query.
 	 *
 	 * @return Entity|null First found entity or NULL.
-	 * @throws QueryFilterInvalidParamException
+	 * @throws QueryFilterInvalidParamException If filter condition is invalid.
 	 */
 	public function selectOne( QueryFilter $filter = null ) {
 		if ( ! $filter ) {
@@ -138,7 +142,7 @@ class Base_Repository implements RepositoryInterface {
 	public function update( Entity $entity ) {
 		$item = $this->prepare_entity_for_storage( $entity );
 
-		// only one record should be updated
+		// Only one record should be updated.
 		return 1 === $this->db->update( $this->table_name, $item, array( 'id' => $entity->getId() ) );
 	}
 
@@ -159,11 +163,15 @@ class Base_Repository implements RepositoryInterface {
 	 * @param QueryFilter $filter Filter for query.
 	 *
 	 * @return int Number of records that match filter criteria.
-	 * @throws QueryFilterInvalidParamException
+	 * @throws QueryFilterInvalidParamException If filter condition is invalid.
 	 */
 	public function count( QueryFilter $filter = null ) {
-		/** @var Entity $entity */
-		$entity = new $this->entity_class;
+		/**
+		 * Entity object.
+		 *
+		 * @var Entity $entity
+		 */
+		$entity = new $this->entity_class();
 		$type   = $entity->getConfig()->getType();
 
 		$query = "SELECT COUNT(*) as `total` FROM {$this->table_name} WHERE type = '$type' ";
@@ -225,7 +233,7 @@ class Base_Repository implements RepositoryInterface {
 	/**
 	 * Converts filter value to index string representation.
 	 *
-	 * @param QueryCondition $condition
+	 * @param QueryCondition $condition Query condition.
 	 *
 	 * @return string|null Converted value.
 	 */
@@ -242,13 +250,13 @@ class Base_Repository implements RepositoryInterface {
 				$value = $this->escape_value( $condition->getValue() );
 				break;
 			case 'array':
-				$values        = $condition->getValue();
-				$escapedValues = array();
+				$values         = $condition->getValue();
+				$escaped_values = array();
 				foreach ( $values as $value ) {
-					$escapedValues[] = is_string( $value ) ? $this->escape_value( $value ) : $value;
+					$escaped_values[] = is_string( $value ) ? $this->escape_value( $value ) : $value;
 				}
 
-				$value = '(' . implode( ', ', $escapedValues ) . ')';
+				$value = '(' . implode( ', ', $escaped_values ) . ')';
 				break;
 		}
 
@@ -259,24 +267,24 @@ class Base_Repository implements RepositoryInterface {
 	 * Builds query filter part of the query.
 	 *
 	 * @param QueryFilter $filter Query filter object.
-	 * @param array $field_index_map Property to index number map.
+	 * @param array       $field_index_map Property to index number map.
 	 *
 	 * @return string Query filter addendum.
-	 * @throws QueryFilterInvalidParamException
+	 * @throws QueryFilterInvalidParamException If filter condition is invalid.
 	 */
 	protected function apply_query_filter( QueryFilter $filter, array $field_index_map = array() ) {
 		$query      = '';
 		$conditions = $filter->getConditions();
 		if ( ! empty( $conditions ) ) {
 			$query .= ' AND (';
-			$first = true;
+			$first  = true;
 			foreach ( $conditions as $condition ) {
 				$this->validate_index_column( $condition->getColumn(), $field_index_map );
 				$chain_op = $first ? '' : $condition->getChainOperator();
 				$first    = false;
 				$column   = 'id' === $condition->getColumn() ? 'id' : 'index_' . $field_index_map[ $condition->getColumn() ];
 				$operator = $condition->getOperator();
-				$query    .= " $chain_op $column $operator " . $this->convert_value( $condition );
+				$query   .= " $chain_op $column $operator " . $this->convert_value( $condition );
 			}
 
 			$query .= ')';
@@ -285,12 +293,12 @@ class Base_Repository implements RepositoryInterface {
 		if ( $filter->getOrderByColumn() ) {
 			$this->validate_index_column( $filter->getOrderByColumn(), $field_index_map );
 			$order_index = 'id' === $filter->getOrderByColumn() ? 'id' : 'index_' . $field_index_map[ $filter->getOrderByColumn() ];
-			$query       .= " ORDER BY {$order_index} {$filter->getOrderDirection()}";
+			$query      .= " ORDER BY {$order_index} {$filter->getOrderDirection()}";
 		}
 
 		if ( $filter->getLimit() ) {
 			$offset = (int) $filter->getOffset();
-			$query  .= " LIMIT {$offset}, {$filter->getLimit()}";
+			$query .= " LIMIT {$offset}, {$filter->getLimit()}";
 		}
 
 		return $query;
@@ -304,12 +312,20 @@ class Base_Repository implements RepositoryInterface {
 	 * @return Entity[] Array of transformed entities.
 	 */
 	protected function translateToEntities( array $result ) {
-		/** @var Entity[] $entities */
+		/**
+		 * Array of decoded entities.
+		 *
+		 * @var Entity[] $entities
+		 */
 		$entities = array();
 		foreach ( $result as $item ) {
-			/** @var Entity $entity */
+			/**
+			 * Entity object.
+			 *
+			 * @var Entity $entity
+			 */
 			$data   = json_decode( $item['data'], true );
-			$entity = isset( $data['class_name'] ) ? new $data['class_name'] : new $this->entity_class;
+			$entity = isset( $data['class_name'] ) ? new $data['class_name']() : new $this->entity_class();
 			$entity->inflate( $data );
 			$entity->setId( $item['id'] );
 
@@ -327,9 +343,9 @@ class Base_Repository implements RepositoryInterface {
 	 * @return int Inserted entity identifier.
 	 */
 	protected function save_entity_to_storage( Entity $entity ) {
-		$storageItem = $this->prepare_entity_for_storage( $entity );
+		$storage_item = $this->prepare_entity_for_storage( $entity );
 
-		$this->db->insert( $this->table_name, $storageItem );
+		$this->db->insert( $this->table_name, $storage_item );
 
 		$insert_id = (int) $this->db->insert_id;
 		$entity->setId( $insert_id );
@@ -345,8 +361,8 @@ class Base_Repository implements RepositoryInterface {
 	 * @return array Item prepared for storage.
 	 */
 	protected function prepare_entity_for_storage( Entity $entity ) {
-		$indexes     = IndexHelper::transformFieldsToIndexes( $entity );
-		$storageItem = array(
+		$indexes      = IndexHelper::transformFieldsToIndexes( $entity );
+		$storage_item = array(
 			'type'    => $entity->getConfig()->getType(),
 			'index_1' => null,
 			'index_2' => null,
@@ -355,23 +371,23 @@ class Base_Repository implements RepositoryInterface {
 			'index_5' => null,
 			'index_6' => null,
 			'index_7' => null,
-			'data'    => json_encode( $entity->toArray() ),
+			'data'    => wp_json_encode( $entity->toArray() ),
 		);
 
 		foreach ( $indexes as $index => $value ) {
-			$storageItem[ 'index_' . $index ] = $value;
+			$storage_item[ 'index_' . $index ] = $value;
 		}
 
-		return $storageItem;
+		return $storage_item;
 	}
 
 	/**
 	 * Validates if column can be filtered or sorted by.
 	 *
 	 * @param string $column Column name.
-	 * @param array $index_map Index map.
+	 * @param array  $index_map Index map.
 	 *
-	 * @throws QueryFilterInvalidParamException
+	 * @throws QueryFilterInvalidParamException If filter condition is invalid.
 	 */
 	protected function validate_index_column( $column, array $index_map ) {
 		if ( 'id' !== $column && ! array_key_exists( $column, $index_map ) ) {

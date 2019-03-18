@@ -9,6 +9,7 @@ namespace Packlink\WooCommerce\Components\Utility;
 
 /**
  * Class Version_File_Reader
+ *
  * @package Packlink\WooCommerce\Components\Utility
  */
 class Version_File_Reader {

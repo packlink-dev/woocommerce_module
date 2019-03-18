@@ -12,6 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use Logeecom\Infrastructure\ServiceRegister;
+use Logeecom\Infrastructure\TaskExecution\Exceptions\QueueStorageUnavailableException;
 use Packlink\BusinessLogic\Configuration;
 use Packlink\BusinessLogic\Controllers\DashboardController;
 use Packlink\BusinessLogic\Controllers\DTO\ShippingMethodConfiguration;
@@ -32,6 +33,7 @@ use Packlink\WooCommerce\Components\Validators\Warehouse_Validator;
 
 /**
  * Class Packlink_Frontend_Controller
+ *
  * @package Packlink\WooCommerce\Controllers
  */
 class Packlink_Frontend_Controller extends Packlink_Base_Controller {
@@ -89,7 +91,7 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	/**
 	 * Renders appropriate view.
 	 *
-	 * @throws \Logeecom\Infrastructure\TaskExecution\Exceptions\QueueStorageUnavailableException
+	 * @throws QueueStorageUnavailableException If queue storage is unavailable.
 	 */
 	public function render() {
 		$login_failure = false;
@@ -108,14 +110,18 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	/**
 	 * Logs in user.
 	 *
-	 * @throws \Logeecom\Infrastructure\TaskExecution\Exceptions\QueueStorageUnavailableException
+	 * @throws QueueStorageUnavailableException If queue storage is unavailable.
 	 */
 	public function login() {
 		$result = false;
 		$this->validate( 'yes', true );
 		$api_key = $this->get_param( 'api_key' );
 		if ( $api_key ) {
-			/** @var UserAccountService $user_service */
+			/**
+			 * User account service.
+			 *
+			 * @var UserAccountService $user_service
+			 */
 			$user_service = ServiceRegister::getService( UserAccountService::CLASS_NAME );
 			$result       = $user_service->login( $api_key );
 		}
@@ -129,7 +135,11 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	public function get_status() {
 		$this->validate( 'no', true );
 
-		/** @var DashboardController $dashboard_controller */
+		/**
+		 * Dashboard controller.
+		 *
+		 * @var DashboardController $dashboard_controller
+		 */
 		$dashboard_controller = ServiceRegister::getService( DashboardController::CLASS_NAME );
 		$status               = $dashboard_controller->getStatus();
 
@@ -166,7 +176,11 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	public function get_default_parcel() {
 		$this->validate( 'no', true );
 
-		/** @var Configuration $configuration */
+		/**
+		 * Configuration service.
+		 *
+		 * @var Configuration $configuration
+		 */
 		$configuration = ServiceRegister::getService( Configuration::CLASS_NAME );
 		$parcel        = $configuration->getDefaultParcel();
 
@@ -188,7 +202,11 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 			$this->return_json( $errors, 400 );
 		}
 
-		/** @var Configuration $configuration */
+		/**
+		 * Configuration service.
+		 *
+		 * @var Configuration $configuration
+		 */
 		$configuration = ServiceRegister::getService( Configuration::CLASS_NAME );
 		$configuration->setDefaultParcel( ParcelInfo::fromArray( $payload ) );
 
@@ -201,7 +219,11 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	public function get_default_warehouse() {
 		$this->validate( 'no', true );
 
-		/** @var Configuration $configuration */
+		/**
+		 * Configuration service.
+		 *
+		 * @var Configuration $configuration
+		 */
 		$configuration = ServiceRegister::getService( Configuration::CLASS_NAME );
 		$warehouse     = $configuration->getDefaultWarehouse();
 
@@ -217,7 +239,11 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 		$raw_json = $this->get_raw_input();
 		$payload  = json_decode( $raw_json, true );
 
-		/** @var Configuration $configuration */
+		/**
+		 * Configuration service.
+		 *
+		 * @var Configuration $configuration
+		 */
 		$configuration = ServiceRegister::getService( Configuration::CLASS_NAME );
 		if ( ! isset( $payload['country'] ) ) {
 			$user               = $configuration->getUserInfo();
@@ -248,11 +274,19 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 			$this->return_json( array() );
 		}
 
-		/** @var Configuration $configuration */
+		/**
+		 * Configuration service.
+		 *
+		 * @var Configuration $configuration
+		 */
 		$configuration    = ServiceRegister::getService( Configuration::CLASS_NAME );
 		$platform_country = $configuration->getUserInfo()->country;
 
-		/** @var LocationService $location_service */
+		/**
+		 * Location service.
+		 *
+		 * @var LocationService $location_service
+		 */
 		$location_service = ServiceRegister::getService( LocationService::CLASS_NAME );
 
 		try {
@@ -275,7 +309,11 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	public function get_all_shipping_methods() {
 		$this->validate( 'no', true );
 
-		/** @var ShippingMethodController $controller */
+		/**
+		 * Shipping method controller.
+		 *
+		 * @var ShippingMethodController $controller
+		 */
 		$controller = ServiceRegister::getService( ShippingMethodController::CLASS_NAME );
 		$result     = array();
 		foreach ( $controller->getAll() as $item ) {
@@ -340,7 +378,11 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 
 		$shipping_method = $this->build_shipping_method( $payload );
 
-		/** @var ShippingMethodController $controller */
+		/**
+		 * Shipping method controller.
+		 *
+		 * @var ShippingMethodController $controller
+		 */
 		$controller = ServiceRegister::getService( ShippingMethodController::CLASS_NAME );
 		$result     = $controller->save( $shipping_method );
 		if ( $result && ! $result->selected ) {
@@ -363,7 +405,10 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 
 		$result = array();
 		foreach ( wc_get_order_statuses() as $code => $label ) {
-			$result[] = array( 'code' => $code, 'label' => $label );
+			$result[] = array(
+				'code'  => $code,
+				'label' => $label,
+			);
 		}
 
 		$this->return_json( $result );
@@ -403,8 +448,8 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	protected function resolve_view_arguments() {
 		$user_info = $this->configuration->getUserInfo();
 		$locale    = 'ES';
-		if ( $user_info !== null && array_key_exists( $user_info->country, self::$help_urls ) ) {
-			$locale = $user_info !== null ? $user_info->country : 'ES';
+		if ( null !== $user_info && array_key_exists( $user_info->country, self::$help_urls ) ) {
+			$locale = null !== $user_info ? $user_info->country : 'ES';
 		}
 
 		return array(
@@ -474,9 +519,13 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 			$this->return_json( array( 'success' => false ), 400 );
 		}
 
-		/** @var ShippingMethodController $controller */
+		/**
+		 * Shipping method controller.
+		 *
+		 * @var ShippingMethodController $controller
+		 */
 		$controller = ServiceRegister::getService( ShippingMethodController::CLASS_NAME );
-		if ( $activate === 'yes' ) {
+		if ( 'yes' === $activate ) {
 			$result = $controller->activate( $payload['id'] );
 		} else {
 			$result = $controller->deactivate( $payload['id'] );
@@ -499,15 +548,15 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 		$shipping_method->showLogo    = $payload['showLogo'];
 		$shipping_method->pricePolicy = $payload['pricePolicy'];
 
-		if ( $shipping_method->pricePolicy === ShippingMethod::PRICING_POLICY_PERCENT ) {
+		if ( ShippingMethod::PRICING_POLICY_PERCENT === $shipping_method->pricePolicy ) {
 			$percent_price_policy                = $payload['percentPricePolicy'];
 			$shipping_method->percentPricePolicy = new PercentPricePolicy( $percent_price_policy['increase'], $percent_price_policy['amount'] );
-		} elseif ( $shipping_method->pricePolicy === ShippingMethod::PRICING_POLICY_FIXED_PRICE_BY_WEIGHT ) {
+		} elseif ( ShippingMethod::PRICING_POLICY_FIXED_PRICE_BY_WEIGHT === $shipping_method->pricePolicy ) {
 			$shipping_method->fixedPriceByWeightPolicy = array();
 			foreach ( $payload['fixedPriceByWeightPolicy'] as $item ) {
 				$shipping_method->fixedPriceByWeightPolicy[] = new FixedPricePolicy( $item['from'], $item['to'], $item['amount'] );
 			}
-		} elseif ( $shipping_method->pricePolicy === ShippingMethod::PRICING_POLICY_FIXED_PRICE_BY_VALUE ) {
+		} elseif ( ShippingMethod::PRICING_POLICY_FIXED_PRICE_BY_VALUE === $shipping_method->pricePolicy ) {
 			$shipping_method->fixedPriceByValuePolicy = array();
 			foreach ( $payload['fixedPriceByValuePolicy'] as $item ) {
 				$shipping_method->fixedPriceByValuePolicy[] = new FixedPricePolicy( $item['from'], $item['to'], $item['amount'] );
@@ -523,7 +572,11 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	 * @return bool Authenticated flag.
 	 */
 	private function is_user_logged_in() {
-		/** @var Configuration $configuration */
+		/**
+		 * Configuration service.
+		 *
+		 * @var Configuration $configuration
+		 */
 		$configuration = ServiceRegister::getService( Configuration::CLASS_NAME );
 		$token         = $configuration->getAuthorizationToken();
 

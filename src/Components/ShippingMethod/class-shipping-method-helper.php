@@ -14,6 +14,7 @@ use Packlink\WooCommerce\Components\Utility\Shop_Helper;
 
 /**
  * Class Shipping_Method_Helper
+ *
  * @package Packlink\WooCommerce\Components\ShippingMethod
  */
 class Shipping_Method_Helper {
@@ -26,13 +27,17 @@ class Shipping_Method_Helper {
 	 * @return string Carrier image url.
 	 */
 	public static function get_carrier_logo( $carrier_name ) {
-		$file_path = dirname(dirname(__DIR__)) . '/resources/images/carriers/';
+		$file_path = dirname( dirname( __DIR__ ) ) . '/resources/images/carriers/';
 		$base_path = Shop_Helper::get_plugin_base_url() . 'resources/images/carriers/';
 		$default   = Shop_Helper::get_plugin_base_url() . 'resources/images/box.svg';
 
-		/** @var Config_Service $configService */
-		$configService = ServiceRegister::getService( Config_Service::CLASS_NAME );
-		$user_info     = $configService->getUserInfo();
+		/**
+		 * Configuration service.
+		 *
+		 * @var Config_Service $config_service
+		 */
+		$config_service = ServiceRegister::getService( Config_Service::CLASS_NAME );
+		$user_info      = $config_service->getUserInfo();
 		if ( null === $user_info ) {
 			return $default;
 		}
@@ -41,7 +46,7 @@ class Shipping_Method_Helper {
 		$image_path = $base_path . \strtolower( $user_info->country ) . '/' . $file_name . '.png';
 		$file_path  = $file_path . \strtolower( $user_info->country ) . '/' . $file_name . '.png';
 
-		return file_exists($file_path) ? $image_path : $default;
+		return file_exists( $file_path ) ? $image_path : $default;
 	}
 
 	/**
@@ -73,7 +78,7 @@ class Shipping_Method_Helper {
 			}
 
 			foreach ( $zone->get_shipping_methods( true ) as $item ) {
-				if ( $item->id !== Packlink_Shipping_Method::PACKLINK_SHIPPING_METHOD ) {
+				if ( Packlink_Shipping_Method::PACKLINK_SHIPPING_METHOD !== $item->id ) {
 					$count ++;
 				}
 			}
@@ -94,10 +99,14 @@ class Shipping_Method_Helper {
 				continue;
 			}
 
-			/** @var \WC_Shipping_Method $item */
+			/**
+			 * WooCommerce shipping method.
+			 *
+			 * @var \WC_Shipping_Method $item
+			 */
 			foreach ( $zone->get_shipping_methods( true ) as $item ) {
-				if ( ( $item->id !== Packlink_Shipping_Method::PACKLINK_SHIPPING_METHOD )
-				     && $wpdb->update( "{$wpdb->prefix}woocommerce_shipping_zone_methods", array( 'is_enabled' => 0 ), array( 'instance_id' => absint( $item->instance_id ) ) )
+				if ( ( Packlink_Shipping_Method::PACKLINK_SHIPPING_METHOD !== $item->id )
+					 && $wpdb->update( "{$wpdb->prefix}woocommerce_shipping_zone_methods", array( 'is_enabled' => 0 ), array( 'instance_id' => absint( $item->instance_id ) ) )
 				) {
 					do_action( 'woocommerce_shipping_zone_method_status_toggled', $item->instance_id, $item->id, $zone_id, 0 );
 				}
@@ -129,7 +138,7 @@ class Shipping_Method_Helper {
 	public static function get_all_shipping_zone_ids() {
 		$all_zones = \WC_Shipping_Zones::get_zones();
 		$zone_ids  = array_column( $all_zones, 'zone_id' );
-		// Locations not covered by other zones
+		// Locations not covered by other zones.
 		if ( ! in_array( 0, $zone_ids, true ) ) {
 			$zone_ids[] = 0;
 		}
@@ -140,7 +149,7 @@ class Shipping_Method_Helper {
 	/**
 	 * Loads all packlink added shipping methods and changes their status to enabled or disabled.
 	 *
-	 * @param int $status
+	 * @param int $status Shipping status.
 	 */
 	private static function change_shipping_methods_status( $status = 1 ) {
 		global $wpdb;
@@ -156,16 +165,20 @@ class Shipping_Method_Helper {
 	}
 
 	/**
-	 * @noinspection PhpDocMissingThrowsInspection
-	 *
 	 * Returns map of Packlink shipping services and WooCommerce shipping methods.
 	 *
-	 * @return Shipping_Method_Map[]
+	 * @noinspection PhpDocMissingThrowsInspection
+	 *
+	 * @return Shipping_Method_Map[] Array of shipping method map entries.
 	 */
 	private static function get_shipping_method_map() {
 		/** @noinspection PhpUnhandledExceptionInspection */
 		$repository = RepositoryRegistry::getRepository( Shipping_Method_Map::CLASS_NAME );
-		/** @var Shipping_Method_Map[] $entities */
+		/**
+		 * Shipping method map entries.
+		 *
+		 * @var Shipping_Method_Map[] $entities
+		 */
 		$entities = $repository->select();
 
 		return $entities;

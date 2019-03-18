@@ -105,7 +105,7 @@ class Shop_Helper {
 	 *
 	 * @param string $name Name of the controller without "Packlink" and "Controller".
 	 * @param string $action Name of the action.
-	 * @param array $params Associative array of parameters.
+	 * @param array  $params Associative array of parameters.
 	 *
 	 * @return string
 	 */
@@ -117,7 +117,7 @@ class Shop_Helper {
 
 		$query = array_merge( $query, $params );
 		$url   = get_site_url() . '/wp-content/plugins/packlink-pro-shipping/Controllers/class-packlink-index.php?'
-		         . http_build_query( $query );
+				. http_build_query( $query );
 
 		return $url;
 	}
@@ -138,7 +138,11 @@ class Shop_Helper {
 	 */
 	public static function get_country_code() {
 		if ( ! static::$country_code ) {
-			/** @var Config_Service $config */
+			/**
+			 * Configuration service.
+			 *
+			 * @var Config_Service $config
+			 */
 			$config = ServiceRegister::getService( Config_Service::CLASS_NAME );
 			$user   = $config->getUserInfo();
 

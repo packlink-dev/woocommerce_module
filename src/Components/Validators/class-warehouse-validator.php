@@ -12,10 +12,16 @@ use Packlink\BusinessLogic\Http\Proxy;
 
 /**
  * Class Warehouse_Validator
+ *
  * @package Packlink\WooCommerce\Components\Validators
  */
 class Warehouse_Validator {
 
+	/**
+	 * Required fields.
+	 *
+	 * @var string[]
+	 */
 	private static $required_fields = array(
 		'alias',
 		'name',
@@ -59,8 +65,8 @@ class Warehouse_Validator {
 
 		if ( ! empty( $data['country'] ) && ! empty( $data['postal_code'] ) ) {
 			try {
-				$postalCodes = $this->proxy->getPostalCodes( $data['country'], $data['postal_code'] );
-				if ( empty( $postalCodes ) ) {
+				$postal_codes = $this->proxy->getPostalCodes( $data['country'], $data['postal_code'] );
+				if ( empty( $postal_codes ) ) {
 					$result['postal_code'] = __( 'Postal code is not correct.', 'packlink-pro-shipping' );
 				}
 			} catch ( \Exception $e ) {
@@ -73,14 +79,14 @@ class Warehouse_Validator {
 		}
 
 		if ( ! empty( $data['phone'] ) ) {
-			$regex      = '/^(\+|\/|\.|-|\(|\)|\d)+$/m';
-			$phoneError = ! preg_match( $regex, $data['phone'] );
+			$regex       = '/^(\+|\/|\.|-|\(|\)|\d)+$/m';
+			$phone_error = ! preg_match( $regex, $data['phone'] );
 
-			$digits     = '/\d/m';
-			$match      = preg_match_all( $digits, $data['phone'] );
-			$phoneError |= $match === false || $match < 3;
+			$digits       = '/\d/m';
+			$match        = preg_match_all( $digits, $data['phone'] );
+			$phone_error |= false === $match || $match < 3;
 
-			if ( $phoneError ) {
+			if ( $phone_error ) {
 				$result['phone'] = __( 'Field mus be valid phone number.', 'packlink-pro-shipping' );
 			}
 		}

@@ -24,6 +24,7 @@ use WP_Post;
 
 /**
  * Class Order_Details_Helper
+ *
  * @package Packlink\WooCommerce\Components\Utility
  */
 class Order_Details_Helper {
@@ -96,9 +97,9 @@ class Order_Details_Helper {
 	}
 
 	/**
-	 * @noinspection PhpDocMissingThrowsInspection
-	 *
 	 * Returns Packlink shipping method used in provided WooCommerce order.
+	 *
+	 * @noinspection PhpDocMissingThrowsInspection
 	 *
 	 * @param WC_Order $order WooCommerce order.
 	 *
@@ -107,8 +108,12 @@ class Order_Details_Helper {
 	public static function get_packlink_shipping_method( WC_Order $order ) {
 		$packlink_shipping_method_id = (int) $order->get_meta( Order_Meta_Keys::SHIPPING_ID );
 		if ( -1 === $packlink_shipping_method_id ) {
-			/** @var Config_Service $configuration */
-			$configuration = ServiceRegister::getService(Config_Service::CLASS_NAME);
+			/**
+			 * Configuration service.
+			 *
+			 * @var Config_Service $configuration
+			 */
+			$configuration = ServiceRegister::getService( Config_Service::CLASS_NAME );
 			return $configuration->get_default_shipping_method();
 		}
 
@@ -118,18 +123,22 @@ class Order_Details_Helper {
 
 		/** @noinspection PhpUnhandledExceptionInspection */
 		$repository = RepositoryRegistry::getRepository( ShippingMethod::CLASS_NAME );
-		/** @var ShippingMethod $shipping_method */
+		/**
+		 * Shipping method service.
+		 *
+		 * @var ShippingMethod $shipping_method
+		 */
 		$shipping_method = $repository->selectOne( $query_filter );
 
 		return $shipping_method;
 	}
 
 	/**
-	 * @noinspection PhpDocMissingThrowsInspection
-	 *
 	 * Creates and queues shipment drafts for paid orders.
 	 *
-	 * @param int $order_id Order identifier.
+	 * @noinspection PhpDocMissingThrowsInspection
+	 *
+	 * @param int      $order_id Order identifier.
 	 * @param WC_Order $order WooCommerce order instance.
 	 */
 	public static function queue_draft( $order_id, WC_Order $order ) {
@@ -148,7 +157,7 @@ class Order_Details_Helper {
 	/**
 	 * Resolves order details status.
 	 *
-	 * @param WC_Order $order Shop order.
+	 * @param WC_Order      $order Shop order.
 	 * @param Order_Details $order_details Order details.
 	 */
 	private static function set_details_status( WC_Order $order, Order_Details $order_details ) {
@@ -158,7 +167,11 @@ class Order_Details_Helper {
 		$task_id = $order->get_meta( Order_Meta_Keys::SEND_DRAFT_TASK_ID );
 		if ( $task_id && ! $order_details->get_reference() && $order_details->is_packlink_order() ) {
 			$order_details->set_creating( true );
-			/** @var QueueService $service */
+			/**
+			 * Queue service.
+			 *
+			 * @var QueueService $service
+			 */
 			$service    = ServiceRegister::getService( QueueService::CLASS_NAME );
 			$queue_item = $service->find( $task_id );
 			if ( $queue_item && QueueItem::FAILED === $queue_item->getStatus() ) {
@@ -176,7 +189,7 @@ class Order_Details_Helper {
 	/**
 	 * Resolves order carrier data.
 	 *
-	 * @param WC_Order $order Shop order.
+	 * @param WC_Order      $order Shop order.
 	 * @param Order_Details $order_details Order details.
 	 */
 	private static function set_carrier_data( WC_Order $order, Order_Details $order_details ) {

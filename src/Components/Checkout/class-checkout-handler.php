@@ -27,14 +27,11 @@ use WC_Shipping_Rate;
 
 /**
  * Class Checkout_Handler
+ *
  * @package Packlink\WooCommerce\Components\Checkout
  */
 class Checkout_Handler {
 
-	/**
-	 * Hidden field HTML template.
-	 */
-	const HIDDEN_FIELD = '<input type="hidden" name="%s" value="%s" />';
 	/**
 	 * Drop-off id hidden input name
 	 */
@@ -73,7 +70,7 @@ class Checkout_Handler {
 	 * This hook is triggered after shipping method label, and it will insert hidden input values.
 	 *
 	 * @param WC_Shipping_Rate $rate Shipping rate.
-	 * @param int $index Shipping method index.
+	 * @param int              $index Shipping method index.
 	 */
 	public function after_shipping_rate( WC_Shipping_Rate $rate, $index ) {
 		$shipping_method = $this->get_packlink_shipping_method( $rate->get_instance_id() );
@@ -87,12 +84,12 @@ class Checkout_Handler {
 			'packlink_is_drop_off' => $shipping_method->isDestinationDropOff() ? 'yes' : 'no',
 		);
 		foreach ( $fields as $field => $value ) {
-			echo sprintf( static::HIDDEN_FIELD, $field, $value );
+			$this->print_hidden_input( $field, $value );
 		}
 
 		echo '<div class="pl-wide-shipping"></div>';
 		$chosen_method = wc()->session->chosen_shipping_methods[ $index ];
-		if ( $chosen_method !== wc()->session->get( Order_Meta_Keys::SHIPPING_ID, '' ) ) {
+		if ( wc()->session->get( Order_Meta_Keys::SHIPPING_ID, '' ) !== $chosen_method ) {
 			wc()->session->set( Order_Meta_Keys::DROP_OFF_ID, '' );
 			wc()->session->set( Order_Meta_Keys::DROP_OFF_EXTRA, '' );
 			wc()->session->set( Order_Meta_Keys::SHIPPING_ID, '' );
@@ -114,8 +111,8 @@ class Checkout_Handler {
 	 * Sets hidden field for drop-off data and initializes script.
 	 */
 	public function after_shipping() {
-		echo sprintf( static::HIDDEN_FIELD, static::PACKLINK_DROP_OFF_ID, '' );
-		echo sprintf( static::HIDDEN_FIELD, static::PACKLINK_DROP_OFF_EXTRA, '' );
+		$this->print_hidden_input( static::PACKLINK_DROP_OFF_ID );
+		$this->print_hidden_input( static::PACKLINK_DROP_OFF_EXTRA );
 		echo '<script>Packlink.checkout.init();</script>';
 	}
 
@@ -123,20 +120,22 @@ class Checkout_Handler {
 	 * This hook is used to validate drop-off point.
 	 */
 	public function checkout_process() {
-		if ( ! isset( $_POST['shipping_method'][0] ) ) {
+		$shipping_param = $this->get_param( 'shipping_method', false );
+		if ( ! $shipping_param ) {
 			return;
 		}
 
-		$parts = explode( ':', $_POST['shipping_method'][0] );
+		$parts = explode( ':', $shipping_param );
 		$code  = $parts[0];
 
-		if ( $code !== Packlink_Shipping_Method::PACKLINK_SHIPPING_METHOD ) {
+		if ( Packlink_Shipping_Method::PACKLINK_SHIPPING_METHOD !== $code ) {
 			return;
 		}
 
 		$shipping_method = $this->get_packlink_shipping_method( (int) $parts[1] );
 		$is_drop_off     = $shipping_method->isDestinationDropOff();
-		if ( $is_drop_off && empty( $_POST[ static::PACKLINK_DROP_OFF_ID ] ) ) {
+		$drop_off_id     = $this->get_param( static::PACKLINK_DROP_OFF_ID );
+		if ( $is_drop_off && empty( $drop_off_id ) ) {
 			wc_add_notice( __( 'Please choose a drop-off location.', 'packlink-pro-shipping' ), 'error' );
 		}
 	}
@@ -145,7 +144,7 @@ class Checkout_Handler {
 	 * Substitutes order shipping address with drop-off address.
 	 *
 	 * @param \WC_Order $order WooCommerce order.
-	 * @param array $data Order data.
+	 * @param array     $data Order data.
 	 */
 	public function checkout_update_shipping_address( \WC_Order $order, array $data ) {
 		$shipping_method = $this->get_shipping_method( $data );
@@ -156,7 +155,7 @@ class Checkout_Handler {
 		$is_drop_off = $shipping_method->isDestinationDropOff();
 		if ( $is_drop_off ) {
 			try {
-				$drop_off_address = json_decode( stripslashes( $_POST[ static::PACKLINK_DROP_OFF_EXTRA ] ), true );
+				$drop_off_address = json_decode( $this->get_param( static::PACKLINK_DROP_OFF_EXTRA ), true );
 				$order->set_shipping_company( $drop_off_address['name'] );
 				$order->set_shipping_city( $drop_off_address['city'] );
 				$order->set_shipping_postcode( $drop_off_address['zip'] );
@@ -169,11 +168,11 @@ class Checkout_Handler {
 	}
 
 	/**
-	 * @noinspection PhpDocMissingThrowsInspection
-	 *
 	 * This hook is used to update drop-off point value.
 	 *
-	 * @param int $order_id WooCommerce order identifier.
+	 * @noinspection PhpDocMissingThrowsInspection
+	 *
+	 * @param int   $order_id WooCommerce order identifier.
 	 * @param array $data WooCommerce order meta data.
 	 */
 	public function checkout_update_order_meta( $order_id, array $data ) {
@@ -190,8 +189,8 @@ class Checkout_Handler {
 		$wc_order->update_meta_data( Order_Meta_Keys::SHIPPING_ID, $shipping_method->getId() );
 
 		if ( $is_drop_off ) {
-			$wc_order->update_meta_data( Order_Meta_Keys::DROP_OFF_ID, (int) $_POST[ static::PACKLINK_DROP_OFF_ID ] );
-			$wc_order->update_meta_data( Order_Meta_Keys::DROP_OFF_EXTRA, $_POST[ static::PACKLINK_DROP_OFF_EXTRA ] );
+			$wc_order->update_meta_data( Order_Meta_Keys::DROP_OFF_ID, (int) $this->get_param( static::PACKLINK_DROP_OFF_ID ) );
+			$wc_order->update_meta_data( Order_Meta_Keys::DROP_OFF_EXTRA, $this->get_param( static::PACKLINK_DROP_OFF_EXTRA ) );
 		}
 
 		$wc_order->save();
@@ -211,6 +210,8 @@ class Checkout_Handler {
 		}
 
 		/**
+		 * Map with key as shipping method id and rate as its value.
+		 *
 		 * @var string $key
 		 * @var \WC_Shipping_Rate $rate
 		 */
@@ -277,16 +278,20 @@ class Checkout_Handler {
 	public function get_drop_off_locations( $method_id ) {
 		$customer = wc()->session->customer;
 
-		/** @var LocationService $location_service */
+		/**
+		 * Location service.
+		 *
+		 * @var LocationService $location_service
+		 */
 		$location_service = ServiceRegister::getService( LocationService::CLASS_NAME );
 
 		return $location_service->getLocations( $method_id, $customer['shipping_country'], $customer['shipping_postcode'] );
 	}
 
 	/**
-	 * @noinspection PhpDocMissingThrowsInspection
-	 *
 	 * Returns Packlink shipping method that is assigned to this WooCommerce shipping method.
+	 *
+	 * @noinspection PhpDocMissingThrowsInspection
 	 *
 	 * @param int $instance_id Shipping method identifier.
 	 *
@@ -297,7 +302,11 @@ class Checkout_Handler {
 		/** @noinspection PhpUnhandledExceptionInspection */
 		$filter->where( 'woocommerceShippingMethodId', '=', $instance_id );
 
-		/** @var Shipping_Method_Map $map_entry */
+		/**
+		 * Shipping method map entity.
+		 *
+		 * @var Shipping_Method_Map $map_entry
+		 */
 		$map_entry = $this->repository->selectOne( $filter );
 		if ( null === $map_entry ) {
 			return null;
@@ -305,7 +314,11 @@ class Checkout_Handler {
 
 		$id = $map_entry->getPacklinkShippingMethodId();
 		if ( - 1 === $id ) {
-			/** @var Config_Service $configuration */
+			/**
+			 * Configuration service.
+			 *
+			 * @var Config_Service $configuration
+			 */
 			$configuration = ServiceRegister::getService( Config_Service::CLASS_NAME );
 
 			return $configuration->get_default_shipping_method();
@@ -330,10 +343,45 @@ class Checkout_Handler {
 		$code        = $parts[0];
 		$instance_id = (int) $parts[1];
 
-		if ( $code !== Packlink_Shipping_Method::PACKLINK_SHIPPING_METHOD ) {
+		if ( Packlink_Shipping_Method::PACKLINK_SHIPPING_METHOD !== $code ) {
 			return null;
 		}
 
 		return $this->get_packlink_shipping_method( $instance_id );
+	}
+
+	/**
+	 * Echoes sanitized input field.
+	 *
+	 * @param string $field Input field name.
+	 * @param string $value Input field value.
+	 */
+	private function print_hidden_input( $field, $value = '' ) {
+		$allowed_html = array(
+			'input' => array(
+				'type'  => array(),
+				'name'  => array(),
+				'value' => array(),
+			),
+		);
+
+		echo wp_kses( sprintf( '<input type="hidden" name="%s" value="%s" />', $field, $value ), $allowed_html );
+	}
+
+	/**
+	 * Gets request parameter if exists. Otherwise, returns null.
+	 *
+	 * @param string $key Request parameter key.
+	 * @param bool   $is_text Is text value.
+	 *
+	 * @return mixed
+	 */
+	private function get_param( $key, $is_text = true ) {
+		$nonce = 'woocommerce-process-checkout-nonce';
+		if ( isset( $_REQUEST[ $key ], $_REQUEST[ $nonce ] ) && wp_verify_nonce( sanitize_key( $_REQUEST[ $nonce ] ), 'woocommerce-process_checkout' ) ) {
+			return sanitize_text_field( wp_unslash( $is_text ? $_REQUEST[ $key ] : $_REQUEST[ $key ][0] ) );
+		}
+
+		return null;
 	}
 }

@@ -65,7 +65,7 @@ var Packlink = window.Packlink || {};
     }
 
     function setDropOffAddress() {
-        if (!privateData.selectedLocation) {
+        if (!privateData.selectedLocation || privateData.isCart) {
             return;
         }
 

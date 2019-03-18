@@ -7,7 +7,6 @@
 
 namespace Packlink\WooCommerce\Components\Utility;
 
-
 use Logeecom\Infrastructure\Exceptions\BaseException;
 use Logeecom\Infrastructure\ORM\QueryFilter\QueryFilter;
 use Logeecom\Infrastructure\ORM\RepositoryRegistry;
@@ -18,18 +17,19 @@ use Packlink\WooCommerce\Components\Services\Config_Service;
 
 /**
  * Class Debug_Helper
+ *
  * @package Packlink\WooCommerce\Components\Utility
  */
 class Debug_Helper {
 
-	const PHP_INFO_FILE_NAME = 'phpinfo.html';
-	const SYSTEM_INFO_FILE_NAME = 'system-info.txt';
-	const LOG_FILE_NAME = 'logs.txt';
-	const USER_INFO_FILE_NAME = 'packlink-user-info.txt';
-	const QUEUE_INFO_FILE_NAME = 'queue.txt';
+	const PHP_INFO_FILE_NAME         = 'phpinfo.html';
+	const SYSTEM_INFO_FILE_NAME      = 'system-info.txt';
+	const LOG_FILE_NAME              = 'logs.txt';
+	const USER_INFO_FILE_NAME        = 'packlink-user-info.txt';
+	const QUEUE_INFO_FILE_NAME       = 'queue.txt';
 	const PARCEL_WAREHOUSE_FILE_NAME = 'parcel-warehouse.txt';
-	const SERVICE_INFO_FILE_NAME = 'services.txt';
-	const DATABASE = 'MySQL';
+	const SERVICE_INFO_FILE_NAME     = 'services.txt';
+	const DATABASE                   = 'MySQL';
 
 	/**
 	 * Returns path to zip archive that contains current system information.
@@ -44,7 +44,7 @@ class Debug_Helper {
 
 		$php_info = static::get_php_info();
 
-		if ( $php_info !== false ) {
+		if ( false !== $php_info ) {
 			$zip->addFromString( static::PHP_INFO_FILE_NAME, $php_info );
 		}
 
@@ -80,7 +80,7 @@ class Debug_Helper {
 	protected static function get_woocommerce_shop_info() {
 		global $wpdb;
 
-		$result = 'WooCommerce version: ' . \WooCommerce::instance()->version;
+		$result  = 'WooCommerce version: ' . \WooCommerce::instance()->version;
 		$result .= "\ntheme: " . \wp_get_theme()->get( 'Name' );
 		$result .= "\nbase admin url: " . \get_admin_url();
 		// WooCommerce only supports MySQL database.
@@ -92,11 +92,11 @@ class Debug_Helper {
 	}
 
 	/**
-	 * @noinspection PhpDocMissingThrowsInspection
-	 *
 	 * Retrieves logs from WooCommerce.
 	 *
-	 * @return string
+	 * @noinspection PhpDocMissingThrowsInspection
+	 *
+	 * @return string Log file contents.
 	 */
 	protected static function get_logs() {
 		$ignore = array( '.', '..', 'index.html', '.htaccess' );
@@ -113,7 +113,7 @@ class Debug_Helper {
 				continue;
 			}
 
-			// only logs from past 7 days
+			// only logs from past 7 days.
 			$file_time = filemtime( $dir . '/' . $file );
 			if ( $file_time >= $start->getTimestamp() ) {
 				$files[ $file ] = $file_time;
@@ -132,13 +132,17 @@ class Debug_Helper {
 	/**
 	 * Retrieves user info.
 	 *
-	 * @return string
+	 * @return string User info.
 	 */
 	protected static function get_user_info() {
-		/** @var Config_Service $config */
+		/**
+		 * Configuration service.
+		 *
+		 * @var Config_Service $config
+		 */
 		$config = ServiceRegister::getService( Config_Service::CLASS_NAME );
 
-		$result = 'user info :' . json_encode( $config->getUserInfo() );
+		$result  = 'user info :' . wp_json_encode( $config->getUserInfo() );
 		$result .= "\n\napi key: " . $config->getAuthorizationToken();
 
 		return $result;
@@ -147,7 +151,7 @@ class Debug_Helper {
 	/**
 	 * Retrieves current queue status.
 	 *
-	 * @return string
+	 * @return string Queue status.
 	 */
 	protected static function get_queue_status() {
 		$result = "[\n";
@@ -164,10 +168,11 @@ class Debug_Helper {
 
 			$items = $repository->select( $query );
 		} catch ( BaseException $e ) {
+			/* Just continue with empty result. */
 		}
 
 		foreach ( $items as $item ) {
-			$result .= json_encode( $item->toArray() ) . ",\n\n";
+			$result .= wp_json_encode( $item->toArray() ) . ",\n\n";
 		}
 
 		return rtrim( $result, ",\n" ) . "\n]";
@@ -176,14 +181,18 @@ class Debug_Helper {
 	/**
 	 * Retrieves parcel and warehouse information.
 	 *
-	 * @return string
+	 * @return string Parcel and warehouse info.
 	 */
 	protected static function get_parcel_and_warehouse_info() {
-		/** @var Config_Service $configService */
-		$configService = ServiceRegister::getService( Config_Service::CLASS_NAME );
+		/**
+		 * Configuration service.
+		 *
+		 * @var Config_Service $config_service
+		 */
+		$config_service = ServiceRegister::getService( Config_Service::CLASS_NAME );
 
-		$result = 'default parcel: ' . json_encode( $configService->getDefaultParcel() ?: array() );
-		$result .= "\n\ndefault warehouse: " . json_encode( $configService->getDefaultWarehouse() ?: array() );
+		$result  = 'default parcel: ' . wp_json_encode( $config_service->getDefaultParcel() ?: array() );
+		$result .= "\n\ndefault warehouse: " . wp_json_encode( $config_service->getDefaultWarehouse() ?: array() );
 
 		return $result;
 	}
@@ -192,7 +201,7 @@ class Debug_Helper {
 	/**
 	 * Retrieves service info.
 	 *
-	 * @return string
+	 * @return string Service info.
 	 */
 	protected static function get_services_info() {
 		$result = "[\n";
@@ -201,9 +210,10 @@ class Debug_Helper {
 			$repository = RepositoryRegistry::getRepository( ShippingMethod::CLASS_NAME );
 
 			foreach ( $repository->select() as $item ) {
-				$result .= json_encode( $item->toArray() ) . ",\n\n";
+				$result .= wp_json_encode( $item->toArray() ) . ",\n\n";
 			}
 		} catch ( BaseException $e ) {
+			/* Just continue with empty result. */
 		}
 
 		return rtrim( $result, ",\n" ) . "\n]";
