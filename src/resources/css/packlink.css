@@ -429,6 +429,7 @@
 	border-radius: 5px;
 	position: relative;
 	margin: 0 auto;
+	height: 90%;
 }
 
 .pl-disable-methods-modal {
@@ -698,6 +699,7 @@
 	color: #5d5d5d !important;
 	width: 100%;
 	margin: 0;
+	box-shadow: unset;
 }
 
 .pl-form-section-input input:focus {
@@ -962,8 +964,8 @@
 .pl-content-wrapper input[type="checkbox"],
 .pl-content-wrapper input[type="checkbox"]:before {
 	border-radius: 2px;
-	height: 20px;
-	width: 20px;
+	height: 21px;
+	width: 21px;
 	margin: -1px 0 0 -1px;
 }
 
@@ -971,7 +973,6 @@
 	background-color: #2095F2;
 	border-color: #2095F2;
 	color: #fff;
-	margin: -1px;
 }
 
 .pl-step-title {
