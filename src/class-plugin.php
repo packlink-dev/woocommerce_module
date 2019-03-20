@@ -60,7 +60,7 @@ class Plugin {
 	/**
 	 * Plugin constructor.
 	 *
-	 * @param wpdb $wpdb WordPress database session.
+	 * @param wpdb   $wpdb WordPress database session.
 	 * @param string $packlink_plugin_file Plugin file.
 	 */
 	public function __construct( $wpdb, $packlink_plugin_file ) {
@@ -71,7 +71,7 @@ class Plugin {
 	/**
 	 * Returns singleton instance of the plugin.
 	 *
-	 * @param wpdb $wpdb WordPress database session.
+	 * @param wpdb   $wpdb WordPress database session.
 	 * @param string $packlink_plugin_file Plugin file.
 	 *
 	 * @return Plugin Plugin instance.
@@ -154,7 +154,7 @@ class Plugin {
 	 * Plugin update method.
 	 *
 	 * @param \WP_Upgrader $updater_object Updater object.
-	 * @param array $options Options with information regarding plugins for update.
+	 * @param array        $options Options with information regarding plugins for update.
 	 */
 	public function update( $updater_object, $options ) {
 		if ( $updater_object && $this->validate_if_plugin_update_is_for_our_plugin( $options ) ) {
@@ -273,7 +273,7 @@ class Plugin {
 	 * Adds active shipping methods to newly created shipping zone.
 	 *
 	 * @param \WC_Shipping_Zone $zone Shipping zone.
-	 * @param \WC_Data_Store $data_store Shipping zone data store.
+	 * @param \WC_Data_Store    $data_store Shipping zone data store.
 	 */
 	public function on_zone_create( $zone, $data_store ) {
 		if ( null !== $zone->get_id() ) {
@@ -292,10 +292,11 @@ class Plugin {
 	/**
 	 * Adds Packlink PRO Shipping meta post box.
 	 *
-	 * @param string $page Current page type.
+	 * @param string   $page Current page type.
+	 * @param \WP_Post $post WordPress Post.
 	 */
-	public function add_packlink_shipping_box( $page ) {
-		if ( 'shop_order' === $page ) {
+	public function add_packlink_shipping_box( $page, $post ) {
+		if ( 'shop_order' === $page && $post && 'auto-draft' !== $post->post_status ) {
 			$controller = new Packlink_Order_Details_Controller();
 			add_meta_box(
 				'packlink-shipping-modal',
@@ -353,7 +354,6 @@ class Plugin {
 		try {
 			$this->get_config_service()->setTaskRunnerStatus( '', null );
 			$statuses = array(
-				'pending'    => 'wc-pending',
 				'processing' => 'wc-processing',
 				'delivered'  => 'wc-completed',
 			);
@@ -475,21 +475,29 @@ class Plugin {
 	private function order_hooks_and_actions() {
 		$handler = new Packlink_Order_Overview_Controller();
 
-		add_action( 'add_meta_boxes', array( $this, 'add_packlink_shipping_box' ) );
+		add_action( 'add_meta_boxes', array( $this, 'add_packlink_shipping_box' ), 10, 2 );
 		add_filter( 'manage_edit-shop_order_columns', array( $handler, 'add_packlink_order_columns' ) );
 		add_action( 'manage_shop_order_posts_custom_column', array( $handler, 'populate_packlink_column' ) );
 		add_filter( 'bulk_actions-edit-shop_order', array( $handler, 'add_packlink_bulk_action' ) );
 		add_filter( 'admin_action_packlink_print_labels', array( $handler, 'bulk_print_labels' ) );
 		add_action( 'admin_enqueue_scripts', array( $handler, 'load_scripts' ) );
 
-		add_action( 'woocommerce_init', function () {
-			foreach ( \wc_get_is_paid_statuses() as $paid_status ) {
-				add_action( 'woocommerce_order_status_' . $paid_status, array(
-					Order_Details_Helper::CLASS_NAME,
-					'queue_draft'
-				), 10, 2 );
+		add_action(
+			'woocommerce_init',
+			function () {
+				foreach ( \wc_get_is_paid_statuses() as $paid_status ) {
+					add_action(
+						'woocommerce_order_status_' . $paid_status,
+						array(
+							Order_Details_Helper::CLASS_NAME,
+							'queue_draft',
+						),
+						10,
+						2
+					);
+				}
 			}
-		} );
+		);
 	}
 
 	/**
@@ -512,9 +520,12 @@ class Plugin {
 	 * Register filter for links on the plugin screen.
 	 */
 	private function add_settings_link() {
-		add_filter( 'plugin_action_links_' . plugin_basename( Shop_Helper::PLUGIN_ID ), array(
-			$this,
-			'create_configuration_link'
-		) );
+		add_filter(
+			'plugin_action_links_' . plugin_basename( Shop_Helper::PLUGIN_ID ),
+			array(
+				$this,
+				'create_configuration_link',
+			)
+		);
 	}
 }

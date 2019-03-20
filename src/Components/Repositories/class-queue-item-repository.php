@@ -15,6 +15,7 @@ use Logeecom\Infrastructure\ORM\QueryFilter\QueryFilter;
 use Logeecom\Infrastructure\ORM\Utility\IndexHelper;
 use Logeecom\Infrastructure\TaskExecution\Exceptions\QueueItemSaveException;
 use Logeecom\Infrastructure\TaskExecution\QueueItem;
+use Packlink\WooCommerce\Components\Utility\Database;
 
 /**
  * Class Queue_Item_Repository
@@ -45,6 +46,8 @@ class Queue_Item_Repository extends Base_Repository implements QueueItemReposito
 	 * @return QueueItem[] Found queue item list
 	 */
 	public function findOldestQueuedItems( $limit = 10 ) {
+		$this->table_name = $this->db->prefix . Database::BASE_TABLE;
+
 		/**
 		 * Entity object.
 		 *
@@ -135,6 +138,8 @@ class Queue_Item_Repository extends Base_Repository implements QueueItemReposito
 	 * @throws QueryFilterInvalidParamException If filter condition is invalid.
 	 */
 	private function select_for_update( array $conditions ) {
+		$this->table_name = $this->db->prefix . Database::BASE_TABLE;
+
 		/**
 		 * Entity object.
 		 *
@@ -210,8 +215,9 @@ class Queue_Item_Repository extends Base_Repository implements QueueItemReposito
 	 * @throws \InvalidArgumentException Invalid argument.
 	 */
 	private function update_with_condition( QueueItem $item, array $conditions ) {
-		$field_index_map = IndexHelper::mapFieldsToIndexes( $item );
-		$prepared        = $this->prepare_entity_for_storage( $item );
+		$this->table_name = $this->db->prefix . Database::BASE_TABLE;
+		$field_index_map  = IndexHelper::mapFieldsToIndexes( $item );
+		$prepared         = $this->prepare_entity_for_storage( $item );
 
 		$indexed_conditions = array();
 		foreach ( $conditions as $key => $value ) {

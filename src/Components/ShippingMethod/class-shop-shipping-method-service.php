@@ -103,7 +103,20 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 		 * @var ShippingMethodService $service
 		 */
 		$service = ServiceRegister::getService( ShippingMethodService::CLASS_NAME );
-		foreach ( $service->getActiveMethods() as $shipping_method ) {
+		/**
+		 * Configuration service.
+		 *
+		 * @var Config_Service $configuration
+		 */
+		$configuration = ServiceRegister::getService( Config_Service::CLASS_NAME );
+
+		$default_method   = $configuration->get_default_shipping_method();
+		$shipping_methods = $service->getActiveMethods();
+		if ( $default_method ) {
+			$shipping_methods[] = $default_method;
+		}
+
+		foreach ( $shipping_methods as $shipping_method ) {
 			$pricing_policy = $this->get_shipping_method_pricing_policy( $shipping_method );
 			$instance_id    = $zone->add_shipping_method( 'packlink_shipping_method' );
 

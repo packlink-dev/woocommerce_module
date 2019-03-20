@@ -332,7 +332,17 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	public function activate_shipping_method() {
 		$this->validate( 'yes', true );
 
-		$this->change_shipping_status();
+		$result = $this->change_shipping_status();
+
+		$message = $result ? __( 'Shipping method successfully selected.', 'packlink-pro-shipping' ) : __( 'Failed to select shipping method.', 'packlink-pro-shipping' );
+
+		$this->return_json(
+			array(
+				'success' => $result,
+				'message' => $message,
+			),
+			$result ? 200 : 400
+		);
 	}
 
 	/**
@@ -341,7 +351,17 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	public function deactivate_shipping_method() {
 		$this->validate( 'yes', true );
 
-		$this->change_shipping_status( 'no' );
+		$result = $this->change_shipping_status( 'no' );
+
+		$message = $result ? __( 'Shipping method successfully deselected.', 'packlink-pro-shipping' ) : __( 'Failed to deselect shipping method.', 'packlink-pro-shipping' );
+
+		$this->return_json(
+			array(
+				'success' => $result,
+				'message' => $message,
+			),
+			$result ? 200 : 400
+		);
 	}
 
 	/**
@@ -511,6 +531,8 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	 * Changes shipping method active status.
 	 *
 	 * @param string $activate Shipping method should be activated.
+	 *
+	 * @return bool Status.
 	 */
 	private function change_shipping_status( $activate = 'yes' ) {
 		$raw_json = $this->get_raw_input();
@@ -525,13 +547,8 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 		 * @var ShippingMethodController $controller
 		 */
 		$controller = ServiceRegister::getService( ShippingMethodController::CLASS_NAME );
-		if ( 'yes' === $activate ) {
-			$result = $controller->activate( $payload['id'] );
-		} else {
-			$result = $controller->deactivate( $payload['id'] );
-		}
 
-		$this->return_json( array( 'success' => $result ), $result ? 200 : 400 );
+		return 'yes' === $activate ? $controller->activate( $payload['id'] ) : $controller->deactivate( $payload['id'] );
 	}
 
 	/**

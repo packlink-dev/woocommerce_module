@@ -40,7 +40,7 @@ function packlink_wc_namespace_autoload( $class_name ) {
 		}
 	}
 
-	$file_path = trailingslashit( dirname( dirname( __DIR__ ) ) . $namespace );
+	$file_path  = trailingslashit( dirname( dirname( __DIR__ ) ) . $namespace );
 	$file_path .= $file_name;
 	// If the file exists in the specified path, then include it.
 	if ( file_exists( $file_path ) ) {

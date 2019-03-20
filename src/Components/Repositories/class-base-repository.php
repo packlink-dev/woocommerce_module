@@ -78,6 +78,7 @@ class Base_Repository implements RepositoryInterface {
 	 * @throws QueryFilterInvalidParamException If filter condition is invalid.
 	 */
 	public function select( QueryFilter $filter = null ) {
+		$this->table_name = $this->db->prefix . Database::BASE_TABLE;
 		/**
 		 * Entity object.
 		 *
@@ -140,6 +141,8 @@ class Base_Repository implements RepositoryInterface {
 	 * @return bool TRUE if operation succeeded; otherwise, FALSE.
 	 */
 	public function update( Entity $entity ) {
+		$this->table_name = $this->db->prefix . Database::BASE_TABLE;
+
 		$item = $this->prepare_entity_for_storage( $entity );
 
 		// Only one record should be updated.
@@ -154,6 +157,8 @@ class Base_Repository implements RepositoryInterface {
 	 * @return bool TRUE if operation succeeded; otherwise, FALSE.
 	 */
 	public function delete( Entity $entity ) {
+		$this->table_name = $this->db->prefix . Database::BASE_TABLE;
+
 		return false !== $this->db->delete( $this->table_name, array( 'id' => $entity->getId() ) );
 	}
 
@@ -166,6 +171,8 @@ class Base_Repository implements RepositoryInterface {
 	 * @throws QueryFilterInvalidParamException If filter condition is invalid.
 	 */
 	public function count( QueryFilter $filter = null ) {
+		$this->table_name = $this->db->prefix . Database::BASE_TABLE;
+
 		/**
 		 * Entity object.
 		 *
@@ -343,7 +350,8 @@ class Base_Repository implements RepositoryInterface {
 	 * @return int Inserted entity identifier.
 	 */
 	protected function save_entity_to_storage( Entity $entity ) {
-		$storage_item = $this->prepare_entity_for_storage( $entity );
+		$this->table_name = $this->db->prefix . Database::BASE_TABLE;
+		$storage_item     = $this->prepare_entity_for_storage( $entity );
 
 		$this->db->insert( $this->table_name, $storage_item );
 
