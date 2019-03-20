@@ -7,6 +7,7 @@
 
 namespace Packlink\WooCommerce\Components\Services;
 
+use Logeecom\Infrastructure\Logger\Logger;
 use Packlink\BusinessLogic\Configuration;
 use Packlink\BusinessLogic\ShippingMethod\Models\ShippingMethod;
 use Packlink\WooCommerce\Components\Utility\Shop_Helper;
@@ -21,6 +22,10 @@ class Config_Service extends Configuration {
 	 * Threshold between two runs of scheduler.
 	 */
 	const SCHEDULER_TIME_THRESHOLD = 1800;
+	/**
+	 * Minimal log level.
+	 */
+	const MIN_LOG_LEVEL = Logger::ERROR;
 
 	/**
 	 * Singleton instance of this class.
