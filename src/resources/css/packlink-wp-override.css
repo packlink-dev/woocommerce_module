@@ -11,5 +11,6 @@
 }
 
 #wpbody-content {
+    padding-bottom: 0;
     height: 100%;
 }
