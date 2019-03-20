@@ -1,0 +1,10 @@
+{
+  "name": "packlink/woocommerce-dev",
+  "description": "Packlink WooCommerce Integration",
+  "version": "1.0.0",
+  "type": "library",
+  "require": {
+    "php": ">=5.3",
+    "wp-coding-standards/wpcs": "2.0.0"
+  }
+}
