@@ -239,6 +239,7 @@ $data = $this->resolve_view_arguments();
                                             id="pl-default-warehouse-country"
                                             value="<?php echo $data['warehouse_country']; ?>"
                                             readonly
+                                            tabindex="-1"
                                     />
                                     <span class="pl-text-input-label"><?php echo __( 'Country', 'packlink-pro-shipping' ); ?></span>
                                 </div>
@@ -250,7 +251,7 @@ $data = $this->resolve_view_arguments();
                                     <input type="text" class="pl-warehouse-input"
                                            id="pl-default-warehouse-postal_code" autocomplete="new-password" />
                                     <span class="pl-text-input-label"><?php echo __( 'City or postal code', 'packlink-pro-shipping' ); ?></span>
-                                    <span class="pl-input-search-icon">
+                                    <span class="pl-input-search-icon" data-pl-id="search-icon">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="30" height="31" viewBox="0 0 30 31">
                                           <g fill="none" fill-rule="evenodd">
                                             <polygon points=".794 .206 29.106 .206 29.106 30.226 .794 30.226"/>
