@@ -1063,6 +1063,8 @@
 	border-radius: 3px;
 	position: relative;
 	display: none;
+	width: 300px;
+	float: right;
 	animation: pl-fade-in .5s ease;
 }
 
