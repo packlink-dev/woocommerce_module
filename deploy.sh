@@ -61,7 +61,7 @@ mv ./locationPicker.css ./packlink-location-picker.css
 cd ${root}
 
 # Create plugin archive
-echo -e "\e[32mSTEP 6:\e[39m Creating new archive..."
+echo -e "\e[32mSTEP 5:\e[39m Creating new archive..."
 zip -r -q  packlink-pro-shipping.zip ./packlink-pro-shipping
 
 version="$1"
