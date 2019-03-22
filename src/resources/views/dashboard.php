@@ -437,7 +437,7 @@ $data = $this->resolve_view_arguments();
 		<div class="row">
 			<div class="pl-filter-method">
 				<b>
-					<?php echo __( 'Delivery', 'packlink-pro-shipping' ); ?></b>
+					<?php echo __( 'Delivery type', 'packlink-pro-shipping' ); ?></b>
 			</div>
 		</div>
 		<div class="row">

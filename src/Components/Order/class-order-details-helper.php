@@ -37,16 +37,17 @@ class Order_Details_Helper {
 	 * Checks if order is made using one of Packlink shipping methods.
 	 *
 	 * @param WP_Post $wp_post Order post.
+	 * @param bool    $has_reference Check if order has shipment reference.
 	 *
 	 * @return bool True if Packlink shipping is used for order.
 	 */
-	public static function is_packlink_order( WP_Post $wp_post ) {
+	public static function is_packlink_order( WP_Post $wp_post, $has_reference = false ) {
 		$order = WC_Order_Factory::get_order( $wp_post->ID );
 		if ( false === $order ) {
 			return false;
 		}
 
-		return $order->meta_exists( Order_Meta_Keys::IS_PACKLINK );
+		return $order->meta_exists( $has_reference ? Order_Meta_Keys::SHIPMENT_REFERENCE : Order_Meta_Keys::IS_PACKLINK );
 	}
 
 	/**

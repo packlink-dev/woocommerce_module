@@ -93,8 +93,8 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 			}
 		}
 
-		if ( static::COLUMN_PACKLINK_ID === $column && Order_Details_Helper::is_packlink_order( $post ) ) {
-			$src       = Shop_Helper::get_plugin_base_url() . 'resources/images/logo.gif';
+		if ( static::COLUMN_PACKLINK_ID === $column && Order_Details_Helper::is_packlink_order( $post, true ) ) {
+			$src       = Shop_Helper::get_plugin_base_url() . 'resources/images/logo.png';
 			$reference = get_post_meta( $post->ID, Order_Meta_Keys::SHIPMENT_REFERENCE, true );
 			$country   = Shop_Helper::get_country_code();
 			$url       = "https://pro.packlink.{$country}/private/shipments/{$reference}";

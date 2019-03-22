@@ -381,7 +381,7 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 
 		Shipping_Method_Helper::disable_shop_shipping_methods();
 
-		$this->return_json( array( 'success' => true ) );
+		$this->return_json( array( 'success' => true, 'message' => __( 'Successfully disabled shipping methods.', 'packlink-pro-shipping' ) ) );
 	}
 
 	/**
@@ -413,7 +413,7 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 			$result->logoUrl = Shipping_Method_Helper::get_carrier_logo( $result->carrierName );
 			$this->return_json( $result->toArray() );
 		} else {
-			$this->return_json( array( 'success' => false ), 400 );
+			$this->return_json( array( 'success' => false, 'message' => __( 'Failed to save shipping method.', 'packlink-pro-shipping' ) ), 400 );
 		}
 	}
 
