@@ -39,7 +39,7 @@ document.addEventListener(
 			form.addEventListener(
 				'submit',
 				function () {
-					if (this.action.value === 'packlink_print_labels') {
+					if (this.action.value === 'packlink_print_labels' || this.action2.value === 'packlink_print_labels') {
 						startCookieCheck( setFormToken( form ) );
 					}
 				}

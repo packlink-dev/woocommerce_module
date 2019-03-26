@@ -125,15 +125,21 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 
 	/**
 	 * Handles bulk printing of labels.
+	 *
+	 * @param string $redirect_to URL to redirect to.
+	 * @param string $action Action name.
+	 * @param array  $ids List of ids.
+	 *
+	 * @return string
 	 */
-	public function bulk_print_labels() {
-		// if an array with order IDs is not presented, exit the function.
-		if ( ! isset( $_REQUEST['post'] ) && ! is_array( $_REQUEST['post'] ) ) {
-			return;
+	public function bulk_print_labels( $redirect_to, $action, $ids ) {
+		if ( self::BULK_ACTION_ID !== $action ) {
+			return esc_url_raw( $redirect_to );.
 		}
 
+		$ids    = apply_filters( 'woocommerce_bulk_action_ids', array_reverse( array_map( 'absint', $ids ) ), $action, 'order' );
 		$labels = array();
-		foreach ( $_REQUEST['post'] as $order_id ) {
+		foreach ( $ids as $order_id ) {
 			$order = \WC_Order_Factory::get_order( $order_id );
 			if ( $order && $order->meta_exists( Order_Meta_Keys::IS_PACKLINK ) ) {
 				/** @noinspection SlowArrayOperationsInLoopInspection */
@@ -146,6 +152,17 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 			$this->setDownloadCookie();
 			exit;
 		}
+
+		$redirect_to = add_query_arg(
+			array(
+				'post_type'   => 'shop_order',
+				'bulk_action' => self::BULK_ACTION_ID,
+				'changed'     => 0,
+				'ids'         => implode( ',', $ids ),
+			), $redirect_to
+		);
+
+		return esc_url_raw( $redirect_to );
 	}
 
 	/**

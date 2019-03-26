@@ -479,7 +479,7 @@ class Plugin {
 		add_filter( 'manage_edit-shop_order_columns', array( $handler, 'add_packlink_order_columns' ) );
 		add_action( 'manage_shop_order_posts_custom_column', array( $handler, 'populate_packlink_column' ) );
 		add_filter( 'bulk_actions-edit-shop_order', array( $handler, 'add_packlink_bulk_action' ) );
-		add_filter( 'admin_action_packlink_print_labels', array( $handler, 'bulk_print_labels' ) );
+		add_filter( 'handle_bulk_actions-edit-shop_order', array( $handler, 'bulk_print_labels' ), 10, 3 );
 		add_action( 'admin_enqueue_scripts', array( $handler, 'load_scripts' ) );
 
 		add_action(
