@@ -222,7 +222,7 @@ class Packlink_Shipping_Method extends \WC_Shipping_Method {
 			for ( $i = 0; $i < $item['quantity']; $i ++ ) {
 				$parcel = new Package();
 
-				$parcel->weight = wc_get_weight( $product->get_width(), 'kg' ) ?: $default->weight;
+				$parcel->weight = wc_get_weight( $product->get_weight(), 'kg' ) ?: $default->weight;
 				$parcel->height = wc_get_dimension( $product->get_height(), 'cm' ) ?: $default->height;
 				$parcel->width  = wc_get_dimension( $product->get_width(), 'cm' ) ?: $default->width;
 				$parcel->length = wc_get_dimension( $product->get_length(), 'cm' ) ?: $default->length;
