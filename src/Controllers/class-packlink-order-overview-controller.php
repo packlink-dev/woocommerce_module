@@ -134,7 +134,7 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 	 */
 	public function bulk_print_labels( $redirect_to, $action, $ids ) {
 		if ( self::BULK_ACTION_ID !== $action ) {
-			return esc_url_raw( $redirect_to );.
+			return esc_url_raw( $redirect_to );
 		}
 
 		$ids    = apply_filters( 'woocommerce_bulk_action_ids', array_reverse( array_map( 'absint', $ids ) ), $action, 'order' );
