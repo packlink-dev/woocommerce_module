@@ -84,7 +84,6 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	 */
 	public function __construct() {
 		$this->configuration = ServiceRegister::getService( Config_Service::CLASS_NAME );
-		$this->load_css();
 		Task_Queue::wakeup();
 	}
 
@@ -94,6 +93,7 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	 * @throws QueueStorageUnavailableException If queue storage is unavailable.
 	 */
 	public function render() {
+		$this->load_css();
 		$login_failure = false;
 		if ( $this->is_post() && ! $this->login() ) {
 			$login_failure = true;
@@ -381,7 +381,15 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 
 		Shipping_Method_Helper::disable_shop_shipping_methods();
 
-		$this->return_json( array( 'success' => true, 'message' => __( 'Successfully disabled shipping methods.', 'packlink-pro-shipping' ) ) );
+		$this->return_json(
+			array(
+				'success' => true,
+				'message' => __(
+					'Successfully disabled shipping methods.',
+					'packlink-pro-shipping'
+				),
+			)
+		);
 	}
 
 	/**
@@ -413,7 +421,16 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 			$result->logoUrl = Shipping_Method_Helper::get_carrier_logo( $result->carrierName );
 			$this->return_json( $result->toArray() );
 		} else {
-			$this->return_json( array( 'success' => false, 'message' => __( 'Failed to save shipping method.', 'packlink-pro-shipping' ) ), 400 );
+			$this->return_json(
+				array(
+					'success' => false,
+					'message' => __(
+						'Failed to save shipping method.',
+						'packlink-pro-shipping'
+					),
+				),
+				400
+			);
 		}
 	}
 

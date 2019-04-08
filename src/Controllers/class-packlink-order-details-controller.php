@@ -24,13 +24,6 @@ use WP_Post;
  * @package Packlink\WooCommerce\Controllers
  */
 class Packlink_Order_Details_Controller extends Packlink_Base_Controller {
-	/**
-	 * Packlink_Order_Details_Controller constructor.
-	 */
-	public function __construct() {
-		$this->load_css();
-		$this->load_js();
-	}
 
 	/**
 	 * Renders Packlink PRO Shipping post box content.
@@ -38,6 +31,9 @@ class Packlink_Order_Details_Controller extends Packlink_Base_Controller {
 	 * @param WP_Post $wp_post WordPress post object.
 	 */
 	public function render( WP_Post $wp_post ) {
+		$this->load_css();
+		$this->load_js();
+
 		/** @noinspection PhpUnusedLocalVariableInspection */
 		$order_details = Order_Details_Helper::get_order_details( $wp_post );
 

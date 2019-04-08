@@ -15,6 +15,7 @@ use Packlink\WooCommerce\Components\Bootstrap_Component;
 use Packlink\WooCommerce\Components\Checkout\Checkout_Handler;
 use Packlink\WooCommerce\Components\Order\Order_Details_Helper;
 use Packlink\WooCommerce\Components\Services\Config_Service;
+use Packlink\WooCommerce\Components\Services\Logger_Service;
 use Packlink\WooCommerce\Components\ShippingMethod\Packlink_Shipping_Method;
 use Packlink\WooCommerce\Components\ShippingMethod\Shipping_Method_Helper;
 use Packlink\WooCommerce\Components\ShippingMethod\Shop_Shipping_Method_Service;
@@ -22,6 +23,8 @@ use Packlink\WooCommerce\Components\Utility\Database;
 use Packlink\WooCommerce\Components\Utility\Shop_Helper;
 use Packlink\WooCommerce\Components\Utility\Task_Queue;
 use Packlink\WooCommerce\Components\Utility\Version_File_Reader;
+use Packlink\WooCommerce\Controllers\Packlink_Frontend_Controller;
+use Packlink\WooCommerce\Controllers\Packlink_Index;
 use Packlink\WooCommerce\Controllers\Packlink_Order_Details_Controller;
 use Packlink\WooCommerce\Controllers\Packlink_Order_Overview_Controller;
 use wpdb;
@@ -186,6 +189,8 @@ class Plugin {
 			Shipping_Method_Helper::remove_packlink_shipping_methods();
 			$this->uninstall_plugin_from_site();
 		}
+
+		$this->delete_logs();
 	}
 
 	/**
@@ -203,19 +208,35 @@ class Plugin {
 	 * Loads plugin translations.
 	 */
 	public function load_plugin_text_domain() {
-		if ( function_exists( 'wp_get_current_user' ) ) {
-			$locale = get_user_locale();
-			$locale = apply_filters( 'plugin_locale', $locale, 'packlink-pro-shipping' );
+		unload_textdomain( 'packlink-pro-shipping' );
+		load_plugin_textdomain(
+			'packlink-pro-shipping',
+			false,
+			plugin_basename( dirname( $this->packlink_plugin_file ) ) . '/languages'
+		);
+	}
 
-			load_textdomain(
-				'packlink-pro-shipping',
-				WP_LANG_DIR . '/packlink-pro-shipping/packlink-pro-shipping-' . $locale . '.mo'
-			);
-			load_plugin_textdomain(
-				'packlink-pro-shipping',
-				false,
-				plugin_basename( dirname( $this->packlink_plugin_file ) ) . '/languages'
-			);
+	/**
+	 * Adds Packlink PRO query variable.
+	 *
+	 * @param array $vars Filter variables.
+	 *
+	 * @return array Filter variables.
+	 */
+	public function plugin_add_trigger( $vars ) {
+		$vars[] = 'packlink_pro_controller';
+
+		return $vars;
+	}
+
+	/**
+	 * Trigger action on calling plugin controller.
+	 */
+	public function plugin_trigger_check() {
+		$controller_name = get_query_var( 'packlink_pro_controller' );
+		if ( ! empty( $controller_name ) ) {
+			$controller = new Packlink_Index();
+			$controller->index();
 		}
 	}
 
@@ -232,12 +253,14 @@ class Plugin {
 	 * Creates Packlink PRO Shipping item in administrator menu.
 	 */
 	public function create_admin_submenu() {
+		$controller = new Packlink_Frontend_Controller();
 		add_submenu_page(
 			'woocommerce',
 			'Packlink PRO',
 			'Packlink PRO',
 			'manage_options',
-			'packlink-pro-shipping/index.php'
+			'packlink-pro-shipping',
+			array( $controller, 'render' )
 		);
 	}
 
@@ -250,7 +273,7 @@ class Plugin {
 	 */
 	public function create_configuration_link( array $links ) {
 		$action_links = array(
-			'configuration' => '<a href="' . admin_url( 'admin.php?page=packlink-pro-shipping/index.php' ) . '" aria-label="' . esc_attr__( 'View Packlink configuration', 'packlink-pro-shipping' ) . '">' . esc_html__( 'Configuration', 'packlink-pro-shipping' ) . '</a>',
+			'configuration' => '<a href="' . admin_url( 'admin.php?page=packlink-pro-shipping' ) . '" aria-label="' . esc_attr__( 'View Packlink configuration', 'packlink-pro-shipping' ) . '">' . esc_html__( 'Configuration', 'packlink-pro-shipping' ) . '</a>',
 		);
 
 		return array_merge( $action_links, $links );
@@ -333,6 +356,8 @@ class Plugin {
 		register_deactivation_hook( $this->packlink_plugin_file, array( $this, 'deactivate' ) );
 		add_action( 'upgrader_process_complete', array( $this, 'update' ), 100, 2 );
 		add_action( 'admin_init', array( $this, 'initialize_new_site' ) );
+		add_filter( 'query_vars', array( $this, 'plugin_add_trigger' ) );
+		add_action( 'template_redirect', array( $this, 'plugin_trigger_check' ) );
 		add_action( 'plugins_loaded', array( $this, 'load_plugin_text_domain' ) );
 		if ( is_multisite() ) {
 			add_action( 'delete_blog', array( $this, 'uninstall_plugin_from_deleted_site' ) );
@@ -351,6 +376,8 @@ class Plugin {
 	 * Initializes default configuration values.
 	 */
 	private function init_config() {
+		$this->create_log_directory();
+
 		try {
 			$this->get_config_service()->setTaskRunnerStatus( '', null );
 			$statuses = array(
@@ -389,7 +416,7 @@ class Plugin {
 	 * @return bool Plugin valid for update.
 	 */
 	private function validate_if_plugin_update_is_for_our_plugin( $options ) {
-		$wc_plugin = plugin_basename( Shop_Helper::PLUGIN_ID );
+		$wc_plugin = Shop_Helper::get_plugin_name();
 		if ( 'update' === $options['action'] && 'plugin' === $options['type'] && isset( $options['plugins'] ) ) {
 			foreach ( $options['plugins'] as $plugin ) {
 				if ( $plugin === $wc_plugin ) {
@@ -521,11 +548,48 @@ class Plugin {
 	 */
 	private function add_settings_link() {
 		add_filter(
-			'plugin_action_links_' . plugin_basename( Shop_Helper::PLUGIN_ID ),
+			'plugin_action_links_' . plugin_basename( Shop_Helper::get_plugin_name() ),
 			array(
 				$this,
 				'create_configuration_link',
 			)
 		);
+	}
+
+	/**
+	 * Deletes packlink log files.
+	 */
+	private function delete_logs() {
+		$dir = dirname( Logger_Service::get_log_file() );
+
+		if ( is_dir( $dir ) ) {
+			$files = scandir( $dir, SCANDIR_SORT_NONE );
+
+			$dir = rtrim( $dir, '/' ) . '/';
+			foreach ( $files as $file ) {
+				if ( '.' !== $file && '..' !== $file ) {
+					unlink( $dir . $file );
+				}
+			}
+
+			rmdir( $dir );
+		}
+	}
+
+	/**
+	 * Creates log directory with protection files.
+	 */
+	private function create_log_directory() {
+		$dir = dirname( Logger_Service::get_log_file() );
+
+		if ( ! is_dir( $dir ) ) {
+			if ( ! mkdir( $dir, 0777, true ) && ! is_dir( $dir ) ) {
+				return;
+			}
+
+			$dir = rtrim( $dir ) . '/';
+			file_put_contents( $dir . '.htaccess', 'deny from all' );
+			file_put_contents( $dir . 'index.html', '' );
+		}
 	}
 }

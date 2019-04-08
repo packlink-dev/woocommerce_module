@@ -9,11 +9,6 @@ namespace Packlink\WooCommerce\Controllers;
 
 use Packlink\WooCommerce\Components\Utility\Shop_Helper;
 
-if ( ! defined( 'ABSPATH' ) ) {
-	/** Set up WordPress environment */
-	require_once '../../../../wp-load.php';
-}
-
 /**
  * Class Packlink_Base_Controller
  *

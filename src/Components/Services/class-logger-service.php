@@ -11,6 +11,7 @@ use Logeecom\Infrastructure\Logger\Interfaces\LoggerAdapter;
 use Logeecom\Infrastructure\Logger\LogData;
 use Logeecom\Infrastructure\Logger\Logger;
 use Logeecom\Infrastructure\Logger\LoggerConfiguration;
+use Logeecom\Infrastructure\ServiceRegister;
 use Logeecom\Infrastructure\Singleton;
 use Packlink\WooCommerce\Components\Utility\Shop_Helper;
 
@@ -32,6 +33,17 @@ class Logger_Service extends Singleton implements LoggerAdapter {
 	protected static $instance;
 
 	/**
+	 * Returns log file name.
+	 *
+	 * @return string Log file name.
+	 */
+	public static function get_log_file() {
+		$upload_dir = wp_get_upload_dir();
+
+		return $upload_dir['basedir'] . '/packlink-logs/' . date( 'Y-m-d' ) . '.log';
+	}
+
+	/**
 	 * Log message in system.
 	 *
 	 * @param LogData $data Log data.
@@ -43,19 +55,24 @@ class Logger_Service extends Singleton implements LoggerAdapter {
 		 * @var LoggerConfiguration $config_service
 		 */
 		$config_service = LoggerConfiguration::getInstance();
-		$min_log_level  = $config_service->getMinLogLevel();
-		$log_level      = $data->getLogLevel();
+		/**
+		 * Configuration service.
+		 *
+		 * @var Config_Service $configuration
+		 */
+		$configuration = ServiceRegister::getService( Config_Service::CLASS_NAME );
+		$min_log_level = $config_service->getMinLogLevel();
+		$log_level     = $data->getLogLevel();
 		if ( ! Shop_Helper::is_woocommerce_active() ) {
 			return;
 		}
 
 		// Min log level is actually max log level.
-		if ( $log_level > $min_log_level ) {
+		if ( $log_level > $min_log_level && ! $configuration->isDebugModeEnabled() ) {
 			return;
 		}
 
-		$logger = wc_get_logger();
-		$level  = 'info';
+		$level = 'info';
 		switch ( $log_level ) {
 			case Logger::ERROR:
 				$level = 'error';
@@ -73,7 +90,10 @@ class Logger_Service extends Singleton implements LoggerAdapter {
 			$message .= sprintf( static::CONTEXT_DEF, $item->getName(), $item->getValue() );
 		}
 
-		$context = array( 'source' => 'packlink' );
-		$logger->log( $level, $message, $context );
+		$filename = self::get_log_file();
+		if ( ( $log = fopen( $filename, 'ab+' ) ) !== false ) {
+			fwrite( $log, $message );
+			fclose( $log );
+		}
 	}
 }

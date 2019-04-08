@@ -7,21 +7,6 @@
 
 namespace Packlink\WooCommerce\Controllers;
 
-if ( ! defined( 'ABSPATH' ) ) {
-	/** Set up WordPress environment */
-	require_once '../../../../wp-load.php';
-}
-
-if ( ! function_exists( 'is_plugin_active' ) ) {
-	require_once ABSPATH . 'wp-admin/includes/plugin.php';
-}
-
-if ( ! is_plugin_active( 'packlink-pro-shipping/packlink-pro-shipping.php' ) ) {
-	require get_404_template();
-
-	exit();
-}
-
 /**
  * Class Packlink_Index
  *
@@ -32,7 +17,7 @@ class Packlink_Index extends Packlink_Base_Controller {
 	 * Controller index action.
 	 */
 	public function index() {
-		$controller_name = $this->get_param( 'controller' );
+		$controller_name = $this->get_param( 'packlink_pro_controller' );
 
 		if ( ! $this->validate_controller_name( $controller_name ) ) {
 			status_header( 404 );

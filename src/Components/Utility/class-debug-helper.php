@@ -7,6 +7,7 @@
 
 namespace Packlink\WooCommerce\Components\Utility;
 
+use DateTime;
 use Logeecom\Infrastructure\Exceptions\BaseException;
 use Logeecom\Infrastructure\ORM\QueryFilter\QueryFilter;
 use Logeecom\Infrastructure\ORM\RepositoryRegistry;
@@ -14,6 +15,9 @@ use Logeecom\Infrastructure\ServiceRegister;
 use Logeecom\Infrastructure\TaskExecution\QueueItem;
 use Packlink\BusinessLogic\ShippingMethod\Models\ShippingMethod;
 use Packlink\WooCommerce\Components\Services\Config_Service;
+use Packlink\WooCommerce\Components\Services\Logger_Service;
+use WooCommerce;
+use ZipArchive;
 
 /**
  * Class Debug_Helper
@@ -25,6 +29,7 @@ class Debug_Helper {
 	const PHP_INFO_FILE_NAME         = 'phpinfo.html';
 	const SYSTEM_INFO_FILE_NAME      = 'system-info.txt';
 	const LOG_FILE_NAME              = 'logs.txt';
+	const WC_LOG_FILE_NAME           = 'wc-logs.txt';
 	const USER_INFO_FILE_NAME        = 'packlink-user-info.txt';
 	const QUEUE_INFO_FILE_NAME       = 'queue.txt';
 	const PARCEL_WAREHOUSE_FILE_NAME = 'parcel-warehouse.txt';
@@ -39,8 +44,8 @@ class Debug_Helper {
 	public static function get_system_info() {
 		$file = tempnam( sys_get_temp_dir(), 'packlink_system_info' );
 
-		$zip = new \ZipArchive();
-		$zip->open( $file, \ZipArchive::CREATE );
+		$zip = new ZipArchive();
+		$zip->open( $file, ZipArchive::CREATE );
 
 		$php_info = static::get_php_info();
 
@@ -48,8 +53,11 @@ class Debug_Helper {
 			$zip->addFromString( static::PHP_INFO_FILE_NAME, $php_info );
 		}
 
+		$dir = dirname( Logger_Service::get_log_file() );
 		$zip->addFromString( static::SYSTEM_INFO_FILE_NAME, static::get_woocommerce_shop_info() );
-		$zip->addFromString( static::LOG_FILE_NAME, static::get_logs() );
+		$zip->addFromString( static::LOG_FILE_NAME, static::get_logs( $dir ) );
+		/** @noinspection PhpUndefinedConstantInspection */
+		$zip->addFromString( static::WC_LOG_FILE_NAME, static::get_logs( WC_LOG_DIR ) );
 		$zip->addFromString( static::USER_INFO_FILE_NAME, static::get_user_info() );
 		$zip->addFromString( static::QUEUE_INFO_FILE_NAME, static::get_queue_status() );
 		$zip->addFromString( static::PARCEL_WAREHOUSE_FILE_NAME, static::get_parcel_and_warehouse_info() );
@@ -78,11 +86,12 @@ class Debug_Helper {
 	 * @return string
 	 */
 	protected static function get_woocommerce_shop_info() {
-		global $wpdb;
+		global $wpdb, $wp_version;
 
-		$result  = 'WooCommerce version: ' . \WooCommerce::instance()->version;
-		$result .= "\ntheme: " . \wp_get_theme()->get( 'Name' );
-		$result .= "\nbase admin url: " . \get_admin_url();
+		$result  = 'WooCommerce version: ' . WooCommerce::instance()->version;
+		$result .= "\nWordPress version: " . $wp_version;
+		$result .= "\ntheme: " . wp_get_theme()->get( 'Name' );
+		$result .= "\nbase admin url: " . get_admin_url();
 		// WooCommerce only supports MySQL database.
 		$result .= "\ndatabase: " . static::DATABASE;
 		$result .= "\ndatabase version: " . $wpdb->db_version();
@@ -96,16 +105,16 @@ class Debug_Helper {
 	 *
 	 * @noinspection PhpDocMissingThrowsInspection
 	 *
+	 * @param string $dir Logs directory path.
+	 *
 	 * @return string Log file contents.
 	 */
-	protected static function get_logs() {
-		$ignore = array( '.', '..', 'index.html', '.htaccess' );
-		/** @noinspection PhpUndefinedConstantInspection */
-		$dir         = WC_LOG_DIR;
+	protected static function get_logs( $dir ) {
+		$ignore      = array( '.', '..', 'index.html', '.htaccess' );
 		$dir_content = scandir( $dir, SCANDIR_SORT_NONE );
 
-		/** @noinspection PhpUnhandledExceptionInspection */
-		$start = new \DateTime( '-7 days' );
+		$dir   = rtrim( $dir, '/' ) . '/';
+		$start = new DateTime( '-7 days' );
 		$start->setTime( 0, 0 );
 		$files = array();
 		foreach ( $dir_content as $file ) {

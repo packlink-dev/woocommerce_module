@@ -12,12 +12,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:logeecom/pl_module_core.git",
-              "reference": "64e9be33f141569e0d72a7463322ce7962a1ed39"
+                "reference": "ebb11f4b32aa82bc982adc78a1441f3248fc7bd6"
             },
             "dist": {
                 "type": "zip",
-              "url": "https://api.github.com/repos/logeecom/pl_module_core/zipball/64e9be33f141569e0d72a7463322ce7962a1ed39",
-              "reference": "64e9be33f141569e0d72a7463322ce7962a1ed39",
+                "url": "https://api.github.com/repos/logeecom/pl_module_core/zipball/ebb11f4b32aa82bc982adc78a1441f3248fc7bd6",
+                "reference": "ebb11f4b32aa82bc982adc78a1441f3248fc7bd6",
                 "shasum": ""
             },
             "require": {
@@ -40,15 +40,14 @@
             "autoload-dev": {
                 "psr-4": {
                     "Logeecom\\Tests\\Infrastructure\\": "tests/Infrastructure",
-                    "Logeecom\\Tests\\BusinessLogic\\": "tests/BusinessLogic",
-                    "Logeecom\\Tests\\Common\\": "tests/Common"
+                    "Logeecom\\Tests\\BusinessLogic\\": "tests/BusinessLogic"
                 }
             },
             "license": [
                 "proprietary"
             ],
             "description": "Packlink integrations core library",
-          "time": "2019-03-22T13:24:52+00:00"
+            "time": "2019-03-28T12:20:09+00:00"
         },
         {
             "name": "zendframework/zend-memory",

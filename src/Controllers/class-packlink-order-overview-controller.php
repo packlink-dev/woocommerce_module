@@ -159,7 +159,8 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 				'bulk_action' => self::BULK_ACTION_ID,
 				'changed'     => 0,
 				'ids'         => implode( ',', $ids ),
-			), $redirect_to
+			),
+			$redirect_to
 		);
 
 		return esc_url_raw( $redirect_to );

@@ -16,10 +16,6 @@ use Packlink\WooCommerce\Components\Services\Config_Service;
  * @package Packlink\WooCommerce\Components\Utility
  */
 class Shop_Helper {
-	/**
-	 * Plugin identifier.
-	 */
-	const PLUGIN_ID = 'packlink-pro-shipping/packlink-pro-shipping.php';
 
 	/**
 	 * Country code.
@@ -47,11 +43,22 @@ class Shop_Helper {
 	 * @return bool
 	 */
 	public static function is_plugin_active_for_network() {
-		if ( ! function_exists( 'is_plugin_active_for_network' ) ) {
-			require_once ABSPATH . '/wp-admin/includes/plugin.php';
+		if ( ! is_multisite() ) {
+			return false;
 		}
 
-		return is_plugin_active_for_network( self::PLUGIN_ID );
+		$plugins = get_site_option( 'active_sitewide_plugins' );
+
+		return isset( $plugins[ self::get_plugin_name() ] );
+	}
+
+	/**
+	 * Returns the name of the plugin
+	 *
+	 * @return string
+	 */
+	public static function get_plugin_name() {
+		return plugin_basename( dirname( dirname( __DIR__ ) ) . '/packlink-pro-shipping.php' );
 	}
 
 	/**
@@ -61,7 +68,7 @@ class Shop_Helper {
 	 */
 	public static function is_plugin_active_for_current_site() {
 		return in_array(
-			self::PLUGIN_ID,
+			self::get_plugin_name(),
 			apply_filters( 'active_plugins', get_option( 'active_plugins' ) ),
 			true
 		);
@@ -73,7 +80,7 @@ class Shop_Helper {
 	 * @return bool
 	 */
 	public static function is_woocommerce_active() {
-		return is_plugin_active( 'woocommerce/woocommerce.php' );
+		return self::is_plugin_active( 'woocommerce.php' );
 	}
 
 	/**
@@ -95,7 +102,7 @@ class Shop_Helper {
 			require_once ABSPATH . 'wp-admin/includes/plugin.php';
 		}
 
-		$plugin_data = get_plugin_data( WP_PLUGIN_DIR . '/' . self::PLUGIN_ID );
+		$plugin_data = get_plugin_data( WP_PLUGIN_DIR . '/' . self::get_plugin_name() );
 
 		return $plugin_data['Version'];
 	}
@@ -110,16 +117,14 @@ class Shop_Helper {
 	 * @return string
 	 */
 	public static function get_controller_url( $name, $action = '', array $params = array() ) {
-		$query = array( 'controller' => $name );
+		$query = array( 'packlink_pro_controller' => $name );
 		if ( ! empty( $action ) ) {
 			$query['action'] = $action;
 		}
 
 		$query = array_merge( $query, $params );
-		$url   = get_site_url() . '/wp-content/plugins/packlink-pro-shipping/Controllers/class-packlink-index.php?'
-				. http_build_query( $query );
 
-		return $url;
+		return get_site_url() . '/?' . http_build_query( $query );
 	}
 
 	/**
@@ -128,7 +133,7 @@ class Shop_Helper {
 	 * @return string
 	 */
 	public static function get_plugin_base_url() {
-		return plugins_url() . '/packlink-pro-shipping/';
+		return plugins_url( '/', dirname( __DIR__ ) );
 	}
 
 	/**
@@ -153,5 +158,24 @@ class Shop_Helper {
 		}
 
 		return static::$country_code;
+	}
+
+	/**
+	 * Checks if plugin is active.
+	 *
+	 * @param string $plugin_name The name of the plugin main entry point file. For example "packlink-pro-shipping.php".
+	 *
+	 * @return bool
+	 */
+	private static function is_plugin_active( $plugin_name ) {
+		$all_plugins = get_option( 'active_plugins' );
+
+		foreach ( $all_plugins as $plugin ) {
+			if ( false !== strpos( $plugin, '/' . $plugin_name ) ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 }
