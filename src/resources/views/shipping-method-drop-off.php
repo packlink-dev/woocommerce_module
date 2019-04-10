@@ -38,7 +38,7 @@ $translations = array(
 $locations = $this->get_drop_off_locations( $shipping_method->getId() );
 ?>
 
-<script>
+<script style="display: none;">
 	Packlink.checkout.setLocale('<?php echo $locale; ?>');
 	Packlink.checkout.setTranslations(<?php echo wp_json_encode( $translations ); ?>);
 	Packlink.checkout.setIsCart(<?php echo is_cart() ? 'true' : 'false'; ?>);
@@ -53,7 +53,7 @@ $locations = $this->get_drop_off_locations( $shipping_method->getId() );
 <?php if ( ! is_cart() ) : ?>
 <button type="button" id="packlink-drop-off-picker"><?php echo $button_label; ?></button>
 
-<div id="pl-picker-modal">
+<div id="pl-picker-modal" style="display: none;">
 	<location-picker>
 		<div class="lp-content" data-lp-id="content">
 			<div class="lp-locations">

@@ -104,7 +104,7 @@ class Checkout_Handler {
 	 * Initializes script on cart page.
 	 */
 	public function after_shipping_calculator() {
-		echo '<script>Packlink.checkout.init();</script>';
+		echo '<script style="display: none;">Packlink.checkout.init();</script>';
 	}
 
 	/**
@@ -113,7 +113,7 @@ class Checkout_Handler {
 	public function after_shipping() {
 		$this->print_hidden_input( static::PACKLINK_DROP_OFF_ID );
 		$this->print_hidden_input( static::PACKLINK_DROP_OFF_EXTRA );
-		echo '<script>Packlink.checkout.init();</script>';
+		echo '<script style="display: none;">Packlink.checkout.init();</script>';
 	}
 
 	/**
