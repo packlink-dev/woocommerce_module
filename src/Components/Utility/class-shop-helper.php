@@ -9,6 +9,7 @@ namespace Packlink\WooCommerce\Components\Utility;
 
 use Logeecom\Infrastructure\ServiceRegister;
 use Packlink\WooCommerce\Components\Services\Config_Service;
+use Packlink\WooCommerce\Components\Services\Logger_Service;
 
 /**
  * Class Shop_Helper
@@ -158,6 +159,23 @@ class Shop_Helper {
 		}
 
 		return static::$country_code;
+	}
+
+	/**
+	 * Creates log directory with protection files.
+	 */
+	public static function create_log_directory() {
+		$dir = dirname( Logger_Service::get_log_file() );
+
+		if ( ! is_dir( $dir ) ) {
+			if ( ! mkdir( $dir, 0777, true ) && ! is_dir( $dir ) ) {
+				return;
+			}
+
+			$dir = rtrim( $dir ) . '/';
+			file_put_contents( $dir . '.htaccess', 'deny from all' );
+			file_put_contents( $dir . 'index.html', '' );
+		}
 	}
 
 	/**

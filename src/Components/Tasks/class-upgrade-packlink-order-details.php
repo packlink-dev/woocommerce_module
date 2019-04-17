@@ -31,12 +31,6 @@ class Upgrade_Packlink_Order_Details extends Task {
 	const DEFAULT_BATCH_SIZE       = 200;
 
 	/**
-	 * Task state context.
-	 *
-	 * @var array
-	 */
-	private $state_data;
-	/**
 	 * Order repository.
 	 *
 	 * @var OrderRepository
@@ -48,6 +42,36 @@ class Upgrade_Packlink_Order_Details extends Task {
 	 * @var Proxy
 	 */
 	private $proxy;
+	/**
+	 * Batch size.
+	 *
+	 * @var int
+	 */
+	private $batch_size = self::DEFAULT_BATCH_SIZE;
+	/**
+	 * Current progress.
+	 *
+	 * @var int
+	 */
+	private $current_progress = self::INITIAL_PROGRESS_PERCENT;
+	/**
+	 * Total orders count.
+	 *
+	 * @var int
+	 */
+	private $total_orders_count;
+	/**
+	 * Start date timestamp.
+	 *
+	 * @var int
+	 */
+	private $start_date;
+	/**
+	 * Order ids.
+	 *
+	 * @var array
+	 */
+	private $order_ids;
 
 	/**
 	 * UpgradePacklinkOrderDetails constructor.
@@ -60,16 +84,10 @@ class Upgrade_Packlink_Order_Details extends Task {
 		 *
 		 * @var TimeProvider $time_provider
 		 */
-		$time_provider = ServiceRegister::getService( TimeProvider::CLASS_NAME );
-		$start_date    = $time_provider->getDateTime( strtotime( '-60 days' ) )->getTimestamp();
-
-		$this->state_data = array(
-			'batch_size'       => self::DEFAULT_BATCH_SIZE,
-			'all_order_ids'    => $order_ids,
-			'number_of_orders' => count( $order_ids ),
-			'current_progress' => self::INITIAL_PROGRESS_PERCENT,
-			'start_date'       => $start_date,
-		);
+		$time_provider            = ServiceRegister::getService( TimeProvider::CLASS_NAME );
+		$this->order_ids          = $order_ids;
+		$this->total_orders_count = count( $order_ids );
+		$this->start_date         = $time_provider->getDateTime( strtotime( '-60 days' ) )->getTimestamp();
 	}
 
 	/**
@@ -81,7 +99,15 @@ class Upgrade_Packlink_Order_Details extends Task {
 	 * @since 5.1.0
 	 */
 	public function serialize() {
-		return serialize( $this->state_data );
+		return serialize(
+			array(
+				$this->batch_size,
+				$this->order_ids,
+				$this->total_orders_count,
+				$this->current_progress,
+				$this->start_date,
+			)
+		);
 	}
 
 	/**
@@ -90,17 +116,23 @@ class Upgrade_Packlink_Order_Details extends Task {
 	 * @param string $serialized Serialized object string.
 	 */
 	public function unserialize( $serialized ) {
-		$this->state_data = unserialize( $serialized );
+		list(
+			$this->batch_size,
+			$this->order_ids,
+			$this->total_orders_count,
+			$this->current_progress,
+			$this->start_date,
+		) = unserialize( $serialized );
 	}
 
 	/**
 	 * Runs task logic.
 	 */
 	public function execute() {
-		$this->reportProgress( $this->state_data['current_progress'] );
+		$this->reportProgress( $this->current_progress );
 		$this->report_progress_when_no_order_ids();
 
-		$count = count( $this->state_data['all_order_ids'] );
+		$count = count( $this->order_ids );
 		while ( $count > 0 ) {
 			$order_ids = $this->get_batch_order_ids();
 			$this->reportAlive();
@@ -116,7 +148,7 @@ class Upgrade_Packlink_Order_Details extends Task {
 				$modified_at = $order->get_date_modified();
 
 				// Check if older than 60 days, if not fetch shipment details.
-				$in_time_limit = $modified_at && $modified_at->getTimestamp() >= $this->state_data['start_date'];
+				$in_time_limit = $modified_at && $modified_at->getTimestamp() >= $this->start_date;
 				if ( $in_time_limit && ! $inactive ) {
 					try {
 						$shipment = $this->get_proxy()->getShipment( $reference );
@@ -130,6 +162,8 @@ class Upgrade_Packlink_Order_Details extends Task {
 					$order->update_meta_data( Order_Meta_Keys::IS_PACKLINK, 'yes' );
 					$order->update_meta_data( Order_Meta_Keys::SHIPMENT_REFERENCE, $reference );
 				}
+
+				delete_post_meta( $order_id, '_packlink_draft_reference' );
 			}
 
 			// If batch is successful orders in batch should be removed.
@@ -138,10 +172,19 @@ class Upgrade_Packlink_Order_Details extends Task {
 			// If upload is successful progress should be reported for that batch.
 			$this->report_progress_for_batch();
 
-			$count = count( $this->state_data['all_order_ids'] );
+			$count = count( $this->order_ids );
 		}
 
 		$this->reportProgress( 100 );
+	}
+
+	/**
+	 * Determines whether task can be reconfigured.
+	 *
+	 * @return bool TRUE if task can be reconfigured; otherwise, FALSE.
+	 */
+	public function canBeReconfigured() {
+		return $this->batch_size > 1;
 	}
 
 	/**
@@ -150,13 +193,13 @@ class Upgrade_Packlink_Order_Details extends Task {
 	 * @throws HttpUnhandledException Thrown when batch size can't be reduced.
 	 */
 	public function reconfigure() {
-		$batch_size = $this->state_data['batch_size'];
+		$batch_size = $this->batch_size;
 		if ( $batch_size >= 100 ) {
-			$this->state_data['batch_size'] -= 50;
+			$this->batch_size -= 50;
 		} elseif ( $batch_size > 10 && $batch_size < 100 ) {
-			$this->state_data['batch_size'] -= 10;
+			$this->batch_size -= 10;
 		} elseif ( $batch_size > 1 && $batch_size <= 10 ) {
-			-- $this->state_data['batch_size'];
+			-- $this->batch_size;
 		} else {
 			throw new HttpUnhandledException( 'Batch size can not be smaller than 1' );
 		}
@@ -166,9 +209,9 @@ class Upgrade_Packlink_Order_Details extends Task {
 	 * Report progress when there are no orders for sync
 	 */
 	private function report_progress_when_no_order_ids() {
-		if ( count( $this->state_data['all_order_ids'] ) === 0 ) {
-			$this->state_data['current_progress'] = 100;
-			$this->reportProgress( $this->state_data['current_progress'] );
+		if ( count( $this->order_ids ) === 0 ) {
+			$this->current_progress = 100;
+			$this->reportProgress( $this->current_progress );
 		}
 	}
 
@@ -178,16 +221,16 @@ class Upgrade_Packlink_Order_Details extends Task {
 	 * @return array Batch of order ids.
 	 */
 	private function get_batch_order_ids() {
-		return array_slice( $this->state_data['all_order_ids'], 0, $this->state_data['batch_size'] );
+		return array_slice( $this->order_ids, 0, $this->batch_size );
 	}
 
 	/**
 	 * Remove finished batch orders
 	 */
 	private function remove_finished_batch() {
-		$this->state_data['all_order_ids'] = array_slice(
-			$this->state_data['all_order_ids'],
-			$this->state_data['batch_size']
+		$this->order_ids = array_slice(
+			$this->order_ids,
+			$this->batch_size
 		);
 	}
 
@@ -195,13 +238,13 @@ class Upgrade_Packlink_Order_Details extends Task {
 	 * Report progress for batch
 	 */
 	private function report_progress_for_batch() {
-		$synced = $this->state_data['number_of_orders'] - count( $this->state_data['all_order_ids'] );
+		$synced = $this->total_orders_count - count( $this->order_ids );
 
-		$progress_step = $synced * ( 100 - self::INITIAL_PROGRESS_PERCENT ) / $this->state_data['number_of_orders'];
+		$progress_step = $synced * ( 100 - self::INITIAL_PROGRESS_PERCENT ) / $this->total_orders_count;
 
-		$this->state_data['current_progress'] = self::INITIAL_PROGRESS_PERCENT + $progress_step;
+		$this->current_progress = self::INITIAL_PROGRESS_PERCENT + $progress_step;
 
-		$this->reportProgress( $this->state_data['current_progress'] );
+		$this->reportProgress( $this->current_progress );
 	}
 
 	/**

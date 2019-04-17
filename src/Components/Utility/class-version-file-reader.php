@@ -57,16 +57,26 @@ class Version_File_Reader {
 	 */
 	public function read_next() {
 		$file_content = null;
-		if ( empty( $this->sorted_files_for_execution ) ) {
-			$this->sort_files();
-		}
 
-		if ( isset( $this->sorted_files_for_execution[ $this->pointer ] ) ) {
+		if ( $this->has_next() ) {
 			$file_content = include $this->migrations_directory . $this->sorted_files_for_execution[ $this->pointer ];
 			$this->pointer ++;
 		}
 
 		return $file_content;
+	}
+
+	/**
+	 * Returns TRUE if there is next migration file to execute, FALSE otherwise.
+	 *
+	 * @return bool Has next migration to execute.
+	 */
+	public function has_next() {
+		if ( empty( $this->sorted_files_for_execution ) ) {
+			$this->sort_files();
+		}
+
+		return isset( $this->sorted_files_for_execution[ $this->pointer ]);
 	}
 
 	/**

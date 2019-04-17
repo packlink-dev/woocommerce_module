@@ -191,6 +191,7 @@ class Plugin {
 		}
 
 		$this->delete_logs();
+		delete_option( 'PACKLINK_DATABASE_VERSION' );
 	}
 
 	/**
@@ -376,24 +377,25 @@ class Plugin {
 	 * Initializes default configuration values.
 	 */
 	private function init_config() {
-		$this->create_log_directory();
+		Shop_Helper::create_log_directory();
+		$config_service = $this->get_config_service();
 
 		try {
-			$this->get_config_service()->setTaskRunnerStatus( '', null );
+			$config_service->setTaskRunnerStatus( '', null );
 			$statuses = array(
 				'processing' => 'wc-processing',
 				'delivered'  => 'wc-completed',
 			);
 
-			$this->get_config_service()->setOrderStatusMappings( $statuses );
+			$config_service->setOrderStatusMappings( $statuses );
 		} catch ( TaskRunnerStatusStorageUnavailableException $e ) {
 			Logger::logError( $e->getMessage(), 'Integration' );
 		}
 
-		$version = Shop_Helper::get_plugin_version();
-		$this->get_config_service()->set_database_version( $version );
-		if ( version_compare( $version, '2.0.0', '<=' ) ) {
-			require_once __DIR__ . '/database/migrations/migration.v.1.0.2.php';
+		$previous_version = $config_service->get_database_version();
+		$config_service->set_database_version( Shop_Helper::get_plugin_version() );
+		if ( version_compare( $previous_version, '2.0.0', '<' ) ) {
+			require_once __DIR__ . '/database/migrations/migration.v.2.0.0.php';
 		}
 	}
 
@@ -433,13 +435,10 @@ class Plugin {
 	 */
 	private function update_plugin_on_single_site() {
 		if ( Shop_Helper::is_plugin_active_for_current_site() ) {
-			$version_file_reader = new Version_File_Reader(
-				__DIR__ . '/database/migrations',
-				$this->get_config_service()->get_database_version()
-			);
+			$previous_version = $this->get_config_service()->get_database_version();
 
 			$installer = new Database( $this->db );
-			$installer->update( $version_file_reader );
+			$installer->update( new Version_File_Reader( __DIR__ . '/database/migrations', $previous_version ) );
 		}
 
 		$this->get_config_service()->set_database_version( Shop_Helper::get_plugin_version() );
@@ -573,23 +572,6 @@ class Plugin {
 			}
 
 			rmdir( $dir );
-		}
-	}
-
-	/**
-	 * Creates log directory with protection files.
-	 */
-	private function create_log_directory() {
-		$dir = dirname( Logger_Service::get_log_file() );
-
-		if ( ! is_dir( $dir ) ) {
-			if ( ! mkdir( $dir, 0777, true ) && ! is_dir( $dir ) ) {
-				return;
-			}
-
-			$dir = rtrim( $dir ) . '/';
-			file_put_contents( $dir . '.htaccess', 'deny from all' );
-			file_put_contents( $dir . 'index.html', '' );
 		}
 	}
 }

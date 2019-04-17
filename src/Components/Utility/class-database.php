@@ -74,7 +74,7 @@ class Database {
 	 * @return bool
 	 */
 	public function update( $version_file_reader ) {
-		while ( null !== $version_file_reader->read_next() ) {
+		while ( $version_file_reader->has_next() ) {
 			$statements = $version_file_reader->read_next();
 			foreach ( $statements as $statement ) {
 				try {
