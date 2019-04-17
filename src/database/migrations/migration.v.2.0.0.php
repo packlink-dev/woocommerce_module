@@ -54,7 +54,7 @@ try {
 		try {
 
 			$order_posts = $wpdb->get_results(
-				"SELECT `ID` FROM $wpdb->posts WHERE `post_type` = 'shop_order'",
+				"SELECT `post_id` as `ID` FROM {$wpdb->postmeta} WHERE `meta_key` = '_packlink_draft_reference'",
 				ARRAY_A
 			);
 
