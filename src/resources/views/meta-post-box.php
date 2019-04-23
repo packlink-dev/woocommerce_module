@@ -21,6 +21,11 @@ $country       = Shop_Helper::get_country_code();
 $url           = "https://pro.packlink.{$country}/private/shipments/{$order_details->get_reference()}";
 $carrier_codes = $order_details->get_carrier_codes();
 
+/** @var \Packlink\WooCommerce\Components\Order\Order_Repository $repository */
+$repository = \Logeecom\Infrastructure\ServiceRegister::getService(
+        \Packlink\BusinessLogic\Order\Interfaces\OrderRepository::CLASS_NAME
+);
+
 ?>
 
 <ul class="order_actions submitbox" xmlns="http://www.w3.org/1999/html">
@@ -74,21 +79,23 @@ $carrier_codes = $order_details->get_carrier_codes();
 			<?php endif; ?>
 		</li>
 
-		<li class="wide">
-			<a href="<?php echo $url; ?>" target="_blank">
-				<button type="button" class="button pl-button-view" name="view on packlink" value="View">
-					<?php echo __( 'View on Packlink PRO', 'packlink-pro-shipping' ); ?>
-				</button>
-			</a>
-
-			<?php if ( $order_details->get_label() ) : ?>
-				<a href="<?php echo $order_details->get_label(); ?>" target="_blank">
-					<button type="button" class="button button-primary" name="print label" value="Print">
-						<?php echo __( 'Print label', 'packlink-pro-shipping' ); ?>
+		<?php if ( ! $repository->isShipmentDeleted( $order_details->get_reference() ) ) : ?>
+			<li class="wide">
+				<a href="<?php echo $url; ?>" target="_blank">
+					<button type="button" class="button pl-button-view" name="view on packlink" value="View">
+						<?php echo __( 'View on Packlink PRO', 'packlink-pro-shipping' ); ?>
 					</button>
 				</a>
-			<?php endif; ?>
-		</li>
+
+				<?php if ( $order_details->get_label() ) : ?>
+					<a href="<?php echo $order_details->get_label(); ?>" target="_blank">
+						<button type="button" class="button button-primary" name="print label" value="Print">
+							<?php echo __( 'Print label', 'packlink-pro-shipping' ); ?>
+						</button>
+					</a>
+				<?php endif; ?>
+			</li>
+		<?php endif; ?>
 	<?php elseif ( ! $order_details->is_packlink_order() || ! $order_details->is_creating() ) : ?>
 		<li class="wide">
 			<div class="pl-order-detail-section pl-create-draft">

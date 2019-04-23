@@ -8,9 +8,12 @@
 namespace Packlink\WooCommerce\Controllers;
 
 use Logeecom\Infrastructure\Logger\Logger;
+use Logeecom\Infrastructure\ServiceRegister;
+use Packlink\BusinessLogic\Order\Interfaces\OrderRepository;
 use Packlink\BusinessLogic\Utility\PdfMerge;
 use Packlink\WooCommerce\Components\Order\Order_Details_Helper;
 use Packlink\WooCommerce\Components\Order\Order_Meta_Keys;
+use Packlink\WooCommerce\Components\Order\Order_Repository;
 use Packlink\WooCommerce\Components\Utility\Shop_Helper;
 use WC_Order;
 
@@ -70,6 +73,8 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 	 * Populates column with print label buttons.
 	 *
 	 * @param string $column Column.
+	 *
+	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException
 	 */
 	public function populate_packlink_column( $column ) {
 		global $post;
@@ -94,11 +99,17 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 		}
 
 		if ( static::COLUMN_PACKLINK_ID === $column && Order_Details_Helper::is_packlink_order( $post, true ) ) {
+			/** @var Order_Repository $repository */
+			$repository = ServiceRegister::getService( OrderRepository::CLASS_NAME );
 			$src       = Shop_Helper::get_plugin_base_url() . 'resources/images/logo.png';
 			$reference = get_post_meta( $post->ID, Order_Meta_Keys::SHIPMENT_REFERENCE, true );
-			$country   = Shop_Helper::get_country_code();
-			$url       = "https://pro.packlink.{$country}/private/shipments/{$reference}";
-			echo "<a class='pl-image-link' target='_blank' href='$url'><img src='$src' /></a>";
+			if ( ! $repository->isShipmentDeleted( $reference ) ) {
+				$country   = Shop_Helper::get_country_code();
+				$url       = "https://pro.packlink.{$country}/private/shipments/{$reference}";
+				echo "<a class='pl-image-link' target='_blank' href='$url'><img src='$src' /></a>";
+			} else {
+				echo "<div class='pl-image-link'><img src='$src' /></div>";
+			}
 		}
 	}
 
