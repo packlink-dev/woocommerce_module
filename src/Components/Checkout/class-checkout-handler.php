@@ -189,7 +189,7 @@ class Checkout_Handler {
 		$wc_order->update_meta_data( Order_Meta_Keys::SHIPPING_ID, $shipping_method->getId() );
 
 		if ( $is_drop_off ) {
-			$wc_order->update_meta_data( Order_Meta_Keys::DROP_OFF_ID, (int) $this->get_param( static::PACKLINK_DROP_OFF_ID ) );
+			$wc_order->update_meta_data( Order_Meta_Keys::DROP_OFF_ID, $this->get_param( static::PACKLINK_DROP_OFF_ID ) );
 			$wc_order->update_meta_data( Order_Meta_Keys::DROP_OFF_EXTRA, $this->get_param( static::PACKLINK_DROP_OFF_EXTRA ) );
 		}
 
