@@ -251,8 +251,8 @@ class Packlink_Shipping_Method extends \WC_Shipping_Method {
 		}
 
 		$id         = $shipping_method->getId();
-		$to_country = isset( $package['destination']['country'] ) ? $package['destination']['country'] : $warehouse->country;
-		$to_zip     = isset( $package['destination']['postcode'] ) ? $package['destination']['postcode'] : $warehouse->postalCode;
+		$to_country = ! empty( $package['destination']['country'] ) ? $package['destination']['country'] : $warehouse->country;
+		$to_zip     = ! empty( $package['destination']['postcode'] ) ? $package['destination']['postcode'] : $warehouse->postalCode;
 		if ( ! static::$loaded ) {
 			static::$shipping_services = ShippingCostCalculator::getShippingCosts(
 				$this->shipping_method_service->getAllMethods(),
