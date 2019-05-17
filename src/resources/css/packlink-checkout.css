@@ -30,14 +30,15 @@
 
 #pl-picker-modal svg {
 	position: absolute;
-	top: -45px;
-	right: -45px;
+	top: -40px;
+	right: -40px;
 	cursor: pointer;
-	width: 45px;
+	width: 40px;
 	box-shadow: 0 0 10px 2px #e1e1e1;
 	border: none !important;
-	height: 45px;
+	height: 40px;
 	border-radius: 50%;
+	background-color: white;
 }
 
 .pl-wide-shipping {
@@ -45,4 +46,13 @@
 	height: 1px;
 	width: 200px;
 	background-color: transparent;
+}
+
+@media screen and (max-width: 800px) {
+	#pl-picker-modal svg {
+		top: -30px;
+		right: -30px;
+		width: 30px;
+		height: 30px;
+	}
 }
