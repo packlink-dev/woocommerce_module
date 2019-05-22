@@ -87,7 +87,6 @@ class Checkout_Handler {
 			$this->print_hidden_input( $field, $value );
 		}
 
-		echo '<div class="pl-wide-shipping"></div>';
 		$chosen_method = wc()->session->chosen_shipping_methods[ $index ];
 		if ( wc()->session->get( Order_Meta_Keys::SHIPPING_ID, '' ) !== $chosen_method ) {
 			wc()->session->set( Order_Meta_Keys::DROP_OFF_ID, '' );
@@ -213,7 +212,7 @@ class Checkout_Handler {
 		 * Map with key as shipping method id and rate as its value.
 		 *
 		 * @var string $key
-		 * @var \WC_Shipping_Rate $rate
+		 * @var WC_Shipping_Rate $rate
 		 */
 		foreach ( $rates as $key => $rate ) {
 			if ( Packlink_Shipping_Method::PACKLINK_SHIPPING_METHOD === $rate->get_method_id() && self::DEFAULT_SHIPPING === $rate->get_label() ) {
