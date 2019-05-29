@@ -327,7 +327,7 @@ class Upgrade_Packlink_Order_Details extends Task {
 	private function set_tracking_info( Shipment $shipment ) {
 		try {
 			$tracking_info = $this->get_proxy()->getTrackingInfo( $shipment->reference );
-			$this->get_repository()->updateTrackingInfo( $shipment->reference, $tracking_info, $shipment );
+			$this->get_repository()->updateTrackingInfo( $shipment, $tracking_info );
 		} catch ( \Exception $e ) {
 			Logger::logError( $e->getMessage(), 'Integration' );
 		}

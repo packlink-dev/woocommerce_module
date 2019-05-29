@@ -142,16 +142,15 @@ class Order_Repository extends Singleton implements OrderRepository {
 	}
 
 	/**
-	 * Sets order packlink shipment tracking history to an order by shipment reference.
+	 * Sets order packlink shipment tracking history to an order for given shipment.
 	 *
-	 * @param string       $shipment_reference Packlink shipment reference.
-	 * @param Tracking[]   $tracking_history Shipment tracking history.
-	 * @param Shipment_DTO $shipment_details Packlink shipment details.
+	 * @param Shipment_DTO $shipment Packlink shipment details.
+	 * @param Tracking[]   $trackingHistory Shipment tracking history.
 	 *
 	 * @throws \Packlink\BusinessLogic\Order\Exceptions\OrderNotFound When order with provided reference is not found.
 	 */
-	public function updateTrackingInfo( $shipment_reference, array $tracking_history, Shipment_DTO $shipment_details ) {
-		$order = $this->load_order_by_reference( $shipment_reference );
+	public function updateTrackingInfo(Shipment_DTO $shipment, array $trackingHistory) {
+		$order = $this->load_order_by_reference( $shipment->reference );
 
 		usort(
 			$tracking_history,
@@ -165,12 +164,10 @@ class Order_Repository extends Singleton implements OrderRepository {
 			$tracking[] = $item->toArray();
 		}
 
-		if ( null !== $shipment_details ) {
-			$order->update_meta_data( Order_Meta_Keys::SHIPMENT_PRICE, $shipment_details->price );
-			$order->update_meta_data( Order_Meta_Keys::CARRIER_TRACKING_URL, $shipment_details->carrierTrackingUrl );
-			if ( ! empty( $shipment_details->trackingCodes ) ) {
-				$order->update_meta_data( Order_Meta_Keys::CARRIER_TRACKING_CODES, $shipment_details->trackingCodes );
-			}
+		$order->update_meta_data( Order_Meta_Keys::SHIPMENT_PRICE, $shipment->price );
+		$order->update_meta_data( Order_Meta_Keys::CARRIER_TRACKING_URL, $shipment->carrierTrackingUrl );
+		if ( ! empty( $shipment->trackingCodes ) ) {
+			$order->update_meta_data( Order_Meta_Keys::CARRIER_TRACKING_CODES, $shipment->trackingCodes );
 		}
 
 		$order->update_meta_data( Order_Meta_Keys::TRACKING_HISTORY, wp_json_encode( $tracking ) );
@@ -275,6 +272,24 @@ class Order_Repository extends Singleton implements OrderRepository {
 			return false;
 		} catch ( OrderNotFound $e ) {
 			return true;
+		}
+	}
+
+	/**
+	 * Returns whether shipment identified by provided reference has Packlink shipment label set.
+	 *
+	 * @param string $shipmentReference Packlink shipment reference.
+	 *
+	 * @return bool Returns TRUE if label is set; otherwise, FALSE.
+	 */
+	public function isLabelSet( $shipmentReference ) {
+		try {
+			$order = $this->load_order_by_reference( $shipmentReference );
+			$labels = $order->get_meta( Order_Meta_Keys::LABELS );
+
+			return is_array($labels) && ! empty( $labels );
+		} catch ( \Exception $e ) {
+			return false;
 		}
 	}
 
