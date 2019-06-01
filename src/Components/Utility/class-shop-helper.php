@@ -24,6 +24,12 @@ class Shop_Helper {
 	 * @var string
 	 */
 	private static $country_code;
+	/**
+	 * The version of the plugin.
+	 *
+	 * @var string
+	 */
+	private static $plugin_version;
 
 	/**
 	 * Returns whether Packlink PRO Shipping plugin is enabled.
@@ -99,13 +105,17 @@ class Shop_Helper {
 	 * @return string
 	 */
 	public static function get_plugin_version() {
-		if ( ! function_exists( 'get_plugin_data' ) ) {
-			require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		if ( ! self::$plugin_version ) {
+			if ( ! function_exists( 'get_plugin_data' ) ) {
+				require_once ABSPATH . 'wp-admin/includes/plugin.php';
+			}
+
+			$plugin_data = get_plugin_data( WP_PLUGIN_DIR . '/' . self::get_plugin_name() );
+
+			self::$plugin_version = $plugin_data['Version'];
 		}
 
-		$plugin_data = get_plugin_data( WP_PLUGIN_DIR . '/' . self::get_plugin_name() );
-
-		return $plugin_data['Version'];
+		return self::$plugin_version;
 	}
 
 	/**

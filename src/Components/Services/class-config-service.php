@@ -53,6 +53,34 @@ class Config_Service extends Configuration {
 	}
 
 	/**
+	 * Gets the current version of the module/integration.
+	 *
+	 * @return string The version number.
+	 */
+	public function getModuleVersion() {
+		return Shop_Helper::get_plugin_version();
+	}
+
+	/**
+	 * Gets the name of the integrated e-commerce system.
+	 * This name is related to Packlink API which can be different from the official system name.
+	 *
+	 * @return string The e-commerce name.
+	 */
+	public function getECommerceName() {
+		return 'woocommerce_2';
+	}
+
+	/**
+	 * Gets the current version of the integrated e-commerce system.
+	 *
+	 * @return string The version number.
+	 */
+	public function getECommerceVersion() {
+		return \WooCommerce::instance()->version;
+	}
+
+	/**
 	 * Returns current system identifier.
 	 *
 	 * @return string Current system identifier.

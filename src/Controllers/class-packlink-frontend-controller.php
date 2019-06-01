@@ -11,9 +11,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+use Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException;
 use Logeecom\Infrastructure\ServiceRegister;
 use Logeecom\Infrastructure\TaskExecution\Exceptions\QueueStorageUnavailableException;
 use Packlink\BusinessLogic\Configuration;
+use Packlink\BusinessLogic\Controllers\AnalyticsController;
 use Packlink\BusinessLogic\Controllers\DashboardController;
 use Packlink\BusinessLogic\Controllers\DTO\ShippingMethodConfiguration;
 use Packlink\BusinessLogic\Controllers\ShippingMethodController;
@@ -91,11 +93,20 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	 * Renders appropriate view.
 	 *
 	 * @throws QueueStorageUnavailableException If queue storage is unavailable.
+	 * @throws RepositoryNotRegisteredException
 	 */
 	public function render() {
 		$this->load_css();
+		/**
+		 * Used in included view file.
+		 * @noinspection PhpUnusedLocalVariableInspection
+		 */
 		$login_failure = false;
 		if ( $this->is_post() && ! $this->login() ) {
+			/**
+			 * Used in included view file.
+			 * @noinspection PhpUnusedLocalVariableInspection
+			 */
 			$login_failure = true;
 		}
 
@@ -111,6 +122,7 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	 * Logs in user.
 	 *
 	 * @throws QueueStorageUnavailableException If queue storage is unavailable.
+	 * @throws RepositoryNotRegisteredException
 	 */
 	public function login() {
 		$result = false;
@@ -334,6 +346,10 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 
 		$result = $this->change_shipping_status();
 
+		if ( $result ) {
+			AnalyticsController::sendSetupEvent();
+		}
+
 		$message = $result ? __( 'Shipping method successfully selected.', 'packlink-pro-shipping' ) : __( 'Failed to select shipping method.', 'packlink-pro-shipping' );
 
 		$this->return_json(
@@ -380,6 +396,8 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 		$this->validate( 'no', true );
 
 		Shipping_Method_Helper::disable_shop_shipping_methods();
+
+		AnalyticsController::sendOtherServicesDisabledEvent();
 
 		$this->return_json(
 			array(

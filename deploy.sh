@@ -1,6 +1,12 @@
 #!/bin/bash
 
+echo
+echo -e "\e[48;5;124m ALWAYS RUN UNIT TESTS AND CHECK CODING STANDARDS BEFORE CREATING DEPLOYMENT PACKAGE! \e[0m"
+echo
+sleep 2
+
 # Cleanup any leftovers
+echo -e "\e[32mCleaning up...\e[39m"
 rm -f ./packlink-pro-shipping.zip
 rm -f ./packlink-pro-shipping
 
@@ -60,9 +66,8 @@ mv ./locationPicker.css ./packlink-location-picker.css
 
 cd ${root}
 
-# Create plugin archive
-echo -e "\e[32mSTEP 5:\e[39m Creating new archive..."
-zip -r -q  packlink-pro-shipping.zip ./packlink-pro-shipping
+# get plugin version
+echo -e "\e[32mSTEP 5:\e[39m Reading module version..."
 
 version="$1"
 if [ "$version" = "" ]; then
@@ -75,6 +80,10 @@ if [ "$version" = "" ]; then
     fi
 fi
 
+# Create plugin archive
+echo -e "\e[32mSTEP 6:\e[39m Creating new archive..."
+zip -r -q  packlink-pro-shipping.zip ./packlink-pro-shipping
+
 if [ "$version" != "" ]; then
     if [ ! -d ./PluginInstallation/ ]; then
         mkdir ./PluginInstallation/
@@ -84,10 +93,11 @@ if [ "$version" != "" ]; then
     fi
 
     mv ./packlink-pro-shipping.zip ./PluginInstallation/${version}/
-    touch "./PluginInstallation/$version/Release notes $version.txt"
-    echo -e "\e[32mDONE!\n\e[93mNew release created under: $PWD/PluginInstallation/$version"
+    echo -e "\e[34;5;40mSUCCESS!\e[0m"
+    echo -e "\e[93mNew release created under: $PWD/PluginInstallation/$version"
 else
-    echo -e "\e[32mDONE!\n\e[93mNew plugin archive created: $PWD/packlink-pro-shipping.zip"
+    echo -e "\e[40;5;34mSUCCESS!\e[0m"
+    echo -e "\e[93mNew plugin archive created: $PWD/packlink-pro-shipping.zip"
 fi
 
 rm -fR ./packlink-pro-shipping
