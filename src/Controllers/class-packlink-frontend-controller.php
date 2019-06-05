@@ -346,10 +346,6 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 
 		$result = $this->change_shipping_status();
 
-		if ( $result ) {
-			AnalyticsController::sendSetupEvent();
-		}
-
 		$message = $result ? __( 'Shipping method successfully selected.', 'packlink-pro-shipping' ) : __( 'Failed to select shipping method.', 'packlink-pro-shipping' );
 
 		$this->return_json(
