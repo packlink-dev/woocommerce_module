@@ -17,6 +17,7 @@ use Packlink\BusinessLogic\ShippingMethod\Models\ShippingMethod;
 use Packlink\BusinessLogic\ShippingMethod\ShippingCostCalculator;
 use Packlink\BusinessLogic\ShippingMethod\ShippingMethodService;
 use Packlink\WooCommerce\Components\Services\Config_Service;
+use WC_Eval_Math;
 use WC_Product;
 
 /**
@@ -107,6 +108,7 @@ class Packlink_Shipping_Method extends \WC_Shipping_Method {
 
 		$this->title        = $this->get_option( 'title', __( 'Packlink Shipping', 'packlink_pro_shipping' ) );
 		$this->price_policy = $this->get_option( 'price_policy', __( 'Packlink prices', 'packlink_pro_shipping' ) );
+		$this->type         = $this->get_option( 'type', 'class' );
 
 		// Save settings in admin if you have any defined.
 		add_action( 'woocommerce_update_options_shipping_' . $this->id, array( $this, 'process_admin_options' ) );
@@ -118,22 +120,7 @@ class Packlink_Shipping_Method extends \WC_Shipping_Method {
 	 * Add an array of fields to be displayed on the gateway's settings screen.
 	 */
 	public function init_form_fields() {
-		$this->instance_form_fields = array(
-			'title'        => array(
-				'title'       => __( 'Title', 'woocommerce' ),
-				'type'        => 'text',
-				'description' => __( 'This controls the title which the user sees during checkout.', 'woocommerce' ),
-				'default'     => isset( $this->settings['title'] ) ? $this->settings['title'] : __( 'Packlink Shipping', 'packlink_pro_shipping' ),
-				'desc_tip'    => true,
-			),
-			'price_policy' => array(
-				'title'       => __( 'Pricing policy', 'packlink_pro_shipping' ),
-				'type'        => 'text',
-				'description' => __( 'Pricing policy selected in Packlink PRO Shipping settings.', 'packlink_pro_shipping' ),
-				'default'     => isset( $this->settings['price_policy'] ) ? $this->settings['price_policy'] : __( 'Packlink prices', 'packlink_pro_shipping' ),
-				'desc_tip'    => true,
-			),
-		);
+		$this->instance_form_fields = $this->instance_form_fields = include( 'includes/settings-packlink-shipping.php' );
 	}
 
 	/**
@@ -148,14 +135,48 @@ class Packlink_Shipping_Method extends \WC_Shipping_Method {
 		}
 
 		$id = $shipping_method->getId();
-		$this->add_rate(
-			array(
-				'id'      => $this->get_rate_id(),
-				'label'   => $this->title,
-				'cost'    => -1 === $id ? min( static::$shipping_services ) : static::$shipping_services[ $id ],
-				'package' => $package,
-			)
+		$rate = array(
+			'id'      => $this->get_rate_id(),
+			'label'   => $this->title,
+			'cost'    => -1 === $id ? min( static::$shipping_services ) : static::$shipping_services[ $id ],
+			'package' => $package,
 		);
+
+		// Add shipping class costs.
+		$shipping_classes = WC()->shipping->get_shipping_classes();
+
+		if ( ! empty( $shipping_classes ) ) {
+			$found_shipping_classes = $this->find_shipping_classes( $package );
+			$highest_class_cost     = 0;
+
+			foreach ( $found_shipping_classes as $shipping_class => $products ) {
+				// Also handles BW compatibility when slugs were used instead of ids
+				$shipping_class_term = get_term_by( 'slug', $shipping_class, 'product_shipping_class' );
+				$class_cost_string   = $shipping_class_term && $shipping_class_term->term_id ? $this->get_option( 'class_cost_' . $shipping_class_term->term_id, $this->get_option( 'class_cost_' . $shipping_class, '' ) ) : $this->get_option( 'no_class_cost', '' );
+
+				if ( '' === $class_cost_string ) {
+					continue;
+				}
+
+				$class_cost = $this->evaluate_cost( $class_cost_string, array(
+					'qty'  => array_sum( wp_list_pluck( $products, 'quantity' ) ),
+					'cost' => array_sum( wp_list_pluck( $products, 'line_total' ) ),
+				) );
+
+				if ( 'class' === $this->type ) {
+					$rate['cost'] += $class_cost;
+				} else {
+					$highest_class_cost = $class_cost > $highest_class_cost ? $class_cost : $highest_class_cost;
+				}
+			}
+
+			if ( 'order' === $this->type && $highest_class_cost ) {
+				$rate['cost'] += $highest_class_cost;
+			}
+		}
+
+
+		$this->add_rate( $rate );
 	}
 
 	/**
@@ -169,6 +190,51 @@ class Packlink_Shipping_Method extends \WC_Shipping_Method {
 		$shipping_method = $this->get_packlink_shipping_method();
 
 		return $shipping_method && $this->load_shipping_costs( $package, $shipping_method );
+	}
+
+	/**
+	 * Evaluate a cost from a sum/string.
+	 *
+	 * @param  string $sum
+	 * @param  array  $args
+	 *
+	 * @return string
+	 */
+	protected function evaluate_cost( $sum, $args = array() ) {
+		include_once WC()->plugin_path() . '/includes/libraries/class-wc-eval-math.php';
+
+		$args           = apply_filters( 'woocommerce_evaluate_shipping_cost_args', $args, $sum, $this );
+		$locale         = localeconv();
+		$decimals       = array( wc_get_price_decimal_separator(), $locale['decimal_point'], $locale['mon_decimal_point'], ',' );
+		$this->fee_cost = $args['cost'];
+
+		add_shortcode( 'fee', array( $this, 'fee' ) );
+
+		$sum = do_shortcode( str_replace(
+			array(
+				'[qty]',
+				'[cost]',
+			),
+			array(
+				$args['qty'],
+				$args['cost'],
+			),
+			$sum
+		) );
+
+		remove_shortcode( 'fee', array( $this, 'fee' ) );
+
+		// Remove whitespace from string
+		$sum = preg_replace( '/\s+/', '', $sum );
+
+		// Remove locale from string
+		$sum = str_replace( $decimals, '.', $sum );
+
+		// Trim invalid start/end characters
+		$sum = rtrim( ltrim( $sum, "\t\n\r\0\x0B+*/" ), "\t\n\r\0\x0B+-*/" );
+
+		// Do the math
+		return $sum ? WC_Eval_Math::evaluate( $sum ) : 0;
 	}
 
 	/**
@@ -268,5 +334,30 @@ class Packlink_Shipping_Method extends \WC_Shipping_Method {
 		}
 
 		return array_key_exists( $id, static::$shipping_services ) || ( -1 === $id && ! empty( static::$shipping_services ) );
+	}
+
+	/**
+	 * Finds and returns shipping classes and the products with that class.
+	 *
+	 * @param mixed $package
+	 *
+	 * @return array
+	 */
+	public function find_shipping_classes( $package ) {
+		$found_shipping_classes = array();
+
+		foreach ( $package['contents'] as $item_id => $values ) {
+			if ( $values['data']->needs_shipping() ) {
+				$found_class = $values['data']->get_shipping_class();
+
+				if ( ! isset( $found_shipping_classes[ $found_class ] ) ) {
+					$found_shipping_classes[ $found_class ] = array();
+				}
+
+				$found_shipping_classes[ $found_class ][ $item_id ] = $values;
+			}
+		}
+
+		return $found_shipping_classes;
 	}
 }
