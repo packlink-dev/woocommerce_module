@@ -17,7 +17,7 @@ To work with this integration, the module can be installed in a few minutes by g
 After installation is over, plugin configuration can be set by navigating to WooCommerce >> Packlink PRO.
 
 ## Version
-2.0.2
+2.0.3
 
 ## Compatibility
 - WordPress v4.7+
@@ -28,6 +28,36 @@ After installation is over, plugin configuration can be set by navigating to Woo
 - MySQL 5.0 or newer
 
 ## Development Guidelines
-- Use WordPress extension for PhpStorm IDE
-- Use WordPress CLI for generating translation .pot files
-- Tests are run on WordPress testing SDK, more on this can be found [here](https://make.wordpress.org/cli/handbook/plugin-unit-tests/).
+### Coding standards
+Use WordPress extension for PhpStorm IDE. It will help significantly during the development.
+To check the code against the coding standards, execute these commands in the root of the project
+```bash
+composer install
+vendor/bin/phpcs --config-set installed_paths vendor/wp-coding-standards/wpcs/
+vendor/bin/phpcs src/ --standard=WordPress --colors --severity=10
+``` 
+
+Correct **all** errors reported but the code sniffer.
+
+### Generating translation files
+
+Use WordPress CLI for generating translation .pot files.
+
+### Running the tests
+Tests are run on WordPress testing SDK. More on this can be found [here](https://make.wordpress.org/cli/handbook/plugin-unit-tests/).
+
+First install the needed wordpress database for tests (this has to be run just once):
+```bash
+cd bin
+bash bin/install-wp-tests.sh wordpress_test dbuser dbpass localhost latest
+``` 
+Then, either setup PHPStorm to run tests based on the `/src/phpunit.xml` configuration file
+or go to the root directory and run
+```bash
+./run-tests.sh
+```
+This command will run unit tests on all different PHP versions from 5.6 to 7.3.
+
+### Releasing a new module version
+
+Please follow instructions provided [here](https://logeecom.atlassian.net/wiki/spaces/PACKLINK/pages/1367179297/WC+-+Plugin+Release+Procedure).

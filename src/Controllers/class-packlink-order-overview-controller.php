@@ -7,10 +7,11 @@
 
 namespace Packlink\WooCommerce\Controllers;
 
+use iio\libmergepdf\Merger;
 use Logeecom\Infrastructure\Logger\Logger;
+use Logeecom\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
 use Logeecom\Infrastructure\ServiceRegister;
 use Packlink\BusinessLogic\Order\Interfaces\OrderRepository;
-use Packlink\BusinessLogic\Utility\PdfMerge;
 use Packlink\WooCommerce\Components\Order\Order_Details_Helper;
 use Packlink\WooCommerce\Components\Order\Order_Meta_Keys;
 use Packlink\WooCommerce\Components\Order\Order_Repository;
@@ -74,7 +75,7 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 	 *
 	 * @param string $column Column.
 	 *
-	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException
+	 * @throws QueryFilterInvalidParamException When invalid filter parameters are set.
 	 */
 	public function populate_packlink_column( $column ) {
 		global $post;
@@ -89,26 +90,31 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 				$label     = $status['printed'] ? __( 'Printed label', 'packlink-pro-shipping' ) : __( 'Print label', 'packlink-pro-shipping' );
 				$label_url = $status['labels'][0];
 
-				echo "<button data-pl-id=\"{$post->ID}\" data-pl-label=\"{$label_url}\" type=\"button\" class=\"$class\" >$label</button>";
+				echo '<button data-pl-id="' . esc_attr( $post->ID ) . '" data-pl-label="' . esc_url( $label_url )
+				     . '" type="button" class="' . esc_attr( $class ) . '" >' . esc_html( $label ) . '</button>';
 				if ( ! static::$url_added ) {
 					$url = Shop_Helper::get_controller_url( 'Order_Overview', 'mark_label_printed' );
-					echo "<input type='hidden' name='packlink-url-callback' value='{$url}'>";
+					echo '<input type="hidden" name="packlink-url-callback" value="' . esc_url( $url ) . '">';
 					static::$url_added = true;
 				}
 			}
 		}
 
 		if ( static::COLUMN_PACKLINK_ID === $column && Order_Details_Helper::is_packlink_order( $post, true ) ) {
-			/** @var Order_Repository $repository */
+			/**
+			 * Repository.
+			 *
+			 * @var Order_Repository $repository
+			 */
 			$repository = ServiceRegister::getService( OrderRepository::CLASS_NAME );
-			$src       = Shop_Helper::get_plugin_base_url() . 'resources/images/logo.png';
-			$reference = get_post_meta( $post->ID, Order_Meta_Keys::SHIPMENT_REFERENCE, true );
+			$src        = Shop_Helper::get_plugin_base_url() . 'resources/images/logo.png';
+			$reference  = get_post_meta( $post->ID, Order_Meta_Keys::SHIPMENT_REFERENCE, true );
 			if ( ! $repository->isShipmentDeleted( $reference ) ) {
-				$country   = Shop_Helper::get_country_code();
-				$url       = "https://pro.packlink.{$country}/private/shipments/{$reference}";
-				echo "<a class='pl-image-link' target='_blank' href='$url'><img src='$src' /></a>";
+				$country = Shop_Helper::get_country_code();
+				$url     = "https://pro.packlink.{$country}/private/shipments/{$reference}";
+				echo '<a class="pl-image-link" target="_blank" href="' . esc_url( $url ) . '"><img src="' . esc_url( $src ) . '" alt=""></a>';
 			} else {
-				echo "<div class='pl-image-link'><img src='$src' /></div>";
+				echo '<div class="pl-image-link"><img src="' . esc_url( $src ) . '" alt=""></div>';
 			}
 		}
 	}
@@ -153,14 +159,14 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 		foreach ( $ids as $order_id ) {
 			$order = \WC_Order_Factory::get_order( $order_id );
 			if ( $order && $order->meta_exists( Order_Meta_Keys::IS_PACKLINK ) ) {
-				/** @noinspection SlowArrayOperationsInLoopInspection */
-				$labels = array_merge( $labels, $this->get_print_labels( $order ) );
+				$labels[] = $this->get_print_labels( $order );
 			}
 		}
 
+		$labels = call_user_func_array( 'array_merge', $labels );
 		if ( ! empty( $labels ) ) {
 			$this->merge_labels( $labels );
-			$this->setDownloadCookie();
+			$this->set_download_cookie();
 			exit;
 		}
 
@@ -189,13 +195,15 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 				'packlink_ajax',
 				esc_url( $base_url . 'js/core/packlink-ajax-service.js' ),
 				array(),
-				1
+				1,
+				true
 			);
 			wp_enqueue_script(
 				'packlink_order_overview',
 				esc_url( $base_url . 'js/packlink-order-overview.js' ),
 				array(),
-				1
+				1,
+				true
 			);
 			wp_enqueue_style(
 				'packlink_order_css',
@@ -213,23 +221,31 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 	 */
 	protected function merge_labels( array $labels ) {
 		try {
-			$upload_dir = wp_get_upload_dir();
-			$path       = $upload_dir['path'];
-			$paths      = array();
+			$paths = array();
 			foreach ( $labels as $index => $label ) {
-				$realpath = "$path/$index.pdf";
-				file_put_contents( $realpath, fopen( $label, 'rb' ) );
-				$paths[] = $realpath;
+				$result = wp_upload_bits( "$index.pdf", null, wp_remote_fopen( $label ) );
+				if ( empty( $result['error'] ) ) {
+					$paths[] = $result['file'];
+				}
 			}
 
-			$file = PdfMerge::merge( $paths );
+			$merger = new Merger();
+			foreach ( $paths as $path ) {
+				$merger->addFromFile( $path );
+			}
+
+			$file = $merger->merge();
 			if ( $file ) {
 				$this->return_file( $file );
 			}
 
 			$this->delete_local_files( $paths );
 		} catch ( \Exception $e ) {
-			Logger::logError( __( 'Unable to create bulk labels file', 'packlink-pro-shipping' ), 'Integration', array( 'labels' => $labels ) );
+			Logger::logError(
+				__( 'Unable to create bulk labels file', 'packlink-pro-shipping' ),
+				'Integration',
+				array( 'labels' => $labels )
+			);
 		}
 	}
 
@@ -253,9 +269,9 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 	/**
 	 * Sets the cookie to indicate that the file is downloaded.
 	 */
-	private function setDownloadCookie() {
+	private function set_download_cookie() {
 		$token = $this->get_param( 'packlink_download_token' );
-		setcookie( 'packlink_download_token', $token, time() + 3600, '/', $_SERVER['HTTP_HOST'] );
+		setcookie( 'packlink_download_token', $token, time() + 3600, '/' );
 	}
 
 	/**
@@ -275,18 +291,17 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 	 * @param string $file File path.
 	 */
 	private function return_file( $file ) {
-		$now     = date( 'Y-m-d' );
-		$name    = "Packlink-bulk-shipment-label_$now.pdf";
-		$content = file_get_contents( $file );
+		$now  = date( 'Y-m-d' );
+		$name = "Packlink-bulk-shipping-labels_$now.pdf";
 
 		header( 'Content-Type: application/pdf' );
-		header( 'Content-Length: ' . strlen( $content ) );
+		header( 'Content-Length: ' . strlen( $file ) );
 		header( 'Content-disposition: attachment; filename=' . $name );
 		header( 'Cache-Control: public, must-revalidate, max-age=0' );
 		header( 'Pragma: public' );
 		header( 'Expires: Sat, 26 Jul 1997 05:00:00 GMT' );
 		header( 'Last-Modified: ' . gmdate( 'D, d M Y H:i:s' ) . ' GMT' );
 
-		echo $content;
+		echo $file;
 	}
 }
