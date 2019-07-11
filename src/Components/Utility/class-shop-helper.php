@@ -148,6 +148,15 @@ class Shop_Helper {
 	}
 
 	/**
+	 * Gets URL to Packlink PRO Shipping plugin configuration page.
+	 *
+	 * @return string
+	 */
+	public static function get_plugin_page_url() {
+		return admin_url( 'admin.php?page=packlink-pro-shipping' );
+	}
+
+	/**
 	 * Returns country code.
 	 *
 	 * @return string Country code.
