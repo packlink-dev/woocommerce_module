@@ -11,6 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+use Logeecom\Infrastructure\Logger\Logger;
 use Logeecom\Infrastructure\ServiceRegister;
 use Logeecom\Infrastructure\TaskExecution\Interfaces\AsyncProcessService;
 use Packlink\WooCommerce\Components\Utility\Shop_Helper;
@@ -39,6 +40,8 @@ class Packlink_Async_Process_Controller extends Packlink_Base_Controller {
 		if ( ! $this->is_post() ) {
 			$this->redirect404();
 		}
+
+		Logger::logDebug( 'Received async process request.', 'Integration', array( 'guid' => $this->get_param( 'guid' ) ) );
 
 		/**
 		 * Async process service.
