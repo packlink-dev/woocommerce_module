@@ -231,37 +231,37 @@ class Checkout_Handler {
 		$base_url = Shop_Helper::get_plugin_base_url() . 'resources/';
 		wp_enqueue_script(
 			'packlink_ajax',
-			esc_url( $base_url . 'js/core/packlink-ajax-service.js' ),
+			$base_url . 'js/core/packlink-ajax-service.js',
 			array(),
 			1
 		);
 		wp_enqueue_script(
 			'packlink_translations',
-			esc_url( $base_url . 'js/location-picker/packlink-translations.js' ),
+			$base_url . 'js/location-picker/packlink-translations.js',
 			array(),
 			1
 		);
 		wp_enqueue_script(
 			'packlink_location_picker',
-			esc_url( $base_url . 'js/location-picker/packlink-location-picker.js' ),
+			$base_url . 'js/location-picker/packlink-location-picker.js',
 			array(),
 			1
 		);
 		wp_enqueue_script(
 			'packlink_checkout',
-			esc_url( $base_url . 'js/packlink-checkout.js' ),
+			$base_url . 'js/packlink-checkout.js',
 			array(),
 			1
 		);
 		wp_enqueue_style(
 			'packlink_checkout_css',
-			esc_url( $base_url . 'css/packlink-checkout.css' ),
+			$base_url . 'css/packlink-checkout.css',
 			array(),
 			1
 		);
 		wp_enqueue_style(
 			'packlink_location_picker_css',
-			esc_url( $base_url . 'css/packlink-location-picker.css' ),
+			$base_url . 'css/packlink-location-picker.css',
 			array(),
 			1
 		);
