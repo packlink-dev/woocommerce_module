@@ -23,11 +23,6 @@ rm -rf ./packlink-pro-shipping/vendor
 echo -e "\e[32mSTEP 2:\e[39m Installing composer dependencies..."
 cd packlink-pro-shipping
 composer install --no-dev
-# we have to remove this because it apparently exists on WordPress somewhere and WP reports conflicts
-rm -rf vendor/symfony
-rm -rf vendor/zendframework
-rm -rf vendor/ircmaxell
-composer dumpautoload
 cd ..
 
 # Remove unnecessary files from final release archive

@@ -1,73 +1,80 @@
-=== Packlink PRO shipping solution ===
+=== Packlink PRO shipping module ===
 Contributors: packlink
 Tags: woocommerce, shipment, shipping, packlink
 Requires at least: 4.7
 Requires PHP: 5.5
 Tested up to: 5.2.2
-Stable tag: 2.0.3
+Stable tag: 2.0.4
 License: LICENSE-2.0
 License URI: http://www.apache.org/licenses/LICENSE-2.0
 
-Packlink PRO plugin allows you to connect your webshop to over 50 carriers. Save time by managing your shipments in one easy to use platform.
+Free professional shipping platform that will simplify and automate your logistics.
 
 == Description ==
 
-**Packlink Pro is the FREE shipping solution designed to make your webshop more profitable.** Save up to 70% on every shipment and save time by managing everything from one easy to use control panel. No fees or minimum volumes. Start saving now!
+**Packlink PRO is the professional shipping platform that allows you to automate your shipment process.** It is free to use and does not require a minimum volume of shipments. You only need to register and you'll get instant access to a variety of shipping services and rates that can help to make your business more profitable.
 
 
-**Packlink PRO: Your WooCommerce solution for all your shipping needs**
+Connect your WooCommerce account with Packlink PRO.
 
-- **No sign-up fees, no membership fees, and no minimum volumes.** Our platform is completely free to use
+- You have complete control over your sales and you can manage all your shipments from a single platform.
 
-- **A large selection of carriers.** Select from over 300 of the best value shipping services from over 50 carriers including UPS, TNT, DHL, GLS, Correos Express, Bartolini, La Poste, Poste Italiane, DPD, SEUR, Zeleris, Envialia, Keavo, Starpack and more
+- You can start shipping straight away: there's no contract to sign and no minimum shipping volume.
 
-- **Delivery services that fit your needs**: standard, express, door to door, pick up stations, pallets, cash on delivery and more
+- Choose the transport services that your customers want: express, international, etc...
 
-- **Reduce your shipping costs**: take advantage of discounts up to 70% from your very first shipment
+- Save time in your daily shipping routine - import the parcel dimensions and destination, print the labels in bulk and check at a glance the status of all your shipments.
 
-- **Save time on managing your shipments**: import, track, and trace all your shipments in one control panel
-
-- Generate and **print your shipping labels**
-
-- **Flexible payment options** including deferred payment
-
-- **Dedicated customer service team**
-
-- **Complimentary additional insurances** as a Packlink PRO member
+- Individual telephone support: a team of shipping specialists will assist you with the integration process and provide ongoing account management.
 
 
-No download costs for labels or monthly fees - just pay for your completed shipments!
+No download costs, installation or monthly fees - you pay purely for the shipments you book!
 
-**<a href="https://pro.packlink.es/woocommerce" target="_blank" title="Subscription">Register for free</a> on Packlink PRO and start shipping!**
+**<a href="https://pro.packlink.es/woocommerce" target="_blank" title="Subscription">Register free</a> in Packlink PRO and get started!**
 
 == Installation ==
 
 == Installation ==
 
-**1. Generate your API key on Packlink PRO**
+This is how the WooCommerce integration with Packlink PRO works.
 
-Go to the Settings section at the top right corner and click on "WooCommerce Module" located in the left menu, and generate your key.
+**1. Install and configure the plugin**
+
+- You can install the Packlink PRO plugin in one of two ways: either a. directly from your back office, or b. from the WooCommerce plugs page.
+  - Option a. From your WordPress back office go to "Plugins" > "Add new" > then, search for "Packlink" > "Install now".
+  - Option b. Go to <a href="https://wordpress.org/plugins/packlink-pro-shipping">https://wordpress.org/plugins/packlink-pro-shipping</a> and click on the "Download" button. Then, from your WordPress back office "Plugins" section click on "Add new" > "Upload plugin" and upload the downloaded zip file.
+
+- Once you have installed the plugin, login to the Packlink PRO website and click on the "Configuration" icon in the top right-hand corner. Then, from the left-hand menu, select "Integrations for your online store" and click on the WooCommerce logo, where you can generate the API key required to synchronize both platforms. Copy this API key. You will need to enter this key in Packlink PRO module in WooCommerce.
+
+- In Packlink PRO, you can define the dimensions of your most common parcel and pickup address. This information is automatically synchronized with your WooCommerce and becomes your predefined parcel and address.
+
+**2. Sync with your Packlink PRO account**
+
+- Go back to your WooCommerce back office and select the WooCommerce > Packlink PRO from the left-hand menu. When the module login page opens, paste the API key you copied from your Packlink PRO account and click on the Log in button. The module will automatically synchronize your default parcel dimensions and pickup address from Packlink PRO. Also, after a few moments, it will synchronize all available shipping services.
+
+- Select the shipping services you want to use. When you click on a "configure" button next to each shipping service, you can configure how you name each service and whether you show the carrier logo to your customers.
+
+- Besides name and logo, for each shipping service you can define your pricing policy by choosing from the following options: direct Packlink prices, percentage of Packlink price, fixed price by weight, or fixed price by shopping cart.
 
 
-**2. Download and set up the module on your WordPress account**
+**3. Use the module**
 
-- Click on the url <a href="https://wordpress.org/plugins/packlink-pro-shipping/" target="_blank" title="WordPress Packlink">https://wordpress.org/plugins/packlink-pro-shipping/</a> and download the free Packlink PRO plugin in a zip format.
+- If an order has been paid or payment was accepted by you, the shipment will be automatically imported into your Packlink PRO account. Also, you have an option to manually send an order to the Packlink PRO by opening order details page and clicking on the "Create draft" button in the "Packlink PRO Shipping" section on the right side.
 
-- From your back-office, upload Packlink PRO plugin zip file. (Click on the "Add New" button then "Upload Plugin")
+- Packlink PRO is always updated with all shipments that are ready for shipment in WooCommerce.
 
-- Click on "Packlink PRO" tab in the WooCommerce section of your WordPress, copy/paste your API key from Packlink PRO and click on "Login".
+- You only need to access Packlink PRO for the payment. Sender and recipient details will already have been synchronized with WooCommerce data.
 
-
-**3. Use of the module**
-
-With a Packlink PRO module's configuration form you can easily control which shipping providers you want to expose to your customers. For each one, you can set a separate pricing policy and additional configuration options.
-
-From now, when a new order has been successfully paid or you have accepted the payment, the order data will automatically be imported into your Packlink PRO account, so that Packlink PRO is always updated with all orders that are ready for shipment in WooCommerce. You can also manually import each order separately. To ship these orders, go to Packlink PRO, where you will be able to see all your orders in the list of shipments. For each order, you will need to select the shipping service.
 
 Click <a href="https://support-pro.packlink.com/hc/es-es/articles/210158585" target="_blank" title="support">here</a> to get more information about the installation of the module.
 
 
 == Upgrade Notice ==
+
+= 2.0.4 =
+
+* Added update message mechanism
+* Minor bug fixes
 
 = 2.0.3 =
 

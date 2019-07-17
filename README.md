@@ -49,7 +49,7 @@ Tests are run on WordPress testing SDK. More on this can be found [here](https:/
 First install the needed wordpress database for tests (this has to be run just once):
 ```bash
 cd bin
-bash bin/install-wp-tests.sh wordpress_test dbuser dbpass localhost latest
+bin/install-wp-tests.sh wordpress_test dbuser dbpass localhost latest
 ``` 
 Then, either setup PHPStorm to run tests based on the `/src/phpunit.xml` configuration file
 or go to the root directory and run

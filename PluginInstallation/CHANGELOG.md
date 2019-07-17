@@ -5,6 +5,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased](https://github.com/logeecom/pl_woocommerce_module/compare/dev...master)
 
+## [v2.0.4](https://github.com/logeecom/pl_woocommerce_module/compare/v2.0.4...v2.0.3) - 2019-07-17
+### Changed
+- Updated to the latest core
+- Changed escaping resource URLs
+- Fixed sending full shipping address with address 2 part (in Core) 
+- Enhanced logging
+- Added update message mechanism
+
 ## [v2.0.3](https://github.com/logeecom/pl_woocommerce_module/compare/v2.0.1...v2.0.2) - 2019-07-04
 ### Changed
 - Replaced the core PDF merge library with the one that was acceptable for WordPress
