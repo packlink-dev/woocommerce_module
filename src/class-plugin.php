@@ -160,7 +160,7 @@ class Plugin {
 	 * @param array        $options Options with information regarding plugins for update.
 	 */
 	public function update( $updater_object, $options ) {
-		if ( $updater_object && $this->validate_if_plugin_update_is_for_our_plugin( $options ) ) {
+		if ( $this->should_update( $options ) ) {
 			if ( is_multisite() ) {
 				$site_ids = get_sites();
 				foreach ( $site_ids as $site_id ) {
@@ -192,6 +192,7 @@ class Plugin {
 
 		$this->delete_logs();
 		delete_option( 'PACKLINK_DATABASE_VERSION' );
+		delete_transient( 'packlink-pro-messages' );
 	}
 
 	/**
@@ -407,7 +408,15 @@ class Plugin {
 			Logger::logError( $e->getMessage(), 'Integration' );
 		}
 
-		$this->perform_update_actions();
+		Logger::logInfo( 'Update started.', 'Integration' );
+		$previous_version = $config_service->get_database_version();
+		$config_service->set_database_version( Shop_Helper::get_plugin_version() );
+		if ( version_compare( $previous_version, '2.0.0', '<' ) ) {
+			require_once __DIR__ . '/database/migrations/migration.v.2.0.0.php';
+		}
+
+		$this->perform_update_actions( $previous_version );
+		Logger::logInfo( 'Update ended.', 'Integration' );
 	}
 
 	/**
@@ -428,7 +437,7 @@ class Plugin {
 	 *
 	 * @return bool Plugin valid for update.
 	 */
-	private function validate_if_plugin_update_is_for_our_plugin( $options ) {
+	private function should_update( $options ) {
 		$wc_plugin = Shop_Helper::get_plugin_name();
 		if ( 'update' === $options['action'] && 'plugin' === $options['type'] && isset( $options['plugins'] ) ) {
 			foreach ( $options['plugins'] as $plugin ) {
@@ -450,6 +459,8 @@ class Plugin {
 
 			$installer = new Database( $this->db );
 			$installer->update( new Version_File_Reader( __DIR__ . '/database/migrations', $previous_version ) );
+
+			$this->perform_update_actions( $previous_version );
 		}
 
 		$this->get_config_service()->set_database_version( Shop_Helper::get_plugin_version() );
@@ -600,17 +611,11 @@ class Plugin {
 	}
 
 	/**
-	 * Executes actions when plugin is updated
+	 * Executes actions when plugin is updated.
+	 *
+	 * @param string $previous_version Previous version.
 	 */
-	private function perform_update_actions() {
-		$config_service = $this->get_config_service();
-
-		$previous_version = $config_service->get_database_version();
-		$config_service->set_database_version( Shop_Helper::get_plugin_version() );
-		if ( version_compare( $previous_version, '2.0.0', '<' ) ) {
-			require_once __DIR__ . '/database/migrations/migration.v.2.0.0.php';
-		}
-
+	private function perform_update_actions( $previous_version ) {
 		if ( version_compare( $previous_version, '2.0.4', '<' ) ) {
 			/** @noinspection HtmlUnknownTarget */ // phpcs:ignore
 			$text = sprintf(
