@@ -5,6 +5,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased](https://github.com/logeecom/pl_woocommerce_module/compare/dev...master)
 
+## [v2.0.5](https://github.com/logeecom/pl_woocommerce_module/compare/v2.0.5...v2.0.4) - 2019-07-22
+### Changed
+- Added new registration links
+- Fixed some CSS issues
+
 ## [v2.0.4](https://github.com/logeecom/pl_woocommerce_module/compare/v2.0.4...v2.0.3) - 2019-07-17
 ### Changed
 - Updated to the latest core
