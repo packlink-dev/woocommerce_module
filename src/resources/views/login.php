@@ -5,6 +5,8 @@
  * @package Packlink
  */
 
+use Packlink\WooCommerce\Controllers\Packlink_Frontend_Controller;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -17,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Packlink frontend controller.
  *
- * @var \Packlink\WooCommerce\Controllers\Packlink_Frontend_Controller $this
+ * @var Packlink_Frontend_Controller $this
  */
 
 $data = $this->resolve_view_arguments();
@@ -27,7 +29,7 @@ $data = $this->resolve_view_arguments();
 <div class="pl-login-page" id="pl-main-page-holder">
 	<div class="pl-login-page-side-img-wrapper pl-collapse">
 		<img src="<?php echo $data['dashboard_logo']; ?>" class="pl-login-icon"
-			 alt="<?php echo __( 'Packlink PRO Shipping', 'packlink-pro-shipping' ); ?>" />
+			 alt="<?php echo __( 'Packlink PRO Shipping', 'packlink-pro-shipping' ); ?>"/>
 	</div>
 	<div class="pl-login-page-content-wrapper">
 		<div class="pl-register-form-wrapper">
@@ -52,25 +54,25 @@ $data = $this->resolve_view_arguments();
 					<?php echo __( 'Select country to start', 'packlink-pro-shipping' ); ?>
 				</div>
 				<div class="pl-register-country-list-wrapper">
-					<a href="https://pro.packlink.es/registro" target="_blank">
+					<a href="https://pro.packlink.es/cmslp/woocommerce" target="_blank">
 						<div class="pl-country">
 							<img src="<?php echo $data['image_base']; ?>flags/spain.svg">
 							es
 						</div>
 					</a>
-					<a href="https://pro.packlink.de/registrieren" target="_blank">
+					<a href="https://pro.packlink.de/cmslp/woocommerce" target="_blank">
 						<div class="pl-country">
 							<img src="<?php echo $data['image_base']; ?>flags/germany.svg">
 							de
 						</div>
 					</a>
-					<a href="https://pro.packlink.fr/inscription" target="_blank">
+					<a href="https://pro.packlink.fr/cmslp/woocommerce" target="_blank">
 						<div class="pl-country">
 							<img src="<?php echo $data['image_base']; ?>flags/france.svg">
 							fr
 						</div>
 					</a>
-					<a href="https://pro.packlink.it/registro" target="_blank">
+					<a href="https://pro.packlink.it/cmslp/woocommerce" target="_blank">
 						<div class="pl-country">
 							<img src="<?php echo $data['image_base']; ?>flags/italy.svg">
 							it
@@ -116,14 +118,20 @@ $data = $this->resolve_view_arguments();
 	 * Initializes register form on login page.
 	 */
 	function initRegisterForm() {
-		let registerBtnClicked = function () {
+		let registerBtnClicked = function (event) {
+			event.stopPropagation();
 			let form = document.getElementById('pl-register-form');
 			form.style.display = 'block';
 
 			let closeBtn = document.getElementById('pl-register-form-close-btn');
 			closeBtn.addEventListener('click', function () {
 				form.style.display = 'none';
-			})
+			});
+
+			let container = document.querySelector('.pl-login-page-content-wrapper');
+			container.addEventListener('click', function () {
+				form.style.display = 'none';
+			});
 		};
 
 		let btn = document.getElementById('pl-register-btn');
