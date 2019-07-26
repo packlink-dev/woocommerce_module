@@ -85,13 +85,13 @@ class Packlink_Order_Details_Controller extends Packlink_Base_Controller {
 		$base_url = Shop_Helper::get_plugin_base_url() . 'resources/';
 		wp_enqueue_script(
 			'packlink_ajax',
-			esc_url( $base_url . 'js/core/packlink-ajax-service.js' ),
+			$base_url . 'js/core/packlink-ajax-service.js',
 			array(),
 			1
 		);
 		wp_enqueue_script(
 			'packlink_order_details',
-			esc_url( $base_url . 'js/packlink-order-details.js' ),
+			$base_url . 'js/packlink-order-details.js',
 			array(),
 			1
 		);

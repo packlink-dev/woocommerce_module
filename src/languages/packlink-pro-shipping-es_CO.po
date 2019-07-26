@@ -1,60 +1,106 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: \n"
+"Project-Id-Version: Packlink PRO Shipping \n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/packlink-pro-"
 "shipping\n"
-"POT-Creation-Date: 2019-03-12T09:51:26+01:00\n"
-"PO-Revision-Date: 2019-03-13 10:09+0100\n"
-"Last-Translator: \n"
+"POT-Creation-Date: 2019-07-16 14:51+0000\n"
+"PO-Revision-Date: 2019-07-16 17:55+0200\n"
+"Last-Translator: Packlink PRO <support@packlink.com>\n"
 "Language-Team: Spanish (Colombia)\n"
 "Language: es_CO\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 2.2.1\n"
+"X-Generator: Poedit 2.0.6\n"
 "X-Poedit-Basepath: .\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
+#: class-plugin.php:103
+msgid ""
+"cURL is not installed or enabled in your PHP installation. This is required "
+"for background task to work. Please install it and then refresh this page."
+msgstr ""
+
+#: class-plugin.php:116
+msgid "Please install and activate WooCommerce."
+msgstr "Por favor, instala y activa WooCommerce."
+
+#: class-plugin.php:291
+msgid "View Packlink configuration"
+msgstr "Ver la configuración de Packlink"
+
+#: class-plugin.php:291
+msgid "Configuration"
+msgstr "Configuración"
+
 #. Plugin Name of the plugin
-#: resources/views/login.php:30 resources/views/dashboard.php:30
-#: Controllers/class-packlink-order-overview-controller.php:47
-#: class-plugin.php:303
+#: class-plugin.php:341
+#: Controllers/class-packlink-order-overview-controller.php:51
+#: resources/views/notice-message.php:12 resources/views/login.php:30
+#: resources/views/dashboard.php:30
 msgid "Packlink PRO Shipping"
 msgstr "Packlink PRO Shipping"
 
-#. Plugin URI of the plugin
-msgid "https://en.wordpress.org/plugins/packlink-pro-shipping/"
-msgstr "https://es.wordpress.org/plugins/packlink-pro-shipping/"
-
-#. Description of the plugin
+#. %s: Module URL.
+#: class-plugin.php:619
+#, php-format
 msgid ""
-"Save up to 70% on your shipping costs. No fixed fees, no minimum shipping "
-"volume required. Manage all your shipments in a single platform."
+"With this version you will have access to any shipping service that your "
+"clients demand. Go to the <a href=\"%s\">configuration</a> and select which "
+"shipping services should be offered to your customers!"
 msgstr ""
-"Ahorra hasta un 70% en tus gastos de envío. Sin tarifas fijas, sin volumen "
-"de envíos mínimo. Gestiona todos tus envíos en una sola plataforma."
+"Con esta versión tendrás acceso a cualquier servicio de envío que tus "
+"clientes te demanden. Ve a <a href=\"%s\">configuración</a> y selecciona los "
+"métodos de envío que elijas para tus clientes."
 
-#. Author of the plugin
-msgid "Packlink Shipping S.L."
-msgstr "Packlink Shipping S.L."
+#: Controllers/class-packlink-order-overview-controller.php:55
+msgid "Packlink label"
+msgstr "Etiquetas de los envíos"
 
-#. Author URI of the plugin
-msgid "https://pro.packlink.es/"
-msgstr "https://pro.packlink.es/"
+#: Controllers/class-packlink-order-overview-controller.php:68
+msgid "Print labels"
+msgstr "Imprimir etiquetas"
 
-#: resources/views/shipping-method-drop-off.php:28
-#: resources/views/shipping-method-drop-off.php:34
-msgid "Change Drop-Off Location"
-msgstr "Cambiar el lugar de entrega"
+#: Controllers/class-packlink-order-overview-controller.php:87
+msgid "Label is not yet available."
+msgstr "La etiqueta todavía no está disponible."
 
-#: resources/views/shipping-method-drop-off.php:28
-#: resources/views/shipping-method-drop-off.php:33
-msgid "Select Drop-Off Location"
-msgstr "Seleccionar lugar de entrega"
+#: Controllers/class-packlink-order-overview-controller.php:90
+msgid "Printed label"
+msgstr "Impreso"
 
-#: resources/views/shipping-method-drop-off.php:35
-msgid "Package will be delivered to:"
-msgstr "El paquete será entregado a:"
+#: Controllers/class-packlink-order-overview-controller.php:90
+#: resources/views/meta-post-box.php:93
+msgid "Print label"
+msgstr "Imprimir etiquetas"
+
+#: Controllers/class-packlink-order-overview-controller.php:243
+msgid "Unable to create bulk labels file"
+msgstr "No se puede crear el archivo de etiquetas masivas"
+
+#: Controllers/class-packlink-frontend-controller.php:349
+msgid "Shipping method successfully selected."
+msgstr "Servicio de envío seleccionado correctamente."
+
+#: Controllers/class-packlink-frontend-controller.php:349
+msgid "Failed to select shipping method."
+msgstr "Error al activar el servicio de envío."
+
+#: Controllers/class-packlink-frontend-controller.php:368
+msgid "Shipping method successfully deselected."
+msgstr "Servicio de envío correctamente deseleccionado."
+
+#: Controllers/class-packlink-frontend-controller.php:368
+msgid "Failed to deselect shipping method."
+msgstr "Error al anular la selección de servicio de envío."
+
+#: Controllers/class-packlink-frontend-controller.php:401
+msgid "Successfully disabled shipping methods."
+msgstr "Servicios de envío correctamente deseleccionados."
+
+#: Controllers/class-packlink-frontend-controller.php:441
+msgid "Failed to save shipping method."
+msgstr "Error al guardar el servicio de envío."
 
 #: resources/views/login.php:35
 msgid "Don't have an account?"
@@ -338,6 +384,8 @@ msgid "Packlink prices"
 msgstr "Precios de Packlink"
 
 #: resources/views/dashboard.php:587
+#, fuzzy, php-format
+#| msgid "% of Packlink prices"
 msgid "% of Packlink prices"
 msgstr "% sobre los precios de Packlink"
 
@@ -541,81 +589,69 @@ msgstr "El campo debe ser un número entero."
 msgid "Shipping method successfully saved."
 msgstr "Método de envío seleccionado correctamente."
 
-#: resources/views/meta-post-box.php:31
+#: resources/views/shipping-method-drop-off.php:29
+#: resources/views/shipping-method-drop-off.php:35
+msgid "Change Drop-Off Location"
+msgstr "Cambiar el lugar de entrega"
+
+#: resources/views/shipping-method-drop-off.php:29
+#: resources/views/shipping-method-drop-off.php:34
+msgid "Select Drop-Off Location"
+msgstr "Seleccionar lugar de entrega"
+
+#: resources/views/shipping-method-drop-off.php:36
+msgid "Package will be delivered to:"
+msgstr "El paquete será entregado a:"
+
+#: resources/views/meta-post-box.php:36
 msgid "Carrier"
 msgstr "Transportista"
 
-#: resources/views/meta-post-box.php:40
+#: resources/views/meta-post-box.php:45
 msgid "Carrier tracking codes:"
 msgstr "Número de tracking del transportista:"
 
-#: resources/views/meta-post-box.php:51
+#: resources/views/meta-post-box.php:56
 msgid "Track it!"
-msgstr "Seguimiento"
+msgstr "Seguimiento!"
 
-#: resources/views/meta-post-box.php:60
+#: resources/views/meta-post-box.php:65
 msgid "Status"
 msgstr "Estado"
 
-#: resources/views/meta-post-box.php:65
+#: resources/views/meta-post-box.php:70
 msgid "Reference number"
 msgstr "Número de referencia Packlink"
 
-#: resources/views/meta-post-box.php:71
+#: resources/views/meta-post-box.php:76
 msgid "Packlink shipping price"
 msgstr "Precio de envío de Packlink"
 
-#: resources/views/meta-post-box.php:80
+#: resources/views/meta-post-box.php:86
 msgid "View on Packlink PRO"
 msgstr "Ver en Packlink PRO"
 
-#: resources/views/meta-post-box.php:87
-#: Controllers/class-packlink-order-overview-controller.php:84
-msgid "Print label"
-msgstr "Imprimir etiquetas"
-
-#: resources/views/meta-post-box.php:97
+#: resources/views/meta-post-box.php:104
+#, php-format
 msgid "Previous attempt to create a draft failed. Error: %s"
 msgstr "El intento anterior de crear un borrador ha fallado. Error:% s"
 
-#: resources/views/meta-post-box.php:105
+#: resources/views/meta-post-box.php:112
 msgid "Create draft"
 msgstr "Crear borrador"
 
-#: resources/views/meta-post-box.php:112
+#: resources/views/meta-post-box.php:119
 msgid "Draft is currently being created in Packlink"
 msgstr "El borrador se está creando actualmente en Packlink PRO"
 
-#: Components/Order/class-order-repository.php:192
-msgid "Status set by Packlink PRO."
-msgstr ""
-
-#. translators: %s: order identifier
-#: Components/Order/class-order-repository.php:258
-msgid "Order with id(%s) not found!"
-msgstr "El pedido con ID%s no existe en la tienda!"
-
-#. translators: %s: order identifier
-#: Components/Order/class-order-repository.php:486
-msgid "Order with shipment reference(%s) not found!"
-msgstr "El pedido con referencia de envío %s no existe en la tienda!"
-
-#: Components/Checkout/class-checkout-handler.php:139
+#: Components/Checkout/class-checkout-handler.php:138
 msgid "Please choose a drop-off location."
 msgstr "Por favor, elige un lugar de entrega."
 
-#: Components/Repositories/class-base-repository.php:402
-msgid "Column is not id or index."
-msgstr ""
-
-#: Components/Validators/class-parcel-validator.php:51
 #: Components/Validators/class-warehouse-validator.php:62
+#: Components/Validators/class-parcel-validator.php:51
 msgid "Field is required."
 msgstr "Esta campo es obligatorio."
-
-#: Components/Validators/class-parcel-validator.php:65
-msgid "Field must be valid decimal number."
-msgstr "Debe ser un valor numérico."
 
 #: Components/Validators/class-warehouse-validator.php:70
 #: Components/Validators/class-warehouse-validator.php:73
@@ -630,67 +666,55 @@ msgstr "El campo debe ser un correo electrónico válido."
 msgid "Field mus be valid phone number."
 msgstr "Este campo deber ser un número de teléfono válido."
 
-#: Controllers/class-packlink-frontend-controller.php:337
-msgid "Shipping method successfully selected."
-msgstr "Servicio de envío seleccionado correctamente."
+#: Components/Validators/class-parcel-validator.php:65
+msgid "Field must be valid decimal number."
+msgstr "Debe ser un valor numérico."
 
-#: Controllers/class-packlink-frontend-controller.php:337
-msgid "Failed to select shipping method."
-msgstr "Error al activar el servicio de envío."
-
-#: Controllers/class-packlink-frontend-controller.php:356
-msgid "Shipping method successfully deselected."
-msgstr "Servicio de envío correctamente deseleccionado."
-
-#: Controllers/class-packlink-frontend-controller.php:356
-msgid "Failed to deselect shipping method."
-msgstr "Error al anular la selección de servicio de envío."
-
-#: Controllers/class-packlink-frontend-controller.php:384
-msgid "Successfully disabled shipping methods."
-msgstr "Servicios de envío correctamente deseleccionados."
-
-#: Controllers/class-packlink-frontend-controller.php:416
-msgid "Failed to save shipping method."
-msgstr "Error al guardar el servicio de envío."
-
-#: Controllers/class-packlink-order-overview-controller.php:51
-msgid "Packlink label"
-msgstr "Etiquetas de los envíos"
-
-#: Controllers/class-packlink-order-overview-controller.php:64
-msgid "Print labels"
-msgstr "Imprimir etiquetas"
-
-#: Controllers/class-packlink-order-overview-controller.php:81
-msgid "Label is not yet available."
-msgstr "La etiqueta todavía no está disponible."
-
-#: Controllers/class-packlink-order-overview-controller.php:84
-msgid "Printed label"
-msgstr "Impreso"
-
-#: Controllers/class-packlink-order-overview-controller.php:203
-msgid "Unable to create bulk labels file"
-msgstr "No se puede crear el archivo de etiquetas masivas"
-
-#: class-plugin.php:99
-msgid ""
-"cURL is not installed or enabled in your PHP installation. This is required "
-"for background task to work. Please install it and then refresh this page."
+#: Components/Order/class-order-repository.php:193
+msgid "Status set by Packlink PRO."
 msgstr ""
 
-#: class-plugin.php:112
-msgid "Please install and activate WooCommerce."
-msgstr "Por favor, instala y activa WooCommerce."
+#. translators: %s: order identifier
+#: Components/Order/class-order-repository.php:308
+#, php-format
+msgid "Order with id(%s) not found!"
+msgstr "El pedido con ID%s no existe en la tienda!"
 
-#: class-plugin.php:253
-msgid "View Packlink configuration"
-msgstr "Ver la configuración de Packlink"
+#. translators: %s: order identifier
+#: Components/Order/class-order-repository.php:532
+#, php-format
+msgid "Order with shipment reference(%s) not found!"
+msgstr "El pedido con referencia de envío %s no existe en la tienda!"
 
-#: class-plugin.php:253
-msgid "Configuration"
-msgstr "Configuración"
+#: Components/Repositories/class-base-repository.php:402
+msgid "Column is not id or index."
+msgstr ""
+
+#: Components/ShippingMethod/includes/settings-packlink-shipping.php:10
+msgid ""
+"If no costs are set for shipping classes, costs defined in Packlink PRO "
+"configuration will be used."
+msgstr ""
+
+#. Description of the plugin
+msgid ""
+"Save up to 70% on your shipping costs. No fixed fees, no minimum shipping "
+"volume required. Manage all your shipments in a single platform."
+msgstr ""
+"Ahorra hasta un 70% en tus gastos de envío. Sin tarifas fijas, sin volumen "
+"de envíos mínimo. Gestiona todos tus envíos en una sola plataforma."
+
+#. Plugin URI of the plugin
+msgid "https://en.wordpress.org/plugins/packlink-pro-shipping/"
+msgstr "https://es.wordpress.org/plugins/packlink-pro-shipping/"
+
+#. Author of the plugin
+msgid "Packlink Shipping S.L."
+msgstr "Packlink Shipping S.L."
+
+#. Author URI of the plugin
+msgid "https://pro.packlink.es/"
+msgstr "https://pro.packlink.es/"
 
 #~ msgid "Packlink PRO"
 #~ msgstr "Packlink PRO"

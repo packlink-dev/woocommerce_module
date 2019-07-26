@@ -5,8 +5,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 $cost_desc = __( 'Enter a cost (excl. tax) or sum, e.g. <code>10.00 * [qty]</code>.', 'woocommerce' ) . '<br/><br/>' . __( 'Use <code>[qty]</code> for the number of items, <br/><code>[cost]</code> for the total cost of items, and <code>[fee percent="10" min_fee="20" max_fee=""]</code> for percentage based fees.', 'woocommerce' );
-$desc      = sprintf( __( 'These costs can optionally be added based on the <a href="%s">product shipping class</a>.', 'woocommerce' ), admin_url( 'admin.php?page=wc-settings&tab=shipping&section=classes' ) );
-$desc      .= ' ' . __( 'If no costs are set for shipping classes, costs defined in Packlink PRO configuration will be used.', 'packlink-pro-shipping' );
+// translators: WooCommerce shipping classes URL.
+$desc = sprintf( __( 'These costs can optionally be added based on the <a href="%s">product shipping class</a>.', 'woocommerce' ), admin_url( 'admin.php?page=wc-settings&tab=shipping&section=classes' ) );
+$desc .= ' ' . __( 'If no costs are set for shipping classes, costs defined in Packlink PRO configuration will be used.', 'packlink-pro-shipping' );
 
 /**
  * Settings for Packlink PRO shipping.

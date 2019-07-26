@@ -554,7 +554,7 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 		);
 
 		foreach ( $js_resources as $handle => $file ) {
-			wp_enqueue_script( $handle, esc_url( $base_url . $file ), array(), 1 );
+			wp_enqueue_script( $handle, $base_url . $file, array(), 1 );
 		}
 	}
 

@@ -4,6 +4,7 @@
  *
  * @package Packlink
  */
+
 try {
 	spl_autoload_register( 'packlink_wc_namespace_autoload' );
 } catch ( Exception $e ) {
@@ -33,7 +34,8 @@ function packlink_wc_namespace_autoload( $class_name ) {
 			$file_name = "class-$current.php";
 		} else {
 			if ( 'WooCommerce' === $current ) {
-				$current = 'packlink-pro-shipping';
+				// the name of the plugin folder.
+				$current = basename( dirname( __DIR__ ) );
 			}
 
 			$namespace = '/' . $current . $namespace;

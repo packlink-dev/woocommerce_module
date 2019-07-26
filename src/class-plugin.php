@@ -124,9 +124,9 @@ class Plugin {
 		} elseif ( $is_network_wide && is_multisite() ) {
 			foreach ( get_sites() as $site ) {
 				switch_to_blog( $site->blog_id );
-				/** @noinspection DisconnectedForeachInstructionInspection */
+				/** @noinspection DisconnectedForeachInstructionInspection */ // phpcs:ignore
 				$this->init_database();
-				/** @noinspection DisconnectedForeachInstructionInspection */
+				/** @noinspection DisconnectedForeachInstructionInspection */ // phpcs:ignore
 				$this->init_config();
 				restore_current_blog();
 			}
@@ -160,12 +160,12 @@ class Plugin {
 	 * @param array        $options Options with information regarding plugins for update.
 	 */
 	public function update( $updater_object, $options ) {
-		if ( $updater_object && $this->validate_if_plugin_update_is_for_our_plugin( $options ) ) {
+		if ( $this->should_update( $options ) ) {
 			if ( is_multisite() ) {
 				$site_ids = get_sites();
 				foreach ( $site_ids as $site_id ) {
 					switch_to_blog( $site_id->blog_id );
-					/** @noinspection DisconnectedForeachInstructionInspection */
+					/** @noinspection DisconnectedForeachInstructionInspection */ // phpcs:ignore
 					$this->update_plugin_on_single_site();
 					restore_current_blog();
 				}
@@ -192,6 +192,7 @@ class Plugin {
 
 		$this->delete_logs();
 		delete_option( 'PACKLINK_DATABASE_VERSION' );
+		delete_transient( 'packlink-pro-messages' );
 	}
 
 	/**
@@ -215,6 +216,8 @@ class Plugin {
 			false,
 			plugin_basename( dirname( $this->packlink_plugin_file ) ) . '/languages'
 		);
+
+		$this->dismiss_notices();
 	}
 
 	/**
@@ -266,6 +269,17 @@ class Plugin {
 	}
 
 	/**
+	 * Displays messages if needed, but only once.
+	 */
+	public function admin_messages() {
+		$messages = get_transient( 'packlink-pro-messages' );
+		if ( $messages ) {
+			/** @noinspection DirectoryConstantCanBeUsedInspection */ // phpcs:ignore
+			include dirname( __FILE__ ) . '/resources/views/notice-message.php';
+		}
+	}
+
+	/**
 	 * Show action links on the plugin screen.
 	 *
 	 * @param array $links Plugin Action links.
@@ -274,7 +288,7 @@ class Plugin {
 	 */
 	public function create_configuration_link( array $links ) {
 		$action_links = array(
-			'configuration' => '<a href="' . admin_url( 'admin.php?page=packlink-pro-shipping' ) . '" aria-label="' . esc_attr__( 'View Packlink configuration', 'packlink-pro-shipping' ) . '">' . esc_html__( 'Configuration', 'packlink-pro-shipping' ) . '</a>',
+			'configuration' => '<a href="' . Shop_Helper::get_plugin_page_url() . '" aria-label="' . esc_attr__( 'View Packlink configuration', 'packlink-pro-shipping' ) . '">' . esc_html__( 'Configuration', 'packlink-pro-shipping' ) . '</a>',
 		);
 
 		return array_merge( $action_links, $links );
@@ -307,7 +321,7 @@ class Plugin {
 		$data_store->create( $zone );
 
 		if ( $zone->get_id() ) {
-			/** @var Shop_Shipping_Method_Service $service */
+			/** @var Shop_Shipping_Method_Service $service */ // phpcs:ignore
 			$service = ServiceRegister::getService( ShopShippingMethodService::CLASS_NAME );
 			$service->add_active_methods_to_zone( $zone );
 		}
@@ -339,6 +353,7 @@ class Plugin {
 	private function initialize() {
 		Bootstrap_Component::init();
 		$this->load_plugin_init_hooks();
+
 		if ( Shop_Helper::is_plugin_enabled() ) {
 			$this->add_settings_link();
 			$this->load_admin_menu();
@@ -360,6 +375,7 @@ class Plugin {
 		add_filter( 'query_vars', array( $this, 'plugin_add_trigger' ) );
 		add_action( 'template_redirect', array( $this, 'plugin_trigger_check' ) );
 		add_action( 'plugins_loaded', array( $this, 'load_plugin_text_domain' ) );
+		add_action( 'admin_notices', array( $this, 'admin_messages' ) );
 		if ( is_multisite() ) {
 			add_action( 'delete_blog', array( $this, 'uninstall_plugin_from_deleted_site' ) );
 		}
@@ -382,21 +398,25 @@ class Plugin {
 
 		try {
 			$config_service->setTaskRunnerStatus( '', null );
-			$statuses = array(
-				'processing' => 'wc-processing',
-				'delivered'  => 'wc-completed',
+			$config_service->setOrderStatusMappings(
+				array(
+					'processing' => 'wc-processing',
+					'delivered'  => 'wc-completed',
+				)
 			);
-
-			$config_service->setOrderStatusMappings( $statuses );
 		} catch ( TaskRunnerStatusStorageUnavailableException $e ) {
 			Logger::logError( $e->getMessage(), 'Integration' );
 		}
 
+		Logger::logInfo( 'Update started.', 'Integration' );
 		$previous_version = $config_service->get_database_version();
 		$config_service->set_database_version( Shop_Helper::get_plugin_version() );
 		if ( version_compare( $previous_version, '2.0.0', '<' ) ) {
 			require_once __DIR__ . '/database/migrations/migration.v.2.0.0.php';
 		}
+
+		$this->perform_update_actions( $previous_version );
+		Logger::logInfo( 'Update ended.', 'Integration' );
 	}
 
 	/**
@@ -417,7 +437,7 @@ class Plugin {
 	 *
 	 * @return bool Plugin valid for update.
 	 */
-	private function validate_if_plugin_update_is_for_our_plugin( $options ) {
+	private function should_update( $options ) {
 		$wc_plugin = Shop_Helper::get_plugin_name();
 		if ( 'update' === $options['action'] && 'plugin' === $options['type'] && isset( $options['plugins'] ) ) {
 			foreach ( $options['plugins'] as $plugin ) {
@@ -439,6 +459,8 @@ class Plugin {
 
 			$installer = new Database( $this->db );
 			$installer->update( new Version_File_Reader( __DIR__ . '/database/migrations', $previous_version ) );
+
+			$this->perform_update_actions( $previous_version );
 		}
 
 		$this->get_config_service()->set_database_version( Shop_Helper::get_plugin_version() );
@@ -510,7 +532,7 @@ class Plugin {
 
 		add_action(
 			'woocommerce_init',
-			function () {
+			static function () {
 				foreach ( \wc_get_is_paid_statuses() as $paid_status ) {
 					add_action(
 						'woocommerce_order_status_' . $paid_status,
@@ -572,6 +594,40 @@ class Plugin {
 			}
 
 			rmdir( $dir );
+		}
+	}
+
+	/**
+	 * Hide a notice if the GET variable is set.
+	 */
+	private function dismiss_notices() {
+		if ( function_exists( 'wp_verify_nonce' ) && isset( $_GET['packlink-hide-notice'], $_GET['_packlink_notice_nonce'] ) ) {
+			if ( ! wp_verify_nonce( sanitize_key( wp_unslash( $_GET['_packlink_notice_nonce'] ) ), 'packlink_hide_notices_nonce' ) ) {
+				wp_die( esc_html_e( 'Action failed. Please refresh the page and retry.' ) );
+			}
+
+			delete_transient( 'packlink-pro-messages' );
+		}
+	}
+
+	/**
+	 * Executes actions when plugin is updated.
+	 *
+	 * @param string $previous_version Previous version.
+	 */
+	private function perform_update_actions( $previous_version ) {
+		if ( version_compare( $previous_version, '2.0.4', '<' ) ) {
+			/** @noinspection HtmlUnknownTarget */ // phpcs:ignore
+			$text = sprintf(
+				/* translators: %s: Module URL. */
+				__(
+					'With this version you will have access to any shipping service that your clients demand. Go to the <a href="%s">configuration</a> and select which shipping services should be offered to your customers!',
+					'packlink-pro-shipping'
+				),
+				Shop_Helper::get_plugin_page_url()
+			);
+
+			set_transient( 'packlink-pro-messages', $text );
 		}
 	}
 }

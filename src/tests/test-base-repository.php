@@ -12,15 +12,20 @@ use Packlink\WooCommerce\Components\Utility\Database;
 class BaseRepositoryTest extends AbstractGenericStudentRepositoryTest {
 
 	/**
+	 * Cleanup.
+	 *
 	 * @inheritdoc
 	 */
 	public function setUp() {
 
 		parent::setUp();
+
 		$this->createTestTable();
 	}
 
 	/**
+	 * Cleanup.
+	 *
 	 * @inheritdoc
 	 */
 	public static function tearDownAfterClass() {
@@ -30,6 +35,8 @@ class BaseRepositoryTest extends AbstractGenericStudentRepositoryTest {
 	}
 
 	/**
+	 * Repository class name.
+	 *
 	 * @return string
 	 */
 	public function getStudentEntityRepositoryClass() {
@@ -40,7 +47,7 @@ class BaseRepositoryTest extends AbstractGenericStudentRepositoryTest {
 	 * Cleans up all storage services used by repositories
 	 */
 	public function cleanUpStorage() {
-		return null;
+		self::tearDownAfterClass();
 	}
 
 	/**
@@ -56,7 +63,7 @@ class BaseRepositoryTest extends AbstractGenericStudentRepositoryTest {
 			$collate = $wpdb->get_charset_collate();
 		}
 
-		$packlinkTestTableInstallScript = 'CREATE TABLE IF NOT EXISTS `' . $table . '` (
+		$query = 'CREATE TABLE IF NOT EXISTS `' . $table . '` (
             `id` INT(11) NOT NULL AUTO_INCREMENT,
             `type` VARCHAR(255),
             `index_1` VARCHAR(100),
@@ -71,6 +78,6 @@ class BaseRepositoryTest extends AbstractGenericStudentRepositoryTest {
             INDEX (index_1, index_2, index_3, index_4, index_5, index_6, index_7)
         ) ' . $collate;
 
-		$wpdb->query( $packlinkTestTableInstallScript );
+		$wpdb->query( $query );
 	}
 }

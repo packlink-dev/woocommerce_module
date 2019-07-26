@@ -7,8 +7,8 @@ sleep 2
 
 # Cleanup any leftovers
 echo -e "\e[32mCleaning up...\e[39m"
-rm -f ./packlink-pro-shipping.zip
-rm -f ./packlink-pro-shipping
+rm -rf ./packlink-pro-shipping.zip
+rm -rf ./packlink-pro-shipping
 
 # Create deployment source
 echo -e "\e[32mSTEP 1:\e[39m Copying plugin source..."
@@ -16,12 +16,14 @@ mkdir packlink-pro-shipping
 cp -r ./src/* packlink-pro-shipping
 rm -rf ./packlink-pro-shipping/tests
 rm -rf ./packlink-pro-shipping/bin
-rm -rf ./packlink-pro-shipping/phpunit.xml.dist
+rm -rf ./packlink-pro-shipping/phpunit.xml
 rm -rf ./packlink-pro-shipping/vendor
 
 # Ensure proper composer dependencies
 echo -e "\e[32mSTEP 2:\e[39m Installing composer dependencies..."
-composer install -d "$PWD/packlink-pro-shipping" --no-dev -q
+cd packlink-pro-shipping
+composer install --no-dev
+cd ..
 
 # Remove unnecessary files from final release archive
 echo -e "\e[32mSTEP 3:\e[39m Removing unnecessary files from final release archive..."
@@ -31,6 +33,13 @@ rm -rf packlink-pro-shipping/vendor/packlink/integration-core/.idea
 rm -rf packlink-pro-shipping/vendor/packlink/integration-core/tests
 rm -rf packlink-pro-shipping/vendor/packlink/integration-core/generic_tests
 rm -rf packlink-pro-shipping/vendor/packlink/integration-core/README.md
+rm -rf packlink-pro-shipping/vendor/packlink/integration-core/src/BusinessLogic/Utility/PdfMerge.php
+rm -rf packlink-pro-shipping/vendor/iio/libmergepdf/tests
+rm -rf packlink-pro-shipping/vendor/iio/libmergepdf/.gitignore
+rm -rf packlink-pro-shipping/vendor/iio/libmergepdf/.travis.yml
+rm -rf packlink-pro-shipping/vendor/iio/libmergepdf/phpunit.xml.dist
+rm -rf packlink-pro-shipping/vendor/setasign/fpdf/doc
+rm -rf packlink-pro-shipping/vendor/setasign/fpdf/tutorial
 
 # Copy resources
 echo -e "\e[32mSTEP 4:\e[39m Copying resources from core to the integration..."
