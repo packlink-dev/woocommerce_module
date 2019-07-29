@@ -182,7 +182,6 @@ var Packlink = window.Packlink || {};
 	}
 
 	/**
-	 *
 	 * @param {HTMLElement} imageSrcInput
 	 */
 	function injectImage(imageSrcInput) {
@@ -192,7 +191,11 @@ var Packlink = window.Packlink || {};
 		image.className = 'pl-checkout-carrier-image';
 
 		let label = imageSrcInput.parentElement.querySelector( 'label' );
-		label.prepend( image );
+		if ( label ) {
+			label.prepend( image );
+		} else {
+			imageSrcInput.parentElement.prepend( image );
+		}
 	}
 
 	function initLocationPicker() {
