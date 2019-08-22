@@ -23,6 +23,7 @@ use Packlink\WooCommerce\Components\Utility\Database;
 use Packlink\WooCommerce\Components\Utility\Shop_Helper;
 use Packlink\WooCommerce\Components\Utility\Task_Queue;
 use Packlink\WooCommerce\Components\Utility\Version_File_Reader;
+use Packlink\WooCommerce\Controllers\Packlink_Auto_Test_Controller;
 use Packlink\WooCommerce\Controllers\Packlink_Frontend_Controller;
 use Packlink\WooCommerce\Controllers\Packlink_Index;
 use Packlink\WooCommerce\Controllers\Packlink_Order_Details_Controller;
@@ -257,14 +258,21 @@ class Plugin {
 	 * Creates Packlink PRO Shipping item in administrator menu.
 	 */
 	public function create_admin_submenu() {
-		$controller = new Packlink_Frontend_Controller();
 		add_submenu_page(
 			'woocommerce',
 			'Packlink PRO',
 			'Packlink PRO',
 			'manage_options',
 			'packlink-pro-shipping',
-			array( $controller, 'render' )
+			array( new Packlink_Frontend_Controller(), 'render' )
+		);
+		add_submenu_page(
+			'',
+			'Packlink PRO Auto-Test',
+			'',
+			'manage_options',
+			'packlink-pro-auto-test',
+			array( new Packlink_Auto_Test_Controller(), 'render' )
 		);
 	}
 
