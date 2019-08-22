@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 use Packlink\BusinessLogic\Tasks\SendDraftTask;
 use Packlink\WooCommerce\Components\Order\Order_Details_Helper;
 use Packlink\WooCommerce\Components\Order\Order_Meta_Keys;
-use Packlink\WooCommerce\Components\Utility\Shop_Helper;
+use Packlink\WooCommerce\Components\Utility\Script_Loader;
 use Packlink\WooCommerce\Components\Utility\Task_Queue;
 use WP_Post;
 
@@ -31,10 +31,10 @@ class Packlink_Order_Details_Controller extends Packlink_Base_Controller {
 	 * @param WP_Post $wp_post WordPress post object.
 	 */
 	public function render( WP_Post $wp_post ) {
-		$this->load_css();
-		$this->load_js();
+		Script_Loader::load_css( array( 'css/packlink-order-details.css' ) );
+		Script_Loader::load_js( array( 'js/core/packlink-ajax-service.js', 'js/packlink-order-details.js' ) );
 
-		/** @noinspection PhpUnusedLocalVariableInspection */
+		/** @noinspection PhpUnusedLocalVariableInspection */ // phpcs:ignore
 		$order_details = Order_Details_Helper::get_order_details( $wp_post );
 
 		include dirname( __DIR__ ) . '/resources/views/meta-post-box.php';
@@ -56,44 +56,12 @@ class Packlink_Order_Details_Controller extends Packlink_Base_Controller {
 			$this->return_json( array( 'success' => false ), 400 );
 		}
 
-		/** @noinspection PhpUnhandledExceptionInspection */
+		/** @noinspection PhpUnhandledExceptionInspection */ // phpcs:ignore
 		$task_id = Task_Queue::enqueue( new SendDraftTask( $order->get_id() ) );
 		$order->update_meta_data( Order_Meta_Keys::IS_PACKLINK, 'yes' );
 		$order->update_meta_data( Order_Meta_Keys::SEND_DRAFT_TASK_ID, $task_id );
 		$order->save();
 
 		$this->return_json( array( 'success' => true ) );
-	}
-
-	/**
-	 * Loads CSS for the current page.
-	 */
-	private function load_css() {
-		$base_url = Shop_Helper::get_plugin_base_url() . 'resources/';
-		wp_enqueue_style(
-			'packlink-global-styles',
-			$base_url . 'css/packlink-order-details.css',
-			array(),
-			1
-		);
-	}
-
-	/**
-	 * Loads javascript resources on order details page.
-	 */
-	private function load_js() {
-		$base_url = Shop_Helper::get_plugin_base_url() . 'resources/';
-		wp_enqueue_script(
-			'packlink_ajax',
-			$base_url . 'js/core/packlink-ajax-service.js',
-			array(),
-			1
-		);
-		wp_enqueue_script(
-			'packlink_order_details',
-			$base_url . 'js/packlink-order-details.js',
-			array(),
-			1
-		);
 	}
 }

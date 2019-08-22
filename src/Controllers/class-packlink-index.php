@@ -19,7 +19,8 @@ class Packlink_Index extends Packlink_Base_Controller {
 	public function index() {
 		$controller_name = $this->get_param( 'packlink_pro_controller' );
 
-		if ( ! $this->validate_controller_name( $controller_name ) ) {
+		$class_name = '\Packlink\WooCommerce\Controllers\Packlink_' . $controller_name . '_Controller';
+		if ( ! $this->validate_controller_name( $controller_name ) || ! class_exists( $class_name ) ) {
 			status_header( 404 );
 			nocache_headers();
 
@@ -28,7 +29,6 @@ class Packlink_Index extends Packlink_Base_Controller {
 			exit();
 		}
 
-		$class_name = '\Packlink\WooCommerce\Controllers\Packlink_' . $controller_name . '_Controller';
 		/**
 		 * Controller instance.
 		 *
@@ -54,6 +54,8 @@ class Packlink_Index extends Packlink_Base_Controller {
 			'Checkout',
 			'Order_Details',
 			'Debug',
+			'Auto_Test',
+			'Auto_Configure',
 		);
 
 		return in_array( $controller_name, $allowed_controllers, true );

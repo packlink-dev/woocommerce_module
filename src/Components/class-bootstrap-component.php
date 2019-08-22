@@ -12,11 +12,13 @@ use Logeecom\Infrastructure\Configuration\Configuration;
 use Logeecom\Infrastructure\Http\CurlHttpClient;
 use Logeecom\Infrastructure\Http\HttpClient;
 use Logeecom\Infrastructure\Logger\Interfaces\ShopLoggerAdapter;
+use Logeecom\Infrastructure\Logger\LogData;
 use Logeecom\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use Logeecom\Infrastructure\ORM\RepositoryRegistry;
 use Logeecom\Infrastructure\ServiceRegister;
 use Logeecom\Infrastructure\TaskExecution\Process;
 use Logeecom\Infrastructure\TaskExecution\QueueItem;
+use Packlink\BusinessLogic\BootstrapComponent;
 use Packlink\BusinessLogic\Order\Interfaces\OrderRepository;
 use Packlink\BusinessLogic\Scheduler\Models\Schedule;
 use Packlink\BusinessLogic\ShippingMethod\Interfaces\ShopShippingMethodService;
@@ -35,7 +37,7 @@ use Packlink\WooCommerce\Components\ShippingMethod\Shop_Shipping_Method_Service;
  *
  * @package Packlink\WooCommerce\Components
  */
-class Bootstrap_Component extends \Packlink\BusinessLogic\BootstrapComponent {
+class Bootstrap_Component extends BootstrapComponent {
 	/**
 	 * Initializes services and utilities.
 	 */
@@ -44,35 +46,35 @@ class Bootstrap_Component extends \Packlink\BusinessLogic\BootstrapComponent {
 
 		ServiceRegister::registerService(
 			Configuration::CLASS_NAME,
-			function () {
+			static function () {
 				return Config_Service::getInstance();
 			}
 		);
 
 		ServiceRegister::registerService(
 			ShopLoggerAdapter::CLASS_NAME,
-			function () {
+			static function () {
 				return Logger_Service::getInstance();
 			}
 		);
 
 		ServiceRegister::registerService(
 			ShopShippingMethodService::CLASS_NAME,
-			function () {
+			static function () {
 				return Shop_Shipping_Method_Service::getInstance();
 			}
 		);
 
 		ServiceRegister::registerService(
 			OrderRepository::CLASS_NAME,
-			function () {
+			static function () {
 				return Order_Repository::getInstance();
 			}
 		);
 
 		ServiceRegister::registerService(
 			HttpClient::CLASS_NAME,
-			function () {
+			static function () {
 				return new CurlHttpClient();
 			}
 		);
@@ -93,5 +95,6 @@ class Bootstrap_Component extends \Packlink\BusinessLogic\BootstrapComponent {
 		RepositoryRegistry::registerRepository( Order_Shipment_Entity::CLASS_NAME, Base_Repository::getClassName() );
 		RepositoryRegistry::registerRepository( Schedule::CLASS_NAME, Base_Repository::getClassName() );
 		RepositoryRegistry::registerRepository( QueueItem::CLASS_NAME, Queue_Item_Repository::getClassName() );
+		RepositoryRegistry::registerRepository( LogData::CLASS_NAME, Base_Repository::getClassName() );
 	}
 }

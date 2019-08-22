@@ -76,7 +76,7 @@ class Version_File_Reader {
 			$this->sort_files();
 		}
 
-		return isset( $this->sorted_files_for_execution[ $this->pointer ]);
+		return isset( $this->sorted_files_for_execution[ $this->pointer ] );
 	}
 
 	/**

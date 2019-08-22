@@ -15,6 +15,7 @@ use Packlink\BusinessLogic\Order\Interfaces\OrderRepository;
 use Packlink\WooCommerce\Components\Order\Order_Details_Helper;
 use Packlink\WooCommerce\Components\Order\Order_Meta_Keys;
 use Packlink\WooCommerce\Components\Order\Order_Repository;
+use Packlink\WooCommerce\Components\Utility\Script_Loader;
 use Packlink\WooCommerce\Components\Utility\Shop_Helper;
 use WC_Order;
 
@@ -190,25 +191,13 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 		global $post;
 
 		if ( $post && 'shop_order' === $post->post_type && 'raw' === $post->filter ) {
-			$base_url = Shop_Helper::get_plugin_base_url() . 'resources/';
-			wp_enqueue_script(
-				'packlink_ajax',
-				$base_url . 'js/core/packlink-ajax-service.js',
-				array(),
-				1
+			Script_Loader::load_js(
+				array(
+					'js/core/packlink-ajax-service.js',
+					'js/packlink-order-overview.js',
+				)
 			);
-			wp_enqueue_script(
-				'packlink_order_overview',
-				$base_url . 'js/packlink-order-overview.js',
-				array(),
-				1
-			);
-			wp_enqueue_style(
-				'packlink_order_css',
-				$base_url . 'css/packlink-order-overview.css',
-				array(),
-				1
-			);
+			Script_Loader::load_css( array( 'css/packlink-order-overview.css' ) );
 		}
 	}
 
