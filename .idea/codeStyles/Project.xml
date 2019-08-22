@@ -12,6 +12,7 @@
       <option name="BLANK_LINES_BEFORE_RETURN_STATEMENT" value="1" />
       <option name="KEEP_RPAREN_AND_LBRACE_ON_ONE_LINE" value="true" />
       <option name="SPACES_AROUND_VAR_WITHIN_BRACKETS" value="true" />
+      <option name="ALIGN_CLASS_CONSTANTS" value="true" />
       <option name="SPACE_BEFORE_UNARY_NOT" value="true" />
       <option name="SPACE_AFTER_UNARY_NOT" value="true" />
     </PHPCodeStyleSettings>

@@ -11,10 +11,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+use Logeecom\Infrastructure\AutoTest\AutoTestService;
 use Logeecom\Infrastructure\Logger\Logger;
 use Logeecom\Infrastructure\ServiceRegister;
 use Logeecom\Infrastructure\TaskExecution\Interfaces\AsyncProcessService;
 use Packlink\WooCommerce\Components\Utility\Shop_Helper;
+use Tools;
 
 /**
  * Class Packlink_Async_Process_Controller
@@ -37,20 +39,31 @@ class Packlink_Async_Process_Controller extends Packlink_Base_Controller {
 			exit();
 		}
 
-		if ( ! $this->is_post() ) {
-			$this->redirect404();
+		$guid      = $this->get_param( 'guid' );
+		$auto_test = $this->get_param( 'auto-test' );
+
+		if ( $auto_test ) {
+			$auto_test_service = new AutoTestService();
+			$auto_test_service->setAutoTestMode();
+			Logger::logInfo( 'Received auto-test async process request.', 'Integration', array( 'guid' => $guid ) );
+		} else {
+			Logger::logDebug( 'Received async process request.', 'Integration', array( 'guid' => $guid ) );
 		}
 
-		Logger::logDebug( 'Received async process request.', 'Integration', array( 'guid' => $this->get_param( 'guid' ) ) );
+		if ( 'auto-configure' !== $guid ) {
+			if ( ! $this->is_post() ) {
+				$this->redirect404();
+			}
 
-		/**
-		 * Async process service.
-		 *
-		 * @var AsyncProcessService $service
-		 */
-		$service = ServiceRegister::getService( AsyncProcessService::CLASS_NAME );
-		$service->runProcess( $this->get_param( 'guid' ) );
+			/**
+			 * Async process service.
+			 *
+			 * @var AsyncProcessService $service
+			 */
+			$service = ServiceRegister::getService( AsyncProcessService::CLASS_NAME );
+			$service->runProcess( $this->get_param( 'guid' ) );
+		}
 
-		exit();
+		$this->return_json( array( 'success' => true ) );
 	}
 }

@@ -21,7 +21,7 @@ use Packlink\WooCommerce\Components\Services\Config_Service;
 use Packlink\WooCommerce\Components\ShippingMethod\Packlink_Shipping_Method;
 use Packlink\WooCommerce\Components\ShippingMethod\Shipping_Method_Helper;
 use Packlink\WooCommerce\Components\ShippingMethod\Shipping_Method_Map;
-use Packlink\WooCommerce\Components\Utility\Shop_Helper;
+use Packlink\WooCommerce\Components\Utility\Script_Loader;
 use WC_Order_Factory;
 use WC_Shipping_Rate;
 
@@ -61,7 +61,7 @@ class Checkout_Handler {
 	 * Checkout_Handler constructor.
 	 */
 	public function __construct() {
-		/** @noinspection PhpUnhandledExceptionInspection */
+		/** @noinspection PhpUnhandledExceptionInspection */ // phpcs:ignore
 		$this->repository              = RepositoryRegistry::getRepository( Shipping_Method_Map::CLASS_NAME );
 		$this->shipping_method_service = ServiceRegister::getService( ShippingMethodService::CLASS_NAME );
 	}
@@ -231,42 +231,19 @@ class Checkout_Handler {
 	 * Loads javascript and css resources
 	 */
 	public function load_scripts() {
-		$base_url = Shop_Helper::get_plugin_base_url() . 'resources/';
-		wp_enqueue_script(
-			'packlink_ajax',
-			$base_url . 'js/core/packlink-ajax-service.js',
-			array(),
-			1
+		Script_Loader::load_js(
+			array(
+				'js/core/packlink-ajax-service.js',
+				'js/location-picker/packlink-translations.js',
+				'js/location-picker/packlink-location-picker.js',
+				'js/packlink-checkout.js',
+			)
 		);
-		wp_enqueue_script(
-			'packlink_translations',
-			$base_url . 'js/location-picker/packlink-translations.js',
-			array(),
-			1
-		);
-		wp_enqueue_script(
-			'packlink_location_picker',
-			$base_url . 'js/location-picker/packlink-location-picker.js',
-			array(),
-			1
-		);
-		wp_enqueue_script(
-			'packlink_checkout',
-			$base_url . 'js/packlink-checkout.js',
-			array(),
-			1
-		);
-		wp_enqueue_style(
-			'packlink_checkout_css',
-			$base_url . 'css/packlink-checkout.css',
-			array(),
-			1
-		);
-		wp_enqueue_style(
-			'packlink_location_picker_css',
-			$base_url . 'css/packlink-location-picker.css',
-			array(),
-			1
+		Script_Loader::load_css(
+			array(
+				'css/packlink-checkout.css',
+				'css/packlink-location-picker.css',
+			)
 		);
 	}
 
@@ -301,7 +278,7 @@ class Checkout_Handler {
 	 */
 	private function get_packlink_shipping_method( $instance_id ) {
 		$filter = new QueryFilter();
-		/** @noinspection PhpUnhandledExceptionInspection */
+		/** @noinspection PhpUnhandledExceptionInspection */ // phpcs:ignore
 		$filter->where( 'woocommerceShippingMethodId', '=', $instance_id );
 
 		/**

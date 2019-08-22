@@ -6,14 +6,16 @@
  */
 
 use Packlink\WooCommerce\Components\Utility\Shop_Helper;
+use Packlink\WooCommerce\Controllers\Packlink_Frontend_Controller;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-/** @var \Packlink\WooCommerce\Controllers\Packlink_Frontend_Controller $this */
+/** @var Packlink_Frontend_Controller $this */
 $data = $this->resolve_view_arguments();
 
+// @codingStandardsIgnoreStart
 ?>
 
 <div class="container-fluid pl-main-wrapper" id="pl-main-page-holder">
@@ -394,8 +396,18 @@ $data = $this->resolve_view_arguments();
 				</div>
 				<div class="pl-table-wrapper" id="pl-table-scroll">
 					<div id="pl-shipping-methods-table-extension-point"></div>
-					<div class="pl-no-shipping-services hidden" id="pl-no-shipping-services">
-						<?php echo __( 'Getting available shipping services from Packlink PRO. Please wait a moment.', 'packlink-pro-shipping' ); ?>
+					<div class="pl-shipping-services-message hidden" id="pl-getting-shipping-services">
+						<div class="title"><?php echo __( 'We are importing the best shipping services for your shipments.', 'packlink-pro-shipping' ); ?></div>
+						<div class="subtitle"><?php echo __( 'This process could take a few seconds.', 'packlink-pro-shipping' ); ?></div>
+						<div class="pl-spinner" id="pl-getting-services-spinner">
+							<div></div>
+						</div>
+					</div>
+					<div class="pl-shipping-services-message hidden" id="pl-no-shipping-services">
+						<div class="title"><?php echo __( 'We are having troubles getting shipping services.', 'packlink-pro-shipping' ); ?></div>
+						<div class="subtitle"><?php echo __( 'Do you want to retry?', 'packlink-pro-shipping' ); ?></div>
+						<button type="button" class="button button-primary btn-lg"
+								id="pl-shipping-services-retry-btn"><?php echo __( 'Retry', 'packlink-pro-shipping' ); ?></button>
 					</div>
 				</div>
 			</div>
@@ -643,8 +655,7 @@ $data = $this->resolve_view_arguments();
 				</p>
 			</td>
 			<td class="pl-table-row-method-logo">
-				<img class="pl-method-logo" id="pl-logo"
-					 alt="Logo">
+				<img class="pl-method-logo" id="pl-logo" alt="Logo" src="">
 			</td>
 			<td class="pl-table-row-method-delivery-type" id="pl-delivery-type">
 
@@ -1105,13 +1116,14 @@ $data = $this->resolve_view_arguments();
 					scrollOffset: 0
 				},
 
-				dashboardGetStatusUrl: "<?php echo Shop_Helper::get_controller_url( 'Frontend', 'get_status' ); ?>",
+				dashboardGetStatusUrl: "<?php echo Shop_Helper::get_controller_url( 'Frontend', 'get_dashboard_status' ); ?>",
 				defaultParcelGetUrl: "<?php echo Shop_Helper::get_controller_url( 'Frontend', 'get_default_parcel' ); ?>",
 				defaultParcelSubmitUrl: "<?php echo Shop_Helper::get_controller_url( 'Frontend', 'save_default_parcel' ); ?>",
 				defaultWarehouseGetUrl: "<?php echo Shop_Helper::get_controller_url( 'Frontend', 'get_default_warehouse' ); ?>",
 				defaultWarehouseSubmitUrl: "<?php echo Shop_Helper::get_controller_url( 'Frontend', 'save_default_warehouse' ); ?>",
 				defaultWarehouseSearchPostalCodesUrl: "<?php echo Shop_Helper::get_controller_url( 'Frontend', 'search_locations' ); ?>",
 				shippingMethodsGetAllUrl: "<?php echo Shop_Helper::get_controller_url( 'Frontend', 'get_all_shipping_methods' ); ?>",
+				shippingMethodsGetStatusUrl: "<?php echo Shop_Helper::get_controller_url( 'Frontend', 'get_shipping_methods_task_status' ); ?>",
 				shippingMethodsActivateUrl: "<?php echo Shop_Helper::get_controller_url( 'Frontend', 'activate_shipping_method' ); ?>",
 				shippingMethodsDeactivateUrl: "<?php echo Shop_Helper::get_controller_url( 'Frontend', 'deactivate_shipping_method' ); ?>",
 				shippingMethodsSaveUrl: "<?php echo Shop_Helper::get_controller_url( 'Frontend', 'save_shipping_method' ); ?>",
@@ -1121,7 +1133,8 @@ $data = $this->resolve_view_arguments();
 				orderStatusMappingsGetUrl: "<?php echo Shop_Helper::get_controller_url( 'Frontend', 'get_order_status_mappings' ); ?>",
 				orderStatusMappingsSaveUrl: "<?php echo Shop_Helper::get_controller_url( 'Frontend', 'save_order_status_mapping' ); ?>",
 				debugGetStatusUrl: "<?php echo Shop_Helper::get_controller_url( 'Frontend', 'get_debug_status' ); ?>",
-				debugSetStatusUrl: "<?php echo Shop_Helper::get_controller_url( 'Frontend', 'set_debug_status' ); ?>"
+				debugSetStatusUrl: "<?php echo Shop_Helper::get_controller_url( 'Frontend', 'set_debug_status' ); ?>",
+				autoConfigureStartUrl: "<?php echo Shop_Helper::get_controller_url( 'Auto_Configure', 'start' ); ?>"
 			}
 		);
 		Packlink.state.display();
