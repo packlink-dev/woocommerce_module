@@ -7,6 +7,9 @@
 
 namespace Packlink\WooCommerce\Components\Order;
 
+use Logeecom\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
+use Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException;
+use Logeecom\Infrastructure\ORM\Interfaces\RepositoryInterface;
 use Logeecom\Infrastructure\ORM\QueryFilter\Operators;
 use Logeecom\Infrastructure\ORM\QueryFilter\QueryFilter;
 use Logeecom\Infrastructure\ORM\RepositoryRegistry;
@@ -27,6 +30,7 @@ use Packlink\WooCommerce\Components\Services\Config_Service;
 use WC_Order;
 use WP_Term;
 
+// @codingStandardsIgnoreStart
 /**
  * Class Order_Repository
  *
@@ -68,7 +72,7 @@ class Order_Repository extends Singleton implements OrderRepository {
 	 * @param string $order_id $orderId Unique order id.
 	 *
 	 * @return Order Order object.
-	 * @throws \Packlink\BusinessLogic\Order\Exceptions\OrderNotFound When order with provided id is not found.
+	 * @throws OrderNotFound When order with provided id is not found.
 	 */
 	public function getOrderAndShippingData( $order_id ) {
 		$wc_order = $this->load_order_by_id( $order_id );
@@ -107,7 +111,7 @@ class Order_Repository extends Singleton implements OrderRepository {
 	 * @param string $order_id Unique order id.
 	 * @param string $shipment_reference Packlink shipment reference.
 	 *
-	 * @throws \Packlink\BusinessLogic\Order\Exceptions\OrderNotFound When order with provided id is not found.
+	 * @throws OrderNotFound When order with provided id is not found.
 	 */
 	public function setReference( $order_id, $shipment_reference ) {
 		$wc_order = $this->load_order_by_id( $order_id );
@@ -132,7 +136,7 @@ class Order_Repository extends Singleton implements OrderRepository {
 	 * @param string   $shipment_reference Packlink shipment reference.
 	 * @param string[] $labels Packlink shipping labels.
 	 *
-	 * @throws \Packlink\BusinessLogic\Order\Exceptions\OrderNotFound When order with provided reference is not found.
+	 * @throws OrderNotFound When order with provided reference is not found.
 	 */
 	public function setLabelsByReference( $shipment_reference, array $labels ) {
 		$order = $this->load_order_by_reference( $shipment_reference );
@@ -145,23 +149,27 @@ class Order_Repository extends Singleton implements OrderRepository {
 	 * Sets order packlink shipment tracking history to an order for given shipment.
 	 *
 	 * @param Shipment_DTO $shipment Packlink shipment details.
-	 * @param Tracking[]   $trackingHistory Shipment tracking history.
+	 * @param Tracking[]   $tracking_history Shipment tracking history.
 	 *
-	 * @throws \Packlink\BusinessLogic\Order\Exceptions\OrderNotFound When order with provided reference is not found.
+	 * @throws OrderNotFound When order with provided reference is not found.
 	 */
-	public function updateTrackingInfo(Shipment_DTO $shipment, array $trackingHistory) {
+	public function updateTrackingInfo(Shipment_DTO $shipment, array $tracking_history) {
 		$order = $this->load_order_by_reference( $shipment->reference );
 
-		usort(
-			$tracking_history,
-			function ( Tracking $a, Tracking $b ) {
-				return $b->timestamp - $a->timestamp;
-			}
-		);
+		if (!empty($tracking_history)) {
+			usort(
+				$tracking_history,
+				static function ( Tracking $a, Tracking $b ) {
+					return $b->timestamp - $a->timestamp;
+				}
+			);
 
-		$tracking = array();
-		foreach ( $tracking_history as $item ) {
-			$tracking[] = $item->toArray();
+			$tracking = array();
+			foreach ( $tracking_history as $item ) {
+				$tracking[] = $item->toArray();
+			}
+
+			$order->update_meta_data( Order_Meta_Keys::TRACKING_HISTORY, wp_json_encode( $tracking ) );
 		}
 
 		$order->update_meta_data( Order_Meta_Keys::SHIPMENT_PRICE, $shipment->price );
@@ -170,7 +178,6 @@ class Order_Repository extends Singleton implements OrderRepository {
 			$order->update_meta_data( Order_Meta_Keys::CARRIER_TRACKING_CODES, $shipment->trackingCodes );
 		}
 
-		$order->update_meta_data( Order_Meta_Keys::TRACKING_HISTORY, wp_json_encode( $tracking ) );
 		$order->save();
 	}
 
@@ -180,7 +187,7 @@ class Order_Repository extends Singleton implements OrderRepository {
 	 * @param string $shipment_reference Packlink shipment reference.
 	 * @param string $shipping_status Packlink shipping status.
 	 *
-	 * @throws \Packlink\BusinessLogic\Order\Exceptions\OrderNotFound When order with provided reference is not found.
+	 * @throws OrderNotFound When order with provided reference is not found.
 	 */
 	public function setShippingStatusByReference( $shipment_reference, $shipping_status ) {
 		$order = $this->load_order_by_reference( $shipment_reference );
@@ -203,7 +210,7 @@ class Order_Repository extends Singleton implements OrderRepository {
 	 * @noinspection PhpDocMissingThrowsInspection
 	 *
 	 * @return array Array of shipment references.
-	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException
+	 * @throws QueryFilterInvalidParamException
 	 */
 	public function getIncompleteOrderReferences() {
 		$filter     = new QueryFilter();
@@ -247,8 +254,6 @@ class Order_Repository extends Singleton implements OrderRepository {
 	 *
 	 * @param string $shipmentReference Packlink shipment reference.
 	 *
-	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException
-	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException
 	 * @throws OrderNotFound
 	 */
 	public function markShipmentDeleted( $shipmentReference ) {
@@ -263,7 +268,6 @@ class Order_Repository extends Singleton implements OrderRepository {
 	 * @param string $shipmentReference Packlink shipment reference.
 	 *
 	 * @return bool Returns TRUE if shipment has been deleted; otherwise returns FALSE.
-	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException
 	 */
 	public function isShipmentDeleted( $shipmentReference ) {
 		try {
@@ -514,18 +518,20 @@ class Order_Repository extends Singleton implements OrderRepository {
 	 *
 	 * @return Order_Shipment_Entity Order shipment entity.
 	 * @throws OrderNotFound When order with provided id is not found.
-	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException
 	 */
 	private function get_order_shipment_entity( $shipment_reference ) {
+		$order_shipment = null;
 		$query_filter = new QueryFilter();
-		/** @noinspection PhpUnhandledExceptionInspection */
-		$query_filter->where( 'packlinkShipmentReference', '=', $shipment_reference );
-		/**
-		 * Order shipment entity.
-		 *
-		 * @var Order_Shipment_Entity $order_shipment
-		 */
-		$order_shipment = $this->get_order_shipment_entity_repository()->selectOne( $query_filter );
+		try {
+			$query_filter->where( 'packlinkShipmentReference', '=', $shipment_reference );
+			/**
+			 * Order shipment entity.
+			 *
+			 * @var Order_Shipment_Entity $order_shipment
+			 */
+			$order_shipment = $this->get_order_shipment_entity_repository()->selectOne( $query_filter );
+		} catch ( QueryFilterInvalidParamException $e ) {
+		}
 
 		if ( null === $order_shipment ) {
 			/* translators: %s: order identifier */
@@ -538,13 +544,15 @@ class Order_Repository extends Singleton implements OrderRepository {
 	/**
 	 * Returns an instance of order shipment entity repository.
 	 *
-	 * @return \Logeecom\Infrastructure\ORM\Interfaces\RepositoryInterface|Base_Repository
+	 * @return RepositoryInterface|Base_Repository
 	 */
 	private function get_order_shipment_entity_repository()
 	{
 		if ( null === $this->order_shipment_entity_repository ) {
-			/** @noinspection PhpUnhandledExceptionInspection */
-			$this->order_shipment_entity_repository = RepositoryRegistry::getRepository( Order_Shipment_Entity::CLASS_NAME );
+			try {
+				$this->order_shipment_entity_repository = RepositoryRegistry::getRepository( Order_Shipment_Entity::CLASS_NAME );
+			} catch ( RepositoryNotRegisteredException $e ) {
+			}
 		}
 
 		return $this->order_shipment_entity_repository;
