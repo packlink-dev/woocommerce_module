@@ -4,7 +4,7 @@ Tags: woocommerce, shipment, shipping, packlink
 Requires at least: 4.7
 Requires PHP: 5.5
 Tested up to: 5.2.2
-Stable tag: 2.0.5
+Stable tag: 2.0.6
 License: LICENSE-2.0
 License URI: http://www.apache.org/licenses/LICENSE-2.0
 
@@ -70,6 +70,11 @@ Click <a href="https://support-pro.packlink.com/hc/es-es/articles/210158585" tar
 
 
 == Upgrade Notice ==
+
+= 2.0.6 =
+
+* Fixed backward compatibility with the WooCommerce prior to 3.2
+* Fixed problem in updating shipping information from Packlink
 
 = 2.0.5 =
 
