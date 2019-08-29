@@ -5,6 +5,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased](https://github.com/logeecom/pl_woocommerce_module/compare/dev...master)
 
+## [v2.0.6](https://github.com/logeecom/pl_woocommerce_module/compare/v2.0.6...v2.0.5) - 2019-08-29
+### Changed
+- Fixed backward compatibility with the WooCommerce prior to 3.2
+- Fixed problem in updating shipping information from Packlink
+
 ## [v2.0.5](https://github.com/logeecom/pl_woocommerce_module/compare/v2.0.5...v2.0.4) - 2019-07-22
 ### Changed
 - Added new registration links
