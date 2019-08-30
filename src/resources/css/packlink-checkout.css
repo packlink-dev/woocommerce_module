@@ -46,6 +46,11 @@
 	line-height: inherit;
 }
 
+.lp-location-wrapper {
+	text-indent: 0;
+	text-align: left;
+}
+
 @media screen and (max-width: 800px) {
 	#pl-picker-modal svg {
 		top: -30px;

@@ -73,7 +73,9 @@ class Checkout_Handler {
 	 * @param int              $index Shipping method index.
 	 */
 	public function after_shipping_rate( WC_Shipping_Rate $rate, $index ) {
-		$shipping_method = $this->get_packlink_shipping_method( $rate->get_instance_id() );
+		$rate_data       = $this->get_rate_data( $rate );
+		$shipping_method = $this->get_packlink_shipping_method( $rate_data['instance_id'] );
+
 		if ( null === $shipping_method ) {
 			return;
 		}
@@ -94,7 +96,7 @@ class Checkout_Handler {
 			wc()->session->set( Order_Meta_Keys::SHIPPING_ID, '' );
 		}
 
-		if ( $rate->get_id() === $chosen_method && $shipping_method->isDestinationDropOff() ) {
+		if ( $rate_data['rate_id'] === $chosen_method && $shipping_method->isDestinationDropOff() ) {
 			include dirname( __DIR__ ) . '/../resources/views/shipping-method-drop-off.php';
 		}
 	}
@@ -103,7 +105,7 @@ class Checkout_Handler {
 	 * Initializes script on cart page.
 	 */
 	public function after_shipping_calculator() {
-		echo '<script style="display: none;">Packlink.checkout.init();</script>';
+		echo '<script>Packlink.checkout.init();</script>';
 	}
 
 	/**
@@ -112,7 +114,7 @@ class Checkout_Handler {
 	public function after_shipping() {
 		$this->print_hidden_input( static::PACKLINK_DROP_OFF_ID );
 		$this->print_hidden_input( static::PACKLINK_DROP_OFF_EXTRA );
-		echo '<script style="display: none;">Packlink.checkout.init();</script>';
+		echo '<script>Packlink.checkout.init();</script>';
 	}
 
 	/**
@@ -211,11 +213,12 @@ class Checkout_Handler {
 		/**
 		 * Map with key as shipping method id and rate as its value.
 		 *
-		 * @var string $key
+		 * @var string           $key
 		 * @var WC_Shipping_Rate $rate
 		 */
 		foreach ( $rates as $key => $rate ) {
-			if ( Packlink_Shipping_Method::PACKLINK_SHIPPING_METHOD === $rate->get_method_id() && self::DEFAULT_SHIPPING === $rate->get_label() ) {
+			$rate_data = $this->get_rate_data( $rate );
+			if ( Packlink_Shipping_Method::PACKLINK_SHIPPING_METHOD === $rate_data['method_id'] && self::DEFAULT_SHIPPING === $rate_data['label'] ) {
 				unset( $rates[ $key ] );
 				break;
 			}
@@ -382,5 +385,29 @@ class Checkout_Handler {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Gets the data from shipping rate keeping the backward compatibility.
+	 *
+	 * @param WC_Shipping_Rate $rate Shipping method.
+	 *
+	 * @return array
+	 */
+	private function get_rate_data( WC_Shipping_Rate $rate ) {
+		$rate_id = method_exists( $rate, 'get_id' ) ? $rate->get_id() : $rate->id;
+		if ( method_exists( $rate, 'get_instance_id' ) ) {
+			$instance_id = $rate->get_instance_id();
+		} else {
+			$parts       = explode( ':', $rate_id );
+			$instance_id = ! empty( $parts[1] ) ? $parts[1] : - 1;
+		}
+
+		return array(
+			'rate_id'     => $rate_id,
+			'instance_id' => (int) $instance_id,
+			'method_id'   => method_exists( $rate, 'get_method_id' ) ? $rate->get_method_id() : $rate->method_id,
+			'label'       => $rate->get_label(),
+		);
 	}
 }
