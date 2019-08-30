@@ -16,9 +16,6 @@ To work with this integration, the module can be installed in a few minutes by g
 
 After installation is over, plugin configuration can be set by navigating to WooCommerce >> Packlink PRO.
 
-## Version
-2.0.6
-
 ## Compatibility
 - WordPress v4.7+
 - WooCommerce v3.0+
