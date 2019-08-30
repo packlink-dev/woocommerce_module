@@ -36,7 +36,12 @@ class Packlink_Async_Process_Controller extends Packlink_Base_Controller {
 	 */
 	public function run() {
 		if ( ! Shop_Helper::is_plugin_enabled() ) {
-			exit();
+			$this->return_json(
+				array(
+					'success' => false,
+					'error'   => 'Plugin not enabled',
+				)
+			);
 		}
 
 		$guid      = $this->get_param( 'guid' );
@@ -51,10 +56,6 @@ class Packlink_Async_Process_Controller extends Packlink_Base_Controller {
 		}
 
 		if ( 'auto-configure' !== $guid ) {
-			if ( ! $this->is_post() ) {
-				$this->redirect404();
-			}
-
 			/**
 			 * Async process service.
 			 *
