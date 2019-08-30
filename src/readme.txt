@@ -71,6 +71,10 @@ Click <a href="https://support-pro.packlink.com/hc/es-es/articles/210158585" tar
 
 == Upgrade Notice ==
 
+= 2.0.7 =
+
+* Fixed compatibility bug with the WooCommerce prior to 3.2 for shipment methods that require drop-off location.
+
 = 2.0.6 =
 
 * Fixed backward compatibility with the WooCommerce prior to 3.2
