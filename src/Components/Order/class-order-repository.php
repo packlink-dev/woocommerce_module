@@ -453,7 +453,7 @@ class Order_Repository extends Singleton implements OrderRepository {
 	 */
 	private function get_billing_address( WC_Order $wc_order ) {
 		$address = new Address();
-		if ( $wc_order->has_billing_address() ) {
+		if ( $wc_order->get_billing_address_1() || $wc_order->get_billing_address_2() ) {
 			$address->setEmail( $wc_order->get_billing_email() );
 			$address->setPhone( $wc_order->get_billing_phone() );
 			$address->setName( $wc_order->get_billing_first_name() );
@@ -478,7 +478,7 @@ class Order_Repository extends Singleton implements OrderRepository {
 	 */
 	private function get_shipping_address( WC_Order $wc_order ) {
 		$address = new Address();
-		if ( $wc_order->has_shipping_address() ) {
+		if ( $wc_order->get_shipping_address_1() || $wc_order->get_shipping_address_2() ) {
 			$address->setEmail( $wc_order->get_billing_email() );
 			$address->setPhone( $wc_order->get_billing_phone() );
 			$address->setName( $wc_order->get_shipping_first_name() );

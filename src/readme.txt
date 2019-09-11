@@ -71,6 +71,10 @@ Click <a href="https://support-pro.packlink.com/hc/es-es/articles/210158585" tar
 
 == Upgrade Notice ==
 
+= 2.0.9 =
+
+* Fixed compatibility bug with the WooCommerce prior to 3.0.4 for order shipping and billing addresses.
+
 = 2.0.8 =
 
 * Fixed compatibility bug with the PHP versions prior to 5.5.
