@@ -5,6 +5,7 @@ use Logeecom\Infrastructure\ServiceRegister;
 use Logeecom\Infrastructure\TaskExecution\Exceptions\QueueStorageUnavailableException;
 use Logeecom\Infrastructure\TaskExecution\Exceptions\TaskRunnerStatusStorageUnavailableException;
 use Packlink\BusinessLogic\User\UserAccountService;
+use Packlink\BusinessLogic\Utility\Php\Php55;
 use Packlink\WooCommerce\Components\Utility\Task_Queue;
 use Packlink\WooCommerce\Components\Tasks\Upgrade_Packlink_Order_Details;
 use Packlink\WooCommerce\Components\Services\Config_Service;
@@ -58,7 +59,7 @@ try {
 				ARRAY_A
 			);
 
-			Task_Queue::enqueue(new Upgrade_Packlink_Order_Details(array_column($order_posts , 'ID')));
+			Task_Queue::enqueue(new Upgrade_Packlink_Order_Details(Php55::arrayColumn($order_posts , 'ID')));
 		} catch ( \Exception $e ) {
 			Logger::logError( 'Migration of order shipments failed.', 'Integration' );
 		}

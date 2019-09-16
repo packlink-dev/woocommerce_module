@@ -9,6 +9,7 @@ namespace Packlink\WooCommerce\Components\ShippingMethod;
 
 use Logeecom\Infrastructure\ORM\RepositoryRegistry;
 use Logeecom\Infrastructure\ServiceRegister;
+use Packlink\BusinessLogic\Utility\Php\Php55;
 use Packlink\WooCommerce\Components\Services\Config_Service;
 use Packlink\WooCommerce\Components\Utility\Shop_Helper;
 
@@ -137,7 +138,7 @@ class Shipping_Method_Helper {
 	 */
 	public static function get_all_shipping_zone_ids() {
 		$all_zones = \WC_Shipping_Zones::get_zones();
-		$zone_ids  = array_column( $all_zones, 'zone_id' );
+		$zone_ids  = Php55::arrayColumn( $all_zones, 'zone_id' );
 		// Locations not covered by other zones.
 		if ( ! in_array( 0, $zone_ids, true ) ) {
 			$zone_ids[] = 0;
