@@ -50,10 +50,10 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	 * @var array
 	 */
 	private static $help_urls = array(
-		'ES' => 'https://support-pro.packlink.com/hc/es-es/sections/202755109-Prestashop',
-		'DE' => 'https://support-pro.packlink.com/hc/de/sections/202755109-Prestashop',
-		'FR' => 'https://support-pro.packlink.com/hc/fr-fr/sections/202755109-Prestashop',
-		'IT' => 'https://support-pro.packlink.com/hc/it/sections/202755109-Prestashop',
+		'ES' => 'https://support-pro.packlink.com/hc/es-es/articles/210158585-Instala-tu-m%C3%B3dulo-WooCommerce-en-5-pasos',
+		'DE' => 'https://support-pro.packlink.com/hc/de/articles/210158585-Installieren-Sie-Ihr-WooCommerce-Modul-in-5-Schritten',
+		'FR' => 'https://support-pro.packlink.com/hc/fr-fr/articles/210158585-Installez-le-module-WooCommerce-en-5-%C3%A9tapes',
+		'IT' => 'https://support-pro.packlink.com/hc/it/articles/210158585-Installa-il-tuo-modulo-WooCommerce-in-5-passi',
 	);
 	/**
 	 * List of terms and conditions URLs for different country codes.
