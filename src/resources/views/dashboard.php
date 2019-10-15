@@ -302,10 +302,10 @@ $data = $this->resolve_view_arguments();
 					<?php echo __( 'In order to offer you the best possible service, its important to disable your previous carriers. Do you want us to disable them? (recommended)', 'packlink-pro-shipping' ); ?>
 				</div>
 				<div class="pl-shipping-modal-row">
-					<button class="button pl-shipping-modal-btn"
-							id="pl-disable-methods-modal-cancel"><?php echo __( 'Cancel', 'packlink-pro-shipping' ); ?></button>
 					<button class="button button-primary"
 							id="pl-disable-methods-modal-accept"><?php echo __( 'Accept', 'packlink-pro-shipping' ); ?></button>
+					<button class="button pl-shipping-modal-btn"
+							id="pl-disable-methods-modal-cancel"><?php echo __( 'Cancel', 'packlink-pro-shipping' ); ?></button>
 				</div>
 			</div>
 		</div>
