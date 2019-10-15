@@ -143,6 +143,10 @@ class Plugin {
 	 * @param bool $is_network_wide Is plugin network wide.
 	 */
 	public function deactivate( $is_network_wide ) {
+		if (!Shop_Helper::is_woocommerce_active()) {
+			return;
+		}
+
 		if ( $is_network_wide && is_multisite() ) {
 			foreach ( get_sites() as $site ) {
 				switch_to_blog( $site->blog_id );
