@@ -93,6 +93,8 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 	 * Adds default Packlink shipping method.
 	 *
 	 * @param ShippingMethod $shipping_method Shipping method.
+	 *
+	 * @return bool TRUE if backup shipping method is added; otherwise, FALSE.
 	 */
 	public function addBackupShippingMethod( ShippingMethod $shipping_method ) {
 		$default = new ShippingMethod();
@@ -115,6 +117,8 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 
 		$this->add( $default );
 		$this->set_default_shipping_method( $default );
+
+		return true;
 	}
 
 	/**
@@ -234,6 +238,8 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 
 	/**
 	 * Removes default Packlink shipping method.
+	 *
+	 * @return bool TRUE if backup shipping method is deleted; otherwise, FALSE.
 	 */
 	public function deleteBackupShippingMethod() {
 		$default = new ShippingMethod();
@@ -241,6 +247,8 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 
 		$this->delete( $default );
 		$this->set_default_shipping_method();
+
+		return true;
 	}
 
 	/**
