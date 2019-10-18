@@ -19,6 +19,7 @@ use Packlink\BusinessLogic\Http\DTO\Shipment as Shipment_DTO;
 use Packlink\BusinessLogic\Http\DTO\Tracking;
 use Packlink\BusinessLogic\Order\Exceptions\OrderNotFound;
 use Packlink\BusinessLogic\Order\Interfaces\OrderRepository;
+use Packlink\BusinessLogic\Order\Models\OrderShipmentDetails;
 use Packlink\BusinessLogic\Order\Objects\Address;
 use Packlink\BusinessLogic\Order\Objects\Item;
 use Packlink\BusinessLogic\Order\Objects\Order;
@@ -232,6 +233,34 @@ class Order_Repository extends Singleton implements OrderRepository {
 		}
 
 		return $references;
+	}
+
+	/**
+	 * Retrieves list of order references where order is in one of the provided statuses.
+	 *
+	 * @param array $statuses List of order statuses.
+	 *
+	 * @return string[] Array of shipment references.
+	 *
+	 * @throws QueryFilterInvalidParamException
+	 */
+	public function getOrderReferencesWithStatus( array $statuses )
+	{
+		$filter = new QueryFilter();
+
+		foreach ($statuses as $status) {
+			$filter->orWhere( 'status', Operators::EQUALS, $status );
+		}
+
+		$orders = $this->get_order_shipment_entity_repository()->select( $filter );
+
+		$result = array( );
+		/** @var OrderShipmentDetails $order */
+		foreach ( $orders as $order ) {
+			$result[] = $order->getReference();
+		}
+
+		return $result;
 	}
 
 	/**

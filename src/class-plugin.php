@@ -7,10 +7,17 @@
 
 namespace Packlink\WooCommerce;
 
+use Logeecom\Infrastructure\Configuration\Configuration;
 use Logeecom\Infrastructure\Logger\Logger;
+use Logeecom\Infrastructure\ORM\RepositoryRegistry;
 use Logeecom\Infrastructure\ServiceRegister;
 use Logeecom\Infrastructure\TaskExecution\Exceptions\TaskRunnerStatusStorageUnavailableException;
+use Packlink\BusinessLogic\Scheduler\Models\DailySchedule;
+use Packlink\BusinessLogic\Scheduler\Models\HourlySchedule;
+use Packlink\BusinessLogic\Scheduler\Models\Schedule;
 use Packlink\BusinessLogic\ShippingMethod\Interfaces\ShopShippingMethodService;
+use Packlink\BusinessLogic\ShippingMethod\Utility\ShipmentStatus;
+use Packlink\BusinessLogic\Tasks\UpdateShipmentDataTask;
 use Packlink\WooCommerce\Components\Bootstrap_Component;
 use Packlink\WooCommerce\Components\Checkout\Checkout_Handler;
 use Packlink\WooCommerce\Components\Order\Order_Details_Helper;
@@ -94,6 +101,8 @@ class Plugin {
 	 * Plugin activation function.
 	 *
 	 * @param bool $is_network_wide Is plugin network wide.
+	 *
+	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException
 	 */
 	public function activate( $is_network_wide ) {
 		if ( ! Shop_Helper::is_curl_enabled() ) {
@@ -163,6 +172,8 @@ class Plugin {
 	 *
 	 * @param \WP_Upgrader $updater_object Updater object.
 	 * @param array        $options Options with information regarding plugins for update.
+	 *
+	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException
 	 */
 	public function update( $updater_object, $options ) {
 		if ( $this->should_update( $options ) ) {
@@ -202,6 +213,8 @@ class Plugin {
 
 	/**
 	 * Initializes base Packlink PRO Shipping tables and values if plugin is accessed from a new site.
+	 *
+	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException
 	 */
 	public function initialize_new_site() {
 		$db = new Database( $this->db );
@@ -403,6 +416,8 @@ class Plugin {
 
 	/**
 	 * Initializes default configuration values.
+	 *
+	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException
 	 */
 	private function init_config() {
 		Shop_Helper::create_log_directory();
@@ -451,11 +466,13 @@ class Plugin {
 	 */
 	private function should_update( $options ) {
 		$wc_plugin = Shop_Helper::get_plugin_name();
-		if ( 'update' === $options['action'] && 'plugin' === $options['type'] && isset( $options['plugins'] ) ) {
-			foreach ( $options['plugins'] as $plugin ) {
-				if ( $plugin === $wc_plugin ) {
-					return true;
-				}
+		if ( 'update' === $options['action'] && 'plugin' === $options['type'] ) {
+			if ( isset( $options['plugin'] ) && $options['plugin'] === $wc_plugin ) {
+				return true;
+			}
+
+			if ( isset( $options['plugins'] ) && in_array( $wc_plugin, $options['plugins'], true ) ) {
+				return true;
 			}
 		}
 
@@ -464,16 +481,16 @@ class Plugin {
 
 	/**
 	 * Updates plugin on single WordPress site.
+	 *
+	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException
 	 */
 	private function update_plugin_on_single_site() {
-		if ( Shop_Helper::is_plugin_active_for_current_site() ) {
-			$previous_version = $this->get_config_service()->get_database_version();
+		$previous_version = $this->get_config_service()->get_database_version();
 
-			$installer = new Database( $this->db );
-			$installer->update( new Version_File_Reader( __DIR__ . '/database/migrations', $previous_version ) );
+		$installer = new Database( $this->db );
+		$installer->update( new Version_File_Reader( __DIR__ . '/database/migrations/', $previous_version ) );
 
-			$this->perform_update_actions( $previous_version );
-		}
+		$this->perform_update_actions( $previous_version );
 
 		$this->get_config_service()->set_database_version( Shop_Helper::get_plugin_version() );
 	}
@@ -626,6 +643,8 @@ class Plugin {
 	 * Executes actions when plugin is updated.
 	 *
 	 * @param string $previous_version Previous version.
+	 *
+	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException
 	 */
 	private function perform_update_actions( $previous_version ) {
 		if ( version_compare( $previous_version, '2.0.4', '<' ) ) {
@@ -640,6 +659,52 @@ class Plugin {
 			);
 
 			set_transient( 'packlink-pro-messages', $text );
+		}
+
+		if ( version_compare( $previous_version, '2.1.1', '<' ) ) {
+			$configuration = ServiceRegister::getService( Configuration::CLASS_NAME );
+			$repository = RepositoryRegistry::getRepository( Schedule::getClassName() );
+
+			$schedules = $repository->select();
+
+			/** @var Schedule $schedule */
+			foreach ( $schedules as $schedule ) {
+				$task = $schedule->getTask();
+
+				if ( $task->getType() === UpdateShipmentDataTask::getClassName() ) {
+					$repository->delete( $schedule );
+				}
+			}
+
+			foreach ( array( 0, 30 ) as $minute) {
+				$hourly_statuses = array(
+					ShipmentStatus::STATUS_PENDING,
+				);
+
+				$shipment_data_half_hour_schedule = new HourlySchedule(
+					new UpdateShipmentDataTask( $hourly_statuses ),
+					$configuration->getDefaultQueueName()
+				);
+				$shipment_data_half_hour_schedule->setMinute( $minute );
+				$shipment_data_half_hour_schedule->setNextSchedule();
+				$repository->save( $shipment_data_half_hour_schedule );
+			}
+
+			$daily_statuses = array(
+				ShipmentStatus::STATUS_IN_TRANSIT,
+				ShipmentStatus::STATUS_READY,
+				ShipmentStatus::STATUS_ACCEPTED,
+			);
+
+			$daily_shipment_data_schedule = new DailySchedule(
+				new UpdateShipmentDataTask( $daily_statuses ),
+				$configuration->getDefaultQueueName()
+			);
+
+			$daily_shipment_data_schedule->setHour( 11 );
+			$daily_shipment_data_schedule->setNextSchedule();
+
+			$repository->save( $daily_shipment_data_schedule );
 		}
 	}
 }
