@@ -11,14 +11,17 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+use Logeecom\Infrastructure\Exceptions\BaseException;
 use Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException;
 use Logeecom\Infrastructure\ServiceRegister;
 use Logeecom\Infrastructure\TaskExecution\Exceptions\QueueStorageUnavailableException;
+use Logeecom\Infrastructure\TaskExecution\QueueItem;
 use Packlink\BusinessLogic\Configuration;
 use Packlink\BusinessLogic\Controllers\AnalyticsController;
 use Packlink\BusinessLogic\Controllers\DashboardController;
 use Packlink\BusinessLogic\Controllers\DTO\ShippingMethodConfiguration;
 use Packlink\BusinessLogic\Controllers\ShippingMethodController;
+use Packlink\BusinessLogic\Controllers\UpdateShippingServicesTaskStatusController;
 use Packlink\BusinessLogic\Http\DTO\ParcelInfo;
 use Packlink\BusinessLogic\Http\DTO\Warehouse;
 use Packlink\BusinessLogic\Location\LocationService;
@@ -28,6 +31,7 @@ use Packlink\BusinessLogic\ShippingMethod\Models\ShippingMethod;
 use Packlink\BusinessLogic\User\UserAccountService;
 use Packlink\WooCommerce\Components\Services\Config_Service;
 use Packlink\WooCommerce\Components\ShippingMethod\Shipping_Method_Helper;
+use Packlink\WooCommerce\Components\Utility\Script_Loader;
 use Packlink\WooCommerce\Components\Utility\Shop_Helper;
 use Packlink\WooCommerce\Components\Utility\Task_Queue;
 use Packlink\WooCommerce\Components\Validators\Parcel_Validator;
@@ -46,10 +50,10 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	 * @var array
 	 */
 	private static $help_urls = array(
-		'ES' => 'https://support-pro.packlink.com/hc/es-es/sections/202755109-Prestashop',
-		'DE' => 'https://support-pro.packlink.com/hc/de/sections/202755109-Prestashop',
-		'FR' => 'https://support-pro.packlink.com/hc/fr-fr/sections/202755109-Prestashop',
-		'IT' => 'https://support-pro.packlink.com/hc/it/sections/202755109-Prestashop',
+		'ES' => 'https://support-pro.packlink.com/hc/es-es/articles/210158585-Instala-tu-m%C3%B3dulo-WooCommerce-en-5-pasos',
+		'DE' => 'https://support-pro.packlink.com/hc/de/articles/210158585-Installieren-Sie-Ihr-WooCommerce-Modul-in-5-Schritten',
+		'FR' => 'https://support-pro.packlink.com/hc/fr-fr/articles/210158585-Installez-le-module-WooCommerce-en-5-%C3%A9tapes',
+		'IT' => 'https://support-pro.packlink.com/hc/it/articles/210158585-Installa-il-tuo-modulo-WooCommerce-in-5-passi',
 	);
 	/**
 	 * List of terms and conditions URLs for different country codes.
@@ -93,24 +97,26 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	 * Renders appropriate view.
 	 *
 	 * @throws QueueStorageUnavailableException If queue storage is unavailable.
-	 * @throws RepositoryNotRegisteredException
+	 * @throws RepositoryNotRegisteredException When repository is not registered in bootstrap.
 	 */
 	public function render() {
-		$this->load_css();
+		$this->load_scripts();
+
 		/**
 		 * Used in included view file.
+		 *
 		 * @noinspection PhpUnusedLocalVariableInspection
 		 */
 		$login_failure = false;
 		if ( $this->is_post() && ! $this->login() ) {
 			/**
 			 * Used in included view file.
+			 *
 			 * @noinspection PhpUnusedLocalVariableInspection
 			 */
 			$login_failure = true;
 		}
 
-		$this->load_js();
 		if ( $this->is_user_logged_in() ) {
 			include dirname( __DIR__ ) . '/resources/views/dashboard.php';
 		} else {
@@ -122,7 +128,7 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	 * Logs in user.
 	 *
 	 * @throws QueueStorageUnavailableException If queue storage is unavailable.
-	 * @throws RepositoryNotRegisteredException
+	 * @throws RepositoryNotRegisteredException When repository is not registered in bootstrap.
 	 */
 	public function login() {
 		$result = false;
@@ -144,7 +150,7 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	/**
 	 * Returns dashboard status.
 	 */
-	public function get_status() {
+	public function get_dashboard_status() {
 		$this->validate( 'no', true );
 
 		/**
@@ -313,6 +319,21 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 		} catch ( \Exception $e ) {
 			$this->return_json( array() );
 		}
+	}
+
+	/**
+	 * Gets the status of the task for updating shipping services.
+	 */
+	public function get_shipping_methods_task_status() {
+		$status = QueueItem::FAILED;
+		try {
+			$controller = new UpdateShippingServicesTaskStatusController();
+			$status     = $controller->getLastTaskStatus();
+		} catch ( BaseException $e ) { // phpcs:ignore
+			// return failed status.
+		}
+
+		$this->return_json( array( 'status' => $status ) );
 	}
 
 	/**
@@ -516,46 +537,30 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	}
 
 	/**
-	 * Loads CSS for the current page.
+	 * Loads JS and CSS files for the current page.
 	 */
-	private function load_css() {
-		$base_url = Shop_Helper::get_plugin_base_url() . 'resources/';
-		wp_enqueue_style(
-			'packlink-global-styles',
-			$base_url . 'css/packlink.css',
-			array(),
-			1
+	private function load_scripts() {
+		Script_Loader::load_css(
+			array(
+				'css/packlink.css',
+				'css/packlink-wp-override.css',
+			)
 		);
-		wp_enqueue_style(
-			'packlink-wp-override',
-			$base_url . 'css/packlink-wp-override.css',
-			array(),
-			1
+		Script_Loader::load_js(
+			array(
+				'js/core/packlink-ajax-service.js',
+				'js/core/packlink-footer-controller.js',
+				'js/core/packlink-default-parcel-controller.js',
+				'js/core/packlink-default-warehouse-controller.js',
+				'js/core/packlink-order-state-mapping-controller.js',
+				'js/core/packlink-page-controller-factory.js',
+				'js/core/packlink-shipping-methods-controller.js',
+				'js/core/packlink-sidebar-controller.js',
+				'js/core/packlink-state-controller.js',
+				'js/core/packlink-template-service.js',
+				'js/core/packlink-utility-service.js',
+			)
 		);
-	}
-
-	/**
-	 * Loads JS script for the current page.
-	 */
-	private function load_js() {
-		$base_url     = Shop_Helper::get_plugin_base_url() . 'resources/js/';
-		$js_resources = array(
-			'packlink_ajax'                    => 'core/packlink-ajax-service.js',
-			'packlink_footer_controller'       => 'core/packlink-footer-controller.js',
-			'packlink_default_parcel'          => 'core/packlink-default-parcel-controller.js',
-			'packlink_default_warehouse'       => 'core/packlink-default-warehouse-controller.js',
-			'packlink_order_state_mapping'     => 'core/packlink-order-state-mapping-controller.js',
-			'packlink_page_controller_factory' => 'core/packlink-page-controller-factory.js',
-			'packlink_shipping_methods'        => 'core/packlink-shipping-methods-controller.js',
-			'packlink_sidebar'                 => 'core/packlink-sidebar-controller.js',
-			'packlink_state'                   => 'core/packlink-state-controller.js',
-			'packlink_template'                => 'core/packlink-template-service.js',
-			'packlink_utility'                 => 'core/packlink-utility-service.js',
-		);
-
-		foreach ( $js_resources as $handle => $file ) {
-			wp_enqueue_script( $handle, $base_url . $file, array(), 1 );
-		}
 	}
 
 	/**

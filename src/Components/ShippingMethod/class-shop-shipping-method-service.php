@@ -8,6 +8,7 @@
 namespace Packlink\WooCommerce\Components\ShippingMethod;
 
 use Logeecom\Infrastructure\Logger\Logger;
+use Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException;
 use Logeecom\Infrastructure\ORM\Interfaces\RepositoryInterface;
 use Logeecom\Infrastructure\ORM\QueryFilter\QueryFilter;
 use Logeecom\Infrastructure\ORM\RepositoryRegistry;
@@ -41,11 +42,12 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 
 	/**
 	 * Shop_Shipping_Method_Service constructor.
+	 *
+	 * @throws RepositoryNotRegisteredException If bootstrap is not called.
 	 */
 	public function __construct() {
 		parent::__construct();
 
-		/** @noinspection PhpUnhandledExceptionInspection */
 		$this->repository = RepositoryRegistry::getRepository( Shipping_Method_Map::CLASS_NAME );
 	}
 
@@ -76,10 +78,6 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 					$_REQUEST['instance_id'] = $instance_id;
 					$new->process_admin_options();
 					$this->add_to_shipping_method_map( $instance_id, $shipping_method->getId(), $zone_id );
-
-					if ( - 1 !== $shipping_method->getId() && 1 === $this->repository->count() ) {
-						$this->add_default_shipping_method( $shipping_method );
-					}
 				}
 			}
 		} catch ( \Exception $e ) {
@@ -87,6 +85,38 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 
 			return false;
 		}
+
+		return true;
+	}
+
+	/**
+	 * Adds default Packlink shipping method.
+	 *
+	 * @param ShippingMethod $shipping_method Shipping method.
+	 *
+	 * @return bool TRUE if backup shipping method is added; otherwise, FALSE.
+	 */
+	public function addBackupShippingMethod( ShippingMethod $shipping_method ) {
+		$default = new ShippingMethod();
+		$default->setId( - 1 );
+		$default->setTitle( Checkout_Handler::DEFAULT_SHIPPING );
+		switch ( $shipping_method->getPricingPolicy() ) {
+			case ShippingMethod::PRICING_POLICY_PERCENT:
+				$default->setPercentPricePolicy( $shipping_method->getPercentPricePolicy() );
+				break;
+			case ShippingMethod::PRICING_POLICY_FIXED_PRICE_BY_WEIGHT:
+				$default->setFixedPriceByWeightPolicy( $shipping_method->getFixedPriceByWeightPolicy() );
+				break;
+			case ShippingMethod::PRICING_POLICY_FIXED_PRICE_BY_VALUE:
+				$default->setFixedPriceByValuePolicy( $shipping_method->getFixedPriceByValuePolicy() );
+				break;
+			default:
+				$default->setPacklinkPricePolicy();
+				break;
+		}
+
+		$this->add( $default );
+		$this->set_default_shipping_method( $default );
 
 		return true;
 	}
@@ -160,7 +190,11 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 			);
 
 			if ( $is_enabled !== $packlink_shipping_method->enabled ) {
-				$wpdb->update( "{$wpdb->prefix}woocommerce_shipping_zone_methods", array( 'is_enabled' => $is_enabled ), array( 'instance_id' => absint( $instance_id ) ) );
+				$wpdb->update(  // phpcs:ignore
+					"{$wpdb->prefix}woocommerce_shipping_zone_methods",
+					array( 'is_enabled' => $is_enabled ),
+					array( 'instance_id' => absint( $instance_id ) )
+				);
 			}
 
 			$_REQUEST['instance_id'] = $instance_id;
@@ -186,7 +220,8 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 				$instance_id                 = $item->getWoocommerceShippingMethodId();
 				$woocommerce_shipping_method = new Packlink_Shipping_Method( $instance_id );
 				$option_key                  = $woocommerce_shipping_method->get_instance_option_key();
-				if ( $wpdb->delete( "{$wpdb->prefix}woocommerce_shipping_zone_methods", array( 'instance_id' => $instance_id ) ) ) {
+				$table                       = $wpdb->prefix . 'woocommerce_shipping_zone_methods';
+				if ( $wpdb->delete( $table, array( 'instance_id' => $instance_id ) ) ) { // phpcs:ignore
 					delete_option( $option_key );
 				}
 
@@ -198,12 +233,20 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 			return false;
 		}
 
-		$filter = new QueryFilter();
-		/** @noinspection PhpUnhandledExceptionInspection */
-		$filter->where( 'packlinkShippingMethodId', '!=', - 1 );
-		if ( - 1 !== $shipping_method->getId() && 0 === $this->repository->count( $filter ) ) {
-			$this->remove_default_shipping_method();
-		}
+		return true;
+	}
+
+	/**
+	 * Removes default Packlink shipping method.
+	 *
+	 * @return bool TRUE if backup shipping method is deleted; otherwise, FALSE.
+	 */
+	public function deleteBackupShippingMethod() {
+		$default = new ShippingMethod();
+		$default->setId( - 1 );
+
+		$this->delete( $default );
+		$this->set_default_shipping_method();
 
 		return true;
 	}
@@ -267,45 +310,6 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 		$entities = $this->repository->select( $filter );
 
 		return $entities;
-	}
-
-	/**
-	 * Adds default Packlink shipping method.
-	 *
-	 * @param ShippingMethod $shipping_method Shipping method.
-	 */
-	private function add_default_shipping_method( ShippingMethod $shipping_method ) {
-		$default = new ShippingMethod();
-		$default->setId( - 1 );
-		$default->setTitle( Checkout_Handler::DEFAULT_SHIPPING );
-		switch ( $shipping_method->getPricingPolicy() ) {
-			case ShippingMethod::PRICING_POLICY_PERCENT:
-				$default->setPercentPricePolicy( $shipping_method->getPercentPricePolicy() );
-				break;
-			case ShippingMethod::PRICING_POLICY_FIXED_PRICE_BY_WEIGHT:
-				$default->setFixedPriceByWeightPolicy( $shipping_method->getFixedPriceByWeightPolicy() );
-				break;
-			case ShippingMethod::PRICING_POLICY_FIXED_PRICE_BY_VALUE:
-				$default->setFixedPriceByValuePolicy( $shipping_method->getFixedPriceByValuePolicy() );
-				break;
-			default:
-				$default->setPacklinkPricePolicy();
-				break;
-		}
-
-		$this->add( $default );
-		$this->set_default_shipping_method( $default );
-	}
-
-	/**
-	 * Removes default Packlink shipping method.
-	 */
-	private function remove_default_shipping_method() {
-		$default = new ShippingMethod();
-		$default->setId( - 1 );
-
-		$this->delete( $default );
-		$this->set_default_shipping_method();
 	}
 
 	/**

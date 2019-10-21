@@ -9,6 +9,8 @@ namespace Packlink\WooCommerce\Components\Utility;
 
 use DateTime;
 use Logeecom\Infrastructure\Exceptions\BaseException;
+use Logeecom\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
+use Logeecom\Infrastructure\ORM\QueryFilter\Operators;
 use Logeecom\Infrastructure\ORM\QueryFilter\QueryFilter;
 use Logeecom\Infrastructure\ORM\RepositoryRegistry;
 use Logeecom\Infrastructure\ServiceRegister;
@@ -27,19 +29,28 @@ use ZipArchive;
 class Debug_Helper {
 
 	const PHP_INFO_FILE_NAME         = 'phpinfo.html';
-	const SYSTEM_INFO_FILE_NAME      = 'system-info.txt';
+	const SYSTEM_INFO_FILE_NAME      = 'system-info.json';
 	const LOG_FILE_NAME              = 'logs.txt';
 	const WC_LOG_FILE_NAME           = 'wc-logs.txt';
-	const USER_INFO_FILE_NAME        = 'packlink-user-info.txt';
-	const QUEUE_INFO_FILE_NAME       = 'queue.txt';
-	const PARCEL_WAREHOUSE_FILE_NAME = 'parcel-warehouse.txt';
-	const SERVICE_INFO_FILE_NAME     = 'services.txt';
+	const USER_INFO_FILE_NAME        = 'packlink-user-info.json';
+	const QUEUE_INFO_FILE_NAME       = 'queue.json';
+	const PARCEL_WAREHOUSE_FILE_NAME = 'parcel-warehouse.json';
+	const SERVICE_INFO_FILE_NAME     = 'services.json';
 	const DATABASE                   = 'MySQL';
+
+	/**
+	 * Configuration service.
+	 *
+	 * @var Config_Service
+	 */
+	private static $config_service;
 
 	/**
 	 * Returns path to zip archive that contains current system information.
 	 *
 	 * @return string Temporary file path.
+	 *
+	 * @throws QueryFilterInvalidParamException If filter is not available.
 	 */
 	public static function get_system_info() {
 		$file = tempnam( sys_get_temp_dir(), 'packlink_system_info' );
@@ -56,12 +67,12 @@ class Debug_Helper {
 		$dir = dirname( Logger_Service::get_log_file() );
 		$zip->addFromString( static::SYSTEM_INFO_FILE_NAME, static::get_woocommerce_shop_info() );
 		$zip->addFromString( static::LOG_FILE_NAME, static::get_logs( $dir ) );
-		/** @noinspection PhpUndefinedConstantInspection */
+		/** Ignore. @noinspection PhpUndefinedConstantInspection */
 		$zip->addFromString( static::WC_LOG_FILE_NAME, static::get_logs( WC_LOG_DIR ) );
 		$zip->addFromString( static::USER_INFO_FILE_NAME, static::get_user_info() );
 		$zip->addFromString( static::QUEUE_INFO_FILE_NAME, static::get_queue_status() );
 		$zip->addFromString( static::PARCEL_WAREHOUSE_FILE_NAME, static::get_parcel_and_warehouse_info() );
-		$zip->addFromString( static::SERVICE_INFO_FILE_NAME, static::get_services_info() );
+		$zip->addFromString( static::SERVICE_INFO_FILE_NAME, self::get_entities( ShippingMethod::CLASS_NAME ) );
 
 		$zip->close();
 
@@ -75,7 +86,7 @@ class Debug_Helper {
 	 */
 	protected static function get_php_info() {
 		ob_start();
-		phpinfo();
+		phpinfo(); //phpcs:ignore
 
 		return ob_get_clean();
 	}
@@ -88,16 +99,17 @@ class Debug_Helper {
 	protected static function get_woocommerce_shop_info() {
 		global $wpdb, $wp_version;
 
-		$result  = 'WooCommerce version: ' . WooCommerce::instance()->version;
-		$result .= "\nWordPress version: " . $wp_version;
-		$result .= "\ntheme: " . wp_get_theme()->get( 'Name' );
-		$result .= "\nbase admin url: " . get_admin_url();
-		// WooCommerce only supports MySQL database.
-		$result .= "\ndatabase: " . static::DATABASE;
-		$result .= "\ndatabase version: " . $wpdb->db_version();
-		$result .= "\nplugin version: " . Shop_Helper::get_plugin_version();
+		$result['WooCommerce version'] = WooCommerce::instance()->version;
+		$result['WordPress version']   = $wp_version;
+		$result['Theme']               = wp_get_theme()->get( 'Name' );
+		$result['Base admin URL']      = get_admin_url();
+		$result['Database']            = static::DATABASE;
+		$result['Database version']    = $wpdb->db_version();
+		$result['Plugin version']      = Shop_Helper::get_plugin_version();
+		$result['Async process URL']   = self::get_config_service()->getAsyncProcessUrl( 'test' );
+		$result['Auto-test URL']       = admin_url( 'admin.php?page=packlink-pro-auto-test' );
 
-		return $result;
+		return wp_json_encode( $result, JSON_PRETTY_PRINT );
 	}
 
 	/**
@@ -132,7 +144,7 @@ class Debug_Helper {
 		asort( $files );
 		$result = '';
 		foreach ( array_keys( $files ) as $file ) {
-			$result .= file_get_contents( $dir . $file ) . "\n";
+			$result .= file_get_contents( $dir . $file ) . "\n"; // phpcs:ignore
 		}
 
 		return $result;
@@ -144,47 +156,27 @@ class Debug_Helper {
 	 * @return string User info.
 	 */
 	protected static function get_user_info() {
-		/**
-		 * Configuration service.
-		 *
-		 * @var Config_Service $config
-		 */
-		$config = ServiceRegister::getService( Config_Service::CLASS_NAME );
-
-		$result  = 'user info :' . wp_json_encode( $config->getUserInfo() );
-		$result .= "\n\napi key: " . $config->getAuthorizationToken();
-
-		return $result;
+		return wp_json_encode(
+			array(
+				'User info' => self::get_config_service()->getUserInfo(),
+				'API Key'   => self::get_config_service()->getAuthorizationToken(),
+			),
+			JSON_PRETTY_PRINT
+		);
 	}
 
 	/**
 	 * Retrieves current queue status.
 	 *
 	 * @return string Queue status.
+	 *
+	 * @throws QueryFilterInvalidParamException If filter params are invalid.
 	 */
 	protected static function get_queue_status() {
-		$result = "[\n";
-		$items  = array();
+		$filter = new QueryFilter();
+		$filter->where( 'status', Operators::NOT_EQUALS, QueueItem::COMPLETED );
 
-		try {
-			$repository = RepositoryRegistry::getQueueItemRepository();
-
-			$query = new QueryFilter();
-			$query->orWhere( 'status', '=', QueueItem::QUEUED );
-			$query->orWhere( 'status', '=', QueueItem::CREATED );
-			$query->orWhere( 'status', '=', QueueItem::IN_PROGRESS );
-			$query->orWhere( 'status', '=', QueueItem::FAILED );
-
-			$items = $repository->select( $query );
-		} catch ( BaseException $e ) {
-			/* Just continue with empty result. */
-		}
-
-		foreach ( $items as $item ) {
-			$result .= wp_json_encode( $item->toArray() ) . ",\n\n";
-		}
-
-		return rtrim( $result, ",\n" ) . "\n]";
+		return self::get_entities( QueueItem::CLASS_NAME, $filter );
 	}
 
 	/**
@@ -193,38 +185,50 @@ class Debug_Helper {
 	 * @return string Parcel and warehouse info.
 	 */
 	protected static function get_parcel_and_warehouse_info() {
-		/**
-		 * Configuration service.
-		 *
-		 * @var Config_Service $config_service
-		 */
-		$config_service = ServiceRegister::getService( Config_Service::CLASS_NAME );
-
-		$result  = 'default parcel: ' . wp_json_encode( $config_service->getDefaultParcel() ?: array() );
-		$result .= "\n\ndefault warehouse: " . wp_json_encode( $config_service->getDefaultWarehouse() ?: array() );
-
-		return $result;
+		return wp_json_encode(
+			array(
+				'Default parcel'    => self::get_config_service()->getDefaultParcel() ?: array(),
+				'Default warehouse' => self::get_config_service()->getDefaultWarehouse() ?: array(),
+			),
+			JSON_PRETTY_PRINT
+		);
 	}
 
-
 	/**
-	 * Retrieves service info.
+	 * Retrieves entities from database info.
+	 *
+	 * @param string      $entity_class The class identifier of the entity.
+	 *
+	 * @param QueryFilter $filter Query filter.
 	 *
 	 * @return string Service info.
 	 */
-	protected static function get_services_info() {
-		$result = "[\n";
+	protected static function get_entities( $entity_class, $filter = null ) {
+		$result = array();
 
 		try {
-			$repository = RepositoryRegistry::getRepository( ShippingMethod::CLASS_NAME );
+			$repository = RepositoryRegistry::getRepository( $entity_class );
 
-			foreach ( $repository->select() as $item ) {
-				$result .= wp_json_encode( $item->toArray() ) . ",\n\n";
+			foreach ( $repository->select( $filter ) as $item ) {
+				$result[] = $item->toArray();
 			}
-		} catch ( BaseException $e ) {
+		} catch ( BaseException $e ) { // phpcs:ignore
 			/* Just continue with empty result. */
 		}
 
-		return rtrim( $result, ",\n" ) . "\n]";
+		return wp_json_encode( $result, JSON_PRETTY_PRINT );
+	}
+
+	/**
+	 * Gets the configuration service.
+	 *
+	 * @return Config_Service Configuration service instance.
+	 */
+	protected static function get_config_service() {
+		if ( self::$config_service === null ) { // phpcs:ignore
+			self::$config_service = ServiceRegister::getService( Config_Service::CLASS_NAME );
+		}
+
+		return self::$config_service;
 	}
 }

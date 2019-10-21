@@ -23,6 +23,7 @@ use Packlink\WooCommerce\Components\Utility\Database;
 use Packlink\WooCommerce\Components\Utility\Shop_Helper;
 use Packlink\WooCommerce\Components\Utility\Task_Queue;
 use Packlink\WooCommerce\Components\Utility\Version_File_Reader;
+use Packlink\WooCommerce\Controllers\Packlink_Auto_Test_Controller;
 use Packlink\WooCommerce\Controllers\Packlink_Frontend_Controller;
 use Packlink\WooCommerce\Controllers\Packlink_Index;
 use Packlink\WooCommerce\Controllers\Packlink_Order_Details_Controller;
@@ -142,6 +143,10 @@ class Plugin {
 	 * @param bool $is_network_wide Is plugin network wide.
 	 */
 	public function deactivate( $is_network_wide ) {
+		if (!Shop_Helper::is_woocommerce_active()) {
+			return;
+		}
+
 		if ( $is_network_wide && is_multisite() ) {
 			foreach ( get_sites() as $site ) {
 				switch_to_blog( $site->blog_id );
@@ -257,14 +262,21 @@ class Plugin {
 	 * Creates Packlink PRO Shipping item in administrator menu.
 	 */
 	public function create_admin_submenu() {
-		$controller = new Packlink_Frontend_Controller();
 		add_submenu_page(
 			'woocommerce',
 			'Packlink PRO',
 			'Packlink PRO',
 			'manage_options',
 			'packlink-pro-shipping',
-			array( $controller, 'render' )
+			array( new Packlink_Frontend_Controller(), 'render' )
+		);
+		add_submenu_page(
+			'',
+			'Packlink PRO Auto-Test',
+			'',
+			'manage_options',
+			'packlink-pro-auto-test',
+			array( new Packlink_Auto_Test_Controller(), 'render' )
 		);
 	}
 

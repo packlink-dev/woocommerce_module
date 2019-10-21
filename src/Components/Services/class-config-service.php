@@ -26,6 +26,10 @@ class Config_Service extends Configuration {
 	 * Minimal log level.
 	 */
 	const MIN_LOG_LEVEL = Logger::ERROR;
+	/**
+	 * Max inactivity period for a task in seconds
+	 */
+	const MAX_TASK_INACTIVITY_PERIOD = 60;
 
 	/**
 	 * Singleton instance of this class.
@@ -90,6 +94,16 @@ class Config_Service extends Configuration {
 	}
 
 	/**
+	 * Gets max inactivity period for a task in seconds.
+	 * After inactivity period is passed, system will fail such task as expired.
+	 *
+	 * @return int Max task inactivity period in seconds if set; otherwise, self::MAX_TASK_INACTIVITY_PERIOD.
+	 */
+	public function getMaxTaskInactivityPeriod() {
+		return parent::getMaxTaskInactivityPeriod() ?: self::MAX_TASK_INACTIVITY_PERIOD;
+	}
+
+	/**
 	 * Returns async process starter url, always in http.
 	 *
 	 * @param string $guid Process identifier.
@@ -97,13 +111,12 @@ class Config_Service extends Configuration {
 	 * @return string Formatted URL of async process starter endpoint.
 	 */
 	public function getAsyncProcessUrl( $guid ) {
-		return Shop_Helper::get_controller_url(
-			'Async_Process',
-			'run',
-			array(
-				'guid' => $guid,
-			)
-		);
+		$params = array( 'guid' => $guid );
+		if ( $this->isAutoTestMode() ) {
+			$params['auto-test'] = 1;
+		}
+
+		return Shop_Helper::get_controller_url( 'Async_Process', 'run', $params );
 	}
 
 	/**

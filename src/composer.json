@@ -1,7 +1,7 @@
 {
   "name": "packlink/woocommerce",
   "description": "Packlink WooCommerce Integration",
-  "version": "2.0.9",
+  "version": "2.1.0",
   "type": "library",
   "repositories": [
     {
@@ -12,7 +12,7 @@
   ],
   "require": {
     "php": ">=5.5",
-    "packlink/integration-core": "1.3.*",
+    "packlink/integration-core": "1.4.*",
     "ext-json": "*",
     "ext-curl": "*",
     "ext-zip": "*",
