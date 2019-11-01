@@ -1,3 +1,8 @@
+input[type="checkbox"] {
+	padding: 0;
+	margin: 0;
+}
+
 .pl-main-wrapper {
 	position: relative;
 	clear: both;
@@ -228,6 +233,7 @@
 	color: #5d5d5d;
 	cursor: pointer;
 	border-bottom: 3px solid transparent;
+	outline: none;
 }
 
 .pl-nav-item * {
@@ -259,15 +265,6 @@
 	margin-top: 30px;
 	font-size: 1.3rem;
 	color: black;
-	position: relative;
-}
-
-.pl-shipping-services-message div {
-	margin-bottom: 20px;
-}
-
-.pl-shipping-services-message .title {
-	font-size: 1.6rem;
 }
 
 .pl-shipping-services-message .pl-spinner {
@@ -522,6 +519,14 @@
 	padding-left: 10px !important;
 }
 
+.pl-shipping-method-select-btn {
+	outline: none !important;
+}
+
+.pl-shipping-method-select-btn:focus {
+	outline: none !important;
+}
+
 .pl-form-section-title-wrapper {
 	padding: 0 !important;
 	height: 20px !important;
@@ -654,7 +659,6 @@
 	line-height: 16px;
 	position: absolute;
 	top: 17px;
-	left: 0;
 	margin-left: 15px;
 	text-transform: uppercase;
 	font-size: 16px;
@@ -669,7 +673,6 @@
 	position: absolute;
 	top: 12px;
 	left: 0;
-	margin-left: 15px;
 	text-transform: uppercase;
 	font-size: 12px;
 	font-weight: bold;
@@ -705,6 +708,7 @@
 }
 
 .pl-form-section-input input {
+	display: block;
 	height: 50px !important;
 	background-color: white !important;
 	border-radius: 0 !important;
@@ -729,6 +733,7 @@
 	color: #5d5d5d;
 	font-size: 12px;
 	width: 100%;
+	max-width: none !important;
 }
 
 .pl-form-section-input-checkbox-label {
@@ -978,16 +983,32 @@
 
 .pl-content-wrapper input[type="checkbox"],
 .pl-content-wrapper input[type="checkbox"]:before {
+	-webkit-appearance: none;
+	vertical-align: middle;
+	border: 1px solid #b4b9be;
+	-webkit-box-shadow: inset 0 1px 2px rgba(0, 0, 0, .1);
+	box-shadow: inset 0 1px 2px rgba(0, 0, 0, .1);
+	display: inline-flex;
 	border-radius: 2px;
-	height: 21px;
+	height: 22px;
 	width: 21px;
-	margin: -1px 0 0 -1px;
 }
 
 .pl-content-wrapper input[type="checkbox"]:before {
 	background-color: #2095F2;
 	border-color: #2095F2;
 	color: #fff;
+}
+
+.pl-content-wrapper input[type=checkbox]:checked:before {
+	content: "\2714";
+	font-size: 20px;
+	line-height: 18px;
+	display: inline-block;
+	width: 17px;
+	height: 18px;
+	margin: 0;
+	border-radius: 0;
 }
 
 .pl-step-title {
@@ -1153,7 +1174,7 @@
 .pl-mapping-page-select-section select {
 	width: inherit;
 	padding: 5px;
-	height: unset;
+	height: 40px;
 }
 
 .pl-mapping-page-wrapper-equals {
