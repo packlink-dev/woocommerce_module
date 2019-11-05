@@ -648,63 +648,79 @@ class Plugin {
 	 */
 	private function perform_update_actions( $previous_version ) {
 		if ( version_compare( $previous_version, '2.0.4', '<' ) ) {
-			/** @noinspection HtmlUnknownTarget */ // phpcs:ignore
-			$text = sprintf(
-				/* translators: %s: Module URL. */
-				__(
-					'With this version you will have access to any shipping service that your clients demand. Go to the <a href="%s">configuration</a> and select which shipping services should be offered to your customers!',
-					'packlink-pro-shipping'
-				),
-				Shop_Helper::get_plugin_page_url()
-			);
-
-			set_transient( 'packlink-pro-messages', $text );
+			$this->do_update_204();
 		}
 
 		if ( version_compare( $previous_version, '2.1.1', '<' ) ) {
-			$configuration = ServiceRegister::getService( Configuration::CLASS_NAME );
-			$repository = RepositoryRegistry::getRepository( Schedule::getClassName() );
+			$this->do_update_211();
+		}
+	}
 
-			$schedules = $repository->select();
+	/**
+	 * Performs update for version 2.0.4.
+	 */
+	private function do_update_204() {
+		/** @noinspection HtmlUnknownTarget */ // phpcs:ignore
+		$text = sprintf(
+		/* translators: %s: Module URL. */
+			__(
+				'With this version you will have access to any shipping service that your clients demand. Go to the <a href="%s">configuration</a> and select which shipping services should be offered to your customers!',
+				'packlink-pro-shipping'
+			),
+			Shop_Helper::get_plugin_page_url()
+		);
 
-			/** @var Schedule $schedule */
-			foreach ( $schedules as $schedule ) {
-				$task = $schedule->getTask();
+		set_transient( 'packlink-pro-messages', $text );
+	}
 
-				if ( $task->getType() === UpdateShipmentDataTask::getClassName() ) {
-					$repository->delete( $schedule );
-				}
+	/**
+	 * Performs update for version 2.1.1.
+	 *
+	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException
+	 */
+	private function do_update_211() {
+		$configuration = ServiceRegister::getService( Configuration::CLASS_NAME );
+		$repository = RepositoryRegistry::getRepository( Schedule::getClassName() );
+
+		$schedules = $repository->select();
+
+		/** @var Schedule $schedule */
+		foreach ( $schedules as $schedule ) {
+			$task = $schedule->getTask();
+
+			if ( $task->getType() === UpdateShipmentDataTask::getClassName() ) {
+				$repository->delete( $schedule );
 			}
+		}
 
-			foreach ( array( 0, 30 ) as $minute) {
-				$hourly_statuses = array(
-					ShipmentStatus::STATUS_PENDING,
-				);
-
-				$shipment_data_half_hour_schedule = new HourlySchedule(
-					new UpdateShipmentDataTask( $hourly_statuses ),
-					$configuration->getDefaultQueueName()
-				);
-				$shipment_data_half_hour_schedule->setMinute( $minute );
-				$shipment_data_half_hour_schedule->setNextSchedule();
-				$repository->save( $shipment_data_half_hour_schedule );
-			}
-
-			$daily_statuses = array(
-				ShipmentStatus::STATUS_IN_TRANSIT,
-				ShipmentStatus::STATUS_READY,
-				ShipmentStatus::STATUS_ACCEPTED,
+		foreach ( array( 0, 30 ) as $minute) {
+			$hourly_statuses = array(
+				ShipmentStatus::STATUS_PENDING,
 			);
 
-			$daily_shipment_data_schedule = new DailySchedule(
-				new UpdateShipmentDataTask( $daily_statuses ),
+			$shipment_data_half_hour_schedule = new HourlySchedule(
+				new UpdateShipmentDataTask( $hourly_statuses ),
 				$configuration->getDefaultQueueName()
 			);
-
-			$daily_shipment_data_schedule->setHour( 11 );
-			$daily_shipment_data_schedule->setNextSchedule();
-
-			$repository->save( $daily_shipment_data_schedule );
+			$shipment_data_half_hour_schedule->setMinute( $minute );
+			$shipment_data_half_hour_schedule->setNextSchedule();
+			$repository->save( $shipment_data_half_hour_schedule );
 		}
+
+		$daily_statuses = array(
+			ShipmentStatus::STATUS_IN_TRANSIT,
+			ShipmentStatus::STATUS_READY,
+			ShipmentStatus::STATUS_ACCEPTED,
+		);
+
+		$daily_shipment_data_schedule = new DailySchedule(
+			new UpdateShipmentDataTask( $daily_statuses ),
+			$configuration->getDefaultQueueName()
+		);
+
+		$daily_shipment_data_schedule->setHour( 11 );
+		$daily_shipment_data_schedule->setNextSchedule();
+
+		$repository->save( $daily_shipment_data_schedule );
 	}
 }
