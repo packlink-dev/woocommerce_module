@@ -12,6 +12,7 @@ use Logeecom\Infrastructure\ORM\RepositoryRegistry;
 use Logeecom\Infrastructure\ServiceRegister;
 use Logeecom\Infrastructure\TaskExecution\QueueItem;
 use Logeecom\Infrastructure\TaskExecution\QueueService;
+use Packlink\BusinessLogic\Order\OrderService;
 use Packlink\BusinessLogic\ShippingMethod\Models\ShippingMethod;
 use Packlink\BusinessLogic\ShippingMethod\Utility\ShipmentStatus;
 use Packlink\BusinessLogic\Tasks\SendDraftTask;
@@ -64,9 +65,13 @@ class Order_Details_Helper {
 		}
 
 		$labels = $order->get_meta( Order_Meta_Keys::LABELS );
+		$status = $order->get_meta( Order_Meta_Keys::SHIPMENT_STATUS );
+
+		/** @var OrderService $order_service */
+		$order_service = ServiceRegister::getService(OrderService::CLASS_NAME);
 
 		return array(
-			'available' => ! empty( $labels ),
+			'available' => $order_service->isReadyToFetchShipmentLabels( $status ),
 			'printed'   => 'yes' === $order->get_meta( Order_Meta_Keys::LABEL_PRINTED ),
 			'labels'    => ! empty( $labels ) ? $labels : array(),
 		);
