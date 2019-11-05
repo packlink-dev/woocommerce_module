@@ -255,7 +255,6 @@ class Upgrade_Packlink_Order_Details extends Task {
 	 */
 	private function set_shipment_details( \WC_Order $order, Shipment $shipment ) {
 		if ( $this->set_reference( $order, $shipment->reference ) ) {
-			$this->set_labels( $shipment );
 			$this->set_shipping_status( $shipment );
 			$this->set_tracking_info( $shipment );
 		}
@@ -280,29 +279,6 @@ class Upgrade_Packlink_Order_Details extends Task {
 		}
 
 		return true;
-	}
-
-	/**
-	 * Sets order shipment labels.
-	 *
-	 * @param Shipment $shipment Shipment details.
-	 */
-	private function set_labels( Shipment $shipment ) {
-		$statuses = array(
-			'READY_TO_PRINT',
-			'READY_FOR_COLLECTION',
-			'IN_TRANSIT',
-			'DELIVERED',
-		);
-
-		if ( in_array( $shipment->status, $statuses, true ) ) {
-			try {
-				$labels = $this->get_proxy()->getLabels( $shipment->reference );
-				$this->get_repository()->setLabelsByReference( $shipment->reference, $labels );
-			} catch ( BaseException $e ) {
-				Logger::logError( $e->getMessage(), 'Integration' );
-			}
-		}
 	}
 
 	/**
