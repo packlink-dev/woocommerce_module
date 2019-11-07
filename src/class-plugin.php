@@ -1,4 +1,7 @@
 <?php
+
+/** @noinspection PhpUnusedParameterInspection */
+
 /**
  * Packlink PRO Shipping WooCommerce Integration.
  *
@@ -9,6 +12,7 @@ namespace Packlink\WooCommerce;
 
 use Logeecom\Infrastructure\Configuration\Configuration;
 use Logeecom\Infrastructure\Logger\Logger;
+use Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException;
 use Logeecom\Infrastructure\ORM\RepositoryRegistry;
 use Logeecom\Infrastructure\ServiceRegister;
 use Logeecom\Infrastructure\TaskExecution\Exceptions\TaskRunnerStatusStorageUnavailableException;
@@ -102,7 +106,7 @@ class Plugin {
 	 *
 	 * @param bool $is_network_wide Is plugin network wide.
 	 *
-	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException
+	 * @throws RepositoryNotRegisteredException
 	 */
 	public function activate( $is_network_wide ) {
 		if ( ! Shop_Helper::is_curl_enabled() ) {
@@ -152,7 +156,7 @@ class Plugin {
 	 * @param bool $is_network_wide Is plugin network wide.
 	 */
 	public function deactivate( $is_network_wide ) {
-		if (!Shop_Helper::is_woocommerce_active()) {
+		if ( ! Shop_Helper::is_woocommerce_active() ) {
 			return;
 		}
 
@@ -173,7 +177,7 @@ class Plugin {
 	 * @param \WP_Upgrader $updater_object Updater object.
 	 * @param array        $options Options with information regarding plugins for update.
 	 *
-	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException
+	 * @throws RepositoryNotRegisteredException
 	 */
 	public function update( $updater_object, $options ) {
 		if ( $this->should_update( $options ) ) {
@@ -189,6 +193,32 @@ class Plugin {
 				$this->update_plugin_on_single_site();
 			}
 		}
+	}
+
+	/**
+	 * Injects plugin update options to force update.
+	 *
+	 * @param \stdClass $update_info
+	 *
+	 * @return \stdClass Altered $update_info object.
+	 */
+	public function packlink_plugin_update_info_debug( $update_info ) {
+		if ( ! isset( $update_info->response ) ) {
+			return $update_info;
+		}
+
+		$response = $update_info->no_update['packlink-pro-shipping/packlink-pro-shipping.php'];
+		unset( $update_info->no_update['packlink-pro-shipping/packlink-pro-shipping.php'] );
+
+		// set to the version you want to update
+		$response->new_version = '2.1.2';
+		// set the URI to the update package
+		$response->package = '';
+		$response->tested  = get_bloginfo( 'version' );
+
+		$update_info->response['packlink-pro-shipping/packlink-pro-shipping.php'] = $response;
+
+		return $update_info;
 	}
 
 	/**
@@ -214,7 +244,7 @@ class Plugin {
 	/**
 	 * Initializes base Packlink PRO Shipping tables and values if plugin is accessed from a new site.
 	 *
-	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException
+	 * @throws RepositoryNotRegisteredException
 	 */
 	public function initialize_new_site() {
 		$db = new Database( $this->db );
@@ -404,6 +434,14 @@ class Plugin {
 		if ( is_multisite() ) {
 			add_action( 'delete_blog', array( $this, 'uninstall_plugin_from_deleted_site' ) );
 		}
+
+		if ( defined( '_PL_DEBUG_' ) ) {
+			add_filter( 'site_transient_update_plugins', array( $this, 'packlink_plugin_update_info_debug' ), 20, 3 );
+			add_filter( 'set_site_transient_update_plugins', array(
+				$this,
+				'packlink_plugin_update_info_debug'
+			), 20, 3 );
+		}
 	}
 
 	/**
@@ -417,7 +455,7 @@ class Plugin {
 	/**
 	 * Initializes default configuration values.
 	 *
-	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException
+	 * @throws RepositoryNotRegisteredException
 	 */
 	private function init_config() {
 		Shop_Helper::create_log_directory();
@@ -482,7 +520,7 @@ class Plugin {
 	/**
 	 * Updates plugin on single WordPress site.
 	 *
-	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException
+	 * @throws RepositoryNotRegisteredException
 	 */
 	private function update_plugin_on_single_site() {
 		$previous_version = $this->get_config_service()->get_database_version();
@@ -644,7 +682,7 @@ class Plugin {
 	 *
 	 * @param string $previous_version Previous version.
 	 *
-	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException
+	 * @throws RepositoryNotRegisteredException
 	 */
 	private function perform_update_actions( $previous_version ) {
 		if ( version_compare( $previous_version, '2.0.4', '<' ) ) {
@@ -676,11 +714,11 @@ class Plugin {
 	/**
 	 * Performs update for version 2.1.1.
 	 *
-	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException
+	 * @throws RepositoryNotRegisteredException
 	 */
 	private function do_update_211() {
 		$configuration = ServiceRegister::getService( Configuration::CLASS_NAME );
-		$repository = RepositoryRegistry::getRepository( Schedule::getClassName() );
+		$repository    = RepositoryRegistry::getRepository( Schedule::getClassName() );
 
 		$schedules = $repository->select();
 
@@ -693,7 +731,7 @@ class Plugin {
 			}
 		}
 
-		foreach ( array( 0, 30 ) as $minute) {
+		foreach ( array( 0, 30 ) as $minute ) {
 			$hourly_statuses = array(
 				ShipmentStatus::STATUS_PENDING,
 			);
