@@ -90,6 +90,7 @@ class Plugin {
 	 * @param string $packlink_plugin_file Plugin file.
 	 *
 	 * @return Plugin Plugin instance.
+	 * @throws RepositoryNotRegisteredException
 	 */
 	public static function instance( $wpdb, $packlink_plugin_file ) {
 		if ( null === self::$instance ) {
@@ -168,30 +169,6 @@ class Plugin {
 			}
 		} else {
 			Shipping_Method_Helper::disable_packlink_shipping_methods();
-		}
-	}
-
-	/**
-	 * Plugin update method.
-	 *
-	 * @param \WP_Upgrader $updater_object Updater object.
-	 * @param array        $options Options with information regarding plugins for update.
-	 *
-	 * @throws RepositoryNotRegisteredException
-	 */
-	public function update( $updater_object, $options ) {
-		if ( $this->should_update( $options ) ) {
-			if ( is_multisite() ) {
-				$site_ids = get_sites();
-				foreach ( $site_ids as $site_id ) {
-					switch_to_blog( $site_id->blog_id );
-					/** @noinspection DisconnectedForeachInstructionInspection */ // phpcs:ignore
-					$this->update_plugin_on_single_site();
-					restore_current_blog();
-				}
-			} else {
-				$this->update_plugin_on_single_site();
-			}
 		}
 	}
 
@@ -404,10 +381,15 @@ class Plugin {
 
 	/**
 	 * Initializes the plugin.
+	 *
+	 * @throws RepositoryNotRegisteredException
 	 */
 	private function initialize() {
 		Bootstrap_Component::init();
 		$this->load_plugin_init_hooks();
+		if ( $this->should_update() ) {
+			$this->update();
+		}
 
 		if ( Shop_Helper::is_plugin_enabled() ) {
 			$this->add_settings_link();
@@ -425,7 +407,6 @@ class Plugin {
 	private function load_plugin_init_hooks() {
 		register_activation_hook( $this->packlink_plugin_file, array( $this, 'activate' ) );
 		register_deactivation_hook( $this->packlink_plugin_file, array( $this, 'deactivate' ) );
-		add_action( 'upgrader_process_complete', array( $this, 'update' ), 100, 2 );
 		add_action( 'admin_init', array( $this, 'initialize_new_site' ) );
 		add_filter( 'query_vars', array( $this, 'plugin_add_trigger' ) );
 		add_action( 'template_redirect', array( $this, 'plugin_trigger_check' ) );
@@ -496,25 +477,31 @@ class Plugin {
 	}
 
 	/**
-	 * Validates if update is for our plugin.
+	 * Plugin update method.
 	 *
-	 * @param array $options Options with information regarding plugins for update.
+	 * @throws RepositoryNotRegisteredException
+	 */
+	private function update() {
+		if ( is_multisite() ) {
+			$site_ids = get_sites();
+			foreach ( $site_ids as $site_id ) {
+				switch_to_blog( $site_id->blog_id );
+				/** @noinspection DisconnectedForeachInstructionInspection */ // phpcs:ignore
+				$this->update_plugin_on_single_site();
+				restore_current_blog();
+			}
+		} else {
+			$this->update_plugin_on_single_site();
+		}
+	}
+
+	/**
+	 * Validates if update is for our plugin.
 	 *
 	 * @return bool Plugin valid for update.
 	 */
-	private function should_update( $options ) {
-		$wc_plugin = Shop_Helper::get_plugin_name();
-		if ( 'update' === $options['action'] && 'plugin' === $options['type'] ) {
-			if ( isset( $options['plugin'] ) && $options['plugin'] === $wc_plugin ) {
-				return true;
-			}
-
-			if ( isset( $options['plugins'] ) && in_array( $wc_plugin, $options['plugins'], true ) ) {
-				return true;
-			}
-		}
-
-		return false;
+	private function should_update() {
+		return $this->get_config_service()->get_database_version() !== Shop_Helper::get_plugin_version();
 	}
 
 	/**
