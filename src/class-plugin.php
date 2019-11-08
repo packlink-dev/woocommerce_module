@@ -453,16 +453,6 @@ class Plugin {
 		} catch ( TaskRunnerStatusStorageUnavailableException $e ) {
 			Logger::logError( $e->getMessage(), 'Integration' );
 		}
-
-		Logger::logInfo( 'Update started.', 'Integration' );
-		$previous_version = $config_service->get_database_version();
-		$config_service->set_database_version( Shop_Helper::get_plugin_version() );
-		if ( version_compare( $previous_version, '2.0.0', '<' ) ) {
-			require_once __DIR__ . '/database/migrations/migration.v.2.0.0.php';
-		}
-
-		$this->perform_update_actions( $previous_version );
-		Logger::logInfo( 'Update ended.', 'Integration' );
 	}
 
 	/**
