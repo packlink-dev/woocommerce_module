@@ -106,8 +106,6 @@ class Plugin {
 	 * Plugin activation function.
 	 *
 	 * @param bool $is_network_wide Is plugin network wide.
-	 *
-	 * @throws RepositoryNotRegisteredException
 	 */
 	public function activate( $is_network_wide ) {
 		if ( ! Shop_Helper::is_curl_enabled() ) {
@@ -220,8 +218,6 @@ class Plugin {
 
 	/**
 	 * Initializes base Packlink PRO Shipping tables and values if plugin is accessed from a new site.
-	 *
-	 * @throws RepositoryNotRegisteredException
 	 */
 	public function initialize_new_site() {
 		$db = new Database( $this->db );
@@ -435,8 +431,6 @@ class Plugin {
 
 	/**
 	 * Initializes default configuration values.
-	 *
-	 * @throws RepositoryNotRegisteredException
 	 */
 	private function init_config() {
 		Shop_Helper::create_log_directory();
@@ -737,5 +731,8 @@ class Plugin {
 		$daily_shipment_data_schedule->setNextSchedule();
 
 		$repository->save( $daily_shipment_data_schedule );
+
+		// we updated this to PACKLINK_VERSION, so we delete the old one.
+		delete_option( 'PACKLINK_DATABASE_VERSION' );
 	}
 }
