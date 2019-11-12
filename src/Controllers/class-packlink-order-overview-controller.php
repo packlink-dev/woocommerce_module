@@ -104,11 +104,6 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 
 				echo '<button data-pl-id="' . esc_attr( $post->ID ) . '" data-pl-label="' . esc_url( $label_url )
 				     . '" type="button" class="' . esc_attr( $class ) . '" >' . esc_html( $label ) . '</button>';
-				if ( ! static::$url_added ) {
-					$url = Shop_Helper::get_controller_url( 'Order_Overview', 'mark_label_printed' );
-					echo '<input type="hidden" name="packlink-url-callback" value="' . esc_url( $url ) . '">';
-					static::$url_added = true;
-				}
 			}
 		}
 
@@ -159,27 +154,6 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 
 		echo esc_html( __( 'Label is not yet available.', 'packlink-pro-shipping' ) );
 		exit;
-	}
-
-	/**
-	 * Marks shipment label as printed.
-	 */
-	public function mark_label_printed() {
-		$this->validate( 'yes' );
-		$raw     = $this->get_raw_input();
-		$payload = json_decode( $raw, true );
-		if ( ! is_array( $payload ) || ! array_key_exists( 'id', $payload ) ) {
-			$this->return_json( array( 'success' => false ), 400 );
-		}
-
-		$order = \WC_Order_Factory::get_order( $payload['id'] );
-		if ( ! $order ) {
-			$this->return_json( array( 'success' => false ), 400 );
-		}
-
-		$labels = $this->get_print_labels( $order );
-
-		$this->return_json( array( 'success' => ! empty( $labels ) ), empty( $labels ) ? 400 : 200 );
 	}
 
 	/**
@@ -301,10 +275,9 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 				return $label->getLink();
 			}, $labels );
 			$order->update_meta_data( Order_Meta_Keys::LABELS, $labels );
+			$order->update_meta_data( Order_Meta_Keys::LABEL_PRINTED, 'yes' );
+			$order->save();
 		}
-
-		$order->update_meta_data( Order_Meta_Keys::LABEL_PRINTED, 'yes' );
-		$order->save();
 
 		return ! empty( $labels ) ? $labels : array();
 	}
