@@ -19,6 +19,7 @@ use Packlink\BusinessLogic\Http\DTO\Shipment as Shipment_DTO;
 use Packlink\BusinessLogic\Http\DTO\Tracking;
 use Packlink\BusinessLogic\Order\Exceptions\OrderNotFound;
 use Packlink\BusinessLogic\Order\Interfaces\OrderRepository;
+use Packlink\BusinessLogic\Order\Models\OrderShipmentDetails;
 use Packlink\BusinessLogic\Order\Objects\Address;
 use Packlink\BusinessLogic\Order\Objects\Item;
 use Packlink\BusinessLogic\Order\Objects\Order;
@@ -131,21 +132,6 @@ class Order_Repository extends Singleton implements OrderRepository {
 	}
 
 	/**
-	 * Sets order packlink shipping labels to an order by shipment reference.
-	 *
-	 * @param string   $shipment_reference Packlink shipment reference.
-	 * @param string[] $labels Packlink shipping labels.
-	 *
-	 * @throws OrderNotFound When order with provided reference is not found.
-	 */
-	public function setLabelsByReference( $shipment_reference, array $labels ) {
-		$order = $this->load_order_by_reference( $shipment_reference );
-
-		$order->update_meta_data( Order_Meta_Keys::LABELS, $labels );
-		$order->save();
-	}
-
-	/**
 	 * Sets order packlink shipment tracking history to an order for given shipment.
 	 *
 	 * @param Shipment_DTO $shipment Packlink shipment details.
@@ -235,6 +221,34 @@ class Order_Repository extends Singleton implements OrderRepository {
 	}
 
 	/**
+	 * Retrieves list of order references where order is in one of the provided statuses.
+	 *
+	 * @param array $statuses List of order statuses.
+	 *
+	 * @return string[] Array of shipment references.
+	 *
+	 * @throws QueryFilterInvalidParamException
+	 */
+	public function getOrderReferencesWithStatus( array $statuses )
+	{
+		$filter = new QueryFilter();
+
+		foreach ($statuses as $status) {
+			$filter->orWhere( 'status', Operators::EQUALS, $status );
+		}
+
+		$orders = $this->get_order_shipment_entity_repository()->select( $filter );
+
+		$result = array( );
+		/** @var OrderShipmentDetails $order */
+		foreach ( $orders as $order ) {
+			$result[] = $order->getReference();
+		}
+
+		return $result;
+	}
+
+	/**
 	 * Sets shipping price to an order by shipment reference.
 	 *
 	 * @param string $shipment_reference Packlink shipment reference.
@@ -276,24 +290,6 @@ class Order_Repository extends Singleton implements OrderRepository {
 			return false;
 		} catch ( OrderNotFound $e ) {
 			return true;
-		}
-	}
-
-	/**
-	 * Returns whether shipment identified by provided reference has Packlink shipment label set.
-	 *
-	 * @param string $shipmentReference Packlink shipment reference.
-	 *
-	 * @return bool Returns TRUE if label is set; otherwise, FALSE.
-	 */
-	public function isLabelSet( $shipmentReference ) {
-		try {
-			$order = $this->load_order_by_reference( $shipmentReference );
-			$labels = $order->get_meta( Order_Meta_Keys::LABELS );
-
-			return is_array($labels) && ! empty( $labels );
-		} catch ( \Exception $e ) {
-			return false;
 		}
 	}
 

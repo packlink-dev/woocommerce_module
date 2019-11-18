@@ -6,29 +6,18 @@ document.addEventListener(
 		let buttons                 = document.querySelectorAll( '.pl-print-label' );
 		let form                    = document.querySelector( '#posts-filter' );
 		let downloadTimer, attempts = 30;
-		let endpointUrl             = document.querySelector( 'input[name="packlink-url-callback"]' );
 
-		if (endpointUrl && buttons) {
+		if (buttons) {
 			[].forEach.call(
 				buttons,
 				function (button) {
 					button.addEventListener(
 						'click',
 						function (event) {
-							let id   = button.getAttribute( 'data-pl-id' );
 							let link = button.getAttribute( 'data-pl-label' );
 							event.stopPropagation();
 							window.open( link, '_blank' );
-							Packlink.ajaxService.post(
-								endpointUrl.value,
-								{id: id},
-								function () {
-									button.classList.remove( 'button-primary' );
-								},
-								function () {
-								}
-							);
-
+							button.classList.remove( 'button-primary' );
 						}
 					);
 				}

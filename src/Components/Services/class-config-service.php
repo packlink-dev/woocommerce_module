@@ -134,7 +134,7 @@ class Config_Service extends Configuration {
 	 * @param string $database_version Database version.
 	 */
 	public function set_database_version( $database_version ) {
-		update_option( 'PACKLINK_DATABASE_VERSION', $database_version );
+		update_option( 'PACKLINK_VERSION', $database_version );
 	}
 
 	/**
@@ -143,7 +143,7 @@ class Config_Service extends Configuration {
 	 * @return string
 	 */
 	public function get_database_version() {
-		return get_option( 'PACKLINK_DATABASE_VERSION', '1.0.0' );
+		return get_option( 'PACKLINK_VERSION', '2.0.1' );
 	}
 
 	/**

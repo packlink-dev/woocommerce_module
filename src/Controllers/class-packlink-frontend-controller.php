@@ -595,11 +595,13 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	 * @return ShippingMethodConfiguration Shipping method DTO.
 	 */
 	private function build_shipping_method( array $payload ) {
-		$shipping_method              = new ShippingMethodConfiguration();
-		$shipping_method->id          = $payload['id'];
-		$shipping_method->name        = $payload['name'];
-		$shipping_method->showLogo    = $payload['showLogo'];
-		$shipping_method->pricePolicy = $payload['pricePolicy'];
+		$shipping_method                       = new ShippingMethodConfiguration();
+		$shipping_method->id                   = $payload['id'];
+		$shipping_method->name                 = $payload['name'];
+		$shipping_method->showLogo             = $payload['showLogo'];
+		$shipping_method->pricePolicy          = $payload['pricePolicy'];
+		$shipping_method->isShipToAllCountries = true;
+		$shipping_method->shippingCountries    = array();
 
 		if ( ShippingMethod::PRICING_POLICY_PERCENT === $shipping_method->pricePolicy ) {
 			$percent_price_policy                = $payload['percentPricePolicy'];

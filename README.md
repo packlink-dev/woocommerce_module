@@ -38,22 +38,22 @@ Correct **all** errors reported but the code sniffer.
 
 ### Generating translation files
 
-Use WordPress CLI for generating translation .pot files.
+Use Loco Translate WP plugin for generating translation .pot files.
 
 ### Running the tests
 Tests are run on WordPress testing SDK. More on this can be found [here](https://make.wordpress.org/cli/handbook/plugin-unit-tests/).
 
 First install the needed wordpress database for tests (this has to be run just once):
 ```bash
-cd bin
+cd src
 bin/install-wp-tests.sh wordpress_test dbuser dbpass localhost latest
 ``` 
 Then, either setup PHPStorm to run tests based on the `/src/phpunit.xml` configuration file
-or go to the root directory and run
+or go to the root directory and run:
 ```bash
 ./run-tests.sh
 ```
-This command will run unit tests on all different PHP versions from 5.6 to 7.3.
+This command will run unit tests on all supported PHP versions from 5.6 to 7.3.
 
 ### Releasing a new module version
 

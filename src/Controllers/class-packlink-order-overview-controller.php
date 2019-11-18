@@ -11,7 +11,9 @@ use iio\libmergepdf\Merger;
 use Logeecom\Infrastructure\Logger\Logger;
 use Logeecom\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
 use Logeecom\Infrastructure\ServiceRegister;
+use Packlink\BusinessLogic\Http\DTO\ShipmentLabel;
 use Packlink\BusinessLogic\Order\Interfaces\OrderRepository;
+use Packlink\BusinessLogic\Order\OrderService;
 use Packlink\WooCommerce\Components\Order\Order_Details_Helper;
 use Packlink\WooCommerce\Components\Order\Order_Meta_Keys;
 use Packlink\WooCommerce\Components\Order\Order_Repository;
@@ -89,15 +91,19 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 			} else {
 				$class     = 'pl-print-label button ' . ( $status['printed'] ? '' : 'button-primary' );
 				$label     = $status['printed'] ? __( 'Printed label', 'packlink-pro-shipping' ) : __( 'Print label', 'packlink-pro-shipping' );
-				$label_url = $status['labels'][0];
+
+				if ( empty( $status['labels'] ) ) {
+					$params = array(
+						'order_id' => $post->ID
+					);
+
+					$label_url = Shop_Helper::get_controller_url( 'Order_Overview', 'print_single_label', $params );
+				} else {
+					$label_url = $status['labels'][0];
+				}
 
 				echo '<button data-pl-id="' . esc_attr( $post->ID ) . '" data-pl-label="' . esc_url( $label_url )
 				     . '" type="button" class="' . esc_attr( $class ) . '" >' . esc_html( $label ) . '</button>';
-				if ( ! static::$url_added ) {
-					$url = Shop_Helper::get_controller_url( 'Order_Overview', 'mark_label_printed' );
-					echo '<input type="hidden" name="packlink-url-callback" value="' . esc_url( $url ) . '">';
-					static::$url_added = true;
-				}
 			}
 		}
 
@@ -121,24 +127,33 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 	}
 
 	/**
-	 * Marks shipment label as printed.
+	 * Prints single label.
 	 */
-	public function mark_label_printed() {
-		$this->validate( 'yes' );
-		$raw     = $this->get_raw_input();
-		$payload = json_decode( $raw, true );
-		if ( ! is_array( $payload ) || ! array_key_exists( 'id', $payload ) ) {
-			$this->return_json( array( 'success' => false ), 400 );
+	public function print_single_label() {
+		$this->validate( 'no', true );
+
+		$order_id = !empty( $_GET['order_id'] ) ? $_GET['order_id'] : null;
+
+		if ( !$order_id ) {
+			echo esc_html( __( 'Label is not yet available.', 'packlink-pro-shipping' ) );
+			exit;
 		}
 
-		$order = \WC_Order_Factory::get_order( $payload['id'] );
-		if ( ! $order ) {
-			$this->return_json( array( 'success' => false ), 400 );
+		$order = \WC_Order_Factory::get_order( ( int ) $order_id );
+		if ( !$order ) {
+			echo esc_html( __( 'Label is not yet available.', 'packlink-pro-shipping' ) );
+			exit;
 		}
 
-		$labels = $this->get_print_labels( $order );
+		$links = $this->get_print_labels( $order );
 
-		$this->return_json( array( 'success' => ! empty( $labels ) ), empty( $labels ) ? 400 : 200 );
+		if ( !empty( $links ) ) {
+			header( 'Location: ' . $links[0], 302 );
+			exit;
+		}
+
+		echo esc_html( __( 'Label is not yet available.', 'packlink-pro-shipping' ) );
+		exit;
 	}
 
 	/**
@@ -210,23 +225,22 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 		try {
 			$paths = array();
 			foreach ( $labels as $index => $label ) {
-				$result = wp_upload_bits( "$index.pdf", null, wp_remote_fopen( $label ) );
-				if ( empty( $result['error'] ) ) {
-					$paths[] = $result['file'];
+				if ( $path = $this->download_pdf( $label ) ) {
+					$paths[] = $path;
 				}
 			}
 
-			$merger = new Merger();
-			foreach ( $paths as $path ) {
-				$merger->addFromFile( $path );
-			}
+			if ( ! empty( $paths ) ) {
+				$merger = new Merger();
+				foreach ( $paths as $path ) {
+					$merger->addFromFile( $path );
+				}
 
-			$file = $merger->merge();
-			if ( $file ) {
-				$this->return_file( $file );
+				$file = $merger->merge();
+				if ( $file ) {
+					$this->return_file( $file );
+				}
 			}
-
-			$this->delete_local_files( $paths );
 		} catch ( \Exception $e ) {
 			Logger::logError(
 				__( 'Unable to create bulk labels file', 'packlink-pro-shipping' ),
@@ -244,8 +258,23 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 	 * @return string[] Label paths.
 	 */
 	private function get_print_labels( WC_Order $order ) {
+		$status = $order->get_meta( Order_Meta_Keys::SHIPMENT_STATUS );
+
+		/** @var OrderService $order_service */
+		$order_service = ServiceRegister::getService( OrderService::CLASS_NAME );
+		if ( ! $order_service->isReadyToFetchShipmentLabels( $status ) ) {
+			return array();
+		}
+
 		$labels = $order->get_meta( Order_Meta_Keys::LABELS );
-		if ( ! empty( $labels ) ) {
+
+		if ( empty( $labels ) ) {
+			$reference = $order->get_meta( Order_Meta_Keys::SHIPMENT_REFERENCE );
+			$labels = $order_service->getShipmentLabels( $reference );
+			$labels = array_map( function ( ShipmentLabel $label ) {
+				return $label->getLink();
+			}, $labels );
+			$order->update_meta_data( Order_Meta_Keys::LABELS, $labels );
 			$order->update_meta_data( Order_Meta_Keys::LABEL_PRINTED, 'yes' );
 			$order->save();
 		}
@@ -259,17 +288,6 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 	private function set_download_cookie() {
 		$token = $this->get_param( 'packlink_download_token' );
 		setcookie( 'packlink_download_token', $token, time() + 3600, '/' );
-	}
-
-	/**
-	 * Removes local pdf files.
-	 *
-	 * @param string[] $paths Array of file paths.
-	 */
-	private function delete_local_files( array $paths ) {
-		foreach ( $paths as $path ) {
-			unlink( $path );
-		}
 	}
 
 	/**
@@ -290,5 +308,24 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 		header( 'Last-Modified: ' . gmdate( 'D, d M Y H:i:s' ) . ' GMT' );
 
 		echo $file;
+	}
+
+	/**
+	 * Downloads pdf.
+	 *
+	 * @param string $link
+	 *
+	 * @return bool | string
+	 */
+	protected function download_pdf( $link )
+	{
+		if ( ( $data = file_get_contents( $link ) ) === false ) {
+			return $data;
+		}
+
+		$file = tempnam( sys_get_temp_dir(), 'packlink_pdf' );
+		file_put_contents( $file, $data );
+
+		return $file;
 	}
 }
