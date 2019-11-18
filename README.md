@@ -21,7 +21,7 @@ After installation is over, plugin configuration can be set by navigating to Woo
 - WooCommerce v3.0+
 
 ## Prerequisites
-- PHP 5.3 or newer
+- PHP 5.5 or newer
 - MySQL 5.0 or newer
 
 ## Development Guidelines

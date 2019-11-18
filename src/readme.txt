@@ -3,8 +3,8 @@ Contributors: packlink
 Tags: woocommerce, shipment, shipping, packlink
 Requires at least: 4.7
 Requires PHP: 5.5
-Tested up to: 5.2.2
-Stable tag: 2.1.0
+Tested up to: 5.3.0
+Stable tag: 2.1.1
 License: LICENSE-2.0
 License URI: http://www.apache.org/licenses/LICENSE-2.0
 
@@ -70,6 +70,12 @@ Click <a href="https://support-pro.packlink.com/hc/es-es/articles/210158585" tar
 
 
 == Upgrade Notice ==
+
+= 2.1.1 =
+
+* Allow setting the lowest boundary for fixed price policies per shipping method.
+* Changed the update interval for getting shipment data from Packlink API.
+* Updated compatibility with the latest WP and WC versions
 
 = 2.1.0 =
 
