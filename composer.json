@@ -4,7 +4,7 @@
   "version": "2.1.1",
   "type": "library",
   "require": {
-    "php": ">=5.3",
+    "php": ">=5.5",
     "wp-coding-standards/wpcs": "2.0.0"
   }
 }

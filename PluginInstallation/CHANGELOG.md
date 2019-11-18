@@ -3,9 +3,32 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
-## [Unreleased](https://github.com/logeecom/pl_woocommerce_module/compare/dev...master)
+## [Unreleased](https://github.com/logeecom/pl_woocommerce_module/compare/master...dev)
 
-## [v2.0.6](https://github.com/logeecom/pl_woocommerce_module/compare/v2.0.6...v2.0.5) - 2019-08-29
+## [v2.1.1](https://github.com/logeecom/pl_woocommerce_module/compare/v2.1.0...v2.1.1) - 2019-11-18
+### Changed
+- Fixed the update mechanism.
+- Allow setting the lowest boundary for fixed price policies per shipping method.
+- Changed the update interval for getting shipment data from Packlink API.
+- Updated compatibility with the latest WP and WC versions.
+
+## [v2.1.0](https://github.com/logeecom/pl_woocommerce_module/compare/v2.0.9...v2.1.0) - 2019-10-21
+### Changed
+- Added automatic re-configuration of the module based on WooCommerce and WordPress settings in cases when the module cannot run with the default shop and server settings.
+
+## [v2.0.9](https://github.com/logeecom/pl_woocommerce_module/compare/v2.0.8...v2.0.9) - 2019-09-11
+### Changed
+- Fixed compatibility bug with the WooCommerce prior to 3.0.4 for order shipping and billing addresses.
+
+## [v2.0.8](https://github.com/logeecom/pl_woocommerce_module/compare/v2.0.7...v2.0.8) - 2019-09-03
+### Changed
+- Fixed compatibility bug with the PHP versions prior to 5.5.
+
+## [v2.0.7](https://github.com/logeecom/pl_woocommerce_module/compare/v2.0.6...v2.0.7) - 2019-08-30
+### Changed
+- Fixed compatibility bug with the WooCommerce prior to 3.2 for shipment methods that require drop-off location.
+
+## [v2.0.6](https://github.com/logeecom/pl_woocommerce_module/compare/v2.0.5...v2.0.6) - 2019-08-29
 ### Changed
 - Fixed backward compatibility with the WooCommerce prior to 3.2
 - Fixed problem in updating shipping information from Packlink
