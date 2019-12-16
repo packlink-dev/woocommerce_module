@@ -5,9 +5,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased](https://github.com/logeecom/pl_woocommerce_module/compare/master...dev)
 
+## [v2.1.2](https://github.com/logeecom/pl_woocommerce_module/compare/v2.1.1...v2.1.2) - 2019-12-16
+### Changed
+- Fixed the mechanism for updating information about created shipments.
+
 ## [v2.1.1](https://github.com/logeecom/pl_woocommerce_module/compare/v2.1.0...v2.1.1) - 2019-11-18
 ### Changed
-- Fixed the update mechanism.
+- Fixed the update plugin mechanism.
 - Allow setting the lowest boundary for fixed price policies per shipping method.
 - Changed the update interval for getting shipment data from Packlink API.
 - Updated compatibility with the latest WP and WC versions.

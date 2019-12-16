@@ -1,5 +1,6 @@
 <?php
 
+use Logeecom\Infrastructure\Logger\LoggerConfiguration;
 use Logeecom\Tests\Infrastructure\ORM\AbstractGenericStudentRepositoryTest;
 use Packlink\WooCommerce\Components\Repositories\Base_Repository;
 use Packlink\WooCommerce\Components\Utility\Database;
@@ -12,7 +13,7 @@ use Packlink\WooCommerce\Components\Utility\Database;
 class BaseRepositoryTest extends AbstractGenericStudentRepositoryTest {
 
 	/**
-	 * Cleanup.
+	 * Setup.
 	 *
 	 * @inheritdoc
 	 */
@@ -21,6 +22,17 @@ class BaseRepositoryTest extends AbstractGenericStudentRepositoryTest {
 		parent::setUp();
 
 		$this->createTestTable();
+	}
+
+	/**
+	 * Cleanup.
+	 *
+	 * @inheritdoc
+	 */
+	protected function tearDown() {
+		parent::tearDown();
+
+		LoggerConfiguration::resetInstance();
 	}
 
 	/**
