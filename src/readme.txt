@@ -3,8 +3,8 @@ Contributors: packlink
 Tags: woocommerce, shipment, shipping, packlink
 Requires at least: 4.7
 Requires PHP: 5.5
-Tested up to: 5.3.0
-Stable tag: 2.1.1
+Tested up to: 5.3.1
+Stable tag: 2.1.2
 License: LICENSE-2.0
 License URI: http://www.apache.org/licenses/LICENSE-2.0
 
@@ -70,6 +70,10 @@ Click <a href="https://support-pro.packlink.com/hc/es-es/articles/210158585" tar
 
 
 == Upgrade Notice ==
+
+= 2.1.2 =
+
+* Fixed the mechanism for updating information about created shipments.
 
 = 2.1.1 =
 

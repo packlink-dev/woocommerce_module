@@ -19,7 +19,6 @@ use Packlink\BusinessLogic\Http\DTO\Shipment as Shipment_DTO;
 use Packlink\BusinessLogic\Http\DTO\Tracking;
 use Packlink\BusinessLogic\Order\Exceptions\OrderNotFound;
 use Packlink\BusinessLogic\Order\Interfaces\OrderRepository;
-use Packlink\BusinessLogic\Order\Models\OrderShipmentDetails;
 use Packlink\BusinessLogic\Order\Objects\Address;
 use Packlink\BusinessLogic\Order\Objects\Item;
 use Packlink\BusinessLogic\Order\Objects\Order;
@@ -31,7 +30,6 @@ use Packlink\WooCommerce\Components\Services\Config_Service;
 use WC_Order;
 use WP_Term;
 
-// @codingStandardsIgnoreStart
 /**
  * Class Order_Repository
  *
@@ -106,8 +104,6 @@ class Order_Repository extends Singleton implements OrderRepository {
 
 	/**
 	 * Sets order packlink reference number.
-	 *
-	 * @noinspection PhpDocMissingThrowsInspection
 	 *
 	 * @param string $order_id Unique order id.
 	 * @param string $shipment_reference Packlink shipment reference.
@@ -193,8 +189,6 @@ class Order_Repository extends Singleton implements OrderRepository {
 	/**
 	 * Returns shipment references of the orders that have not yet been completed.
 	 *
-	 * @noinspection PhpDocMissingThrowsInspection
-	 *
 	 * @return array Array of shipment references.
 	 * @throws QueryFilterInvalidParamException
 	 */
@@ -237,12 +231,16 @@ class Order_Repository extends Singleton implements OrderRepository {
 			$filter->orWhere( 'status', Operators::EQUALS, $status );
 		}
 
+		/**
+		 * Order shipment entity list.
+		 *
+		 * @var Order_Shipment_Entity[] $orders
+		 */
 		$orders = $this->get_order_shipment_entity_repository()->select( $filter );
 
 		$result = array( );
-		/** @var OrderShipmentDetails $order */
 		foreach ( $orders as $order ) {
-			$result[] = $order->getReference();
+			$result[] = $order->getPacklinkShipmentReference();
 		}
 
 		return $result;
@@ -314,8 +312,6 @@ class Order_Repository extends Singleton implements OrderRepository {
 	/**
 	 * Fetches and returns order instance.
 	 *
-	 * @noinspection PhpDocMissingThrowsInspection
-	 *
 	 * @param string $shipment_reference Packlink shipment reference.
 	 *
 	 * @return WC_Order WooCommerce order object.
@@ -329,8 +325,6 @@ class Order_Repository extends Singleton implements OrderRepository {
 
 	/**
 	 * Updates order shipment status.
-	 *
-	 * @noinspection PhpDocMissingThrowsInspection
 	 *
 	 * @param string $shipment_reference Packlink shipment reference.
 	 * @param string $status Shipment status.
@@ -507,8 +501,6 @@ class Order_Repository extends Singleton implements OrderRepository {
 
 	/**
 	 * Fetches and returns order shipment entity.
-	 *
-	 * @noinspection PhpDocMissingThrowsInspection
 	 *
 	 * @param string $shipment_reference Shipment reference number.
 	 *

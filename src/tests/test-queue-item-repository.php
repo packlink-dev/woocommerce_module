@@ -1,5 +1,6 @@
 <?php
 
+use Logeecom\Infrastructure\Logger\LoggerConfiguration;
 use Logeecom\Tests\Infrastructure\ORM\AbstractGenericQueueItemRepositoryTest;
 use Packlink\WooCommerce\Components\Repositories\Queue_Item_Repository;
 use Packlink\WooCommerce\Components\Utility\Database;
@@ -18,7 +19,19 @@ class TestQueueItemRepository extends AbstractGenericQueueItemRepositoryTest {
 	public function setUp() {
 
 		parent::setUp();
+
 		$this->createTestTable();
+	}
+
+	/**
+	 * Cleanup.
+	 *
+	 * @inheritdoc
+	 */
+	protected function tearDown() {
+		parent::tearDown();
+
+		LoggerConfiguration::resetInstance();
 	}
 
 	/**
