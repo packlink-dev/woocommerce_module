@@ -16,11 +16,14 @@ use Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException;
 use Logeecom\Infrastructure\ORM\RepositoryRegistry;
 use Logeecom\Infrastructure\ServiceRegister;
 use Logeecom\Infrastructure\TaskExecution\Exceptions\TaskRunnerStatusStorageUnavailableException;
+use Logeecom\Infrastructure\TaskExecution\QueueItem;
 use Packlink\BusinessLogic\Scheduler\Models\DailySchedule;
 use Packlink\BusinessLogic\Scheduler\Models\HourlySchedule;
 use Packlink\BusinessLogic\Scheduler\Models\Schedule;
+use Packlink\BusinessLogic\Scheduler\ScheduleCheckTask;
 use Packlink\BusinessLogic\ShippingMethod\Interfaces\ShopShippingMethodService;
 use Packlink\BusinessLogic\ShippingMethod\Utility\ShipmentStatus;
+use Packlink\BusinessLogic\Tasks\TaskCleanupTask;
 use Packlink\BusinessLogic\Tasks\UpdateShipmentDataTask;
 use Packlink\WooCommerce\Components\Bootstrap_Component;
 use Packlink\WooCommerce\Components\Checkout\Checkout_Handler;
@@ -663,6 +666,10 @@ class Plugin {
 		if ( version_compare( $previous_version, '2.1.1', '<' ) ) {
 			$this->do_update_211();
 		}
+
+		if ( version_compare( $previous_version, '2.1.2', '<' ) ) {
+			$this->do_update_220();
+		}
 	}
 
 	/**
@@ -734,5 +741,24 @@ class Plugin {
 
 		// we updated this to PACKLINK_VERSION, so we delete the old one.
 		delete_option( 'PACKLINK_DATABASE_VERSION' );
+	}
+
+	/**
+	 * Performs update for version 2.2.0.
+	 *
+	 * @throws RepositoryNotRegisteredException
+	 */
+	private function do_update_220() {
+		$configuration = ServiceRegister::getService( Configuration::CLASS_NAME );
+		$repository    = RepositoryRegistry::getRepository( Schedule::getClassName() );
+
+		$schedule = new HourlySchedule(
+			new TaskCleanupTask( ScheduleCheckTask::getClassName(), array( QueueItem::COMPLETED ), 3600 ),
+			$configuration->getDefaultQueueName()
+		);
+
+		$schedule->setMinute( 10 );
+		$schedule->setNextSchedule();
+		$repository->save( $schedule );
 	}
 }
