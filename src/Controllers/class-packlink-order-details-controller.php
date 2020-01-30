@@ -11,11 +11,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-use Packlink\BusinessLogic\Tasks\SendDraftTask;
-use Packlink\WooCommerce\Components\Order\Order_Details_Helper;
-use Packlink\WooCommerce\Components\Order\Order_Meta_Keys;
+use Logeecom\Infrastructure\ServiceRegister;
+use Packlink\BusinessLogic\OrderShipmentDetails\OrderShipmentDetailsService;
+use Packlink\BusinessLogic\ShipmentDraft\ShipmentDraftService;
+use Packlink\BusinessLogic\ShippingMethod\Interfaces\ShopShippingMethodService;
+use Packlink\WooCommerce\Components\ShippingMethod\Shipping_Method_Helper;
+use Packlink\WooCommerce\Components\ShippingMethod\Shop_Shipping_Method_Service;
 use Packlink\WooCommerce\Components\Utility\Script_Loader;
-use Packlink\WooCommerce\Components\Utility\Task_Queue;
 use WP_Post;
 
 /**
@@ -29,19 +31,50 @@ class Packlink_Order_Details_Controller extends Packlink_Base_Controller {
 	 * Renders Packlink PRO Shipping post box content.
 	 *
 	 * @param WP_Post $wp_post WordPress post object.
+	 *
+	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException
+	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException
 	 */
 	public function render( WP_Post $wp_post ) {
 		Script_Loader::load_css( array( 'css/packlink-order-details.css' ) );
 		Script_Loader::load_js( array( 'js/core/packlink-ajax-service.js', 'js/packlink-order-details.js' ) );
 
-		/** @noinspection PhpUnusedLocalVariableInspection */ // phpcs:ignore
-		$order_details = Order_Details_Helper::get_order_details( $wp_post );
+		$wc_order = \WC_Order_Factory::get_order( $wp_post->ID );
+
+		/** @var OrderShipmentDetailsService $shipment_details_service */
+		$shipment_details_service = ServiceRegister::getService( OrderShipmentDetailsService::CLASS_NAME );
+		/** @var ShipmentDraftService $draft_service */
+		$draft_service = ServiceRegister::getService( ShipmentDraftService::CLASS_NAME );
+		/** @var Shop_Shipping_Method_Service $shipping_method_service */
+		/** @noinspection PhpUnusedLocalVariableInspection */
+		$shipping_method_service = ServiceRegister::getService( ShopShippingMethodService::CLASS_NAME );
+
+		$order_details      = $shipment_details_service->getDetailsByOrderId( (string) $wp_post->ID );
+		/** @noinspection PhpUnusedLocalVariableInspection */
+		$last_status_update = '';
+		if ( $order_details && $order_details->getLastStatusUpdateTime() ) {
+			$update_timestamp   = $order_details->getLastStatusUpdateTime()->getTimestamp();
+			/** @noinspection PhpUnusedLocalVariableInspection */
+			$last_status_update = date( get_option( 'links_updated_date_format' ), $update_timestamp );
+		}
+
+		/** @noinspection PhpUnusedLocalVariableInspection */
+		$shipment_deleted = $order_details ? $shipment_details_service->isShipmentDeleted( $order_details->getReference() ) : true;
+		/** @noinspection PhpUnusedLocalVariableInspection */
+		$draft_status = $draft_service->getDraftStatus( (string) $wp_post->ID );
+		/** @noinspection PhpUnusedLocalVariableInspection */
+		$shipping_method = Shipping_Method_Helper::get_packlink_shipping_method_from_order( $wc_order );
 
 		include dirname( __DIR__ ) . '/resources/views/meta-post-box.php';
 	}
 
 	/**
 	 * Forces create of shipment draft for order.
+	 *
+	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException
+	 * @throws \Logeecom\Infrastructure\TaskExecution\Exceptions\QueueStorageUnavailableException
+	 * @throws \Packlink\BusinessLogic\ShipmentDraft\Exceptions\DraftTaskMapExists
+	 * @throws \Packlink\BusinessLogic\ShipmentDraft\Exceptions\DraftTaskMapNotFound
 	 */
 	public function create_draft() {
 		$this->validate( 'yes' );
@@ -51,16 +84,9 @@ class Packlink_Order_Details_Controller extends Packlink_Base_Controller {
 			$this->return_json( array( 'success' => false ), 400 );
 		}
 
-		$order = \WC_Order_Factory::get_order( $payload['id'] );
-		if ( ! $order || $order->meta_exists( Order_Meta_Keys::SHIPMENT_REFERENCE ) ) {
-			$this->return_json( array( 'success' => false ), 400 );
-		}
-
-		/** @noinspection PhpUnhandledExceptionInspection */ // phpcs:ignore
-		$task_id = Task_Queue::enqueue( new SendDraftTask( $order->get_id() ) );
-		$order->update_meta_data( Order_Meta_Keys::IS_PACKLINK, 'yes' );
-		$order->update_meta_data( Order_Meta_Keys::SEND_DRAFT_TASK_ID, $task_id );
-		$order->save();
+		/** @var ShipmentDraftService $draft_service */
+		$draft_service = ServiceRegister::getService( ShipmentDraftService::CLASS_NAME );
+		$draft_service->enqueueCreateShipmentDraftTask( (string) $payload['id'] );
 
 		$this->return_json( array( 'success' => true ) );
 	}

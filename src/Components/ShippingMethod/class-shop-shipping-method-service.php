@@ -122,6 +122,13 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 	}
 
 	/**
+	 * @inheritDoc
+	 */
+	public function getCarrierLogoFilePath( $carrierName ) {
+		return Shipping_Method_Helper::get_carrier_logo( $carrierName );
+	}
+
+	/**
 	 * Adds all active shipping methods to zone.
 	 *
 	 * @param \WC_Shipping_Zone $zone Shipping zone.
@@ -204,8 +211,6 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 
 	/**
 	 * Deletes shipping method in shop integration.
-	 *
-	 * @noinspection PhpDocMissingThrowsInspection
 	 *
 	 * @param ShippingMethod $shipping_method Shipping method.
 	 *

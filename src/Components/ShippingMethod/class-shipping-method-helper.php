@@ -7,8 +7,11 @@
 
 namespace Packlink\WooCommerce\Components\ShippingMethod;
 
+use Logeecom\Infrastructure\ORM\QueryFilter\QueryFilter;
 use Logeecom\Infrastructure\ORM\RepositoryRegistry;
 use Logeecom\Infrastructure\ServiceRegister;
+use Packlink\BusinessLogic\ShippingMethod\Models\ShippingMethod;
+use Packlink\BusinessLogic\ShippingMethod\ShippingMethodService;
 use Packlink\BusinessLogic\Utility\Php\Php55;
 use Packlink\WooCommerce\Components\Services\Config_Service;
 use Packlink\WooCommerce\Components\Utility\Shop_Helper;
@@ -19,6 +22,10 @@ use Packlink\WooCommerce\Components\Utility\Shop_Helper;
  * @package Packlink\WooCommerce\Components\ShippingMethod
  */
 class Shipping_Method_Helper {
+
+	const SHIPPING_ID    = '_packlink_shipping_method_id';
+	const DROP_OFF_ID    = '_packlink_drop_off_point_id';
+	const DROP_OFF_EXTRA = '_packlink_drop_off_extra';
 
 	/**
 	 * Returns path to carrier logo or empty string if that logo file doesn't exist.
@@ -48,6 +55,75 @@ class Shipping_Method_Helper {
 		$file_path  = $file_path . \strtolower( $user_info->country ) . '/' . $file_name . '.png';
 
 		return file_exists( $file_path ) ? $image_path : $default;
+	}
+
+	/**
+	 * Returns Packlink shipping method.
+	 *
+	 * @param \WC_Order $wc_order WooCommerce order.
+	 *
+	 * @return ShippingMethod Returns Packlink shipping method.
+	 *
+	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException
+	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException
+	 */
+	public static function get_packlink_shipping_method_from_order( \WC_Order $wc_order ) {
+		$shipping = $wc_order->get_shipping_methods();
+		if ( empty( $shipping ) ) {
+			return null;
+		}
+
+		$shipping_method_id = - 1;
+		foreach ( $shipping as $item_id => $shipping_item ) {
+			$shipping_data      = $shipping_item->get_data();
+			$shipping_method_id = $shipping_data['instance_id'];
+		}
+
+		return self::get_packlink_shipping_method( (int) $shipping_method_id );
+	}
+
+	/**
+	 * Returns Packlink shipping method that is assigned to this WooCommerce shipping method.
+	 *
+	 * @param int $wc_shipping_method_id Shipping method identifier.
+	 *
+	 * @return ShippingMethod Shipping method.
+	 *
+	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException
+	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException
+	 */
+	public static function get_packlink_shipping_method( $wc_shipping_method_id ) {
+		$filter = new QueryFilter();
+		/** @noinspection PhpUnhandledExceptionInspection */ // phpcs:ignore
+		$filter->where( 'woocommerceShippingMethodId', '=', $wc_shipping_method_id );
+
+		$repository = RepositoryRegistry::getRepository( Shipping_Method_Map::CLASS_NAME );
+		/**
+		 * Shipping method map entity.
+		 *
+		 * @var Shipping_Method_Map $map_entry
+		 */
+		$map_entry = $repository->selectOne( $filter );
+		if ( null === $map_entry ) {
+			return null;
+		}
+
+		$id = $map_entry->getPacklinkShippingMethodId();
+		if ( - 1 === $id ) {
+			/**
+			 * Configuration service.
+			 *
+			 * @var Config_Service $configuration
+			 */
+			$configuration = ServiceRegister::getService( Config_Service::CLASS_NAME );
+
+			return $configuration->get_default_shipping_method();
+		}
+
+		/** @var ShippingMethodService $shipping_method_service */
+		$shipping_method_service = ServiceRegister::getService( ShippingMethodService::CLASS_NAME );
+
+		return $shipping_method_service->getShippingMethod( $map_entry->getPacklinkShippingMethodId() );
 	}
 
 	/**

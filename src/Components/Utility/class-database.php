@@ -57,13 +57,23 @@ class Database {
 	}
 
 	/**
-	 * Executes uninstall scripts.
+	 * Executes uninstall script.
 	 */
 	public function uninstall() {
-		$queries = $this->prepare_queries_for_deleting();
-		foreach ( $queries as $query ) {
-			$this->db->query( $query );
-		}
+		$table_name = $this->db->prefix . self::BASE_TABLE;
+
+		$query = 'DROP TABLE IF EXISTS ' . $table_name;
+
+		$this->db->query( $query );
+	}
+
+	/**
+	 * Removes all Packlink related data from post meta table.
+	 */
+	public function remove_packlink_meta_data() {
+		$query = "DELETE FROM `{$this->db->postmeta}` WHERE `meta_key` LIKE \"%_packlink_%\"";
+
+		$this->db->query( $query );
 	}
 
 	/**
@@ -93,6 +103,31 @@ class Database {
 	}
 
 	/**
+	 * Returns IDs of the orders in WooCommerce shipped by Packlink.
+	 *
+	 * @return array
+	 */
+	public function get_packlink_order_ids() {
+		$query = "SELECT p.ID AS id
+			FROM `{$this->db->posts}` AS p
+			INNER JOIN `{$this->db->postmeta}` AS m
+			ON p.ID = m.post_id
+			WHERE m.meta_key = '_is_packlink_shipment'
+            AND m.meta_value = 'yes'
+		";
+
+		$results = $this->db->get_results( $query, ARRAY_A );
+
+		if ( empty( $results ) ) {
+			return array();
+		}
+
+		return array_map( function ( $order ) {
+			return $order['id'];
+		}, $results );
+	}
+
+	/**
 	 * Prepares database queries for inserting tables.
 	 *
 	 * @return array
@@ -114,23 +149,6 @@ class Database {
             `data` LONGTEXT,
             PRIMARY KEY (`id`)
         )';
-
-		return $queries;
-	}
-
-	/**
-	 * Preparing database queries for dropping tables and removing meta data.
-	 *
-	 * @return array
-	 */
-	private function prepare_queries_for_deleting() {
-		$table_name = $this->db->prefix . self::BASE_TABLE;
-
-		$queries   = array();
-		$queries[] = 'DROP TABLE IF EXISTS ' . $table_name;
-
-		$post_meta_table = $this->db->postmeta;
-		$queries[]       = "DELETE FROM `$post_meta_table` WHERE `meta_key` LIKE \"%_packlink_%\"";
 
 		return $queries;
 	}

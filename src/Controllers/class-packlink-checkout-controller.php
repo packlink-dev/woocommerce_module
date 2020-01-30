@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 namespace Packlink\WooCommerce\Controllers;
 
-use Packlink\WooCommerce\Components\Order\Order_Meta_Keys;
+use Packlink\WooCommerce\Components\ShippingMethod\Shipping_Method_Helper;
 
 /**
  * Class Packlink_Checkout_Controller
@@ -40,9 +40,9 @@ class Packlink_Checkout_Controller extends Packlink_Base_Controller {
 			$this->return_json( array( 'success' => false ) );
 		}
 
-		wc()->session->set( Order_Meta_Keys::DROP_OFF_ID, $payload['id'] );
-		wc()->session->set( Order_Meta_Keys::DROP_OFF_EXTRA, $payload );
-		wc()->session->set( Order_Meta_Keys::SHIPPING_ID, $chosen_method = wc()->session->chosen_shipping_methods[0] );
+		wc()->session->set( Shipping_Method_Helper::DROP_OFF_ID, $payload['id'] );
+		wc()->session->set( Shipping_Method_Helper::DROP_OFF_EXTRA, $payload );
+		wc()->session->set( Shipping_Method_Helper::SHIPPING_ID, $chosen_method = wc()->session->chosen_shipping_methods[0] );
 
 		$this->return_json( array( 'success' => true ) );
 	}

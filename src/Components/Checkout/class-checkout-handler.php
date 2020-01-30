@@ -8,21 +8,15 @@
 namespace Packlink\WooCommerce\Components\Checkout;
 
 use Logeecom\Infrastructure\Logger\Logger;
-use Logeecom\Infrastructure\ORM\Interfaces\RepositoryInterface;
-use Logeecom\Infrastructure\ORM\QueryFilter\QueryFilter;
 use Logeecom\Infrastructure\ORM\RepositoryRegistry;
 use Logeecom\Infrastructure\ServiceRegister;
 use Packlink\BusinessLogic\Location\LocationService;
+use Packlink\BusinessLogic\ShipmentDraft\ShipmentDraftService;
 use Packlink\BusinessLogic\ShippingMethod\Models\ShippingMethod;
-use Packlink\BusinessLogic\ShippingMethod\ShippingMethodService;
-use Packlink\WooCommerce\Components\Order\Order_Details_Helper;
-use Packlink\WooCommerce\Components\Order\Order_Meta_Keys;
-use Packlink\WooCommerce\Components\Services\Config_Service;
+use Packlink\WooCommerce\Components\Order\Order_Drop_Off_Map;
 use Packlink\WooCommerce\Components\ShippingMethod\Packlink_Shipping_Method;
 use Packlink\WooCommerce\Components\ShippingMethod\Shipping_Method_Helper;
-use Packlink\WooCommerce\Components\ShippingMethod\Shipping_Method_Map;
 use Packlink\WooCommerce\Components\Utility\Script_Loader;
-use WC_Order_Factory;
 use WC_Shipping_Rate;
 
 /**
@@ -44,37 +38,19 @@ class Checkout_Handler {
 	 * Default Packlink shipping title
 	 */
 	const DEFAULT_SHIPPING = 'shipping cost';
-	/**
-	 * Base repository.
-	 *
-	 * @var RepositoryInterface
-	 */
-	private $repository;
-	/**
-	 * Shipping method service.
-	 *
-	 * @var ShippingMethodService
-	 */
-	private $shipping_method_service;
-
-	/**
-	 * Checkout_Handler constructor.
-	 */
-	public function __construct() {
-		/** @noinspection PhpUnhandledExceptionInspection */ // phpcs:ignore
-		$this->repository              = RepositoryRegistry::getRepository( Shipping_Method_Map::CLASS_NAME );
-		$this->shipping_method_service = ServiceRegister::getService( ShippingMethodService::CLASS_NAME );
-	}
 
 	/**
 	 * This hook is triggered after shipping method label, and it will insert hidden input values.
 	 *
 	 * @param WC_Shipping_Rate $rate Shipping rate.
 	 * @param int              $index Shipping method index.
+	 *
+	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException
+	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException
 	 */
 	public function after_shipping_rate( WC_Shipping_Rate $rate, $index ) {
 		$rate_data       = $this->get_rate_data( $rate );
-		$shipping_method = $this->get_packlink_shipping_method( $rate_data['instance_id'] );
+		$shipping_method = Shipping_Method_Helper::get_packlink_shipping_method( $rate_data['instance_id'] );
 
 		if ( null === $shipping_method ) {
 			return;
@@ -85,15 +61,15 @@ class Checkout_Handler {
 			'packlink_show_image'  => $shipping_method->isDisplayLogo() ? 'yes' : 'no',
 			'packlink_is_drop_off' => $shipping_method->isDestinationDropOff() ? 'yes' : 'no',
 		);
+
 		foreach ( $fields as $field => $value ) {
 			$this->print_hidden_input( $field, $value );
 		}
 
 		$chosen_method = wc()->session->chosen_shipping_methods[ $index ];
-		if ( wc()->session->get( Order_Meta_Keys::SHIPPING_ID, '' ) !== $chosen_method ) {
-			wc()->session->set( Order_Meta_Keys::DROP_OFF_ID, '' );
-			wc()->session->set( Order_Meta_Keys::DROP_OFF_EXTRA, '' );
-			wc()->session->set( Order_Meta_Keys::SHIPPING_ID, '' );
+		if ( wc()->session->get( Shipping_Method_Helper::SHIPPING_ID, '' ) !== $chosen_method ) {
+			wc()->session->set( Shipping_Method_Helper::DROP_OFF_ID, '' );
+			wc()->session->set( Shipping_Method_Helper::SHIPPING_ID, '' );
 		}
 
 		if ( $rate_data['rate_id'] === $chosen_method && $shipping_method->isDestinationDropOff() ) {
@@ -133,7 +109,7 @@ class Checkout_Handler {
 			return;
 		}
 
-		$shipping_method = $this->get_packlink_shipping_method( (int) $parts[1] );
+		$shipping_method = Shipping_Method_Helper::get_packlink_shipping_method( (int) $parts[1] );
 		$is_drop_off     = $shipping_method->isDestinationDropOff();
 		$drop_off_id     = $this->get_param( static::PACKLINK_DROP_OFF_ID );
 		if ( $is_drop_off && empty( $drop_off_id ) ) {
@@ -146,6 +122,9 @@ class Checkout_Handler {
 	 *
 	 * @param \WC_Order $order WooCommerce order.
 	 * @param array     $data Order data.
+	 *
+	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException
+	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException
 	 */
 	public function checkout_update_shipping_address( \WC_Order $order, array $data ) {
 		$shipping_method = $this->get_shipping_method( $data );
@@ -176,26 +155,23 @@ class Checkout_Handler {
 	 * @param int   $order_id WooCommerce order identifier.
 	 * @param array $data WooCommerce order meta data.
 	 */
-	public function checkout_update_order_meta( $order_id, array $data ) {
+	public function checkout_update_drop_off( $order_id, array $data ) {
 		$shipping_method = $this->get_shipping_method( $data );
 		if ( ! $shipping_method ) {
 			return;
 		}
 
-		$wc_order    = WC_Order_Factory::get_order( $order_id );
-		$is_drop_off = $shipping_method->isDestinationDropOff();
-
-		$wc_order->update_meta_data( Order_Meta_Keys::IS_PACKLINK, 'yes' );
-		$wc_order->update_meta_data( Order_Meta_Keys::LABEL_PRINTED, 'no' );
-		$wc_order->update_meta_data( Order_Meta_Keys::SHIPPING_ID, $shipping_method->getId() );
-
-		if ( $is_drop_off ) {
-			$wc_order->update_meta_data( Order_Meta_Keys::DROP_OFF_ID, $this->get_param( static::PACKLINK_DROP_OFF_ID ) );
-			$wc_order->update_meta_data( Order_Meta_Keys::DROP_OFF_EXTRA, $this->get_param( static::PACKLINK_DROP_OFF_EXTRA ) );
+		if ( $shipping_method->isDestinationDropOff() ) {
+			$order_drop_off_map_repository = RepositoryRegistry::getRepository( Order_Drop_Off_Map::CLASS_NAME );
+			$order_drop_off_map            = new Order_Drop_Off_Map();
+			$order_drop_off_map->setOrderId( $order_id );
+			$order_drop_off_map->setDropOffPointId( $this->get_param( static::PACKLINK_DROP_OFF_ID ) );
+			$order_drop_off_map_repository->save( $order_drop_off_map );
 		}
 
-		$wc_order->save();
-		Order_Details_Helper::queue_draft( $order_id, $wc_order );
+		/** @var ShipmentDraftService $draft_service */
+		$draft_service = ServiceRegister::getService( ShipmentDraftService::CLASS_NAME );
+		$draft_service->enqueueCreateShipmentDraftTask( (string) $order_id );
 	}
 
 	/**
@@ -268,50 +244,14 @@ class Checkout_Handler {
 	}
 
 	/**
-	 * Returns Packlink shipping method that is assigned to this WooCommerce shipping method.
-	 *
-	 * @noinspection PhpDocMissingThrowsInspection
-	 *
-	 * @param int $instance_id Shipping method identifier.
-	 *
-	 * @return ShippingMethod Shipping method.
-	 */
-	private function get_packlink_shipping_method( $instance_id ) {
-		$filter = new QueryFilter();
-		/** @noinspection PhpUnhandledExceptionInspection */ // phpcs:ignore
-		$filter->where( 'woocommerceShippingMethodId', '=', $instance_id );
-
-		/**
-		 * Shipping method map entity.
-		 *
-		 * @var Shipping_Method_Map $map_entry
-		 */
-		$map_entry = $this->repository->selectOne( $filter );
-		if ( null === $map_entry ) {
-			return null;
-		}
-
-		$id = $map_entry->getPacklinkShippingMethodId();
-		if ( - 1 === $id ) {
-			/**
-			 * Configuration service.
-			 *
-			 * @var Config_Service $configuration
-			 */
-			$configuration = ServiceRegister::getService( Config_Service::CLASS_NAME );
-
-			return $configuration->get_default_shipping_method();
-		}
-
-		return $this->shipping_method_service->getShippingMethod( $map_entry->getPacklinkShippingMethodId() );
-	}
-
-	/**
 	 * Returns Packlink shipping method.
 	 *
 	 * @param array $data Order data.
 	 *
 	 * @return ShippingMethod|null Shipping method.
+	 *
+	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException
+	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException
 	 */
 	private function get_shipping_method( array $data = array() ) {
 		if ( empty( $data ) || ! isset( $data['shipping_method'][0] ) ) {
@@ -326,7 +266,7 @@ class Checkout_Handler {
 			return null;
 		}
 
-		return $this->get_packlink_shipping_method( $instance_id );
+		return Shipping_Method_Helper::get_packlink_shipping_method( $instance_id );
 	}
 
 	/**

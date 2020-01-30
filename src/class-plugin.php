@@ -601,7 +601,7 @@ class Plugin {
 		add_action( 'woocommerce_review_order_after_shipping', array( $handler, 'after_shipping' ) );
 		add_action( 'woocommerce_checkout_process', array( $handler, 'checkout_process' ) );
 		add_action( 'woocommerce_checkout_create_order', array( $handler, 'checkout_update_shipping_address' ), 10, 2 );
-		add_action( 'woocommerce_checkout_update_order_meta', array( $handler, 'checkout_update_order_meta' ), 10, 2 );
+		add_action( 'woocommerce_checkout_update_order_meta', array( $handler, 'checkout_update_drop_off' ), 10, 2 );
 		add_action( 'wp_enqueue_scripts', array( $handler, 'load_scripts' ) );
 	}
 

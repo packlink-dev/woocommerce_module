@@ -5,52 +5,54 @@
  * @package Packlink
  */
 
+use Logeecom\Infrastructure\TaskExecution\QueueItem;
 use Packlink\WooCommerce\Components\Utility\Shop_Helper;
 
 /**
  * Order details.
  *
- * @var \Packlink\WooCommerce\Components\Order\Order_Details $order_details
+ * @var \WC_Order                                                                    $wc_order
+ * @var \Packlink\WooCommerce\Components\ShippingMethod\Shop_Shipping_Method_Service $shipping_method_service
+ * @var \Packlink\BusinessLogic\OrderShipmentDetails\Models\OrderShipmentDetails     $order_details
+ * @var bool                                                                         $shipment_deleted
+ * @var \Packlink\BusinessLogic\ShipmentDraft\Objects\ShipmentDraftStatus            $draft_status
+ * @var \Packlink\BusinessLogic\ShippingMethod\Models\ShippingMethod                 $shipping_method
+ * @var string                                                                       $last_status_update
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$country       = Shop_Helper::get_country_code();
-$url           = "https://pro.packlink.{$country}/private/shipments/{$order_details->get_reference()}";
-$carrier_codes = $order_details->get_carrier_codes();
-
-/** @var \Packlink\WooCommerce\Components\Order\Order_Repository $repository */
-$repository = \Logeecom\Infrastructure\ServiceRegister::getService(
-        \Packlink\BusinessLogic\Order\Interfaces\OrderRepository::CLASS_NAME
-);
-
+$country = Shop_Helper::get_country_code();
 ?>
 
 <ul class="order_actions submitbox" xmlns="http://www.w3.org/1999/html">
-	<?php if ( $order_details->get_reference() ) : ?>
+	<?php if ( $order_details && $order_details->getReference() ) : ?>
 		<li class="wide">
-			<?php if ( $order_details->get_carrier_image() ) : ?>
+			<?php if ( $shipping_method ) : ?>
 				<div class="pl-order-detail-section">
 					<h4><?php echo __( 'Carrier', 'packlink-pro-shipping' ); ?></h4>
 					<div>
-						<img class="pl-carrier-image" src="<?php echo $order_details->get_carrier_image(); ?>"
-							 alt="carrier image"/>
-						<span><?php echo $order_details->get_carrier_name(); ?></span>
+						<img
+								class="pl-carrier-image"
+								src="<?php echo $shipping_method_service->getCarrierLogoFilePath( $shipping_method->getCarrierName() ) ?>"
+								alt="carrier image"
+						/>
+						<span><?php echo $shipping_method->getTitle(); ?></span>
 					</div>
 
-					<?php if ( ! empty( $carrier_codes ) ) : ?>
+					<?php if ( ! empty( $order_details->getCarrierTrackingNumbers() ) ) : ?>
 						<dl>
 							<dt><?php echo __( 'Carrier tracking codes:', 'packlink-pro-shipping' ); ?></dt>
-							<?php foreach ( $carrier_codes as $carrier_code ) : ?>
+							<?php foreach ( $order_details->getCarrierTrackingNumbers() as $carrier_code ) : ?>
 								<dd><?php echo $carrier_code; ?></dd>
 							<?php endforeach; ?>
 						</dl>
 					<?php endif; ?>
 
-					<?php if ( $order_details->get_carrier_url() ) : ?>
-						<a href="<?php echo $order_details->get_carrier_url(); ?>" target="_blank">
+					<?php if ( $order_details->getCarrierTrackingUrl() ) : ?>
+						<a href="<?php echo $order_details->getCarrierTrackingUrl(); ?>" target="_blank">
 							<button type="button" class="button pl-button-view pl-carrier-button"
 									name="view on packlink" value="View">
 								<?php echo __( 'Track it!', 'packlink-pro-shipping' ); ?>
@@ -63,32 +65,35 @@ $repository = \Logeecom\Infrastructure\ServiceRegister::getService(
 
 			<div class="pl-order-detail-section">
 				<h4><?php echo __( 'Status', 'packlink-pro-shipping' ); ?></h4>
-				<span class="pl-timestamp"><?php echo $order_details->get_status_time(); ?> <b><?php echo $order_details->get_status_translation(); ?></b></span>
+				<span class="pl-timestamp">
+					<?php echo $last_status_update; ?>
+					<b><?php echo ucfirst( $order_details->getShippingStatus() ); ?></b>
+				</span>
 			</div>
 
 			<div class="pl-order-detail-section">
 				<h4><?php echo __( 'Reference number', 'packlink-pro-shipping' ); ?></h4>
-				<span><?php echo $order_details->get_reference(); ?></span>
+				<span><?php echo $order_details->getReference(); ?></span>
 			</div>
 
-			<?php if ( $order_details->get_packlink_price() > 0 ) : ?>
+			<?php if ( $order_details->getShippingCost() > 0 ) : ?>
 				<div class="pl-order-detail-section">
 					<h4><?php echo __( 'Packlink shipping price', 'packlink-pro-shipping' ); ?></h4>
-					<?php echo \wc_price( $order_details->get_packlink_price() ); ?>
+					<?php echo \wc_price( $order_details->getShippingCost() ); ?>
 				</div>
 			<?php endif; ?>
 		</li>
 
-		<?php if ( ! $repository->isShipmentDeleted( $order_details->get_reference() ) ) : ?>
+		<?php if ( ! $shipment_deleted ) : ?>
 			<li class="wide">
-				<a href="<?php echo $url; ?>" target="_blank">
+				<a href="<?php echo "https://pro.packlink.{$country}/private/shipments/{$order_details->getReference()}"; ?>" target="_blank">
 					<button type="button" class="button pl-button-view" name="view on packlink" value="View">
 						<?php echo __( 'View on Packlink PRO', 'packlink-pro-shipping' ); ?>
 					</button>
 				</a>
 
-				<?php if ( $order_details->get_label() ) : ?>
-					<a href="<?php echo $order_details->get_label(); ?>" target="_blank">
+				<?php if ( $order_details->getShipmentLabels() ) : ?>
+					<a href="<?php echo $order_details->getShipmentLabels()[0]->getLink(); ?>" target="_blank">
 						<button type="button" class="button button-primary" name="print label" value="Print">
 							<?php echo __( 'Print label', 'packlink-pro-shipping' ); ?>
 						</button>
@@ -96,19 +101,19 @@ $repository = \Logeecom\Infrastructure\ServiceRegister::getService(
 				<?php endif; ?>
 			</li>
 		<?php endif; ?>
-	<?php elseif ( ! $order_details->is_packlink_order() || ! $order_details->is_creating() ) : ?>
+	<?php elseif ( ! in_array( $draft_status->status, array( QueueItem::QUEUED, QueueItem::IN_PROGRESS ) ) ) : ?>
 		<li class="wide">
 			<div class="pl-order-detail-section pl-create-draft">
 
-				<?php if ( 'failed' === $order_details->get_status() ) : ?>
-					<span><?php echo sprintf( __( 'Previous attempt to create a draft failed. Error: %s', 'packlink-pro-shipping' ), $order_details->get_message() ); ?></span>
+				<?php if ( QueueItem::FAILED === $draft_status->status ) : ?>
+					<span><?php echo sprintf( __( 'Previous attempt to create a draft failed. Error: %s', 'packlink-pro-shipping' ), $draft_status->message ); ?></span>
 					<br/>
 				<?php endif; ?>
 
 				<input type="hidden" id="pl-create-endpoint"
 					   value="<?php echo Shop_Helper::get_controller_url( 'Order_Details', 'create_draft' ); ?>"/>
 				<button type="button" class="button button-primary" id="pl-create-draft"
-						value="<?php echo $order_details->get_id(); ?>">
+						value="<?php echo $wc_order->get_id(); ?>">
 					<?php echo __( 'Create draft', 'packlink-pro-shipping' ); ?>
 				</button>
 			</div>
