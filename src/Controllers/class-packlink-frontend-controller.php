@@ -23,19 +23,17 @@ use Packlink\BusinessLogic\Controllers\DTO\ShippingMethodConfiguration;
 use Packlink\BusinessLogic\Controllers\ShippingMethodController;
 use Packlink\BusinessLogic\Controllers\UpdateShippingServicesTaskStatusController;
 use Packlink\BusinessLogic\Http\DTO\ParcelInfo;
-use Packlink\BusinessLogic\Http\DTO\Warehouse;
 use Packlink\BusinessLogic\Location\LocationService;
 use Packlink\BusinessLogic\ShippingMethod\Models\FixedPricePolicy;
 use Packlink\BusinessLogic\ShippingMethod\Models\PercentPricePolicy;
 use Packlink\BusinessLogic\ShippingMethod\Models\ShippingMethod;
 use Packlink\BusinessLogic\User\UserAccountService;
+use Packlink\BusinessLogic\Warehouse\WarehouseService;
 use Packlink\WooCommerce\Components\Services\Config_Service;
 use Packlink\WooCommerce\Components\ShippingMethod\Shipping_Method_Helper;
 use Packlink\WooCommerce\Components\Utility\Script_Loader;
 use Packlink\WooCommerce\Components\Utility\Shop_Helper;
 use Packlink\WooCommerce\Components\Utility\Task_Queue;
-use Packlink\WooCommerce\Components\Validators\Parcel_Validator;
-use Packlink\WooCommerce\Components\Validators\Warehouse_Validator;
 
 /**
  * Class Packlink_Frontend_Controller
@@ -149,6 +147,8 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 
 	/**
 	 * Returns dashboard status.
+	 *
+	 * @throws \Packlink\BusinessLogic\DTO\Exceptions\FrontDtoNotRegisteredException
 	 */
 	public function get_dashboard_status() {
 		$this->validate( 'no', true );
@@ -159,7 +159,11 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 		 * @var DashboardController $dashboard_controller
 		 */
 		$dashboard_controller = ServiceRegister::getService( DashboardController::CLASS_NAME );
-		$status               = $dashboard_controller->getStatus();
+		try {
+			$status = $dashboard_controller->getStatus();
+		} catch ( \Packlink\BusinessLogic\DTO\Exceptions\FrontDtoValidationException $e ) {
+			$this->return_validation_errors_response( $e->getValidationErrors() );
+		}
 
 		$this->return_json( $status->toArray() );
 	}
@@ -214,19 +218,14 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 		$raw_json = $this->get_raw_input();
 		$payload  = json_decode( $raw_json, true );
 
-		$validator = new Parcel_Validator();
-		$errors    = $validator->validate( $payload );
-		if ( ! empty( $errors ) ) {
-			$this->return_json( $errors, 400 );
+		try {
+			$parcel_info = ParcelInfo::fromArray( $payload );
+			/** @var Configuration $configuration */
+			$configuration = ServiceRegister::getService( Configuration::CLASS_NAME );
+			$configuration->setDefaultParcel( $parcel_info );
+		} catch ( \Packlink\BusinessLogic\DTO\Exceptions\FrontDtoValidationException $e ) {
+			$this->return_validation_errors_response( $e->getValidationErrors() );
 		}
-
-		/**
-		 * Configuration service.
-		 *
-		 * @var Configuration $configuration
-		 */
-		$configuration = ServiceRegister::getService( Configuration::CLASS_NAME );
-		$configuration->setDefaultParcel( ParcelInfo::fromArray( $payload ) );
 
 		$this->return_json( array( 'success' => true ) );
 	}
@@ -237,19 +236,17 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	public function get_default_warehouse() {
 		$this->validate( 'no', true );
 
-		/**
-		 * Configuration service.
-		 *
-		 * @var Configuration $configuration
-		 */
-		$configuration = ServiceRegister::getService( Configuration::CLASS_NAME );
-		$warehouse     = $configuration->getDefaultWarehouse();
+		/** @var WarehouseService $warehouse_service */
+		$warehouse_service = ServiceRegister::getService( WarehouseService::CLASS_NAME );
+		$warehouse         = $warehouse_service->getWarehouse();
 
 		$this->return_json( $warehouse ? $warehouse->toArray() : array() );
 	}
 
 	/**
 	 * Saves default warehouse.
+	 *
+	 * @throws \Packlink\BusinessLogic\DTO\Exceptions\FrontDtoNotRegisteredException
 	 */
 	public function save_default_warehouse() {
 		$this->validate( 'yes', true );
@@ -257,24 +254,13 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 		$raw_json = $this->get_raw_input();
 		$payload  = json_decode( $raw_json, true );
 
-		/**
-		 * Configuration service.
-		 *
-		 * @var Configuration $configuration
-		 */
-		$configuration = ServiceRegister::getService( Configuration::CLASS_NAME );
-		if ( ! isset( $payload['country'] ) ) {
-			$user               = $configuration->getUserInfo();
-			$payload['country'] = $user ? $user->country : 'ES';
+		/** @var WarehouseService $warehouse_service */
+		$warehouse_service = ServiceRegister::getService( WarehouseService::CLASS_NAME );
+		try {
+			$warehouse_service->setWarehouse( $payload );
+		} catch ( \Packlink\BusinessLogic\DTO\Exceptions\FrontDtoValidationException $e ) {
+			$this->return_validation_errors_response( $e->getValidationErrors() );
 		}
-
-		$validator = new Warehouse_Validator();
-		$errors    = $validator->validate( $payload );
-		if ( ! empty( $errors ) ) {
-			$this->return_json( $errors, 400 );
-		}
-
-		$configuration->setDefaultWarehouse( Warehouse::fromArray( $payload ) );
 
 		$this->return_json( array( 'success' => true ) );
 	}
@@ -342,21 +328,11 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	public function get_all_shipping_methods() {
 		$this->validate( 'no', true );
 
-		/**
-		 * Shipping method controller.
-		 *
-		 * @var ShippingMethodController $controller
-		 */
-		$controller = ServiceRegister::getService( ShippingMethodController::CLASS_NAME );
-		$result     = array();
-		foreach ( $controller->getAll() as $item ) {
-			$shipping_method            = $item->toArray();
-			$shipping_method['logoUrl'] = Shipping_Method_Helper::get_carrier_logo( $shipping_method['carrierName'] );
+		/** @var ShippingMethodController $controller */
+		$controller       = ServiceRegister::getService( ShippingMethodController::CLASS_NAME );
+		$shipping_methods = $controller->getAll();
 
-			$result[] = $shipping_method;
-		}
-
-		$this->return_json( $result );
+		$this->return_dto_entities_response( $shipping_methods );
 	}
 
 	/**

@@ -7,6 +7,8 @@
 
 namespace Packlink\WooCommerce\Controllers;
 
+use Packlink\BusinessLogic\DTO\BaseDto;
+use Packlink\BusinessLogic\DTO\ValidationError;
 use Packlink\WooCommerce\Components\Utility\Shop_Helper;
 
 /**
@@ -57,6 +59,36 @@ class Packlink_Base_Controller {
 
 			exit();
 		}
+	}
+
+	/**
+	 * Converts DTOs to array and returns a JSON response.
+	 *
+	 * @param BaseDto[] $entities
+	 */
+	protected function return_dto_entities_response( array $entities ) {
+		$response = array();
+
+		foreach ( $entities as $entity ) {
+			$response[] = $entity->toArray();
+		}
+
+		$this->return_json( $response );
+	}
+
+	/**
+	 * Returns 400 response with validation errors.
+	 *
+	 * @param ValidationError[] $errors
+	 */
+	protected function return_validation_errors_response( array $errors ) {
+		$response = array();
+
+		foreach ( $errors as $error ) {
+			$response[$error->field] = $error->message;
+		}
+
+		$this->return_json( $response, 400 );
 	}
 
 	/**
