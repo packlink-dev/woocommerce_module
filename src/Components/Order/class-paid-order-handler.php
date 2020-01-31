@@ -12,29 +12,29 @@ use Packlink\BusinessLogic\ShipmentDraft\ShipmentDraftService;
 use WC_Order;
 
 /**
- * Class Order_Details_Helper
+ * Class Paid_Order_Handler
  *
  * @package Packlink\WooCommerce\Components\Utility
  */
-class Order_Details_Helper {
+class Paid_Order_Handler {
 	/**
 	 * Fully qualified name of this interface.
 	 */
 	const CLASS_NAME = __CLASS__;
 
 	/**
-	 * Creates and queues shipment drafts for paid orders.
+	 * Creates Packlink shipment draft if the order is paid.
 	 *
 	 * @noinspection PhpDocMissingThrowsInspection
 	 *
 	 * @param int      $order_id Order identifier.
 	 * @param WC_Order $order WooCommerce order instance.
 	 */
-	public static function queue_draft( $order_id, WC_Order $order ) {
+	public static function handle( $order_id, WC_Order $order ) {
 		if ( $order->is_paid() ) {
 			/** @var ShipmentDraftService $draft_service */
 			$draft_service = ServiceRegister::getService( ShipmentDraftService::CLASS_NAME );
-			$draft_service->enqueueCreateShipmentDraftTask( (string)$order_id );
+			$draft_service->enqueueCreateShipmentDraftTask( (string) $order_id );
 		}
 	}
 }

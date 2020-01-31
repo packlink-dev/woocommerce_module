@@ -14,7 +14,6 @@ use Packlink\BusinessLogic\ShippingMethod\Models\ShippingMethod;
 use Packlink\BusinessLogic\ShippingMethod\ShippingMethodService;
 use Packlink\BusinessLogic\Utility\Php\Php55;
 use Packlink\WooCommerce\Components\Services\Config_Service;
-use Packlink\WooCommerce\Components\Utility\Shop_Helper;
 
 /**
  * Class Shipping_Method_Helper
@@ -26,36 +25,6 @@ class Shipping_Method_Helper {
 	const SHIPPING_ID    = '_packlink_shipping_method_id';
 	const DROP_OFF_ID    = '_packlink_drop_off_point_id';
 	const DROP_OFF_EXTRA = '_packlink_drop_off_extra';
-
-	/**
-	 * Returns path to carrier logo or empty string if that logo file doesn't exist.
-	 *
-	 * @param string $carrier_name Name of the carrier.
-	 *
-	 * @return string Carrier image url.
-	 */
-	public static function get_carrier_logo( $carrier_name ) {
-		$file_path = dirname( dirname( __DIR__ ) ) . '/resources/images/carriers/';
-		$base_path = Shop_Helper::get_plugin_base_url() . 'resources/images/carriers/';
-		$default   = Shop_Helper::get_plugin_base_url() . 'resources/images/box.svg';
-
-		/**
-		 * Configuration service.
-		 *
-		 * @var Config_Service $config_service
-		 */
-		$config_service = ServiceRegister::getService( Config_Service::CLASS_NAME );
-		$user_info      = $config_service->getUserInfo();
-		if ( null === $user_info ) {
-			return $default;
-		}
-
-		$file_name  = \strtolower( str_replace( ' ', '-', $carrier_name ) );
-		$image_path = $base_path . \strtolower( $user_info->country ) . '/' . $file_name . '.png';
-		$file_path  = $file_path . \strtolower( $user_info->country ) . '/' . $file_name . '.png';
-
-		return file_exists( $file_path ) ? $image_path : $default;
-	}
 
 	/**
 	 * Returns Packlink shipping method.
@@ -91,10 +60,11 @@ class Shipping_Method_Helper {
 	 *
 	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException
 	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException
+	 *
+	 * @noinspection PhpUnhandledExceptionInspection
 	 */
 	public static function get_packlink_shipping_method( $wc_shipping_method_id ) {
 		$filter = new QueryFilter();
-		/** @noinspection PhpUnhandledExceptionInspection */ // phpcs:ignore
 		$filter->where( 'woocommerceShippingMethodId', '=', $wc_shipping_method_id );
 
 		$repository = RepositoryRegistry::getRepository( Shipping_Method_Map::CLASS_NAME );

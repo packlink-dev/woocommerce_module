@@ -429,7 +429,6 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 		}
 
 		if ( $result ) {
-			$result->logoUrl = Shipping_Method_Helper::get_carrier_logo( $result->carrierName );
 			$this->return_json( $result->toArray() );
 		} else {
 			$this->return_json(

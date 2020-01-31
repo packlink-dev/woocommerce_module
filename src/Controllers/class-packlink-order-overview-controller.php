@@ -10,6 +10,7 @@ namespace Packlink\WooCommerce\Controllers;
 use iio\libmergepdf\Merger;
 use Logeecom\Infrastructure\Logger\Logger;
 use Logeecom\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
+use Logeecom\Infrastructure\ORM\RepositoryRegistry;
 use Logeecom\Infrastructure\ServiceRegister;
 use Packlink\BusinessLogic\Http\DTO\ShipmentLabel;
 use Packlink\BusinessLogic\Order\OrderService;
@@ -131,7 +132,7 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 	/**
 	 * Prints single label.
 	 *
-	 * @throws QueryFilterInvalidParamException
+	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException
 	 * @throws \Packlink\BusinessLogic\OrderShipmentDetails\Exceptions\OrderShipmentDetailsNotFound
 	 */
 	public function print_single_label() {
@@ -171,7 +172,7 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 	 *
 	 * @return string
 	 *
-	 * @throws QueryFilterInvalidParamException
+	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException
 	 * @throws \Packlink\BusinessLogic\OrderShipmentDetails\Exceptions\OrderShipmentDetailsNotFound
 	 */
 	public function bulk_print_labels( $redirect_to, $action, $ids ) {
@@ -266,6 +267,8 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 	 * @param OrderShipmentDetails $shipment_details
 	 *
 	 * @return ShipmentLabel[] Label paths.
+	 *
+	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException
 	 */
 	private function get_labels_to_print( $shipment_details ) {
 		/** @var OrderService $order_service */
@@ -278,6 +281,9 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 
 		if ( empty( $labels ) ) {
 			$labels = $order_service->getShipmentLabels( $shipment_details->getReference() );
+			$shipment_details->setShipmentLabels( $labels );
+			$shipment_details_repository = RepositoryRegistry::getRepository( OrderShipmentDetails::CLASS_NAME );
+			$shipment_details_repository->update( $shipment_details );
 		}
 
 		return $labels;

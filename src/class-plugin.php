@@ -27,7 +27,7 @@ use Packlink\BusinessLogic\Tasks\TaskCleanupTask;
 use Packlink\BusinessLogic\Tasks\UpdateShipmentDataTask;
 use Packlink\WooCommerce\Components\Bootstrap_Component;
 use Packlink\WooCommerce\Components\Checkout\Checkout_Handler;
-use Packlink\WooCommerce\Components\Order\Order_Details_Helper;
+use Packlink\WooCommerce\Components\Order\Paid_Order_Handler;
 use Packlink\WooCommerce\Components\Services\Config_Service;
 use Packlink\WooCommerce\Components\Services\Logger_Service;
 use Packlink\WooCommerce\Components\ShippingMethod\Packlink_Shipping_Method;
@@ -578,8 +578,8 @@ class Plugin {
 					add_action(
 						'woocommerce_order_status_' . $paid_status,
 						array(
-							Order_Details_Helper::CLASS_NAME,
-							'queue_draft',
+							Paid_Order_Handler::CLASS_NAME,
+							'handle',
 						),
 						10,
 						2

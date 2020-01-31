@@ -26,13 +26,13 @@ class Order_Drop_Off_Map extends Entity {
 	 *
 	 * @var int
 	 */
-	protected $orderId;
+	protected $order_id;
 	/**
 	 * Packlink drop-off point ID.
 	 *
 	 * @var int
 	 */
-	protected $dropOffPointId;
+	protected $drop_off_point_id;
 	/**
 	 * Array of field names.
 	 *
@@ -40,8 +40,8 @@ class Order_Drop_Off_Map extends Entity {
 	 */
 	protected $fields = array(
 		'id',
-		'orderId',
-		'dropOffPointId',
+		'order_id',
+		'drop_off_point_id',
 	);
 
 	/**
@@ -49,10 +49,10 @@ class Order_Drop_Off_Map extends Entity {
 	 */
 	public function getConfig() {
 		$map = new IndexMap();
-		$map->addIntegerIndex('orderId')
-		    ->addIntegerIndex('dropOffPointId');
+		$map->addIntegerIndex('order_id')
+		    ->addIntegerIndex('drop_off_point_id');
 
-		return new EntityConfiguration($map, 'OrderDropOffMap');
+		return new EntityConfiguration($map, 'Order_Drop_Off_Map');
 	}
 
 	/**
@@ -60,17 +60,17 @@ class Order_Drop_Off_Map extends Entity {
 	 *
 	 * @return int
 	 */
-	public function getOrderId() {
-		return $this->orderId;
+	public function get_order_id() {
+		return $this->order_id;
 	}
 
 	/**
 	 * Sets order ID.
 	 *
-	 * @param int $orderId
+	 * @param int $order_id
 	 */
-	public function setOrderId( $orderId ) {
-		$this->orderId = $orderId;
+	public function set_order_id( $order_id ) {
+		$this->order_id = $order_id;
 	}
 
 	/**
@@ -78,16 +78,16 @@ class Order_Drop_Off_Map extends Entity {
 	 *
 	 * @return int
 	 */
-	public function getDropOffPointId() {
-		return $this->dropOffPointId;
+	public function get_drop_off_point_id() {
+		return $this->drop_off_point_id;
 	}
 
 	/**
 	 * Sets drop-off point ID.
 	 *
-	 * @param int $dropOffPointId
+	 * @param int $drop_off_point_id
 	 */
-	public function setDropOffPointId( $dropOffPointId ) {
-		$this->dropOffPointId = $dropOffPointId;
+	public function set_drop_off_point_id( $drop_off_point_id ) {
+		$this->drop_off_point_id = $drop_off_point_id;
 	}
 }

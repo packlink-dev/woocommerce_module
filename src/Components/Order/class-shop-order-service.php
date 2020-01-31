@@ -104,9 +104,10 @@ class Shop_Order_Service extends Singleton implements BaseShopOrderService {
 	 * @inheritDoc
 	 */
 	public function updateShipmentStatus( $order_id, $shipping_status ) {
-		$order = $this->get_order_by_id( $order_id );
+		$order      = $this->get_order_by_id( $order_id );
 		$status_map = $this->configuration->getOrderStatusMappings();
-		if ( isset( $status_map[ $shipping_status ] ) ) {
+		$old_status = $order->get_status();
+		if ( isset( $status_map[ $shipping_status ] ) && $status_map[ $shipping_status ] !== $old_status ) {
 			$order->set_status( $status_map[ $shipping_status ], __( 'Status set by Packlink PRO.', 'packlink-pro-shipping' ) );
 		}
 
@@ -260,11 +261,11 @@ class Shop_Order_Service extends Singleton implements BaseShopOrderService {
 		$order_drop_off_map_repository = RepositoryRegistry::getRepository( Order_Drop_Off_Map::CLASS_NAME );
 
 		$filter = new QueryFilter();
-		$filter->where( 'orderId', Operators::EQUALS, $order_id );
+		$filter->where( 'order_id', Operators::EQUALS, $order_id );
 
 		/** @var Order_Drop_Off_Map $order_drop_off_map */
 		$order_drop_off_map = $order_drop_off_map_repository->selectOne( $filter );
 
-		return $order_drop_off_map ? $order_drop_off_map->getDropOffPointId() : null;
+		return $order_drop_off_map ? $order_drop_off_map->get_drop_off_point_id() : null;
 	}
 }

@@ -1,5 +1,7 @@
 <?php
 
+/** @noinspection PhpUnhandledExceptionInspection */
+
 use Logeecom\Infrastructure\ORM\RepositoryRegistry;
 use Logeecom\Infrastructure\ServiceRegister;
 use Packlink\BusinessLogic\Http\DTO\ShipmentLabel;
@@ -19,10 +21,8 @@ $order_ids = $database->get_packlink_order_ids();
 
 if ( ! empty( $order_ids ) ) {
 	/** @var Base_Repository $order_shipment_details_repository */
-	/** @noinspection PhpUnhandledExceptionInspection */
 	$order_shipment_details_repository = RepositoryRegistry::getRepository( OrderShipmentDetails::CLASS_NAME );
 	/** @var Base_Repository $order_drop_off_map_repository */
-	/** @noinspection PhpUnhandledExceptionInspection */
 	$order_drop_off_map_repository = RepositoryRegistry::getRepository( Order_Drop_Off_Map::CLASS_NAME );
 	/** @var OrderSendDraftTaskMapService $order_draft_task_map_service */
 	$order_draft_task_map_service = ServiceRegister::getService( OrderSendDraftTaskMapService::CLASS_NAME );
@@ -66,8 +66,8 @@ if ( ! empty( $order_ids ) ) {
 				$order_shipment_details->setDropOffId( get_post_meta( $order_id, '_packlink_drop_off_point_id', true ) );
 
 				$order_drop_off_map = new Order_Drop_Off_Map();
-				$order_drop_off_map->setOrderId( $order_id );
-				$order_drop_off_map->setDropOffPointId( get_post_meta( $order_id, '_packlink_drop_off_point_id', true ) );
+				$order_drop_off_map->set_order_id( $order_id );
+				$order_drop_off_map->set_drop_off_point_id( get_post_meta( $order_id, '_packlink_drop_off_point_id', true ) );
 
 				$order_drop_off_map_repository->save( $order_drop_off_map );
 			}
@@ -75,7 +75,6 @@ if ( ! empty( $order_ids ) ) {
 			$order_shipment_details_repository->save( $order_shipment_details );
 
 			if ( metadata_exists( 'post', $order_id, '_packlink_send_draft_task_id' ) ) {
-				/** @noinspection PhpUnhandledExceptionInspection */
 				$order_draft_task_map_service->createOrderTaskMap(
 					(string) $order_id,
 					get_post_meta( $order_id, '_packlink_send_draft_task_id', true )

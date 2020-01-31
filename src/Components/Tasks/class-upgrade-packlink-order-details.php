@@ -32,7 +32,7 @@ class Upgrade_Packlink_Order_Details extends Task {
 	 *
 	 * @var OrderShipmentDetailsService
 	 */
-	private $orderShipmentDetailsService;
+	private $order_shipment_details_service;
 	/**
 	 * Proxy instance.
 	 *
@@ -322,11 +322,13 @@ class Upgrade_Packlink_Order_Details extends Task {
 	 * @return OrderShipmentDetailsService Order repository.
 	 */
 	private function get_order_shipment_details_service() {
-		if ( ! $this->orderShipmentDetailsService ) {
-			$this->orderShipmentDetailsService = ServiceRegister::getService( OrderShipmentDetailsService::CLASS_NAME );
+		if ( ! $this->order_shipment_details_service ) {
+			$this->order_shipment_details_service = ServiceRegister::getService(
+				OrderShipmentDetailsService::CLASS_NAME
+			);
 		}
 
-		return $this->orderShipmentDetailsService;
+		return $this->order_shipment_details_service;
 	}
 
 	/**

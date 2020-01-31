@@ -19,6 +19,7 @@ use Packlink\BusinessLogic\ShippingMethod\Models\ShippingMethod;
 use Packlink\BusinessLogic\ShippingMethod\ShippingMethodService;
 use Packlink\WooCommerce\Components\Checkout\Checkout_Handler;
 use Packlink\WooCommerce\Components\Services\Config_Service;
+use Packlink\WooCommerce\Components\Utility\Shop_Helper;
 
 /**
  * Class Shop_Shipping_Method_Service
@@ -124,8 +125,27 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 	/**
 	 * @inheritDoc
 	 */
-	public function getCarrierLogoFilePath( $carrierName ) {
-		return Shipping_Method_Helper::get_carrier_logo( $carrierName );
+	public function getCarrierLogoFilePath( $carrier_name ) {
+		$file_path = dirname( dirname( __DIR__ ) ) . '/resources/images/carriers/';
+		$base_path = Shop_Helper::get_plugin_base_url() . 'resources/images/carriers/';
+		$default   = Shop_Helper::get_plugin_base_url() . 'resources/images/box.svg';
+
+		/**
+		 * Configuration service.
+		 *
+		 * @var Config_Service $config_service
+		 */
+		$config_service = ServiceRegister::getService( Config_Service::CLASS_NAME );
+		$user_info      = $config_service->getUserInfo();
+		if ( null === $user_info ) {
+			return $default;
+		}
+
+		$file_name  = \strtolower( str_replace( ' ', '-', $carrier_name ) );
+		$image_path = $base_path . \strtolower( $user_info->country ) . '/' . $file_name . '.png';
+		$file_path  = $file_path . \strtolower( $user_info->country ) . '/' . $file_name . '.png';
+
+		return file_exists( $file_path ) ? $image_path : $default;
 	}
 
 	/**

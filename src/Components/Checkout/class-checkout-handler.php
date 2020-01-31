@@ -57,7 +57,7 @@ class Checkout_Handler {
 		}
 
 		$fields = array(
-			'packlink_image_url'   => Shipping_Method_Helper::get_carrier_logo( $shipping_method->getCarrierName() ),
+			'packlink_image_url'   => $shipping_method->getLogoUrl() ?: '',
 			'packlink_show_image'  => $shipping_method->isDisplayLogo() ? 'yes' : 'no',
 			'packlink_is_drop_off' => $shipping_method->isDestinationDropOff() ? 'yes' : 'no',
 		);
@@ -164,8 +164,8 @@ class Checkout_Handler {
 		if ( $shipping_method->isDestinationDropOff() ) {
 			$order_drop_off_map_repository = RepositoryRegistry::getRepository( Order_Drop_Off_Map::CLASS_NAME );
 			$order_drop_off_map            = new Order_Drop_Off_Map();
-			$order_drop_off_map->setOrderId( $order_id );
-			$order_drop_off_map->setDropOffPointId( $this->get_param( static::PACKLINK_DROP_OFF_ID ) );
+			$order_drop_off_map->set_order_id( $order_id );
+			$order_drop_off_map->set_drop_off_point_id( $this->get_param( static::PACKLINK_DROP_OFF_ID ) );
 			$order_drop_off_map_repository->save( $order_drop_off_map );
 		}
 

@@ -12,7 +12,6 @@ use Packlink\WooCommerce\Components\Utility\Shop_Helper;
  * Order details.
  *
  * @var \WC_Order                                                                    $wc_order
- * @var \Packlink\WooCommerce\Components\ShippingMethod\Shop_Shipping_Method_Service $shipping_method_service
  * @var \Packlink\BusinessLogic\OrderShipmentDetails\Models\OrderShipmentDetails     $order_details
  * @var bool                                                                         $shipment_deleted
  * @var \Packlink\BusinessLogic\ShipmentDraft\Objects\ShipmentDraftStatus            $draft_status
@@ -36,7 +35,7 @@ $country = Shop_Helper::get_country_code();
 					<div>
 						<img
 								class="pl-carrier-image"
-								src="<?php echo $shipping_method_service->getCarrierLogoFilePath( $shipping_method->getCarrierName() ) ?>"
+								src="<?php echo $shipping_method->getLogoUrl() ?>"
 								alt="carrier image"
 						/>
 						<span><?php echo $shipping_method->getTitle(); ?></span>
