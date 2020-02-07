@@ -44,10 +44,11 @@ jobs:
       - run:
           name: Install wordpress
           command: |
-            echo "export MYSQL_PASS=$MYSQL_PASS" >> $BASH_ENV
             cd src
             bin/install-wp-tests.sh wordpress_56 root $MYSQL_PASS mysql.service latest
             cd ..
+          environment:
+            MYSQL_ROOT_PASSWORD: $MYSQL_PASS
       - run:
           name: Run integration tests
           command: |
@@ -83,10 +84,11 @@ jobs:
       - run:
           name: Install wordpress
           command: |
-            echo "export MYSQL_PASS=$MYSQL_PASS" >> $BASH_ENV
             cd src
             bin/install-wp-tests.sh wordpress_70 root $MYSQL_PASS mysql.service latest
             cd ..
+          environment:
+            MYSQL_ROOT_PASSWORD: $MYSQL_PASS
       - run:
           name: Run integration tests
           command: |
