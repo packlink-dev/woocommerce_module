@@ -123,7 +123,7 @@ jobs:
           name: Install system packages php 7.1
           command: |
             apt-get update
-            apt-get install -y  git wget curl subversion mysql-client php7.1-mysql/oldstable php7.1-zip/oldstable zlib1g-dev/oldstable
+            apt-get install -y git wget curl subversion default-mysql-client php7.3-mysql/stable php7.3-zip/stable zlib1g-dev/stable php7.3-common/stable
       - run:
           name: Enable PHP 7.1 modules
           command: |
@@ -160,7 +160,7 @@ jobs:
           name: Install system packages php 7.2
           command: |
             apt-get update
-            apt-get install -y  git wget curl subversion mysql-client php7.2-mysql/oldstable php7.2-zip/oldstable zlib1g-dev/oldstable
+            apt-get install -y  wget git curl subversion default-mysql-client php7.3-mysql/stable php7.3-zip/stable zlib1g-dev/stable php7.3-common/stable
       - run:
           name: Enable PHP 7.2 modules
           command: |
@@ -197,7 +197,7 @@ jobs:
           name: Install system packages php 7.3
           command: |
             apt-get update
-            apt-get install -y  git wget curl subversion mysql-client php7.3-mysql/oldstable php7.3-zip/oldstable zlib1g-dev/oldstable
+            apt-get install -y git wget curl subversion default-mysql-client php7.3-mysql/stable php7.3-zip/stable zlib1g-dev/stable php7.3-common/stable
       - run:
           name: Enable PHP 7.3 modules
           command: |
