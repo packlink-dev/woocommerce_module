@@ -197,7 +197,7 @@ jobs:
           name: Install system packages php 7.3
           command: |
             apt-get update
-            apt-get install -y git wget curl subversion default-mysql-client php7.3-mysql/stable php7.3-zip/stable zlib1g-dev/stable php7.3-common/stable
+            apt-get install -y git wget curl subversion default-mysql-client php7.3-mysql/stable php7.3-zip/stable zlib1g-dev/stable php7.3-common/stable libzip-dev/stable
       - run:
           name: Enable PHP 7.3 modules
           command: |
@@ -238,7 +238,7 @@ workflows:
             tags:
               ignore: /.*/
       - php_test_70:
-          filters:
+          fildocker-php-ext-install mysqli zidocker-php-ext-install mysqli zippters:
             branches:
               only:
                 - P5-194
