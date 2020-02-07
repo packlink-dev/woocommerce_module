@@ -2,7 +2,7 @@
 version: 2.1
 
 executors:
-  iintegration_test_builder:
+  integration_test_builder:
     docker:
       - image: php:7.0
       - image: eu.gcr.io/packlink-tools/packlink-percona:5.6_packlink1
