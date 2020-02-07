@@ -7,3 +7,4 @@ vendor
 !.idea/inspectionProfiles
 wp-cli.phar
 packlink-pro-shipping
+*.swp

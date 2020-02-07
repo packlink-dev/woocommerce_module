@@ -55,7 +55,7 @@ workflows:
   version: 2.1
   woocommerce_module: 
     jobs:
-      - integration_test::
+      - integration_test:
           filters:
             branches:
               only:
