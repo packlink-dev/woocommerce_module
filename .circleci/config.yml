@@ -9,10 +9,30 @@ executors:
         environment:
           MYSQL_ROOT_PASSWORD: root
         name: mysql.service
-
   test_builder_70:
     docker:
       - image: php:7.0
+      - image: mysql:5.6
+        environment:
+          MYSQL_ROOT_PASSWORD: root
+        name: mysql.service
+  test_builder_71:
+    docker:
+      - image: php:7.1
+      - image: mysql:5.6
+        environment:
+          MYSQL_ROOT_PASSWORD: root
+        name: mysql.service
+  test_builder_72:
+    docker:
+      - image: php:7.2
+      - image: mysql:5.6
+        environment:
+          MYSQL_ROOT_PASSWORD: root
+        name: mysql.service
+  test_builder_73:
+    docker:
+      - image: php:7.3
       - image: mysql:5.6
         environment:
           MYSQL_ROOT_PASSWORD: root
@@ -94,6 +114,117 @@ jobs:
             cd packlink-pro-shipping
             composer install
             php vendor/bin/phpunit
+  php_test_71:
+    executor: test_builder_71
+    working_directory: ~/woocommerce
+    steps:
+      - checkout
+      - run:
+          name: Install system packages php 7.1
+          command: |
+            apt-get update
+            apt-get install -y  git wget curl subversion mysql-client php7.1-mysql/oldstable php7.1-zip/oldstable zlib1g-dev/oldstable
+      - run:
+          name: Enable PHP 7.1 modules
+          command: |
+            docker-php-ext-install mysqli zip
+      - run:
+          name: Install composer
+          command: |
+            php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+            HASH="$(wget -q -O - https://composer.github.io/installer.sig)"
+            php -r "if (hash_file('SHA384', 'composer-setup.php') === '$HASH') { echo 'Installer verified'; } \
+                    else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
+            php composer-setup.php --install-dir=/usr/local/bin --filename=composer
+      - run:
+          name: Install wordpress
+          command: |
+            cd src
+            bin/install-wp-tests.sh wordpress_71 root root mysql.service latest
+            cd ..
+      - run:
+          name: Run integration tests
+          command: |
+            rm -rf packlink-pro-shipping
+            mkdir packlink-pro-shipping
+            cp -r ./src/* packlink-pro-shipping
+            cd packlink-pro-shipping
+            composer install
+            php vendor/bin/phpunit
+  php_test_72:
+    executor: test_builder_72
+    working_directory: ~/woocommerce
+    steps:
+      - checkout
+      - run:
+          name: Install system packages php 7.2
+          command: |
+            apt-get update
+            apt-get install -y  git wget curl subversion mysql-client php7.2-mysql/oldstable php7.2-zip/oldstable zlib1g-dev/oldstable
+      - run:
+          name: Enable PHP 7.2 modules
+          command: |
+            docker-php-ext-install mysqli zip
+      - run:
+          name: Install composer
+          command: |
+            php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+            HASH="$(wget -q -O - https://composer.github.io/installer.sig)"
+            php -r "if (hash_file('SHA384', 'composer-setup.php') === '$HASH') { echo 'Installer verified'; } \
+                    else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
+            php composer-setup.php --install-dir=/usr/local/bin --filename=composer
+      - run:
+          name: Install wordpress
+          command: |
+            cd src
+            bin/install-wp-tests.sh wordpress_72 root root mysql.service latest
+            cd ..
+      - run:
+          name: Run integration tests
+          command: |
+            rm -rf packlink-pro-shipping
+            mkdir packlink-pro-shipping
+            cp -r ./src/* packlink-pro-shipping
+            cd packlink-pro-shipping
+            composer install
+            php vendor/bin/phpunit
+  php_test_73:
+    executor: test_builder_73
+    working_directory: ~/woocommerce
+    steps:
+      - checkout
+      - run:
+          name: Install system packages php 7.3
+          command: |
+            apt-get update
+            apt-get install -y  git wget curl subversion mysql-client php7.3-mysql/oldstable php7.3-zip/oldstable zlib1g-dev/oldstable
+      - run:
+          name: Enable PHP 7.3 modules
+          command: |
+            docker-php-ext-install mysqli zip
+      - run:
+          name: Install composer
+          command: |
+            php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+            HASH="$(wget -q -O - https://composer.github.io/installer.sig)"
+            php -r "if (hash_file('SHA384', 'composer-setup.php') === '$HASH') { echo 'Installer verified'; } \
+                    else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
+            php composer-setup.php --install-dir=/usr/local/bin --filename=composer
+      - run:
+          name: Install wordpress
+          command: |
+            cd src
+            bin/install-wp-tests.sh wordpress_73 root root mysql.service latest
+            cd ..
+      - run:
+          name: Run integration tests
+          command: |
+            rm -rf packlink-pro-shipping
+            mkdir packlink-pro-shipping
+            cp -r ./src/* packlink-pro-shipping
+            cd packlink-pro-shipping
+            composer install
+            php vendor/bin/phpunit
 
 workflows:
   version: 2.1
@@ -106,8 +237,28 @@ workflows:
                 - P5-194
             tags:
               ignore: /.*/
-
       - php_test_70:
+          filters:
+            branches:
+              only:
+                - P5-194
+            tags:
+              ignore: /.*/
+      - php_test_71:
+          filters:
+            branches:
+              only:
+                - P5-194
+            tags:
+              ignore: /.*/
+      - php_test_72:
+          filters:
+            branches:
+              only:
+                - P5-194
+            tags:
+              ignore: /.*/
+      - php_test_73:
           filters:
             branches:
               only:
