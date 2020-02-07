@@ -7,18 +7,15 @@ executors:
       - image: php:5.6
       - image: mysql:5.6
         environment:
-          MYSQL_ROOT_PASSWORD: root
+          MYSQL_ROOT_PASSWORD: $MYSQL_PASS
         name: mysql.service
 
   test_builder_70:
     docker:
       - image: php:7.0
-      - image: eu.gcr.io/packlink-tools/packlink-percona:5.6_packlink1
-        auth:
-          username: _json_key
-          password: $GCLOUD_GCR_ADMIN_KEY
+      - image: mysql:5.6
         environment:
-          MYSQL_ROOT_PASSWORD: root
+          MYSQL_ROOT_PASSWORD: $MYSQL_PASS
         name: mysql.service
 
 jobs:
@@ -48,7 +45,7 @@ jobs:
           name: Install wordpress
           command: |
             cd src
-            bin/install-wp-tests.sh wordpress_56 root root mysql.service latest
+            bin/install-wp-tests.sh wordpress_56 root $MYSQL_PASS mysql.service latest
             cd ..
       - run:
           name: Run integration tests
@@ -86,7 +83,7 @@ jobs:
           name: Install wordpress
           command: |
             cd src
-            bin/install-wp-tests.sh wordpress_70 root root mysql.service latest
+            bin/install-wp-tests.sh wordpress_70 root $MYSQL_PASS mysql.service latest
             cd ..
       - run:
           name: Run integration tests
