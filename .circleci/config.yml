@@ -238,7 +238,7 @@ workflows:
             tags:
               ignore: /.*/
       - php_test_70:
-          fildocker-php-ext-install mysqli zidocker-php-ext-install mysqli zippters:
+          filters:
             branches:
               only:
                 - P5-194
