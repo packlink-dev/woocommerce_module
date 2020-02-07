@@ -1,3 +1,5 @@
+[![CircleCI](https://circleci.com/gh/packlink-dev/woocommerce_module.svg?style=svg&circle-token=d06e0f1584eb81581966c36b1fb9aa310969e9f4)](https://circleci.com/gh/packlink-dev/woocommerce_module)
+
 ![Packlink logo](https://pro.packlink.es/public-assets/common/images/icons/packlink.svg)
 
 # Packlink WooCommerce plugin
