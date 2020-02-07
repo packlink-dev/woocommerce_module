@@ -10,7 +10,7 @@ executors:
           username: _json_key
           password: $GCLOUD_GCR_ADMIN_KEY
         environment:
-          MYSQL_ROOT_PASSWORD: ${MYSQL_PASS}
+          MYSQL_ROOT_PASSWORD: root
         name: mysql.service.consul
 
 jobs:
@@ -40,7 +40,7 @@ jobs:
           name: Install wordpress
           command: |
             cd src
-            bin/install-wp-tests.sh wordpress_70 root ${MYSQL_PASS} mysql.service.consul latest
+            bin/install-wp-tests.sh wordpress_70 root root mysql.service.consul latest
             cd ..
       - run:
           name: Run integration tests
