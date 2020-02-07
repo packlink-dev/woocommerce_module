@@ -2,7 +2,15 @@
 version: 2.1
 
 executors:
-  integration_test_builder:
+  test_builder_56:
+    docker:
+      - image: php:5.6
+      - image: mysql:5.6
+        environment:
+          MYSQL_ROOT_PASSWORD: root
+        name: mysql.service
+
+  test_builder_70:
     docker:
       - image: php:7.0
       - image: eu.gcr.io/packlink-tools/packlink-percona:5.6_packlink1
@@ -11,11 +19,49 @@ executors:
           password: $GCLOUD_GCR_ADMIN_KEY
         environment:
           MYSQL_ROOT_PASSWORD: root
-        name: mysql.service.consul
+        name: mysql.service
 
 jobs:
-  integration_test:
-    executor: integration_test_builder
+  php_test_56:
+    executor: test_builder_56
+    working_directory: ~/woocommerce
+    steps:
+      - checkout
+      - run:
+          name: Install system packages php 5.6
+          command: |
+            apt-get update
+            apt-get install -y  git wget curl subversion mysql-client zlib1g-dev/oldstable
+      - run:
+          name: Enable PHP 5.6 modules
+          command: |
+            docker-php-ext-install mysqli zip
+      - run:
+          name: Install composer
+          command: |
+            php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+            HASH="$(wget -q -O - https://composer.github.io/installer.sig)"
+            php -r "if (hash_file('SHA384', 'composer-setup.php') === '$HASH') { echo 'Installer verified'; } \
+                    else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
+            php composer-setup.php --install-dir=/usr/local/bin --filename=composer
+      - run:
+          name: Install wordpress
+          command: |
+            cd src
+            bin/install-wp-tests.sh wordpress_56 root root mysql.service latest
+            cd ..
+      - run:
+          name: Run integration tests
+          command: |
+            rm -rf packlink-pro-shipping
+            mkdir packlink-pro-shipping
+            cp -r ./src/* packlink-pro-shipping
+            cd packlink-pro-shipping
+            composer install
+            php vendor/bin/phpunit
+
+  php_test_70:
+    executor: test_builder_70
     working_directory: ~/woocommerce
     steps:
       - checkout
@@ -40,7 +86,7 @@ jobs:
           name: Install wordpress
           command: |
             cd src
-            bin/install-wp-tests.sh wordpress_70 root root mysql.service.consul latest
+            bin/install-wp-tests.sh wordpress_70 root root mysql.service latest
             cd ..
       - run:
           name: Run integration tests
@@ -54,9 +100,9 @@ jobs:
 
 workflows:
   version: 2.1
-  woocommerce_module: 
+  woocommerce_module:
     jobs:
-      - integration_test:
+      - php_test_56:
           filters:
             branches:
               only:
@@ -64,3 +110,10 @@ workflows:
             tags:
               ignore: /.*/
 
+      - php_test_70:
+          filters:
+            branches:
+              only:
+                - P5-194
+            tags:
+              ignore: /.*/
