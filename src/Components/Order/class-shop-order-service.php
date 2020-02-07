@@ -97,7 +97,6 @@ class Shop_Order_Service extends Singleton implements BaseShopOrderService {
 	 * @inheritDoc
 	 */
 	public function handleUpdatedTrackingInfo( $orderId, array $trackings ) {
-		return;
 	}
 
 	/**

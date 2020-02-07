@@ -29,9 +29,10 @@ class Packlink_Base_Controller {
 	 * @var array
 	 */
 	private $validation_messages = array(
-		'email'  => 'Field must be valid email.',
-		'phone'  => 'Field must be valid phone number.',
-		'weight' => 'Weight must be a positive decimal number.',
+		'email'       => 'Field must be valid email.',
+		'phone'       => 'Field must be valid phone number.',
+		'weight'      => 'Weight must be a positive decimal number.',
+		'postal_code' => 'Postal code is not correct.',
 	);
 
 	/**
