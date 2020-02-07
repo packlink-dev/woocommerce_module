@@ -7,7 +7,7 @@ executors:
       - image: php:5.6
       - image: mysql:5.6
         environment:
-          MYSQL_ROOT_PASSWORD: $MYSQL_PASS
+          MYSQL_ROOT_PASSWORD: root
         name: mysql.service
 
   test_builder_70:
@@ -15,7 +15,7 @@ executors:
       - image: php:7.0
       - image: mysql:5.6
         environment:
-          MYSQL_ROOT_PASSWORD: $MYSQL_PASS
+          MYSQL_ROOT_PASSWORD: root
         name: mysql.service
 
 jobs:
