@@ -223,15 +223,13 @@ $data = $this->resolve_view_arguments();
 						<div class="row">
 							<div class=" pl-basic-settings-page-form-input-item">
 								<div class=" pl-form-section-input pl-text-input">
-									<input
-											type="text"
+									<select
 											class="pl-warehouse-input"
 											id="pl-default-warehouse-country"
-											value="<?php echo $data['warehouse_country']; ?>"
-											readonly
 											tabindex="-1"
-									/>
-									<span class="pl-text-input-label"><?php echo __( 'Country', 'packlink-pro-shipping' ); ?></span>
+									>
+									</select>
+									<span class="pl-text-input-label selected"><?php echo __( 'Country', 'packlink-pro-shipping' ); ?></span>
 								</div>
 							</div>
 						</div>
@@ -1120,6 +1118,7 @@ $data = $this->resolve_view_arguments();
 				defaultParcelGetUrl: "<?php echo Shop_Helper::get_controller_url( 'Frontend', 'get_default_parcel' ); ?>",
 				defaultParcelSubmitUrl: "<?php echo Shop_Helper::get_controller_url( 'Frontend', 'save_default_parcel' ); ?>",
 				defaultWarehouseGetUrl: "<?php echo Shop_Helper::get_controller_url( 'Frontend', 'get_default_warehouse' ); ?>",
+				getSupportedCountriesUrl: "<?php echo Shop_Helper::get_controller_url( 'Frontend', 'get_warehouse_countries' ); ?>",
 				defaultWarehouseSubmitUrl: "<?php echo Shop_Helper::get_controller_url( 'Frontend', 'save_default_warehouse' ); ?>",
 				defaultWarehouseSearchPostalCodesUrl: "<?php echo Shop_Helper::get_controller_url( 'Frontend', 'search_locations' ); ?>",
 				shippingMethodsGetAllUrl: "<?php echo Shop_Helper::get_controller_url( 'Frontend', 'get_all_shipping_methods' ); ?>",

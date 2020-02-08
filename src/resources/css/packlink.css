@@ -169,10 +169,6 @@ input[type="checkbox"] {
 	color: #2095F2;
 }
 
-#pl-default-warehouse-country {
-	background-color: #dcdcdc !important;
-}
-
 .pl-filter-wrapper {
 	-webkit-box-flex: 0;
 	-ms-flex: 0 0 16.66667%;
@@ -734,6 +730,12 @@ input[type="checkbox"] {
 	font-size: 12px;
 	width: 100%;
 	max-width: none !important;
+}
+
+.pl-form-section-input #pl-default-warehouse-country {
+	padding: 8px 0 0 12px;
+	font-size: 14px;
+	margin-bottom: 0;
 }
 
 .pl-form-section-input-checkbox-label {

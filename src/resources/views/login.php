@@ -58,7 +58,7 @@ $data = $this->resolve_view_arguments();
 						<a href="<?php echo $country->registrationLink ?>" target="_blank">
 							<div class="pl-country">
 								<img
-										class="pl-carrier-logo"
+										class="pl-country-logo"
 										src="<?php echo $data['image_base']; ?>flags/<?php echo $country->code ?>.svg"
 										alt="<?php echo $country->name ?>"
 								>

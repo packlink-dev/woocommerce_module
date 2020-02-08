@@ -238,6 +238,7 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	 * Saves default warehouse.
 	 *
 	 * @throws \Packlink\BusinessLogic\DTO\Exceptions\FrontDtoNotRegisteredException
+	 * @throws QueueStorageUnavailableException
 	 */
 	public function save_default_warehouse() {
 		$this->validate( 'yes', true );
@@ -265,17 +266,9 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 		$raw_json = $this->get_raw_input();
 		$payload  = json_decode( $raw_json, true );
 
-		if ( empty( $payload['query'] ) ) {
+		if ( empty( $payload['query'] ) || empty( $payload['country'] ) ) {
 			$this->return_json( array() );
 		}
-
-		/**
-		 * Configuration service.
-		 *
-		 * @var Configuration $configuration
-		 */
-		$configuration    = ServiceRegister::getService( Configuration::CLASS_NAME );
-		$platform_country = $configuration->getUserInfo()->country;
 
 		/**
 		 * Location service.
@@ -285,7 +278,7 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 		$location_service = ServiceRegister::getService( LocationService::CLASS_NAME );
 
 		try {
-			$result          = $location_service->searchLocations( $platform_country, $payload['query'] );
+			$result          = $location_service->searchLocations( $payload['country'], $payload['query'] );
 			$result_as_array = array();
 
 			foreach ( $result as $item ) {
@@ -476,6 +469,13 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 		$this->configuration->setOrderStatusMappings( $status_map );
 
 		$this->return_json( array( 'success' => true ) );
+	}
+
+	/**
+	 * Returns all supported Packlink countries to populate warehouse country select.
+	 */
+	public function get_warehouse_countries(  ) {
+		$this->return_dto_entities_response( $this->get_supported_countries() );
 	}
 
 	/**
