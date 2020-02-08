@@ -99,6 +99,50 @@ msgstr ""
 msgid "Failed to save shipping method."
 msgstr ""
 
+#: Controllers/class-packlink-frontend-controller.php:518
+msgid "Spain"
+msgstr ""
+
+#: Controllers/class-packlink-frontend-controller.php:518
+msgid "Germany"
+msgstr ""
+
+#: Controllers/class-packlink-frontend-controller.php:518
+msgid "France"
+msgstr ""
+
+#: Controllers/class-packlink-frontend-controller.php:518
+msgid "Italy"
+msgstr ""
+
+#: Controllers/class-packlink-frontend-controller.php:518
+msgid "Austria"
+msgstr ""
+
+#: Controllers/class-packlink-frontend-controller.php:518
+msgid "Netherlands"
+msgstr ""
+
+#: Controllers/class-packlink-frontend-controller.php:518
+msgid "Belgium"
+msgstr ""
+
+#: Controllers/class-packlink-frontend-controller.php:518
+msgid "Portugal"
+msgstr ""
+
+#: Controllers/class-packlink-frontend-controller.php:518
+msgid "Turkey"
+msgstr ""
+
+#: Controllers/class-packlink-frontend-controller.php:518
+msgid "Ireland"
+msgstr ""
+
+#: Controllers/class-packlink-frontend-controller.php:518
+msgid "United Kingdom"
+msgstr ""
+
 #: resources/views/login.php:35
 msgid "Don't have an account?"
 msgstr ""

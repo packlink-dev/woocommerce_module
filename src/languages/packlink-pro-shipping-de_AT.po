@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Packlink PRO Shipping \n"
 "POT-Creation-Date: 2019-07-16 14:51+0000\n"
-"PO-Revision-Date: 2019-07-16 17:46+0200\n"
+"PO-Revision-Date: 2020-02-08 19:37+0000\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/packlink-pro-"
 "shipping\n"
 "Last-Translator: Packlink PRO <support@packlink.com>\n"
@@ -13,9 +13,10 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 2.0.6\n"
+"X-Generator: Loco https://localise.biz/\n"
 "X-Domain: packlink-pro-shipping\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Loco-Version: 2.3.1; wp-5.3.2"
 
 #: class-plugin.php:103
 msgid ""
@@ -102,6 +103,50 @@ msgstr "Versanddienste erfolgreich deaktiviert."
 #: Controllers/class-packlink-frontend-controller.php:441
 msgid "Failed to save shipping method."
 msgstr "Versanddienst konnte nicht gespeichert werden."
+
+#: Controllers/class-packlink-frontend-controller.php:518
+msgid "Spain"
+msgstr "Spanien"
+
+#: Controllers/class-packlink-frontend-controller.php:518
+msgid "Germany"
+msgstr "Deutschland"
+
+#: Controllers/class-packlink-frontend-controller.php:518
+msgid "France"
+msgstr "Frankreich"
+
+#: Controllers/class-packlink-frontend-controller.php:518
+msgid "Italy"
+msgstr "Italien"
+
+#: Controllers/class-packlink-frontend-controller.php:518
+msgid "Austria"
+msgstr "Österreich"
+
+#: Controllers/class-packlink-frontend-controller.php:518
+msgid "Netherlands"
+msgstr "Niederlande"
+
+#: Controllers/class-packlink-frontend-controller.php:518
+msgid "Belgium"
+msgstr "Belgien"
+
+#: Controllers/class-packlink-frontend-controller.php:518
+msgid "Portugal"
+msgstr "Portugal"
+
+#: Controllers/class-packlink-frontend-controller.php:518
+msgid "Turkey"
+msgstr "Türkei"
+
+#: Controllers/class-packlink-frontend-controller.php:518
+msgid "Ireland"
+msgstr "Irland"
+
+#: Controllers/class-packlink-frontend-controller.php:518
+msgid "United Kingdom"
+msgstr "Vereinigtes Königreich"
 
 #: resources/views/login.php:35
 msgid "Don't have an account?"

@@ -22,6 +22,8 @@ use Packlink\BusinessLogic\Controllers\DashboardController;
 use Packlink\BusinessLogic\Controllers\DTO\ShippingMethodConfiguration;
 use Packlink\BusinessLogic\Controllers\ShippingMethodController;
 use Packlink\BusinessLogic\Controllers\UpdateShippingServicesTaskStatusController;
+use Packlink\BusinessLogic\Country\Country;
+use Packlink\BusinessLogic\Country\CountryService;
 use Packlink\BusinessLogic\Http\DTO\ParcelInfo;
 use Packlink\BusinessLogic\Location\LocationService;
 use Packlink\BusinessLogic\ShippingMethod\Models\FixedPricePolicy;
@@ -63,17 +65,6 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 		'DE' => 'https://pro.packlink.de/agb/',
 		'FR' => 'https://pro.packlink.fr/conditions-generales/',
 		'IT' => 'https://pro.packlink.it/termini-condizioni/',
-	);
-	/**
-	 * List of country names for different country codes.
-	 *
-	 * @var array
-	 */
-	private static $country_names = array(
-		'ES' => 'Spain',
-		'DE' => 'Germany',
-		'FR' => 'France',
-		'IT' => 'Italy',
 	);
 
 	/**
@@ -499,16 +490,43 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 			$locale = null !== $user_info ? $user_info->country : 'ES';
 		}
 
+		$supported_countries = $this->get_supported_countries();
+
 		return array(
-			'image_base'        => Shop_Helper::get_plugin_base_url() . 'resources/images/',
-			'dashboard_logo'    => Shop_Helper::get_plugin_base_url() . 'resources/images/logo-pl.svg',
-			'dashboard_icon'    => Shop_Helper::get_plugin_base_url() . 'resources/images/dashboard.png',
-			'terms_url'         => static::$terms_and_conditions_urls[ $locale ],
-			'help_url'          => static::$help_urls[ $locale ],
-			'plugin_version'    => Shop_Helper::get_plugin_version(),
-			'debug_url'         => Shop_Helper::get_controller_url( 'Debug', 'download' ),
-			'warehouse_country' => static::$country_names[ $locale ],
+			'image_base'     => Shop_Helper::get_plugin_base_url() . 'resources/images/',
+			'dashboard_logo' => Shop_Helper::get_plugin_base_url() . 'resources/images/logo-pl.svg',
+			'dashboard_icon' => Shop_Helper::get_plugin_base_url() . 'resources/images/dashboard.png',
+			'terms_url'      => static::$terms_and_conditions_urls[ $locale ],
+			'help_url'       => static::$help_urls[ $locale ],
+			'plugin_version' => Shop_Helper::get_plugin_version(),
+			'debug_url'      => Shop_Helper::get_controller_url( 'Debug', 'download' ),
+			'countries'      => $supported_countries,
 		);
+	}
+
+	/**
+	 * Returns a list of supported countries with WooCommerce-specific registration links.
+	 *
+	 * @return Country[]
+	 */
+	private function get_supported_countries() {
+		/** @var CountryService $country_service */
+		$country_service     = ServiceRegister::getService( CountryService::CLASS_NAME );
+		$supported_countries = $country_service->getSupportedCountries();
+
+		foreach ( $supported_countries as $country ) {
+			$country->name = __( $country->name, 'packlink-pro-shipping' );
+
+			$domain = 'com';
+
+			if ( in_array( $country->code, array( 'ES', 'DE', 'FR', 'IT' ), true ) ) {
+				$domain = strtolower( $country->code );
+			}
+
+			$country->registrationLink = "https://pro.packlink.{$domain}/cmslp/woocommerce";
+		}
+
+		return $supported_countries;
 	}
 
 	/**

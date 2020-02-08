@@ -1102,7 +1102,7 @@ input[type="checkbox"] {
 	border-radius: 3px;
 	position: relative;
 	display: none;
-	width: 300px;
+	width: 250px;
 	float: right;
 	animation: pl-fade-in .5s ease;
 }
@@ -1114,8 +1114,9 @@ input[type="checkbox"] {
 
 .pl-register-country-list-wrapper {
 	margin-top: 15px;
-	display: flex;
-	justify-content: space-evenly;
+	max-height: 205px;
+	overflow-x: auto;
+	text-align: justify;
 }
 
 .pl-register-country-list-wrapper a {
@@ -1123,13 +1124,26 @@ input[type="checkbox"] {
 }
 
 .pl-country {
+	display: flex;
+	height: 40px;
 	width: 30px;
-	line-height: 30px;
+	line-height: 40px;
 	border-radius: 50%;
 	text-align: center;
 	color: #2095f2;
 	font-size: 14px;
 	text-transform: uppercase;
+	margin-left: 20px;
+	margin-bottom: 15px;
+}
+
+.pl-country-logo {
+	width: 60px;
+}
+
+.pl-country-name {
+	white-space: nowrap;
+	margin-left: 15px;
 }
 
 .pl-register-form-close-btn {

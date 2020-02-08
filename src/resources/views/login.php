@@ -54,30 +54,18 @@ $data = $this->resolve_view_arguments();
 					<?php echo __( 'Select country to start', 'packlink-pro-shipping' ); ?>
 				</div>
 				<div class="pl-register-country-list-wrapper">
-					<a href="https://pro.packlink.es/cmslp/woocommerce" target="_blank">
-						<div class="pl-country">
-							<img src="<?php echo $data['image_base']; ?>flags/spain.svg">
-							es
-						</div>
-					</a>
-					<a href="https://pro.packlink.de/cmslp/woocommerce" target="_blank">
-						<div class="pl-country">
-							<img src="<?php echo $data['image_base']; ?>flags/germany.svg">
-							de
-						</div>
-					</a>
-					<a href="https://pro.packlink.fr/cmslp/woocommerce" target="_blank">
-						<div class="pl-country">
-							<img src="<?php echo $data['image_base']; ?>flags/france.svg">
-							fr
-						</div>
-					</a>
-					<a href="https://pro.packlink.it/cmslp/woocommerce" target="_blank">
-						<div class="pl-country">
-							<img src="<?php echo $data['image_base']; ?>flags/italy.svg">
-							it
-						</div>
-					</a>
+					<?php foreach ( $data['countries'] as $country ) { ?>
+						<a href="<?php echo $country->registrationLink ?>" target="_blank">
+							<div class="pl-country">
+								<img
+										class="pl-carrier-logo"
+										src="<?php echo $data['image_base']; ?>flags/<?php echo $country->code ?>.svg"
+										alt="<?php echo $country->name ?>"
+								>
+								<div class="pl-country-name"><?php echo $country->name ?></div>
+							</div>
+						</a>
+					<?php } ?>
 				</div>
 			</div>
 		</div>
