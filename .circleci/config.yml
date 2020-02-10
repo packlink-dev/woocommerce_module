@@ -316,7 +316,7 @@ workflows:
               ignore: /.*/
 
       - build_publish:
-          requieres:
+          requires:
             - php_test_56
             - php_test_70
             - php_test_71
