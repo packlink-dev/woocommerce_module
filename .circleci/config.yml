@@ -1,6 +1,10 @@
 ---
 version: 2.1
 
+orbs:
+  slack: circleci/slack@3.4.2
+  gcp-cli: circleci/gcp-cli@1.8.3
+
 executors:
   test_builder_56:
     docker:
@@ -37,6 +41,9 @@ executors:
         environment:
           MYSQL_ROOT_PASSWORD: root
         name: mysql.service
+  deployer:
+    docker:
+      - image: php:7.3
 
 jobs:
   php_test_56:
@@ -225,6 +232,48 @@ jobs:
             cd packlink-pro-shipping
             composer install
             php vendor/bin/phpunit
+  build_publish:
+    executor: deployer
+    working_directory: ~/woocommerce
+    steps:
+      - checkout
+      - gcp-cli/install
+      - gcp-cli/initialize
+      - run:
+        name: Install image packages
+        command: |
+          apt update
+          apt install -y wget php7.3-zip/stable php7.3-common/stable zlib1g-dev/stable libzip-dev/stable
+          docker-php-ext-install  zip
+          php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+          HASH="$(wget -q -O - https://composer.github.io/installer.sig)"
+          php -r "if (hash_file('SHA384', 'composer-setup.php') === '$HASH') { echo 'Installer verified'; } \
+                  else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
+          php composer-setup.php --install-dir=/usr/local/bin --filename=composer
+      - run:
+          name: Build Package
+          command: bash packlink-build.sh ${CIRCLE_TAG}
+      - run:
+          name: Publish package to develop cdn
+          command: |
+            gsutil cp packlink-pro-shipping.zip gs://${DEV_CDN_URL}/modules/woocommerce/statics/latest.zip
+            gsutil acl ch -u AllUsers:R gs://${DEV_CDN_URL}/modules/woocommerce/statics/latest.zip
+            gsutil cp packlink-pro-shipping.zip gs://${DEV_CDN_URL}/modules/woocommerce/statics/${CIRCLE_TAG}.zip
+            gsutil acl ch -u AllUsers:R gs://${DEV_CDN_URL}/modules/woocommerce/statics/${CIRCLE_TAG}.zip
+      - run:
+          name: Publish package to production cdn
+          command: |
+            gsutil cp packlink-pro-shipping.zip gs://${PROD_CDN_URL}/modules/woocommerce/statics/latest.zip
+            gsutil acl ch -u AllUsers:R gs://${PROD_CDN_URL}/modules/woocommerce/statics/latest.zip
+            gsutil cp packlink-pro-shipping.zip gs://${PROD_CDN_URL}/modules/woocommerce/statics/${CIRCLE_TAG}.zip
+            gsutil acl ch -u AllUsers:R gs://${PROD_CDN_URL}/modules/woocommerce/statics/${CIRCLE_TAG}.zip
+      - slack/notify:
+          color: '#42e2f4'
+          channel: 'test-me'
+          message: ' Woocommerce module has been released: version $CIRCLE_TAG'
+          webhook: '${SLACK_WEBHOOK}'
+
+
 
 workflows:
   version: 2.1
@@ -259,6 +308,21 @@ workflows:
             tags:
               ignore: /.*/
       - php_test_73:
+          filters:
+            branches:
+              only:
+                - P5-194
+            tags:
+              ignore: /.*/
+
+      - build_publish:
+          requieres:
+            - php_test_56
+            - php_test_70
+            - php_test_71
+            - php_test_72
+            - php_test_73
+
           filters:
             branches:
               only:
