@@ -79,7 +79,7 @@ docker run --name percona -e MYSQL_ROOT_PASSWORD=root -d -it eu.gcr.io/packlink-
 docker run -it -v $(pwd):/woocommerce php:<version> /bin/bash
 ```
 
-```
+```bash
 # apt system
   apt-get update
   apt-get install -y  git wget curl subversion mysql-client php<version>-mysql php<version>-zip zlib1g-dev libzip-dev
@@ -111,7 +111,8 @@ docker run -it -v $(pwd):/woocommerce php:<version> /bin/bash
 ### Circleci Test and Build
 
 Circle ci will run:
-
+```bash
 - !master: Test suite(php 5.6, 7.0, 7.1, 7.2,7.3)
 - master: nothing run
 - tag/release run build_publish package to cdn
+```
