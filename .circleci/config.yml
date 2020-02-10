@@ -271,53 +271,38 @@ workflows:
       - php_test_56:
           filters:
             branches:
-              ignore:
-                - master
-              only:
-                - /.*/
-              tags:
-                ignore: 
-                - /.*/
+              ignore: master
+              only: /.*/
+            tags:
+              ignore: /.*/
       - php_test_70:
           filters:
             branches:
-              ignore:
-                - master
-              only:
-                - /.*/
-              tags:
-                ignore: 
-                - /.*/
+              ignore: master
+              only: /.*/
+            tags:
+              ignore: /.*/
       - php_test_71:
           filters:
             branches:
-              ignore:
-                - master
-              only:
-                - /.*/
-              tags:
-                ignore: 
-                - /.*/
+              ignore: master
+              only: /.*/
+            tags:
+              ignore: /.*/
       - php_test_72:
           filters:
             branches:
-              ignore:
-                - master
-              only:
-                - /.*/
-              tags:
-                ignore: 
-                - /.*/
+              ignore: master
+              only: /.*/
+            tags:
+              ignore: /.*/
       - php_test_73:
           filters:
             branches:
-              ignore:
-                - master
-              only:
-                - /.*/
-              tags:
-                ignore: 
-                - /.*/
+              ignore: master
+              only: /.*/
+            tags:
+              ignore: /.*/
       - build_publish:
           filters:
             branches:
