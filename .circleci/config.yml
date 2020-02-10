@@ -258,51 +258,22 @@ jobs:
             gsutil acl ch -u AllUsers:R gs://${PROD_CDN_URL}/modules/woocommerce/statics/${CIRCLE_TAG}.zip
       - slack/notify:
           color: '#42e2f4'
-          channel: 'test-me'
+          channel: 'logeecom'
           message: ' Woocommerce module has been released: version $CIRCLE_TAG'
           webhook: '${SLACK_WEBHOOK}'
-
-
 
 workflows:
   version: 2.1
   woocommerce_module:
     jobs:
-      - php_test_56:
+      - php_test_56: &test_php
           filters:
             branches:
               ignore: master
-              only: /.*/
-            tags:
-              ignore: /.*/
-      - php_test_70:
-          filters:
-            branches:
-              ignore: master
-              only: /.*/
-            tags:
-              ignore: /.*/
-      - php_test_71:
-          filters:
-            branches:
-              ignore: master
-              only: /.*/
-            tags:
-              ignore: /.*/
-      - php_test_72:
-          filters:
-            branches:
-              ignore: master
-              only: /.*/
-            tags:
-              ignore: /.*/
-      - php_test_73:
-          filters:
-            branches:
-              ignore: master
-              only: /.*/
-            tags:
-              ignore: /.*/
+      - php_test_70: *test_php
+      - php_test_71: *test_php
+      - php_test_72: *test_php
+      - php_test_73: *test_php
       - build_publish:
           filters:
             branches:
