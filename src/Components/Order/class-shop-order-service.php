@@ -7,6 +7,8 @@
 
 namespace Packlink\WooCommerce\Components\Order;
 
+use Logeecom\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
+use Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException;
 use Logeecom\Infrastructure\ORM\QueryFilter\Operators;
 use Logeecom\Infrastructure\ORM\QueryFilter\QueryFilter;
 use Logeecom\Infrastructure\ORM\RepositoryRegistry;
@@ -59,8 +61,8 @@ class Shop_Order_Service extends Singleton implements BaseShopOrderService {
 	 * @return Order Order object.
 	 *
 	 * @throws OrderNotFound When order with provided id is not found.
-	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException
-	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException
+	 * @throws QueryFilterInvalidParamException
+	 * @throws RepositoryNotRegisteredException
 	 */
 	public function getOrderAndShippingData( $order_id ) {
 		$wc_order = $this->get_order_by_id( $order_id );
@@ -96,7 +98,7 @@ class Shop_Order_Service extends Singleton implements BaseShopOrderService {
 	/**
 	 * @inheritDoc
 	 */
-	public function handleUpdatedTrackingInfo( $orderId, array $trackings ) {
+	public function updateTrackingInfo( $order_id, array $trackings ) {
 	}
 
 	/**
@@ -253,8 +255,8 @@ class Shop_Order_Service extends Singleton implements BaseShopOrderService {
 	 *
 	 * @return int|null
 	 *
-	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException
-	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException
+	 * @throws QueryFilterInvalidParamException
+	 * @throws RepositoryNotRegisteredException
 	 */
 	private function get_drop_off_point_id( $order_id ) {
 		$order_drop_off_map_repository = RepositoryRegistry::getRepository( Order_Drop_Off_Map::CLASS_NAME );
