@@ -86,7 +86,7 @@ if [ "$version" = "" ]; then
 fi
 
 # add version to artifact
-echo "$1" > packlink-pro-shippin/release.version
+echo "$1" > ./packlink-pro-shipping/release.version
 
 # Create plugin archive
 echo "\e[32mSTEP 6:\e[39m Creating new archive..."

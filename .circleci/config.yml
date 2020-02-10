@@ -43,7 +43,7 @@ executors:
         name: mysql.service
   deployer:
     docker:
-      - image: php:7.3
+      - image: circleci/php:7.3
 
 jobs:
   php_test_56:
@@ -239,17 +239,6 @@ jobs:
       - checkout
       - gcp-cli/install
       - gcp-cli/initialize
-      - run:
-          name: Install image packages
-          command: |
-            apt update
-            apt install -y wget php7.3-zip/stable php7.3-common/stable zlib1g-dev/stable libzip-dev/stable
-            docker-php-ext-install  zip
-            php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
-            HASH="$(wget -q -O - https://composer.github.io/installer.sig)"
-            php -r "if (hash_file('SHA384', 'composer-setup.php') === '$HASH') { echo 'Installer verified'; } \
-                  else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
-            php composer-setup.php --install-dir=/usr/local/bin --filename=composer
       - run:
           name: Build Package
           command: bash packlink-build.sh ${CIRCLE_TAG}
