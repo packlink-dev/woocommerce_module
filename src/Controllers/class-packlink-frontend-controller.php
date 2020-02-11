@@ -22,7 +22,6 @@ use Packlink\BusinessLogic\Controllers\DashboardController;
 use Packlink\BusinessLogic\Controllers\DTO\ShippingMethodConfiguration;
 use Packlink\BusinessLogic\Controllers\ShippingMethodController;
 use Packlink\BusinessLogic\Controllers\UpdateShippingServicesTaskStatusController;
-use Packlink\BusinessLogic\Country\Country;
 use Packlink\BusinessLogic\Country\CountryService;
 use Packlink\BusinessLogic\Http\DTO\ParcelInfo;
 use Packlink\BusinessLogic\Location\LocationService;
@@ -278,14 +277,9 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 		$location_service = ServiceRegister::getService( LocationService::CLASS_NAME );
 
 		try {
-			$result          = $location_service->searchLocations( $payload['country'], $payload['query'] );
-			$result_as_array = array();
+			$result = $location_service->searchLocations( $payload['country'], $payload['query'] );
 
-			foreach ( $result as $item ) {
-				$result_as_array[] = $item->toArray();
-			}
-
-			$this->return_json( $result_as_array );
+			$this->return_dto_entities_response( $result );
 		} catch ( \Exception $e ) {
 			$this->return_json( array() );
 		}
@@ -472,44 +466,9 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	}
 
 	/**
-	 * Returns all supported Packlink countries to populate warehouse country select.
-	 */
-	public function get_warehouse_countries(  ) {
-		$this->return_dto_entities_response( $this->get_supported_countries() );
-	}
-
-	/**
-	 * Resolves dashboard view arguments.
-	 *
-	 * @return array Dashboard view arguments.
-	 */
-	protected function resolve_view_arguments() {
-		$user_info = $this->configuration->getUserInfo();
-		$locale    = 'ES';
-		if ( null !== $user_info && array_key_exists( $user_info->country, self::$help_urls ) ) {
-			$locale = null !== $user_info ? $user_info->country : 'ES';
-		}
-
-		$supported_countries = $this->get_supported_countries();
-
-		return array(
-			'image_base'     => Shop_Helper::get_plugin_base_url() . 'resources/images/',
-			'dashboard_logo' => Shop_Helper::get_plugin_base_url() . 'resources/images/logo-pl.svg',
-			'dashboard_icon' => Shop_Helper::get_plugin_base_url() . 'resources/images/dashboard.png',
-			'terms_url'      => static::$terms_and_conditions_urls[ $locale ],
-			'help_url'       => static::$help_urls[ $locale ],
-			'plugin_version' => Shop_Helper::get_plugin_version(),
-			'debug_url'      => Shop_Helper::get_controller_url( 'Debug', 'download' ),
-			'countries'      => $supported_countries,
-		);
-	}
-
-	/**
 	 * Returns a list of supported countries with WooCommerce-specific registration links.
-	 *
-	 * @return Country[]
 	 */
-	private function get_supported_countries() {
+	public function get_supported_countries() {
 		/** @var CountryService $country_service */
 		$country_service     = ServiceRegister::getService( CountryService::CLASS_NAME );
 		$supported_countries = $country_service->getSupportedCountries();
@@ -526,7 +485,30 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 			$country->registrationLink = "https://pro.packlink.{$domain}/cmslp/woocommerce";
 		}
 
-		return $supported_countries;
+		$this->return_dto_entities_response( $supported_countries );
+	}
+
+	/**
+	 * Resolves dashboard view arguments.
+	 *
+	 * @return array Dashboard view arguments.
+	 */
+	protected function resolve_view_arguments() {
+		$user_info = $this->configuration->getUserInfo();
+		$locale    = 'ES';
+		if ( null !== $user_info && array_key_exists( $user_info->country, self::$help_urls ) ) {
+			$locale = null !== $user_info ? $user_info->country : 'ES';
+		}
+
+		return array(
+			'image_base'     => Shop_Helper::get_plugin_base_url() . 'resources/images/flags/',
+			'dashboard_logo' => Shop_Helper::get_plugin_base_url() . 'resources/images/logo-pl.svg',
+			'dashboard_icon' => Shop_Helper::get_plugin_base_url() . 'resources/images/dashboard.png',
+			'terms_url'      => static::$terms_and_conditions_urls[ $locale ],
+			'help_url'       => static::$help_urls[ $locale ],
+			'plugin_version' => Shop_Helper::get_plugin_version(),
+			'debug_url'      => Shop_Helper::get_controller_url( 'Debug', 'download' ),
+		);
 	}
 
 	/**

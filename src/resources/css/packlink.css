@@ -735,6 +735,7 @@ input[type="checkbox"] {
 .pl-form-section-input #pl-default-warehouse-country {
 	padding: 8px 0 0 12px;
 	font-size: 14px;
+	border: 1px solid #dcdcdc;
 	margin-bottom: 0;
 }
 
@@ -1087,7 +1088,6 @@ input[type="checkbox"] {
 	position: absolute;
 	top: 0;
 	right: 5%;
-	background-color: #f1f1f1;
 	z-index: 100;
 }
 
@@ -1107,6 +1107,11 @@ input[type="checkbox"] {
 	width: 250px;
 	float: right;
 	animation: pl-fade-in .5s ease;
+	max-height: calc(100vh - 240px);
+	overflow-x: auto;
+	text-align: justify;
+	z-index: 1;
+	background-color: #f1f1f1;
 }
 
 .pl-register-country-title-wrapper {
@@ -1116,7 +1121,7 @@ input[type="checkbox"] {
 
 .pl-register-country-list-wrapper {
 	margin-top: 15px;
-	max-height: 205px;
+	height: 97%;
 	overflow-x: auto;
 	text-align: justify;
 }
@@ -1127,9 +1132,9 @@ input[type="checkbox"] {
 
 .pl-country {
 	display: flex;
-	height: 40px;
+	height: 35px;
 	width: 30px;
-	line-height: 40px;
+	line-height: 35px;
 	border-radius: 50%;
 	text-align: center;
 	color: #2095f2;
