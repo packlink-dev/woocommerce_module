@@ -248,7 +248,7 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 		/** @var WarehouseService $warehouse_service */
 		$warehouse_service = ServiceRegister::getService( WarehouseService::CLASS_NAME );
 		try {
-			$warehouse_service->setWarehouse( $payload );
+			$warehouse_service->updateWarehouseData( $payload );
 		} catch ( \Packlink\BusinessLogic\DTO\Exceptions\FrontDtoValidationException $e ) {
 			$this->return_validation_errors_response( $e->getValidationErrors() );
 		}
