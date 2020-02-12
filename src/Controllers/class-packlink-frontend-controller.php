@@ -49,6 +49,7 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	 * @var array
 	 */
 	private static $help_urls = array(
+		'EN' => 'https://support-pro.packlink.com/hc/en-gb/articles/210158585-Install-your-WooCommerce-module-in-5-steps',
 		'ES' => 'https://support-pro.packlink.com/hc/es-es/articles/210158585-Instala-tu-m%C3%B3dulo-WooCommerce-en-5-pasos',
 		'DE' => 'https://support-pro.packlink.com/hc/de/articles/210158585-Installieren-Sie-Ihr-WooCommerce-Modul-in-5-Schritten',
 		'FR' => 'https://support-pro.packlink.com/hc/fr-fr/articles/210158585-Installez-le-module-WooCommerce-en-5-%C3%A9tapes',
@@ -60,6 +61,7 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	 * @var array
 	 */
 	private static $terms_and_conditions_urls = array(
+		'EN' => 'https://support-pro.packlink.com/hc/en-gb/articles/360010011480',
 		'ES' => 'https://pro.packlink.es/terminos-y-condiciones/',
 		'DE' => 'https://pro.packlink.de/agb/',
 		'FR' => 'https://pro.packlink.fr/conditions-generales/',
@@ -495,9 +497,9 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	 */
 	protected function resolve_view_arguments() {
 		$user_info = $this->configuration->getUserInfo();
-		$locale    = 'ES';
-		if ( null !== $user_info && array_key_exists( $user_info->country, self::$help_urls ) ) {
-			$locale = null !== $user_info ? $user_info->country : 'ES';
+		$locale    = 'EN';
+		if ( null !== $user_info && in_array( $user_info->country, array( 'ES', 'DE', 'FR', 'IT' ), true ) ) {
+			$locale = $user_info->country;
 		}
 
 		return array(
