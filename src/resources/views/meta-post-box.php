@@ -23,7 +23,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$country = Shop_Helper::get_country_code();
+$domain = Shop_Helper::get_country_domain();
 ?>
 
 <ul class="order_actions submitbox" xmlns="http://www.w3.org/1999/html">
@@ -85,7 +85,7 @@ $country = Shop_Helper::get_country_code();
 
 		<?php if ( ! $shipment_deleted ) : ?>
 			<li class="wide">
-				<a href="<?php echo "https://pro.packlink.{$country}/private/shipments/{$order_details->getReference()}"; ?>" target="_blank">
+				<a href="<?php echo "https://pro.packlink.{$domain}/private/shipments/{$order_details->getReference()}"; ?>" target="_blank">
 					<button type="button" class="button pl-button-view" name="view on packlink" value="View">
 						<?php echo __( 'View on Packlink PRO', 'packlink-pro-shipping' ); ?>
 					</button>

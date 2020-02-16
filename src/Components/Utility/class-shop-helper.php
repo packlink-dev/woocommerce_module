@@ -19,11 +19,11 @@ use Packlink\WooCommerce\Components\Services\Logger_Service;
 class Shop_Helper {
 
 	/**
-	 * Country code.
+	 * Country domain.
 	 *
 	 * @var string
 	 */
-	private static $country_code;
+	private static $country_domain;
 	/**
 	 * The version of the plugin.
 	 *
@@ -157,27 +157,27 @@ class Shop_Helper {
 	}
 
 	/**
-	 * Returns country code.
+	 * Returns country domain.
 	 *
 	 * @return string Country code.
 	 */
-	public static function get_country_code() {
-		if ( ! static::$country_code ) {
+	public static function get_country_domain() {
+		if ( ! static::$country_domain ) {
 			/**
 			 * Configuration service.
 			 *
 			 * @var Config_Service $config
 			 */
-			$config = ServiceRegister::getService( Config_Service::CLASS_NAME );
-			$user   = $config->getUserInfo();
+			$config    = ServiceRegister::getService( Config_Service::CLASS_NAME );
+			$user_info = $config->getUserInfo();
 
-			static::$country_code = 'es';
-			if ( $user && $user->country ) {
-				static::$country_code = strtolower( $user->country );
+			static::$country_domain = 'com';
+			if ( $user_info !== null && in_array( $user_info->country, array( 'ES', 'DE', 'IT', 'FR' ) ) ) {
+				static::$country_domain = strtolower( $user_info->country );
 			}
 		}
 
-		return static::$country_code;
+		return static::$country_domain;
 	}
 
 	/**

@@ -119,8 +119,8 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 			if ( static::COLUMN_PACKLINK_ID === $column ) {
 				$src = Shop_Helper::get_plugin_base_url() . 'resources/images/logo.png';
 				if ( ! $this->get_order_shipment_details_service()->isShipmentDeleted( $shipment_details->getReference() ) ) {
-					$country = Shop_Helper::get_country_code();
-					$url     = "https://pro.packlink.{$country}/private/shipments/{$shipment_details->getReference()}";
+					$domain = Shop_Helper::get_country_domain();
+					$url    = "https://pro.packlink.{$domain}/private/shipments/{$shipment_details->getReference()}";
 					echo '<a class="pl-image-link" target="_blank" href="' . esc_url( $url ) . '"><img src="' . esc_url( $src ) . '" alt=""></a>';
 				} else {
 					echo '<div class="pl-image-link"><img src="' . esc_url( $src ) . '" alt=""></div>';
