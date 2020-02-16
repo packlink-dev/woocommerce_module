@@ -172,7 +172,7 @@ class Shop_Helper {
 			$user_info = $config->getUserInfo();
 
 			static::$country_domain = 'com';
-			if ( $user_info !== null && in_array( $user_info->country, array( 'ES', 'DE', 'IT', 'FR' ) ) ) {
+			if ( $user_info !== null && in_array( $user_info->country, array( 'ES', 'DE', 'IT', 'FR' ), true ) ) {
 				static::$country_domain = strtolower( $user_info->country );
 			}
 		}
