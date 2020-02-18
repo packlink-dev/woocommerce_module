@@ -4,9 +4,12 @@
 
 use Logeecom\Infrastructure\ORM\RepositoryRegistry;
 use Logeecom\Infrastructure\ServiceRegister;
+use Logeecom\Infrastructure\TaskExecution\QueueService;
+use Packlink\BusinessLogic\Configuration;
 use Packlink\BusinessLogic\Http\DTO\ShipmentLabel;
 use Packlink\BusinessLogic\OrderShipmentDetails\Models\OrderShipmentDetails;
 use Packlink\BusinessLogic\ShipmentDraft\OrderSendDraftTaskMapService;
+use Packlink\BusinessLogic\Tasks\UpdateShippingServicesTask;
 use Packlink\WooCommerce\Components\Order\Order_Drop_Off_Map;
 use Packlink\WooCommerce\Components\Repositories\Base_Repository;
 use Packlink\WooCommerce\Components\Utility\Database;
@@ -85,3 +88,12 @@ if ( ! empty( $order_ids ) ) {
 }
 
 $database->remove_packlink_meta_data();
+
+/** @var QueueService $queue_service */
+$queue_service = ServiceRegister::getService( QueueService::CLASS_NAME );
+/** @var \Packlink\WooCommerce\Components\Services\Config_Service $config_service */
+$config_service = ServiceRegister::getService( Configuration::CLASS_NAME );
+
+if ( null !== $queue_service->findLatestByType( 'UpdateShippingServicesTask' ) ) {
+	$queue_service->enqueue( $config_service->getDefaultQueueName(), new UpdateShippingServicesTask() );
+}
