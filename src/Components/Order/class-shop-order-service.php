@@ -14,6 +14,7 @@ use Logeecom\Infrastructure\ORM\QueryFilter\QueryFilter;
 use Logeecom\Infrastructure\ORM\RepositoryRegistry;
 use Logeecom\Infrastructure\ServiceRegister;
 use Logeecom\Infrastructure\Singleton;
+use Packlink\BusinessLogic\Http\DTO\Shipment;
 use Packlink\BusinessLogic\Order\Exceptions\OrderNotFound;
 use Packlink\BusinessLogic\Order\Interfaces\ShopOrderService as BaseShopOrderService;
 use Packlink\BusinessLogic\Order\Objects\Address;
@@ -87,7 +88,7 @@ class Shop_Order_Service extends Singleton implements BaseShopOrderService {
 			$order->setShippingMethodId( $shipping_method->getId() );
 		}
 
-		$drop_off_point_id = $this->get_drop_off_point_id( (int)$order_id );
+		$drop_off_point_id = $this->get_drop_off_point_id( (int) $order_id );
 		if ( $drop_off_point_id ) {
 			$order->setShippingDropOffId( $drop_off_point_id );
 		}
@@ -98,7 +99,7 @@ class Shop_Order_Service extends Singleton implements BaseShopOrderService {
 	/**
 	 * @inheritDoc
 	 */
-	public function updateTrackingInfo( $order_id, array $trackings ) {
+	public function updateTrackingInfo( $order_id, Shipment $shipment, array $tracking_history ) {
 	}
 
 	/**

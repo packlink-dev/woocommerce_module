@@ -5,7 +5,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased](https://github.com/logeecom/pl_woocommerce_module/compare/master...dev)
 ### Changed
-- Updated to latest core v2.0.0
+- Updated to the Packlink Core v2.0.0 (system improvements).
 - Added task cleanup.
 
 ## [v2.1.2](https://github.com/logeecom/pl_woocommerce_module/compare/v2.1.1...v2.1.2) - 2019-12-16
