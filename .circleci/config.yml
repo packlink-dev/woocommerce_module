@@ -1,0 +1,283 @@
+---
+version: 2.1
+
+orbs:
+  slack: circleci/slack@3.4.2
+  gcp-cli: circleci/gcp-cli@1.8.3
+
+executors:
+  test_builder_56:
+    docker:
+      - image: php:5.6
+      - image: mysql:5.6
+        environment:
+          MYSQL_ROOT_PASSWORD: root
+        name: mysql.service
+  test_builder_70:
+    docker:
+      - image: php:7.0
+      - image: mysql:5.6
+        environment:
+          MYSQL_ROOT_PASSWORD: root
+        name: mysql.service
+  test_builder_71:
+    docker:
+      - image: php:7.1
+      - image: mysql:5.6
+        environment:
+          MYSQL_ROOT_PASSWORD: root
+        name: mysql.service
+  test_builder_72:
+    docker:
+      - image: php:7.2
+      - image: mysql:5.6
+        environment:
+          MYSQL_ROOT_PASSWORD: root
+        name: mysql.service
+  test_builder_73:
+    docker:
+      - image: php:7.3
+      - image: mysql:5.6
+        environment:
+          MYSQL_ROOT_PASSWORD: root
+        name: mysql.service
+  deployer:
+    docker:
+      - image: circleci/php:7.3
+
+jobs:
+  php_test_56:
+    executor: test_builder_56
+    working_directory: ~/woocommerce
+    steps:
+      - checkout
+      - run:
+          name: Install system packages php 5.6
+          command: |
+            apt-get update
+            apt-get install -y  git wget curl subversion mysql-client zlib1g-dev/oldstable
+      - run:
+          name: Enable PHP 5.6 modules
+          command: |
+            docker-php-ext-install mysqli zip
+      - run:
+          name: Install composer
+          command: |
+            php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+            HASH="$(wget -q -O - https://composer.github.io/installer.sig)"
+            php -r "if (hash_file('SHA384', 'composer-setup.php') === '$HASH') { echo 'Installer verified'; } \
+                    else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
+            php composer-setup.php --install-dir=/usr/local/bin --filename=composer
+      - run:
+          name: Install wordpress
+          command: |
+            cd src
+            bin/install-wp-tests.sh wordpress_56 root root mysql.service latest
+            cd ..
+      - run:
+          name: Run integration tests
+          command: |
+            rm -rf packlink-pro-shipping
+            mkdir packlink-pro-shipping
+            cp -r ./src/* packlink-pro-shipping
+            cd packlink-pro-shipping
+            composer install
+            php vendor/bin/phpunit
+
+  php_test_70:
+    executor: test_builder_70
+    working_directory: ~/woocommerce
+    steps:
+      - checkout
+      - run:
+          name: Install system packages php 7.0
+          command: |
+            apt-get update
+            apt-get install -y  git wget curl subversion mysql-client php7.0-mysql/oldstable php7.0-zip/oldstable zlib1g-dev/oldstable
+      - run:
+          name: Enable PHP 7.0 modules
+          command: |
+            docker-php-ext-install mysqli zip
+      - run:
+          name: Install composer
+          command: |
+            php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+            HASH="$(wget -q -O - https://composer.github.io/installer.sig)"
+            php -r "if (hash_file('SHA384', 'composer-setup.php') === '$HASH') { echo 'Installer verified'; } \
+                    else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
+            php composer-setup.php --install-dir=/usr/local/bin --filename=composer
+      - run:
+          name: Install wordpress
+          command: |
+            cd src
+            bin/install-wp-tests.sh wordpress_70 root root mysql.service latest
+            cd ..
+      - run:
+          name: Run integration tests
+          command: |
+            rm -rf packlink-pro-shipping
+            mkdir packlink-pro-shipping
+            cp -r ./src/* packlink-pro-shipping
+            cd packlink-pro-shipping
+            composer install
+            php vendor/bin/phpunit
+  php_test_71:
+    executor: test_builder_71
+    working_directory: ~/woocommerce
+    steps:
+      - checkout
+      - run:
+          name: Install system packages php 7.1
+          command: |
+            apt-get update
+            apt-get install -y git wget curl subversion default-mysql-client php7.3-mysql/stable php7.3-zip/stable zlib1g-dev/stable php7.3-common/stable
+      - run:
+          name: Enable PHP 7.1 modules
+          command: |
+            docker-php-ext-install mysqli zip
+      - run:
+          name: Install composer
+          command: |
+            php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+            HASH="$(wget -q -O - https://composer.github.io/installer.sig)"
+            php -r "if (hash_file('SHA384', 'composer-setup.php') === '$HASH') { echo 'Installer verified'; } \
+                    else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
+            php composer-setup.php --install-dir=/usr/local/bin --filename=composer
+      - run:
+          name: Install wordpress
+          command: |
+            cd src
+            bin/install-wp-tests.sh wordpress_71 root root mysql.service latest
+            cd ..
+      - run:
+          name: Run integration tests
+          command: |
+            rm -rf packlink-pro-shipping
+            mkdir packlink-pro-shipping
+            cp -r ./src/* packlink-pro-shipping
+            cd packlink-pro-shipping
+            composer install
+            php vendor/bin/phpunit
+  php_test_72:
+    executor: test_builder_72
+    working_directory: ~/woocommerce
+    steps:
+      - checkout
+      - run:
+          name: Install system packages php 7.2
+          command: |
+            apt-get update
+            apt-get install -y  wget git curl subversion default-mysql-client php7.3-mysql/stable php7.3-zip/stable zlib1g-dev/stable php7.3-common/stable
+      - run:
+          name: Enable PHP 7.2 modules
+          command: |
+            docker-php-ext-install mysqli zip
+      - run:
+          name: Install composer
+          command: |
+            php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+            HASH="$(wget -q -O - https://composer.github.io/installer.sig)"
+            php -r "if (hash_file('SHA384', 'composer-setup.php') === '$HASH') { echo 'Installer verified'; } \
+                    else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
+            php composer-setup.php --install-dir=/usr/local/bin --filename=composer
+      - run:
+          name: Install wordpress
+          command: |
+            cd src
+            bin/install-wp-tests.sh wordpress_72 root root mysql.service latest
+            cd ..
+      - run:
+          name: Run integration tests
+          command: |
+            rm -rf packlink-pro-shipping
+            mkdir packlink-pro-shipping
+            cp -r ./src/* packlink-pro-shipping
+            cd packlink-pro-shipping
+            composer install
+            php vendor/bin/phpunit
+  php_test_73:
+    executor: test_builder_73
+    working_directory: ~/woocommerce
+    steps:
+      - checkout
+      - run:
+          name: Install system packages php 7.3
+          command: |
+            apt-get update
+            apt-get install -y git wget curl subversion default-mysql-client php7.3-mysql/stable php7.3-zip/stable zlib1g-dev/stable php7.3-common/stable libzip-dev/stable
+      - run:
+          name: Enable PHP 7.3 modules
+          command: |
+            docker-php-ext-install mysqli zip
+      - run:
+          name: Install composer
+          command: |
+            php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+            HASH="$(wget -q -O - https://composer.github.io/installer.sig)"
+            php -r "if (hash_file('SHA384', 'composer-setup.php') === '$HASH') { echo 'Installer verified'; } \
+                    else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
+            php composer-setup.php --install-dir=/usr/local/bin --filename=composer
+      - run:
+          name: Install wordpress
+          command: |
+            cd src
+            bin/install-wp-tests.sh wordpress_73 root root mysql.service latest
+            cd ..
+      - run:
+          name: Run integration tests
+          command: |
+            rm -rf packlink-pro-shipping
+            mkdir packlink-pro-shipping
+            cp -r ./src/* packlink-pro-shipping
+            cd packlink-pro-shipping
+            composer install
+            php vendor/bin/phpunit
+  build_publish:
+    executor: deployer
+    working_directory: ~/woocommerce
+    steps:
+      - checkout
+      - gcp-cli/install
+      - gcp-cli/initialize
+      - run:
+          name: Build Package
+          command: bash packlink-build.sh ${CIRCLE_TAG}
+      - run:
+          name: Publish package to develop cdn
+          command: |
+            gsutil cp packlink-pro-shipping.zip gs://${DEV_CDN_URL}/modules/woocommerce/statics/latest.zip
+            gsutil acl ch -u AllUsers:R gs://${DEV_CDN_URL}/modules/woocommerce/statics/latest.zip
+            gsutil cp packlink-pro-shipping.zip gs://${DEV_CDN_URL}/modules/woocommerce/statics/${CIRCLE_TAG}.zip
+            gsutil acl ch -u AllUsers:R gs://${DEV_CDN_URL}/modules/woocommerce/statics/${CIRCLE_TAG}.zip
+      - run:
+          name: Publish package to production cdn
+          command: |
+            gsutil cp packlink-pro-shipping.zip gs://${PROD_CDN_URL}/modules/woocommerce/statics/latest.zip
+            gsutil acl ch -u AllUsers:R gs://${PROD_CDN_URL}/modules/woocommerce/statics/latest.zip
+            gsutil cp packlink-pro-shipping.zip gs://${PROD_CDN_URL}/modules/woocommerce/statics/${CIRCLE_TAG}.zip
+            gsutil acl ch -u AllUsers:R gs://${PROD_CDN_URL}/modules/woocommerce/statics/${CIRCLE_TAG}.zip
+      - slack/notify:
+          color: '#42e2f4'
+          channel: 'logeecom'
+          message: ' Woocommerce module has been released: version $CIRCLE_TAG'
+          webhook: '${SLACK_WEBHOOK}'
+
+workflows:
+  version: 2.1
+  woocommerce_module:
+    jobs:
+      - php_test_56: &test_php
+          filters:
+            branches:
+              ignore: master
+      - php_test_70: *test_php
+      - php_test_71: *test_php
+      - php_test_72: *test_php
+      - php_test_73: *test_php
+      - build_publish:
+          filters:
+            branches:
+              ignore:
+                - /.*/
+            tags:
+              only: /.*/
