@@ -4,24 +4,33 @@
 
 use Logeecom\Infrastructure\ORM\RepositoryRegistry;
 use Logeecom\Infrastructure\ServiceRegister;
+use Logeecom\Infrastructure\TaskExecution\QueueItem;
 use Logeecom\Infrastructure\TaskExecution\QueueService;
 use Packlink\BusinessLogic\Configuration;
 use Packlink\BusinessLogic\Http\DTO\ShipmentLabel;
 use Packlink\BusinessLogic\OrderShipmentDetails\Models\OrderShipmentDetails;
+use Packlink\BusinessLogic\Scheduler\Models\HourlySchedule;
+use Packlink\BusinessLogic\Scheduler\Models\Schedule;
+use Packlink\BusinessLogic\Scheduler\ScheduleCheckTask;
 use Packlink\BusinessLogic\ShipmentDraft\OrderSendDraftTaskMapService;
+use Packlink\BusinessLogic\Tasks\TaskCleanupTask;
 use Packlink\BusinessLogic\Tasks\UpdateShippingServicesTask;
 use Packlink\WooCommerce\Components\Order\Order_Drop_Off_Map;
 use Packlink\WooCommerce\Components\Repositories\Base_Repository;
+use Packlink\WooCommerce\Components\Services\Config_Service;
 use Packlink\WooCommerce\Components\Utility\Database;
 
 // This section will be triggered when upgrading to 2.2.0 or later version of plugin.
-
 global $wpdb;
 
 $database = new Database( $wpdb );
 
 $order_ids = $database->get_packlink_order_ids();
 
+// **********************************************
+// STEP 1. **************************************
+// Move data from meta table to Packlink table. *
+// **********************************************
 if ( ! empty( $order_ids ) ) {
 	/** @var Base_Repository $order_shipment_details_repository */
 	$order_shipment_details_repository = RepositoryRegistry::getRepository( OrderShipmentDetails::CLASS_NAME );
@@ -87,13 +96,36 @@ if ( ! empty( $order_ids ) ) {
 	}
 }
 
+// **********************************************
+// STEP 2. **************************************
+// Remove meta data. ****************************
+// **********************************************
 $database->remove_packlink_meta_data();
+
+// **********************************************
+// STEP 3. **************************************
+// Enqueue task for updating shipping services. *
+// **********************************************
 
 /** @var QueueService $queue_service */
 $queue_service = ServiceRegister::getService( QueueService::CLASS_NAME );
-/** @var \Packlink\WooCommerce\Components\Services\Config_Service $config_service */
+/** @var Config_Service $config_service */
 $config_service = ServiceRegister::getService( Configuration::CLASS_NAME );
 
 if ( null !== $queue_service->findLatestByType( 'UpdateShippingServicesTask' ) ) {
 	$queue_service->enqueue( $config_service->getDefaultQueueName(), new UpdateShippingServicesTask() );
 }
+
+// ****************************************************
+// STEP 4. ********************************************
+// Enqueue task for cleaning up schedule check tasks. *
+// ****************************************************
+$repository = RepositoryRegistry::getRepository( Schedule::getClassName() );
+$schedule   = new HourlySchedule(
+	new TaskCleanupTask( ScheduleCheckTask::getClassName(), array( QueueItem::COMPLETED ), 3600 ),
+	$config_service->getDefaultQueueName()
+);
+
+$schedule->setMinute( 10 );
+$schedule->setNextSchedule();
+$repository->save( $schedule );

@@ -67,7 +67,7 @@ input[type="checkbox"] {
 }
 
 .pl-content-wrapper-panel {
-	padding: 0 0 0 20px;
+	padding: 0 10px 0 20px;
 	height: 100%;
 	position: relative;
 	box-sizing: border-box;
@@ -101,7 +101,7 @@ input[type="checkbox"] {
 }
 
 .pl-sidebar-link-wrapper-inner {
-	padding: 10px;
+	padding: 5px;
 	background: whitesmoke;
 	vertical-align: middle;
 	margin: auto;
@@ -250,7 +250,6 @@ input[type="checkbox"] {
 	padding: 0 !important;
 	height: 60px;
 	line-height: 60px;
-	border-bottom: 1px solid #dcdcdc;
 	color: #5d5d5d;
 	font-size: 12px;
 }
@@ -274,14 +273,12 @@ input[type="checkbox"] {
 
 .pl-table-wrapper {
 	padding: 0 !important;
-	height: calc(100% - 94px);
+	height: calc(100% - 100px);
 	overflow-x: hidden;
 	overflow-y: auto;
 }
 
 .pl-table {
-	margin: 0 !important;
-	padding: 0 !important;
 	width: 100%;
 	border-spacing: unset !important;
 }
@@ -312,7 +309,7 @@ input[type="checkbox"] {
 	box-sizing: border-box;
 }
 
-.pl-table-row-wrapper td {
+.pl-table-row-wrapper td, .pl-table-header-wrapper th {
 	border-top: 1px solid #dcdcdc !important;
 }
 
@@ -323,6 +320,10 @@ input[type="checkbox"] {
 .pl-table-header-wrapper > th:last-child, .pl-table-row-wrapper > td:last-child {
 	color: #2095F2 !important;
 	border-right: 1px solid #dcdcdc !important;
+}
+
+.pl-table-header-wrapper th {
+	border-bottom: 1px solid #dcdcdc;
 }
 
 .pl-table-row-method-title h2 {
@@ -347,8 +348,12 @@ input[type="checkbox"] {
 	text-align: center !important;
 }
 
-.pl-tbody tr:last-child td {
+.pl-tbody tr.pl-table-row-wrapper:last-child td {
 	border-bottom: 1px solid #dcdcdc !important;
+}
+
+.pl-tbody tr:first-child td {
+	border-top: none !important;
 }
 
 .pl-tbody tr,
@@ -366,7 +371,7 @@ input[type="checkbox"] {
 
 .pl-method-logo {
 	max-height: 40px;
-	max-width: 130px;
+	max-width: 100px;
 }
 
 .pl-method-pudo-icon-wrapper {
@@ -733,7 +738,7 @@ input[type="checkbox"] {
 }
 
 .pl-form-section-input #pl-default-warehouse-country {
-	padding: 8px 0 0 12px;
+	padding: 20px 0 0 11px !important;
 	font-size: 14px;
 	border: 1px solid #dcdcdc;
 	margin-bottom: 0;

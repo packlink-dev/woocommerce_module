@@ -10,21 +10,11 @@
 
 namespace Packlink\WooCommerce;
 
-use Logeecom\Infrastructure\Configuration\Configuration;
 use Logeecom\Infrastructure\Logger\Logger;
 use Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException;
-use Logeecom\Infrastructure\ORM\RepositoryRegistry;
 use Logeecom\Infrastructure\ServiceRegister;
 use Logeecom\Infrastructure\TaskExecution\Exceptions\TaskRunnerStatusStorageUnavailableException;
-use Logeecom\Infrastructure\TaskExecution\QueueItem;
-use Packlink\BusinessLogic\Scheduler\Models\DailySchedule;
-use Packlink\BusinessLogic\Scheduler\Models\HourlySchedule;
-use Packlink\BusinessLogic\Scheduler\Models\Schedule;
-use Packlink\BusinessLogic\Scheduler\ScheduleCheckTask;
 use Packlink\BusinessLogic\ShippingMethod\Interfaces\ShopShippingMethodService;
-use Packlink\BusinessLogic\ShippingMethod\Utility\ShipmentStatus;
-use Packlink\BusinessLogic\Tasks\TaskCleanupTask;
-use Packlink\BusinessLogic\Tasks\UpdateShipmentDataTask;
 use Packlink\WooCommerce\Components\Bootstrap_Component;
 use Packlink\WooCommerce\Components\Checkout\Checkout_Handler;
 use Packlink\WooCommerce\Components\Order\Paid_Order_Handler;
@@ -500,9 +490,7 @@ class Plugin {
 		$previous_version = $this->get_config_service()->get_database_version();
 
 		$installer = new Database( $this->db );
-		$installer->update( new Version_File_Reader( __DIR__ . '/database/migrations/', $previous_version ) );
-
-		$this->perform_update_actions( $previous_version );
+		$installer->update( new Version_File_Reader( __DIR__ . '/upgrade/', $previous_version ) );
 
 		$this->get_config_service()->set_database_version( Shop_Helper::get_plugin_version() );
 	}
@@ -649,116 +637,5 @@ class Plugin {
 
 			delete_transient( 'packlink-pro-messages' );
 		}
-	}
-
-	/**
-	 * Executes actions when plugin is updated.
-	 *
-	 * @param string $previous_version Previous version.
-	 *
-	 * @throws RepositoryNotRegisteredException
-	 */
-	private function perform_update_actions( $previous_version ) {
-		if ( version_compare( $previous_version, '2.0.4', '<' ) ) {
-			$this->do_update_204();
-		}
-
-		if ( version_compare( $previous_version, '2.1.1', '<' ) ) {
-			$this->do_update_211();
-		}
-
-		if ( version_compare( $previous_version, '2.1.2', '<' ) ) {
-			$this->do_update_220();
-		}
-	}
-
-	/**
-	 * Performs update for version 2.0.4.
-	 */
-	private function do_update_204() {
-		/** @noinspection HtmlUnknownTarget */ // phpcs:ignore
-		$text = sprintf(
-		/* translators: %s: Module URL. */
-			__(
-				'With this version you will have access to any shipping service that your clients demand. Go to the <a href="%s">configuration</a> and select which shipping services should be offered to your customers!',
-				'packlink-pro-shipping'
-			),
-			Shop_Helper::get_plugin_page_url()
-		);
-
-		set_transient( 'packlink-pro-messages', $text );
-	}
-
-	/**
-	 * Performs update for version 2.1.1.
-	 *
-	 * @throws RepositoryNotRegisteredException
-	 */
-	private function do_update_211() {
-		$configuration = ServiceRegister::getService( Configuration::CLASS_NAME );
-		$repository    = RepositoryRegistry::getRepository( Schedule::getClassName() );
-
-		$schedules = $repository->select();
-
-		/** @var Schedule $schedule */
-		foreach ( $schedules as $schedule ) {
-			$task = $schedule->getTask();
-
-			if ( $task->getType() === UpdateShipmentDataTask::getClassName() ) {
-				$repository->delete( $schedule );
-			}
-		}
-
-		foreach ( array( 0, 30 ) as $minute ) {
-			$hourly_statuses = array(
-				ShipmentStatus::STATUS_PENDING,
-			);
-
-			$shipment_data_half_hour_schedule = new HourlySchedule(
-				new UpdateShipmentDataTask( $hourly_statuses ),
-				$configuration->getDefaultQueueName()
-			);
-			$shipment_data_half_hour_schedule->setMinute( $minute );
-			$shipment_data_half_hour_schedule->setNextSchedule();
-			$repository->save( $shipment_data_half_hour_schedule );
-		}
-
-		$daily_statuses = array(
-			ShipmentStatus::STATUS_IN_TRANSIT,
-			ShipmentStatus::STATUS_READY,
-			ShipmentStatus::STATUS_ACCEPTED,
-		);
-
-		$daily_shipment_data_schedule = new DailySchedule(
-			new UpdateShipmentDataTask( $daily_statuses ),
-			$configuration->getDefaultQueueName()
-		);
-
-		$daily_shipment_data_schedule->setHour( 11 );
-		$daily_shipment_data_schedule->setNextSchedule();
-
-		$repository->save( $daily_shipment_data_schedule );
-
-		// we updated this to PACKLINK_VERSION, so we delete the old one.
-		delete_option( 'PACKLINK_DATABASE_VERSION' );
-	}
-
-	/**
-	 * Performs update for version 2.2.0.
-	 *
-	 * @throws RepositoryNotRegisteredException
-	 */
-	private function do_update_220() {
-		$configuration = ServiceRegister::getService( Configuration::CLASS_NAME );
-		$repository    = RepositoryRegistry::getRepository( Schedule::getClassName() );
-
-		$schedule = new HourlySchedule(
-			new TaskCleanupTask( ScheduleCheckTask::getClassName(), array( QueueItem::COMPLETED ), 3600 ),
-			$configuration->getDefaultQueueName()
-		);
-
-		$schedule->setMinute( 10 );
-		$schedule->setNextSchedule();
-		$repository->save( $schedule );
 	}
 }
