@@ -1107,10 +1107,6 @@ $data = $this->resolve_view_arguments();
 			shippingMethodSaved: "<?php echo __( 'Shipping method successfully saved.', 'packlink-pro-shipping' ); ?>"
 		};
 
-		Packlink.labelMsgs = {
-			empty: "<?php echo __( 'Empty', 'packlink-pro-shipping' ); ?>"
-		};
-
 		Packlink.state = new Packlink.StateController(
 			{
 				scrollConfiguration: {
