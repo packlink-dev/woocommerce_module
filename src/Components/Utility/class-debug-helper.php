@@ -109,7 +109,7 @@ class Debug_Helper {
 		$result['Async process URL']   = self::get_config_service()->getAsyncProcessUrl( 'test' );
 		$result['Auto-test URL']       = admin_url( 'admin.php?page=packlink-pro-auto-test' );
 
-		return wp_json_encode( $result, JSON_PRETTY_PRINT );
+		return wp_json_encode( $result, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES );
 	}
 
 	/**
@@ -161,7 +161,7 @@ class Debug_Helper {
 				'User info' => self::get_config_service()->getUserInfo(),
 				'API Key'   => self::get_config_service()->getAuthorizationToken(),
 			),
-			JSON_PRETTY_PRINT
+			JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES
 		);
 	}
 
@@ -190,7 +190,7 @@ class Debug_Helper {
 				'Default parcel'    => self::get_config_service()->getDefaultParcel() ?: array(),
 				'Default warehouse' => self::get_config_service()->getDefaultWarehouse() ?: array(),
 			),
-			JSON_PRETTY_PRINT
+			JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES
 		);
 	}
 
@@ -216,7 +216,7 @@ class Debug_Helper {
 			/* Just continue with empty result. */
 		}
 
-		return wp_json_encode( $result, JSON_PRETTY_PRINT );
+		return wp_json_encode( $result, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES );
 	}
 
 	/**
