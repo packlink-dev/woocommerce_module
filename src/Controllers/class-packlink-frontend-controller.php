@@ -468,23 +468,14 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	}
 
 	/**
-	 * Returns a list of supported countries with WooCommerce-specific registration links.
+	 * Returns a list of supported countries.
 	 */
 	public function get_supported_countries() {
 		/** @var CountryService $country_service */
 		$country_service     = ServiceRegister::getService( CountryService::CLASS_NAME );
 		$supported_countries = $country_service->getSupportedCountries();
-
 		foreach ( $supported_countries as $country ) {
 			$country->name = __( $country->name, 'packlink-pro-shipping' );
-
-			$domain = 'com';
-
-			if ( in_array( $country->code, array( 'ES', 'DE', 'FR', 'IT' ), true ) ) {
-				$domain = strtolower( $country->code );
-			}
-
-			$country->registrationLink = "https://pro.packlink.{$domain}/cmslp/woocommerce";
 		}
 
 		$this->return_dto_entities_response( $supported_countries );
