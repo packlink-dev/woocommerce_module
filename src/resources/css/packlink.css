@@ -738,7 +738,7 @@ input[type="checkbox"] {
 }
 
 .pl-form-section-input #pl-default-warehouse-country {
-	padding: 20px 0 0 11px !important;
+	padding: 10px 0 0 11px;
 	font-size: 14px;
 	border: 1px solid #dcdcdc;
 	margin-bottom: 0;
