@@ -206,7 +206,6 @@ var Packlink = window.Packlink || {};
 
 				privateData.selectedLocation = id;
 				selected                     = findLocationById( id );
-				// document.getElementById('writer').innerHTML = "SELECTED: " + event.data.payload.id;
 				Packlink.ajaxService.post(
 					privateData.endpoint,
 					selected,

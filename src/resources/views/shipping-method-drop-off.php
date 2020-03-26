@@ -37,6 +37,13 @@ $translations = array(
 );
 
 $locations = $this->get_drop_off_locations( $shipping_method->getId() );
+
+if ( $id_value ) {
+	$location_ids = array_column( $locations, 'id' );
+	if ( ! in_array( $id_value, $location_ids, true ) ) {
+		$button_label = __( 'Select Drop-Off Location', 'packlink-pro-shipping' );
+	}
+}
 ?>
 
 <script style="display: none;">

@@ -167,6 +167,8 @@ class Checkout_Handler {
 			$order_drop_off_map->set_order_id( $order_id );
 			$order_drop_off_map->set_drop_off_point_id( $this->get_param( static::PACKLINK_DROP_OFF_ID ) );
 			$order_drop_off_map_repository->save( $order_drop_off_map );
+
+			wc()->session->set( Shipping_Method_Helper::DROP_OFF_ID, '' );
 		}
 
 		/** @var ShipmentDraftService $draft_service */
