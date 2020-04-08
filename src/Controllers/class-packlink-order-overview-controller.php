@@ -10,10 +10,12 @@ namespace Packlink\WooCommerce\Controllers;
 use iio\libmergepdf\Merger;
 use Logeecom\Infrastructure\Logger\Logger;
 use Logeecom\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
+use Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException;
 use Logeecom\Infrastructure\ORM\RepositoryRegistry;
 use Logeecom\Infrastructure\ServiceRegister;
 use Packlink\BusinessLogic\Http\DTO\ShipmentLabel;
 use Packlink\BusinessLogic\Order\OrderService;
+use Packlink\BusinessLogic\OrderShipmentDetails\Exceptions\OrderShipmentDetailsNotFound;
 use Packlink\BusinessLogic\OrderShipmentDetails\Models\OrderShipmentDetails;
 use Packlink\BusinessLogic\OrderShipmentDetails\OrderShipmentDetailsService;
 use Packlink\WooCommerce\Components\Utility\Script_Loader;
@@ -119,8 +121,7 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 			if ( static::COLUMN_PACKLINK_ID === $column ) {
 				$src = Shop_Helper::get_plugin_base_url() . 'resources/images/logo.png';
 				if ( ! $this->get_order_shipment_details_service()->isShipmentDeleted( $shipment_details->getReference() ) ) {
-					$domain = Shop_Helper::get_country_domain();
-					$url    = "https://pro.packlink.{$domain}/private/shipments/{$shipment_details->getReference()}";
+					$url = $shipment_details->getShipmentUrl();
 					echo '<a class="pl-image-link" target="_blank" href="' . esc_url( $url ) . '"><img src="' . esc_url( $src ) . '" alt=""></a>';
 				} else {
 					echo '<div class="pl-image-link"><img src="' . esc_url( $src ) . '" alt=""></div>';
@@ -132,8 +133,8 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 	/**
 	 * Prints single label.
 	 *
-	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException
-	 * @throws \Packlink\BusinessLogic\OrderShipmentDetails\Exceptions\OrderShipmentDetailsNotFound
+	 * @throws RepositoryNotRegisteredException
+	 * @throws OrderShipmentDetailsNotFound
 	 */
 	public function print_single_label() {
 		$this->validate( 'no', true );
@@ -172,8 +173,8 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 	 *
 	 * @return string
 	 *
-	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException
-	 * @throws \Packlink\BusinessLogic\OrderShipmentDetails\Exceptions\OrderShipmentDetailsNotFound
+	 * @throws RepositoryNotRegisteredException
+	 * @throws OrderShipmentDetailsNotFound
 	 */
 	public function bulk_print_labels( $redirect_to, $action, $ids ) {
 		if ( self::BULK_ACTION_ID !== $action ) {
@@ -268,7 +269,7 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 	 *
 	 * @return ShipmentLabel[] Label paths.
 	 *
-	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException
+	 * @throws RepositoryNotRegisteredException
 	 */
 	private function get_labels_to_print( $shipment_details ) {
 		/** @var OrderService $order_service */
@@ -297,7 +298,7 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 	 *
 	 * @return array
 	 *
-	 * @throws \Packlink\BusinessLogic\OrderShipmentDetails\Exceptions\OrderShipmentDetailsNotFound
+	 * @throws OrderShipmentDetailsNotFound
 	 */
 	private function print_labels( $reference, $labels ) {
 		$links = array();

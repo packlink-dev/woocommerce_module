@@ -7,8 +7,6 @@
 
 namespace Packlink\WooCommerce\Components\Utility;
 
-use Logeecom\Infrastructure\ServiceRegister;
-use Packlink\WooCommerce\Components\Services\Config_Service;
 use Packlink\WooCommerce\Components\Services\Logger_Service;
 
 /**
@@ -154,30 +152,6 @@ class Shop_Helper {
 	 */
 	public static function get_plugin_page_url() {
 		return admin_url( 'admin.php?page=packlink-pro-shipping' );
-	}
-
-	/**
-	 * Returns country domain.
-	 *
-	 * @return string Country code.
-	 */
-	public static function get_country_domain() {
-		if ( ! static::$country_domain ) {
-			/**
-			 * Configuration service.
-			 *
-			 * @var Config_Service $config
-			 */
-			$config    = ServiceRegister::getService( Config_Service::CLASS_NAME );
-			$user_info = $config->getUserInfo();
-
-			static::$country_domain = 'com';
-			if ( $user_info !== null && in_array( $user_info->country, array( 'ES', 'DE', 'IT', 'FR' ), true ) ) {
-				static::$country_domain = strtolower( $user_info->country );
-			}
-		}
-
-		return static::$country_domain;
 	}
 
 	/**

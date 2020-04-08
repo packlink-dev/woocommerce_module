@@ -7,6 +7,7 @@ use Logeecom\Infrastructure\ServiceRegister;
 use Logeecom\Infrastructure\TaskExecution\QueueItem;
 use Logeecom\Infrastructure\TaskExecution\QueueService;
 use Packlink\BusinessLogic\Configuration;
+use Packlink\BusinessLogic\Country\CountryService;
 use Packlink\BusinessLogic\Http\DTO\ShipmentLabel;
 use Packlink\BusinessLogic\OrderShipmentDetails\Models\OrderShipmentDetails;
 use Packlink\BusinessLogic\Scheduler\Models\HourlySchedule;
@@ -27,6 +28,9 @@ $database = new Database( $wpdb );
 
 $order_ids = $database->get_packlink_order_ids();
 
+/** @var Config_Service $config_service */
+$config_service = ServiceRegister::getService( Configuration::CLASS_NAME );
+
 // **********************************************
 // STEP 1. **************************************
 // Move data from meta table to Packlink table. *
@@ -39,11 +43,22 @@ if ( ! empty( $order_ids ) ) {
 	/** @var OrderSendDraftTaskMapService $order_draft_task_map_service */
 	$order_draft_task_map_service = ServiceRegister::getService( OrderSendDraftTaskMapService::CLASS_NAME );
 
+	/** @var CountryService $country_service */
+	$country_service = ServiceRegister::getService( CountryService::CLASS_NAME );
+	$user_info       = $config_service->getUserInfo();
+	$user_domain     = 'com';
+	if ( $user_info && $country_service->isBaseCountry( $user_info->country ) ) {
+		$user_domain = strtolower( $user_info->country );
+	}
+
+	$base_shipment_url = "https://pro.packlink.$user_domain/private/shipments/";
+
 	foreach ( $order_ids as $order_id ) {
 		if ( metadata_exists( 'post', $order_id, '_packlink_shipment_reference' ) ) {
 			$order_shipment_details = new OrderShipmentDetails();
 			$order_shipment_details->setOrderId( (string) $order_id );
 			$order_shipment_details->setReference( get_post_meta( $order_id, '_packlink_shipment_reference', true ) );
+			$order_shipment_details->setShipmentUrl( $base_shipment_url . $order_shipment_details->getReference() );
 
 			if ( metadata_exists( 'post', $order_id, '_packlink_shipment_status' ) ) {
 				$order_shipment_details->setShippingStatus(
@@ -109,8 +124,6 @@ $database->remove_packlink_meta_data();
 
 /** @var QueueService $queue_service */
 $queue_service = ServiceRegister::getService( QueueService::CLASS_NAME );
-/** @var Config_Service $config_service */
-$config_service = ServiceRegister::getService( Configuration::CLASS_NAME );
 
 if ( null !== $queue_service->findLatestByType( 'UpdateShippingServicesTask' ) ) {
 	$queue_service->enqueue( $config_service->getDefaultQueueName(), new UpdateShippingServicesTask() );

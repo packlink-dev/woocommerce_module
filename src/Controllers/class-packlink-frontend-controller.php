@@ -23,6 +23,8 @@ use Packlink\BusinessLogic\Controllers\DTO\ShippingMethodConfiguration;
 use Packlink\BusinessLogic\Controllers\ShippingMethodController;
 use Packlink\BusinessLogic\Controllers\UpdateShippingServicesTaskStatusController;
 use Packlink\BusinessLogic\Country\CountryService;
+use Packlink\BusinessLogic\DTO\Exceptions\FrontDtoNotRegisteredException;
+use Packlink\BusinessLogic\DTO\Exceptions\FrontDtoValidationException;
 use Packlink\BusinessLogic\Http\DTO\ParcelInfo;
 use Packlink\BusinessLogic\Location\LocationService;
 use Packlink\BusinessLogic\ShippingMethod\Models\FixedPricePolicy;
@@ -140,7 +142,7 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	/**
 	 * Returns dashboard status.
 	 *
-	 * @throws \Packlink\BusinessLogic\DTO\Exceptions\FrontDtoNotRegisteredException
+	 * @throws FrontDtoNotRegisteredException
 	 */
 	public function get_dashboard_status() {
 		$this->validate( 'no', true );
@@ -153,7 +155,7 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 		$dashboard_controller = ServiceRegister::getService( DashboardController::CLASS_NAME );
 		try {
 			$status = $dashboard_controller->getStatus();
-		} catch ( \Packlink\BusinessLogic\DTO\Exceptions\FrontDtoValidationException $e ) {
+		} catch ( FrontDtoValidationException $e ) {
 			$this->return_validation_errors_response( $e->getValidationErrors() );
 		}
 
@@ -215,7 +217,7 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 			/** @var Configuration $configuration */
 			$configuration = ServiceRegister::getService( Configuration::CLASS_NAME );
 			$configuration->setDefaultParcel( $parcel_info );
-		} catch ( \Packlink\BusinessLogic\DTO\Exceptions\FrontDtoValidationException $e ) {
+		} catch ( FrontDtoValidationException $e ) {
 			$this->return_validation_errors_response( $e->getValidationErrors() );
 		}
 
@@ -238,7 +240,7 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	/**
 	 * Saves default warehouse.
 	 *
-	 * @throws \Packlink\BusinessLogic\DTO\Exceptions\FrontDtoNotRegisteredException
+	 * @throws FrontDtoNotRegisteredException
 	 * @throws QueueStorageUnavailableException
 	 */
 	public function save_default_warehouse() {
@@ -251,7 +253,7 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 		$warehouse_service = ServiceRegister::getService( WarehouseService::CLASS_NAME );
 		try {
 			$warehouse_service->updateWarehouseData( $payload );
-		} catch ( \Packlink\BusinessLogic\DTO\Exceptions\FrontDtoValidationException $e ) {
+		} catch ( FrontDtoValidationException $e ) {
 			$this->return_validation_errors_response( $e->getValidationErrors() );
 		}
 
@@ -487,9 +489,11 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	 * @return array Dashboard view arguments.
 	 */
 	protected function resolve_view_arguments() {
-		$user_info = $this->configuration->getUserInfo();
-		$locale    = 'EN';
-		if ( null !== $user_info && in_array( $user_info->country, array( 'ES', 'DE', 'FR', 'IT' ), true ) ) {
+		/** @var CountryService $country_service */
+		$country_service = ServiceRegister::getService( CountryService::CLASS_NAME );
+		$user_info       = $this->configuration->getUserInfo();
+		$locale          = 'EN';
+		if ( null !== $user_info && $country_service->isBaseCountry( $user_info->country ) ) {
 			$locale = $user_info->country;
 		}
 

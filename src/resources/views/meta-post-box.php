@@ -6,24 +6,25 @@
  */
 
 use Logeecom\Infrastructure\TaskExecution\QueueItem;
+use Packlink\BusinessLogic\OrderShipmentDetails\Models\OrderShipmentDetails;
+use Packlink\BusinessLogic\ShipmentDraft\Objects\ShipmentDraftStatus;
+use Packlink\BusinessLogic\ShippingMethod\Models\ShippingMethod;
 use Packlink\WooCommerce\Components\Utility\Shop_Helper;
 
 /**
  * Order details.
  *
- * @var \WC_Order                                                                    $wc_order
- * @var \Packlink\BusinessLogic\OrderShipmentDetails\Models\OrderShipmentDetails     $order_details
- * @var bool                                                                         $shipment_deleted
- * @var \Packlink\BusinessLogic\ShipmentDraft\Objects\ShipmentDraftStatus            $draft_status
- * @var \Packlink\BusinessLogic\ShippingMethod\Models\ShippingMethod                 $shipping_method
- * @var string                                                                       $last_status_update
+ * @var WC_Order             $wc_order
+ * @var OrderShipmentDetails $order_details
+ * @var bool                 $shipment_deleted
+ * @var ShipmentDraftStatus  $draft_status
+ * @var ShippingMethod       $shipping_method
+ * @var string               $last_status_update
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
-
-$domain = Shop_Helper::get_country_domain();
 ?>
 
 <ul class="order_actions submitbox" xmlns="http://www.w3.org/1999/html">
@@ -78,14 +79,14 @@ $domain = Shop_Helper::get_country_domain();
 			<?php if ( $order_details->getShippingCost() > 0 ) : ?>
 				<div class="pl-order-detail-section">
 					<h4><?php echo __( 'Packlink shipping price', 'packlink-pro-shipping' ); ?></h4>
-					<?php echo \wc_price( $order_details->getShippingCost() ); ?>
+					<?php echo wc_price( $order_details->getShippingCost() ); ?>
 				</div>
 			<?php endif; ?>
 		</li>
 
 		<?php if ( ! $shipment_deleted ) : ?>
 			<li class="wide">
-				<a href="<?php echo "https://pro.packlink.{$domain}/private/shipments/{$order_details->getReference()}"; ?>" target="_blank">
+				<a href="<?php echo $order_details->getShipmentUrl(); ?>" target="_blank">
 					<button type="button" class="button pl-button-view" name="view on packlink" value="View">
 						<?php echo __( 'View on Packlink PRO', 'packlink-pro-shipping' ); ?>
 					</button>
