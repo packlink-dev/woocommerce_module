@@ -7,6 +7,8 @@
 
 namespace Packlink\WooCommerce\Components\ShippingMethod;
 
+use Logeecom\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
+use Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException;
 use Logeecom\Infrastructure\ORM\QueryFilter\QueryFilter;
 use Logeecom\Infrastructure\ORM\RepositoryRegistry;
 use Logeecom\Infrastructure\ServiceRegister;
@@ -33,8 +35,8 @@ class Shipping_Method_Helper {
 	 *
 	 * @return ShippingMethod Returns Packlink shipping method.
 	 *
-	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException
-	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException
+	 * @throws QueryFilterInvalidParamException
+	 * @throws RepositoryNotRegisteredException
 	 */
 	public static function get_packlink_shipping_method_from_order( \WC_Order $wc_order ) {
 		$shipping = $wc_order->get_shipping_methods();
@@ -42,11 +44,9 @@ class Shipping_Method_Helper {
 			return null;
 		}
 
-		$shipping_method_id = - 1;
-		foreach ( $shipping as $item_id => $shipping_item ) {
-			$shipping_data      = $shipping_item->get_data();
-			$shipping_method_id = $shipping_data['instance_id'];
-		}
+		$shipping_item      = reset( $shipping );
+		$shipping_data      = $shipping_item->get_data();
+		$shipping_method_id = $shipping_data['instance_id'];
 
 		return self::get_packlink_shipping_method( (int) $shipping_method_id );
 	}
@@ -58,8 +58,8 @@ class Shipping_Method_Helper {
 	 *
 	 * @return ShippingMethod Shipping method.
 	 *
-	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException
-	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException
+	 * @throws RepositoryNotRegisteredException
+	 * @throws QueryFilterInvalidParamException
 	 *
 	 * @noinspection PhpUnhandledExceptionInspection
 	 */
@@ -153,7 +153,7 @@ class Shipping_Method_Helper {
 			 */
 			foreach ( $zone->get_shipping_methods( true ) as $item ) {
 				if ( ( Packlink_Shipping_Method::PACKLINK_SHIPPING_METHOD !== $item->id )
-					 && $wpdb->update( "{$wpdb->prefix}woocommerce_shipping_zone_methods", array( 'is_enabled' => 0 ), array( 'instance_id' => absint( $item->instance_id ) ) )
+				     && $wpdb->update( "{$wpdb->prefix}woocommerce_shipping_zone_methods", array( 'is_enabled' => 0 ), array( 'instance_id' => absint( $item->instance_id ) ) )
 				) {
 					do_action( 'woocommerce_shipping_zone_method_status_toggled', $item->instance_id, $item->id, $zone_id, 0 );
 				}
