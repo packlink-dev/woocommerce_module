@@ -6,6 +6,7 @@
  */
 
 use Packlink\WooCommerce\Controllers\Packlink_Frontend_Controller;
+use Packlink\WooCommerce\Components\Utility\Shop_Helper;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -53,31 +54,9 @@ $data = $this->resolve_view_arguments();
 				<div class="pl-register-country-title-wrapper">
 					<?php echo __( 'Select country to start', 'packlink-pro-shipping' ); ?>
 				</div>
+				<input type="hidden" id="pl-countries-url" value="<?php echo Shop_Helper::get_controller_url( 'Frontend', 'get_supported_countries' ); ?>" />
+				<input type="hidden" id="pl-logo-path" value="<?php echo $data['image_base']; ?>" />
 				<div class="pl-register-country-list-wrapper">
-					<a href="https://pro.packlink.es/cmslp/woocommerce" target="_blank">
-						<div class="pl-country">
-							<img src="<?php echo $data['image_base']; ?>flags/spain.svg">
-							es
-						</div>
-					</a>
-					<a href="https://pro.packlink.de/cmslp/woocommerce" target="_blank">
-						<div class="pl-country">
-							<img src="<?php echo $data['image_base']; ?>flags/germany.svg">
-							de
-						</div>
-					</a>
-					<a href="https://pro.packlink.fr/cmslp/woocommerce" target="_blank">
-						<div class="pl-country">
-							<img src="<?php echo $data['image_base']; ?>flags/france.svg">
-							fr
-						</div>
-					</a>
-					<a href="https://pro.packlink.it/cmslp/woocommerce" target="_blank">
-						<div class="pl-country">
-							<img src="<?php echo $data['image_base']; ?>flags/italy.svg">
-							it
-						</div>
-					</a>
 				</div>
 			</div>
 		</div>
@@ -121,6 +100,7 @@ $data = $this->resolve_view_arguments();
 		let registerBtnClicked = function (event) {
 			event.stopPropagation();
 			let form = document.getElementById('pl-register-form');
+			let ajaxService = Packlink.ajaxService;
 			form.style.display = 'block';
 
 			let closeBtn = document.getElementById('pl-register-form-close-btn');
@@ -132,6 +112,48 @@ $data = $this->resolve_view_arguments();
 			container.addEventListener('click', function () {
 				form.style.display = 'none';
 			});
+
+			let supportedCountriesUrl = document.getElementById('pl-countries-url').value;
+
+			ajaxService.get(supportedCountriesUrl, populateCountryList);
+		};
+
+		/**
+		 * Populates the list of supported countries on login form.
+		 */
+		let populateCountryList = function (response) {
+			let countryList = document.getElementsByClassName('pl-register-country-list-wrapper')[0],
+				logoPath =  document.getElementById('pl-logo-path').value;
+
+			if (countryList.childElementCount > 0) {
+				return;
+			}
+
+			for (let code in response) {
+				let supportedCountry = response[code],
+					linkElement = document.createElement('a'),
+					countryElement = document.createElement('div'),
+					imageElement = document.createElement('img'),
+					nameElement = document.createElement('div');
+
+				linkElement.href = supportedCountry.registration_link;
+				linkElement.target = '_blank';
+
+				countryElement.classList.add('pl-country');
+
+				imageElement.src = logoPath + supportedCountry.code + '.svg';
+				imageElement.classList.add('pl-country-logo');
+				imageElement.alt = supportedCountry.name;
+
+				countryElement.appendChild(imageElement);
+
+				nameElement.classList.add('pl-country-name');
+				nameElement.innerText = supportedCountry.name;
+
+				countryElement.appendChild(nameElement);
+				linkElement.appendChild(countryElement);
+				countryList.appendChild(linkElement);
+			}
 		};
 
 		let btn = document.getElementById('pl-register-btn');

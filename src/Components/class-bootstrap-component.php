@@ -21,12 +21,14 @@ use Logeecom\Infrastructure\ServiceRegister;
 use Logeecom\Infrastructure\TaskExecution\Process;
 use Logeecom\Infrastructure\TaskExecution\QueueItem;
 use Packlink\BusinessLogic\BootstrapComponent;
-use Packlink\BusinessLogic\Order\Interfaces\OrderRepository;
+use Packlink\BusinessLogic\Order\Interfaces\ShopOrderService;
+use Packlink\BusinessLogic\OrderShipmentDetails\Models\OrderShipmentDetails;
 use Packlink\BusinessLogic\Scheduler\Models\Schedule;
+use Packlink\BusinessLogic\ShipmentDraft\Models\OrderSendDraftTaskMap;
 use Packlink\BusinessLogic\ShippingMethod\Interfaces\ShopShippingMethodService;
 use Packlink\BusinessLogic\ShippingMethod\Models\ShippingMethod;
-use Packlink\WooCommerce\Components\Order\Order_Repository;
-use Packlink\WooCommerce\Components\Order\Order_Shipment_Entity;
+use Packlink\WooCommerce\Components\Order\Order_Drop_Off_Map;
+use Packlink\WooCommerce\Components\Order\Shop_Order_Service;
 use Packlink\WooCommerce\Components\Repositories\Base_Repository;
 use Packlink\WooCommerce\Components\Repositories\Queue_Item_Repository;
 use Packlink\WooCommerce\Components\Services\Config_Service;
@@ -75,9 +77,9 @@ class Bootstrap_Component extends BootstrapComponent {
 		);
 
 		ServiceRegister::registerService(
-			OrderRepository::CLASS_NAME,
+			ShopOrderService::CLASS_NAME,
 			static function () {
-				return Order_Repository::getInstance();
+				return Shop_Order_Service::getInstance();
 			}
 		);
 
@@ -101,9 +103,11 @@ class Bootstrap_Component extends BootstrapComponent {
 		RepositoryRegistry::registerRepository( Process::CLASS_NAME, Base_Repository::getClassName() );
 		RepositoryRegistry::registerRepository( ShippingMethod::CLASS_NAME, Base_Repository::getClassName() );
 		RepositoryRegistry::registerRepository( Shipping_Method_Map::CLASS_NAME, Base_Repository::getClassName() );
-		RepositoryRegistry::registerRepository( Order_Shipment_Entity::CLASS_NAME, Base_Repository::getClassName() );
+		RepositoryRegistry::registerRepository( OrderShipmentDetails::CLASS_NAME, Base_Repository::getClassName() );
 		RepositoryRegistry::registerRepository( Schedule::CLASS_NAME, Base_Repository::getClassName() );
 		RepositoryRegistry::registerRepository( QueueItem::CLASS_NAME, Queue_Item_Repository::getClassName() );
 		RepositoryRegistry::registerRepository( LogData::CLASS_NAME, Base_Repository::getClassName() );
+		RepositoryRegistry::registerRepository( OrderSendDraftTaskMap::CLASS_NAME, Base_Repository::getClassName() );
+		RepositoryRegistry::registerRepository( Order_Drop_Off_Map::CLASS_NAME, Base_Repository::getClassName() );
 	}
 }

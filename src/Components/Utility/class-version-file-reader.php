@@ -13,7 +13,7 @@ namespace Packlink\WooCommerce\Components\Utility;
  * @package Packlink\WooCommerce\Components\Utility
  */
 class Version_File_Reader {
-	const MIGRATION_FILE_PREFIX = 'migration.v.';
+	const MIGRATION_FILE_PREFIX = 'upgrade-';
 	/**
 	 * Migrations directory.
 	 *

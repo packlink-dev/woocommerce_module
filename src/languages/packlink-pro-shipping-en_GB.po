@@ -6,16 +6,17 @@ msgstr ""
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/packlink-pro-"
 "shipping\n"
 "POT-Creation-Date: 2019-07-16 14:51+0000\n"
-"PO-Revision-Date: 2019-07-16 17:53+0200\n"
+"PO-Revision-Date: 2020-02-08 19:40+0000\n"
 "Last-Translator: Packlink PRO <support@packlink.com>\n"
 "Language-Team: English (UK)\n"
 "Language: en_GB\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 2.0.6\n"
+"X-Generator: Loco https://localise.biz/\n"
 "X-Domain: packlink-pro-shipping\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Loco-Version: 2.3.1; wp-5.3.2"
 
 #: class-plugin.php:103
 msgid ""
@@ -105,6 +106,50 @@ msgstr "Successfully disabled shipping methods."
 #: Controllers/class-packlink-frontend-controller.php:441
 msgid "Failed to save shipping method."
 msgstr "Failed to save shipping method."
+
+#: Controllers/class-packlink-frontend-controller.php:518
+msgid "Spain"
+msgstr "Spain"
+
+#: Controllers/class-packlink-frontend-controller.php:518
+msgid "Germany"
+msgstr "Germany"
+
+#: Controllers/class-packlink-frontend-controller.php:518
+msgid "France"
+msgstr "France"
+
+#: Controllers/class-packlink-frontend-controller.php:518
+msgid "Italy"
+msgstr "Italy"
+
+#: Controllers/class-packlink-frontend-controller.php:518
+msgid "Austria"
+msgstr "Austria"
+
+#: Controllers/class-packlink-frontend-controller.php:518
+msgid "Netherlands"
+msgstr "Netherlands"
+
+#: Controllers/class-packlink-frontend-controller.php:518
+msgid "Belgium"
+msgstr "Belgium"
+
+#: Controllers/class-packlink-frontend-controller.php:518
+msgid "Portugal"
+msgstr "Portugal"
+
+#: Controllers/class-packlink-frontend-controller.php:518
+msgid "Turkey"
+msgstr "Turkey"
+
+#: Controllers/class-packlink-frontend-controller.php:518
+msgid "Ireland"
+msgstr "Ireland"
+
+#: Controllers/class-packlink-frontend-controller.php:518
+msgid "United Kingdom"
+msgstr "United Kingdom"
 
 #: resources/views/login.php:35
 msgid "Don't have an account?"
@@ -717,15 +762,3 @@ msgstr "Packlink Shipping S.L."
 #. Author URI of the plugin
 msgid "https://pro.packlink.es/"
 msgstr "https://pro.packlink.es/"
-
-#~ msgid "Packlink PRO"
-#~ msgstr "Packlink PRO"
-
-#~ msgid "Drop-off address"
-#~ msgstr "Drop-off address"
-
-#~ msgid "Fixed prices"
-#~ msgstr "Fixed prices"
-
-#~ msgid "Draft created"
-#~ msgstr "Draft created"

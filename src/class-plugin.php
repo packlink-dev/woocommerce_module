@@ -10,21 +10,14 @@
 
 namespace Packlink\WooCommerce;
 
-use Logeecom\Infrastructure\Configuration\Configuration;
 use Logeecom\Infrastructure\Logger\Logger;
 use Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException;
-use Logeecom\Infrastructure\ORM\RepositoryRegistry;
 use Logeecom\Infrastructure\ServiceRegister;
 use Logeecom\Infrastructure\TaskExecution\Exceptions\TaskRunnerStatusStorageUnavailableException;
-use Packlink\BusinessLogic\Scheduler\Models\DailySchedule;
-use Packlink\BusinessLogic\Scheduler\Models\HourlySchedule;
-use Packlink\BusinessLogic\Scheduler\Models\Schedule;
 use Packlink\BusinessLogic\ShippingMethod\Interfaces\ShopShippingMethodService;
-use Packlink\BusinessLogic\ShippingMethod\Utility\ShipmentStatus;
-use Packlink\BusinessLogic\Tasks\UpdateShipmentDataTask;
 use Packlink\WooCommerce\Components\Bootstrap_Component;
 use Packlink\WooCommerce\Components\Checkout\Checkout_Handler;
-use Packlink\WooCommerce\Components\Order\Order_Details_Helper;
+use Packlink\WooCommerce\Components\Order\Paid_Order_Handler;
 use Packlink\WooCommerce\Components\Services\Config_Service;
 use Packlink\WooCommerce\Components\Services\Logger_Service;
 use Packlink\WooCommerce\Components\ShippingMethod\Packlink_Shipping_Method;
@@ -497,9 +490,7 @@ class Plugin {
 		$previous_version = $this->get_config_service()->get_database_version();
 
 		$installer = new Database( $this->db );
-		$installer->update( new Version_File_Reader( __DIR__ . '/database/migrations/', $previous_version ) );
-
-		$this->perform_update_actions( $previous_version );
+		$installer->update( new Version_File_Reader( __DIR__ . '/upgrade/', $previous_version ) );
 
 		$this->get_config_service()->set_database_version( Shop_Helper::get_plugin_version() );
 	}
@@ -575,8 +566,8 @@ class Plugin {
 					add_action(
 						'woocommerce_order_status_' . $paid_status,
 						array(
-							Order_Details_Helper::CLASS_NAME,
-							'queue_draft',
+							Paid_Order_Handler::CLASS_NAME,
+							'handle',
 						),
 						10,
 						2
@@ -598,7 +589,7 @@ class Plugin {
 		add_action( 'woocommerce_review_order_after_shipping', array( $handler, 'after_shipping' ) );
 		add_action( 'woocommerce_checkout_process', array( $handler, 'checkout_process' ) );
 		add_action( 'woocommerce_checkout_create_order', array( $handler, 'checkout_update_shipping_address' ), 10, 2 );
-		add_action( 'woocommerce_checkout_update_order_meta', array( $handler, 'checkout_update_order_meta' ), 10, 2 );
+		add_action( 'woocommerce_checkout_update_order_meta', array( $handler, 'checkout_update_drop_off' ), 10, 2 );
 		add_action( 'wp_enqueue_scripts', array( $handler, 'load_scripts' ) );
 	}
 
@@ -646,93 +637,5 @@ class Plugin {
 
 			delete_transient( 'packlink-pro-messages' );
 		}
-	}
-
-	/**
-	 * Executes actions when plugin is updated.
-	 *
-	 * @param string $previous_version Previous version.
-	 *
-	 * @throws RepositoryNotRegisteredException
-	 */
-	private function perform_update_actions( $previous_version ) {
-		if ( version_compare( $previous_version, '2.0.4', '<' ) ) {
-			$this->do_update_204();
-		}
-
-		if ( version_compare( $previous_version, '2.1.1', '<' ) ) {
-			$this->do_update_211();
-		}
-	}
-
-	/**
-	 * Performs update for version 2.0.4.
-	 */
-	private function do_update_204() {
-		/** @noinspection HtmlUnknownTarget */ // phpcs:ignore
-		$text = sprintf(
-		/* translators: %s: Module URL. */
-			__(
-				'With this version you will have access to any shipping service that your clients demand. Go to the <a href="%s">configuration</a> and select which shipping services should be offered to your customers!',
-				'packlink-pro-shipping'
-			),
-			Shop_Helper::get_plugin_page_url()
-		);
-
-		set_transient( 'packlink-pro-messages', $text );
-	}
-
-	/**
-	 * Performs update for version 2.1.1.
-	 *
-	 * @throws RepositoryNotRegisteredException
-	 */
-	private function do_update_211() {
-		$configuration = ServiceRegister::getService( Configuration::CLASS_NAME );
-		$repository    = RepositoryRegistry::getRepository( Schedule::getClassName() );
-
-		$schedules = $repository->select();
-
-		/** @var Schedule $schedule */
-		foreach ( $schedules as $schedule ) {
-			$task = $schedule->getTask();
-
-			if ( $task->getType() === UpdateShipmentDataTask::getClassName() ) {
-				$repository->delete( $schedule );
-			}
-		}
-
-		foreach ( array( 0, 30 ) as $minute ) {
-			$hourly_statuses = array(
-				ShipmentStatus::STATUS_PENDING,
-			);
-
-			$shipment_data_half_hour_schedule = new HourlySchedule(
-				new UpdateShipmentDataTask( $hourly_statuses ),
-				$configuration->getDefaultQueueName()
-			);
-			$shipment_data_half_hour_schedule->setMinute( $minute );
-			$shipment_data_half_hour_schedule->setNextSchedule();
-			$repository->save( $shipment_data_half_hour_schedule );
-		}
-
-		$daily_statuses = array(
-			ShipmentStatus::STATUS_IN_TRANSIT,
-			ShipmentStatus::STATUS_READY,
-			ShipmentStatus::STATUS_ACCEPTED,
-		);
-
-		$daily_shipment_data_schedule = new DailySchedule(
-			new UpdateShipmentDataTask( $daily_statuses ),
-			$configuration->getDefaultQueueName()
-		);
-
-		$daily_shipment_data_schedule->setHour( 11 );
-		$daily_shipment_data_schedule->setNextSchedule();
-
-		$repository->save( $daily_shipment_data_schedule );
-
-		// we updated this to PACKLINK_VERSION, so we delete the old one.
-		delete_option( 'PACKLINK_DATABASE_VERSION' );
 	}
 }

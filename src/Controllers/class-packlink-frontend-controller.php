@@ -22,20 +22,21 @@ use Packlink\BusinessLogic\Controllers\DashboardController;
 use Packlink\BusinessLogic\Controllers\DTO\ShippingMethodConfiguration;
 use Packlink\BusinessLogic\Controllers\ShippingMethodController;
 use Packlink\BusinessLogic\Controllers\UpdateShippingServicesTaskStatusController;
+use Packlink\BusinessLogic\Country\CountryService;
+use Packlink\BusinessLogic\DTO\Exceptions\FrontDtoNotRegisteredException;
+use Packlink\BusinessLogic\DTO\Exceptions\FrontDtoValidationException;
 use Packlink\BusinessLogic\Http\DTO\ParcelInfo;
-use Packlink\BusinessLogic\Http\DTO\Warehouse;
 use Packlink\BusinessLogic\Location\LocationService;
 use Packlink\BusinessLogic\ShippingMethod\Models\FixedPricePolicy;
 use Packlink\BusinessLogic\ShippingMethod\Models\PercentPricePolicy;
 use Packlink\BusinessLogic\ShippingMethod\Models\ShippingMethod;
 use Packlink\BusinessLogic\User\UserAccountService;
+use Packlink\BusinessLogic\Warehouse\WarehouseService;
 use Packlink\WooCommerce\Components\Services\Config_Service;
 use Packlink\WooCommerce\Components\ShippingMethod\Shipping_Method_Helper;
 use Packlink\WooCommerce\Components\Utility\Script_Loader;
 use Packlink\WooCommerce\Components\Utility\Shop_Helper;
 use Packlink\WooCommerce\Components\Utility\Task_Queue;
-use Packlink\WooCommerce\Components\Validators\Parcel_Validator;
-use Packlink\WooCommerce\Components\Validators\Warehouse_Validator;
 
 /**
  * Class Packlink_Frontend_Controller
@@ -50,6 +51,7 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	 * @var array
 	 */
 	private static $help_urls = array(
+		'EN' => 'https://support-pro.packlink.com/hc/en-gb/articles/210158585-Install-your-WooCommerce-module-in-5-steps',
 		'ES' => 'https://support-pro.packlink.com/hc/es-es/articles/210158585-Instala-tu-m%C3%B3dulo-WooCommerce-en-5-pasos',
 		'DE' => 'https://support-pro.packlink.com/hc/de/articles/210158585-Installieren-Sie-Ihr-WooCommerce-Modul-in-5-Schritten',
 		'FR' => 'https://support-pro.packlink.com/hc/fr-fr/articles/210158585-Installez-le-module-WooCommerce-en-5-%C3%A9tapes',
@@ -61,21 +63,11 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	 * @var array
 	 */
 	private static $terms_and_conditions_urls = array(
+		'EN' => 'https://support-pro.packlink.com/hc/en-gb/articles/360010011480',
 		'ES' => 'https://pro.packlink.es/terminos-y-condiciones/',
 		'DE' => 'https://pro.packlink.de/agb/',
 		'FR' => 'https://pro.packlink.fr/conditions-generales/',
 		'IT' => 'https://pro.packlink.it/termini-condizioni/',
-	);
-	/**
-	 * List of country names for different country codes.
-	 *
-	 * @var array
-	 */
-	private static $country_names = array(
-		'ES' => 'Spain',
-		'DE' => 'Germany',
-		'FR' => 'France',
-		'IT' => 'Italy',
 	);
 
 	/**
@@ -149,6 +141,8 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 
 	/**
 	 * Returns dashboard status.
+	 *
+	 * @throws FrontDtoNotRegisteredException
 	 */
 	public function get_dashboard_status() {
 		$this->validate( 'no', true );
@@ -159,7 +153,11 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 		 * @var DashboardController $dashboard_controller
 		 */
 		$dashboard_controller = ServiceRegister::getService( DashboardController::CLASS_NAME );
-		$status               = $dashboard_controller->getStatus();
+		try {
+			$status = $dashboard_controller->getStatus();
+		} catch ( FrontDtoValidationException $e ) {
+			$this->return_validation_errors_response( $e->getValidationErrors() );
+		}
 
 		$this->return_json( $status->toArray() );
 	}
@@ -214,19 +212,14 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 		$raw_json = $this->get_raw_input();
 		$payload  = json_decode( $raw_json, true );
 
-		$validator = new Parcel_Validator();
-		$errors    = $validator->validate( $payload );
-		if ( ! empty( $errors ) ) {
-			$this->return_json( $errors, 400 );
+		try {
+			$parcel_info = ParcelInfo::fromArray( $payload );
+			/** @var Configuration $configuration */
+			$configuration = ServiceRegister::getService( Configuration::CLASS_NAME );
+			$configuration->setDefaultParcel( $parcel_info );
+		} catch ( FrontDtoValidationException $e ) {
+			$this->return_validation_errors_response( $e->getValidationErrors() );
 		}
-
-		/**
-		 * Configuration service.
-		 *
-		 * @var Configuration $configuration
-		 */
-		$configuration = ServiceRegister::getService( Configuration::CLASS_NAME );
-		$configuration->setDefaultParcel( ParcelInfo::fromArray( $payload ) );
 
 		$this->return_json( array( 'success' => true ) );
 	}
@@ -237,19 +230,18 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	public function get_default_warehouse() {
 		$this->validate( 'no', true );
 
-		/**
-		 * Configuration service.
-		 *
-		 * @var Configuration $configuration
-		 */
-		$configuration = ServiceRegister::getService( Configuration::CLASS_NAME );
-		$warehouse     = $configuration->getDefaultWarehouse();
+		/** @var WarehouseService $warehouse_service */
+		$warehouse_service = ServiceRegister::getService( WarehouseService::CLASS_NAME );
+		$warehouse         = $warehouse_service->getWarehouse();
 
 		$this->return_json( $warehouse ? $warehouse->toArray() : array() );
 	}
 
 	/**
 	 * Saves default warehouse.
+	 *
+	 * @throws FrontDtoNotRegisteredException
+	 * @throws QueueStorageUnavailableException
 	 */
 	public function save_default_warehouse() {
 		$this->validate( 'yes', true );
@@ -257,24 +249,13 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 		$raw_json = $this->get_raw_input();
 		$payload  = json_decode( $raw_json, true );
 
-		/**
-		 * Configuration service.
-		 *
-		 * @var Configuration $configuration
-		 */
-		$configuration = ServiceRegister::getService( Configuration::CLASS_NAME );
-		if ( ! isset( $payload['country'] ) ) {
-			$user               = $configuration->getUserInfo();
-			$payload['country'] = $user ? $user->country : 'ES';
+		/** @var WarehouseService $warehouse_service */
+		$warehouse_service = ServiceRegister::getService( WarehouseService::CLASS_NAME );
+		try {
+			$warehouse_service->updateWarehouseData( $payload );
+		} catch ( FrontDtoValidationException $e ) {
+			$this->return_validation_errors_response( $e->getValidationErrors() );
 		}
-
-		$validator = new Warehouse_Validator();
-		$errors    = $validator->validate( $payload );
-		if ( ! empty( $errors ) ) {
-			$this->return_json( $errors, 400 );
-		}
-
-		$configuration->setDefaultWarehouse( Warehouse::fromArray( $payload ) );
 
 		$this->return_json( array( 'success' => true ) );
 	}
@@ -288,17 +269,9 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 		$raw_json = $this->get_raw_input();
 		$payload  = json_decode( $raw_json, true );
 
-		if ( empty( $payload['query'] ) ) {
+		if ( empty( $payload['query'] ) || empty( $payload['country'] ) ) {
 			$this->return_json( array() );
 		}
-
-		/**
-		 * Configuration service.
-		 *
-		 * @var Configuration $configuration
-		 */
-		$configuration    = ServiceRegister::getService( Configuration::CLASS_NAME );
-		$platform_country = $configuration->getUserInfo()->country;
 
 		/**
 		 * Location service.
@@ -308,14 +281,9 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 		$location_service = ServiceRegister::getService( LocationService::CLASS_NAME );
 
 		try {
-			$result          = $location_service->searchLocations( $platform_country, $payload['query'] );
-			$result_as_array = array();
+			$result = $location_service->searchLocations( $payload['country'], $payload['query'] );
 
-			foreach ( $result as $item ) {
-				$result_as_array[] = $item->toArray();
-			}
-
-			$this->return_json( $result_as_array );
+			$this->return_dto_entities_response( $result );
 		} catch ( \Exception $e ) {
 			$this->return_json( array() );
 		}
@@ -342,21 +310,11 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	public function get_all_shipping_methods() {
 		$this->validate( 'no', true );
 
-		/**
-		 * Shipping method controller.
-		 *
-		 * @var ShippingMethodController $controller
-		 */
-		$controller = ServiceRegister::getService( ShippingMethodController::CLASS_NAME );
-		$result     = array();
-		foreach ( $controller->getAll() as $item ) {
-			$shipping_method            = $item->toArray();
-			$shipping_method['logoUrl'] = Shipping_Method_Helper::get_carrier_logo( $shipping_method['carrierName'] );
+		/** @var ShippingMethodController $controller */
+		$controller       = ServiceRegister::getService( ShippingMethodController::CLASS_NAME );
+		$shipping_methods = $controller->getAll();
 
-			$result[] = $shipping_method;
-		}
-
-		$this->return_json( $result );
+		$this->return_dto_entities_response( $shipping_methods );
 	}
 
 	/**
@@ -453,7 +411,6 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 		}
 
 		if ( $result ) {
-			$result->logoUrl = Shipping_Method_Helper::get_carrier_logo( $result->carrierName );
 			$this->return_json( $result->toArray() );
 		} else {
 			$this->return_json(
@@ -513,26 +470,41 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	}
 
 	/**
+	 * Returns a list of supported countries.
+	 */
+	public function get_supported_countries() {
+		/** @var CountryService $country_service */
+		$country_service     = ServiceRegister::getService( CountryService::CLASS_NAME );
+		$supported_countries = $country_service->getSupportedCountries();
+		foreach ( $supported_countries as $country ) {
+			$country->name = __( $country->name, 'packlink-pro-shipping' );
+		}
+
+		$this->return_dto_entities_response( $supported_countries );
+	}
+
+	/**
 	 * Resolves dashboard view arguments.
 	 *
 	 * @return array Dashboard view arguments.
 	 */
 	protected function resolve_view_arguments() {
-		$user_info = $this->configuration->getUserInfo();
-		$locale    = 'ES';
-		if ( null !== $user_info && array_key_exists( $user_info->country, self::$help_urls ) ) {
-			$locale = null !== $user_info ? $user_info->country : 'ES';
+		/** @var CountryService $country_service */
+		$country_service = ServiceRegister::getService( CountryService::CLASS_NAME );
+		$user_info       = $this->configuration->getUserInfo();
+		$locale          = 'EN';
+		if ( null !== $user_info && $country_service->isBaseCountry( $user_info->country ) ) {
+			$locale = $user_info->country;
 		}
 
 		return array(
-			'image_base'        => Shop_Helper::get_plugin_base_url() . 'resources/images/',
-			'dashboard_logo'    => Shop_Helper::get_plugin_base_url() . 'resources/images/logo-pl.svg',
-			'dashboard_icon'    => Shop_Helper::get_plugin_base_url() . 'resources/images/dashboard.png',
-			'terms_url'         => static::$terms_and_conditions_urls[ $locale ],
-			'help_url'          => static::$help_urls[ $locale ],
-			'plugin_version'    => Shop_Helper::get_plugin_version(),
-			'debug_url'         => Shop_Helper::get_controller_url( 'Debug', 'download' ),
-			'warehouse_country' => static::$country_names[ $locale ],
+			'image_base'     => Shop_Helper::get_plugin_base_url() . 'resources/images/flags/',
+			'dashboard_logo' => Shop_Helper::get_plugin_base_url() . 'resources/images/logo-pl.svg',
+			'dashboard_icon' => Shop_Helper::get_plugin_base_url() . 'resources/images/dashboard.png',
+			'terms_url'      => static::$terms_and_conditions_urls[ $locale ],
+			'help_url'       => static::$help_urls[ $locale ],
+			'plugin_version' => Shop_Helper::get_plugin_version(),
+			'debug_url'      => Shop_Helper::get_controller_url( 'Debug', 'download' ),
 		);
 	}
 

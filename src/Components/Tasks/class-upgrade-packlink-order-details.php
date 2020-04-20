@@ -7,7 +7,6 @@
 
 namespace Packlink\WooCommerce\Components\Tasks;
 
-use Logeecom\Infrastructure\Exceptions\BaseException;
 use Logeecom\Infrastructure\Http\Exceptions\HttpUnhandledException;
 use Logeecom\Infrastructure\Logger\Logger;
 use Logeecom\Infrastructure\ServiceRegister;
@@ -15,10 +14,8 @@ use Logeecom\Infrastructure\TaskExecution\Task;
 use Logeecom\Infrastructure\Utility\TimeProvider;
 use Packlink\BusinessLogic\Http\DTO\Shipment;
 use Packlink\BusinessLogic\Http\Proxy;
-use Packlink\BusinessLogic\Order\Exceptions\OrderNotFound;
-use Packlink\BusinessLogic\Order\Interfaces\OrderRepository;
+use Packlink\BusinessLogic\OrderShipmentDetails\OrderShipmentDetailsService;
 use Packlink\BusinessLogic\ShippingMethod\Utility\ShipmentStatus;
-use Packlink\WooCommerce\Components\Order\Order_Meta_Keys;
 
 /**
  * Class UpgradePacklinkOrderDetails
@@ -31,11 +28,11 @@ class Upgrade_Packlink_Order_Details extends Task {
 	const DEFAULT_BATCH_SIZE       = 200;
 
 	/**
-	 * Order repository.
+	 * Order shipment details service.
 	 *
-	 * @var OrderRepository
+	 * @var OrderShipmentDetailsService
 	 */
-	private $repository;
+	private $order_shipment_details_service;
 	/**
 	 * Proxy instance.
 	 *
@@ -88,6 +85,20 @@ class Upgrade_Packlink_Order_Details extends Task {
 		$this->order_ids          = $order_ids;
 		$this->total_orders_count = count( $order_ids );
 		$this->start_date         = $time_provider->getDateTime( strtotime( '-60 days' ) )->getTimestamp();
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public static function fromArray( array $array ) {
+		return new static( $array['order_ids'] );
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public function toArray() {
+		return array( 'order_ids' => $this->order_ids );
 	}
 
 	/**
@@ -159,8 +170,8 @@ class Upgrade_Packlink_Order_Details extends Task {
 						Logger::logError( $e->getMessage(), 'Integration' );
 					}
 				} else {
-					$order->update_meta_data( Order_Meta_Keys::IS_PACKLINK, 'yes' );
-					$order->update_meta_data( Order_Meta_Keys::SHIPMENT_REFERENCE, $reference );
+					$order->update_meta_data( '_is_packlink_shipment', 'yes' );
+					$order->update_meta_data( '_packlink_shipment_reference', $reference );
 				}
 
 				delete_post_meta( $order_id, '_packlink_draft_reference' );
@@ -252,6 +263,8 @@ class Upgrade_Packlink_Order_Details extends Task {
 	 *
 	 * @param \WC_Order $order Order object.
 	 * @param Shipment  $shipment Shipment details.
+	 *
+	 * @throws \Packlink\BusinessLogic\OrderShipmentDetails\Exceptions\OrderShipmentDetailsNotFound
 	 */
 	private function set_shipment_details( \WC_Order $order, Shipment $shipment ) {
 		if ( $this->set_reference( $order, $shipment->reference ) ) {
@@ -269,14 +282,10 @@ class Upgrade_Packlink_Order_Details extends Task {
 	 * @return bool Success flag.
 	 */
 	private function set_reference( \WC_Order $order, $reference ) {
-		try {
-			$order->update_meta_data( Order_Meta_Keys::IS_PACKLINK, 'yes' );
-			$order->save();
+		$order->update_meta_data( '_is_packlink_shipment', 'yes' );
+		$order->save();
 
-			$this->get_repository()->setReference( $order->get_id(), $reference );
-		} catch ( OrderNotFound $e ) {
-			return false;
-		}
+		$this->get_order_shipment_details_service()->setReference( (string)$order->get_id(), $reference );
 
 		return true;
 	}
@@ -285,14 +294,12 @@ class Upgrade_Packlink_Order_Details extends Task {
 	 * Sets order shipment status.
 	 *
 	 * @param Shipment $shipment Shipment details.
+	 *
+	 * @throws \Packlink\BusinessLogic\OrderShipmentDetails\Exceptions\OrderShipmentDetailsNotFound
 	 */
 	private function set_shipping_status( Shipment $shipment ) {
-		try {
-			$shipping_status = ShipmentStatus::getStatus( $shipment->status );
-			$this->get_repository()->setShippingStatusByReference( $shipment->reference, $shipping_status );
-		} catch ( OrderNotFound $e ) {
-			Logger::logError( $e->getMessage(), 'Integration' );
-		}
+		$shipping_status = ShipmentStatus::getStatus( $shipment->status );
+		$this->get_order_shipment_details_service()->setShippingStatus( $shipment->reference, $shipping_status );
 	}
 
 	/**
@@ -303,7 +310,7 @@ class Upgrade_Packlink_Order_Details extends Task {
 	private function set_tracking_info( Shipment $shipment ) {
 		try {
 			$tracking_info = $this->get_proxy()->getTrackingInfo( $shipment->reference );
-			$this->get_repository()->updateTrackingInfo( $shipment, $tracking_info );
+			$this->get_order_shipment_details_service()->setTrackingInfo( $shipment, '', $tracking_info );
 		} catch ( \Exception $e ) {
 			Logger::logError( $e->getMessage(), 'Integration' );
 		}
@@ -312,14 +319,16 @@ class Upgrade_Packlink_Order_Details extends Task {
 	/**
 	 * Returns order repository instance.
 	 *
-	 * @return OrderRepository Order repository.
+	 * @return OrderShipmentDetailsService Order repository.
 	 */
-	private function get_repository() {
-		if ( ! $this->repository ) {
-			$this->repository = ServiceRegister::getService( OrderRepository::CLASS_NAME );
+	private function get_order_shipment_details_service() {
+		if ( ! $this->order_shipment_details_service ) {
+			$this->order_shipment_details_service = ServiceRegister::getService(
+				OrderShipmentDetailsService::CLASS_NAME
+			);
 		}
 
-		return $this->repository;
+		return $this->order_shipment_details_service;
 	}
 
 	/**

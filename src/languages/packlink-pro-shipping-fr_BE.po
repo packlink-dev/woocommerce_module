@@ -6,16 +6,17 @@ msgstr ""
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/packlink-pro-"
 "shipping\n"
 "POT-Creation-Date: 2019-07-16 14:51+0000\n"
-"PO-Revision-Date: 2019-07-16 17:58+0200\n"
+"PO-Revision-Date: 2020-02-08 19:36+0000\n"
 "Last-Translator: Packlink PRO <support@packlink.com>\n"
 "Language-Team: French (Belgium)\n"
 "Language: fr_BE\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 2.0.6\n"
+"X-Generator: Loco https://localise.biz/\n"
 "X-Domain: packlink-pro-shipping\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Loco-Version: 2.3.1; wp-5.3.2"
 
 #: class-plugin.php:103
 msgid ""
@@ -52,8 +53,8 @@ msgid ""
 "shipping services should be offered to your customers!"
 msgstr ""
 "Avec cette version, vous aurez accès à tous les services de livraison "
-"demandés par vos clients. Aller à la page de <a href=\"%s\">configuration</"
-"a>."
+"demandés par vos clients. Aller à la page de <a href=\"%s\">configuration</a>"
+"."
 
 #: Controllers/class-packlink-order-overview-controller.php:55
 msgid "Packlink label"
@@ -103,6 +104,50 @@ msgstr "Service d'envoi désactivé avec succès."
 #: Controllers/class-packlink-frontend-controller.php:441
 msgid "Failed to save shipping method."
 msgstr "Échec de l'enregistrement du service d'envoi."
+
+#: Controllers/class-packlink-frontend-controller.php:518
+msgid "Spain"
+msgstr "Espagne"
+
+#: Controllers/class-packlink-frontend-controller.php:518
+msgid "Germany"
+msgstr "Allemagne"
+
+#: Controllers/class-packlink-frontend-controller.php:518
+msgid "France"
+msgstr "France"
+
+#: Controllers/class-packlink-frontend-controller.php:518
+msgid "Italy"
+msgstr "Italie"
+
+#: Controllers/class-packlink-frontend-controller.php:518
+msgid "Austria"
+msgstr "Autriche"
+
+#: Controllers/class-packlink-frontend-controller.php:518
+msgid "Netherlands"
+msgstr "Pays-Bas"
+
+#: Controllers/class-packlink-frontend-controller.php:518
+msgid "Belgium"
+msgstr "Belgique"
+
+#: Controllers/class-packlink-frontend-controller.php:518
+msgid "Portugal"
+msgstr "Portugal"
+
+#: Controllers/class-packlink-frontend-controller.php:518
+msgid "Turkey"
+msgstr "Turquie"
+
+#: Controllers/class-packlink-frontend-controller.php:518
+msgid "Ireland"
+msgstr "Irlande"
+
+#: Controllers/class-packlink-frontend-controller.php:518
+msgid "United Kingdom"
+msgstr "Royaume-Uni"
 
 #: resources/views/login.php:35
 msgid "Don't have an account?"
@@ -719,12 +764,3 @@ msgstr "Packlink Shipping S.L."
 #. Author URI of the plugin
 msgid "https://pro.packlink.es/"
 msgstr "https://pro.packlink.fr/"
-
-#~ msgid "Packlink PRO"
-#~ msgstr "Packlink PRO"
-
-#~ msgid "Drop-off address"
-#~ msgstr "Adresse de livraison"
-
-#~ msgid "Fixed prices"
-#~ msgstr "Prix fixes"

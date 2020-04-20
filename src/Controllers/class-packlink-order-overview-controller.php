@@ -10,16 +10,16 @@ namespace Packlink\WooCommerce\Controllers;
 use iio\libmergepdf\Merger;
 use Logeecom\Infrastructure\Logger\Logger;
 use Logeecom\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
+use Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException;
+use Logeecom\Infrastructure\ORM\RepositoryRegistry;
 use Logeecom\Infrastructure\ServiceRegister;
 use Packlink\BusinessLogic\Http\DTO\ShipmentLabel;
-use Packlink\BusinessLogic\Order\Interfaces\OrderRepository;
 use Packlink\BusinessLogic\Order\OrderService;
-use Packlink\WooCommerce\Components\Order\Order_Details_Helper;
-use Packlink\WooCommerce\Components\Order\Order_Meta_Keys;
-use Packlink\WooCommerce\Components\Order\Order_Repository;
+use Packlink\BusinessLogic\OrderShipmentDetails\Exceptions\OrderShipmentDetailsNotFound;
+use Packlink\BusinessLogic\OrderShipmentDetails\Models\OrderShipmentDetails;
+use Packlink\BusinessLogic\OrderShipmentDetails\OrderShipmentDetailsService;
 use Packlink\WooCommerce\Components\Utility\Script_Loader;
 use Packlink\WooCommerce\Components\Utility\Shop_Helper;
-use WC_Order;
 
 /**
  * Class Packlink_Order_Overview_Controller
@@ -32,11 +32,9 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 	const COLUMN_PACKLINK_ID = 'packlink_column';
 	const BULK_ACTION_ID     = 'packlink_print_labels';
 	/**
-	 * Flag if hidden endpoint url is printed.
-	 *
-	 * @var bool
+	 * @var OrderShipmentDetailsService
 	 */
-	private static $url_added = false;
+	private $order_shipment_details_service;
 
 	/**
 	 * Adds Packlink column for printing label.
@@ -83,71 +81,81 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 	public function populate_packlink_column( $column ) {
 		global $post;
 
-		if ( static::COLUMN_ID === $column && Order_Details_Helper::is_packlink_order( $post ) ) {
-			$status = Order_Details_Helper::get_label_status( $post );
+		$shipment_details = $this->get_order_shipment_details_service()->getDetailsByOrderId( (string) $post->ID );
 
-			if ( ! $status['available'] ) {
-				echo esc_html( __( 'Label is not yet available.', 'packlink-pro-shipping' ) );
-			} else {
-				$class     = 'pl-print-label button ' . ( $status['printed'] ? '' : 'button-primary' );
-				$label     = $status['printed'] ? __( 'Printed label', 'packlink-pro-shipping' ) : __( 'Print label', 'packlink-pro-shipping' );
+		if ( null !== $shipment_details ) {
+			if ( static::COLUMN_ID === $column ) {
+				/** @var OrderService $order_service */
+				$order_service = ServiceRegister::getService( OrderService::CLASS_NAME );
+				$labels        = $shipment_details->getShipmentLabels();
 
-				if ( empty( $status['labels'] ) ) {
-					$params = array(
-						'order_id' => $post->ID
-					);
-
-					$label_url = Shop_Helper::get_controller_url( 'Order_Overview', 'print_single_label', $params );
+				if ( ! $order_service->isReadyToFetchShipmentLabels( $shipment_details->getShippingStatus() ) ) {
+					echo esc_html( __( 'Label is not yet available.', 'packlink-pro-shipping' ) );
 				} else {
-					$label_url = $status['labels'][0];
+					$is_printed = false;
+
+					if ( empty( $labels ) ) {
+						$params = array(
+							'order_id' => $post->ID
+						);
+
+						$label_url = Shop_Helper::get_controller_url( 'Order_Overview', 'print_single_label', $params );
+					} else {
+						if ( $labels[0]->isPrinted() ) {
+							$is_printed = true;
+						}
+
+						$label_url = $labels[0]->getLink();
+					}
+
+					$class = 'pl-print-label button ' . ( $is_printed ? '' : 'button-primary' );
+					$label = $is_printed
+						? __( 'Printed label', 'packlink-pro-shipping' )
+						: __( 'Print label', 'packlink-pro-shipping' );
+
+					echo '<button data-pl-id="' . esc_attr( $post->ID ) . '" data-pl-label="' . esc_url( $label_url )
+					     . '" type="button" class="' . esc_attr( $class ) . '" >' . esc_html( $label ) . '</button>';
 				}
-
-				echo '<button data-pl-id="' . esc_attr( $post->ID ) . '" data-pl-label="' . esc_url( $label_url )
-				     . '" type="button" class="' . esc_attr( $class ) . '" >' . esc_html( $label ) . '</button>';
 			}
-		}
 
-		if ( static::COLUMN_PACKLINK_ID === $column && Order_Details_Helper::is_packlink_order( $post, true ) ) {
-			/**
-			 * Repository.
-			 *
-			 * @var Order_Repository $repository
-			 */
-			$repository = ServiceRegister::getService( OrderRepository::CLASS_NAME );
-			$src        = Shop_Helper::get_plugin_base_url() . 'resources/images/logo.png';
-			$reference  = get_post_meta( $post->ID, Order_Meta_Keys::SHIPMENT_REFERENCE, true );
-			if ( ! $repository->isShipmentDeleted( $reference ) ) {
-				$country = Shop_Helper::get_country_code();
-				$url     = "https://pro.packlink.{$country}/private/shipments/{$reference}";
-				echo '<a class="pl-image-link" target="_blank" href="' . esc_url( $url ) . '"><img src="' . esc_url( $src ) . '" alt=""></a>';
-			} else {
-				echo '<div class="pl-image-link"><img src="' . esc_url( $src ) . '" alt=""></div>';
+			if ( static::COLUMN_PACKLINK_ID === $column ) {
+				$src = Shop_Helper::get_plugin_base_url() . 'resources/images/logo.png';
+				if ( ! $this->get_order_shipment_details_service()->isShipmentDeleted( $shipment_details->getReference() ) ) {
+					$url = $shipment_details->getShipmentUrl();
+					echo '<a class="pl-image-link" target="_blank" href="' . esc_url( $url ) . '"><img src="' . esc_url( $src ) . '" alt=""></a>';
+				} else {
+					echo '<div class="pl-image-link"><img src="' . esc_url( $src ) . '" alt=""></div>';
+				}
 			}
 		}
 	}
 
 	/**
 	 * Prints single label.
+	 *
+	 * @throws RepositoryNotRegisteredException
+	 * @throws OrderShipmentDetailsNotFound
 	 */
 	public function print_single_label() {
 		$this->validate( 'no', true );
 
-		$order_id = !empty( $_GET['order_id'] ) ? $_GET['order_id'] : null;
+		$order_id = ! empty( $_GET['order_id'] ) ? $_GET['order_id'] : null;
 
-		if ( !$order_id ) {
+		if ( ! $order_id ) {
 			echo esc_html( __( 'Label is not yet available.', 'packlink-pro-shipping' ) );
 			exit;
 		}
 
-		$order = \WC_Order_Factory::get_order( ( int ) $order_id );
-		if ( !$order ) {
+		$shipment_details = $this->get_order_shipment_details_service()->getDetailsByOrderId( ( string ) $order_id );
+		if ( null === $shipment_details ) {
 			echo esc_html( __( 'Label is not yet available.', 'packlink-pro-shipping' ) );
 			exit;
 		}
 
-		$links = $this->get_print_labels( $order );
+		$labels = $this->get_labels_to_print( $shipment_details );
+		$links  = $this->print_labels( $shipment_details->getReference(), $labels );
 
-		if ( !empty( $links ) ) {
+		if ( ! empty( $links ) ) {
 			header( 'Location: ' . $links[0], 302 );
 			exit;
 		}
@@ -164,24 +172,28 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 	 * @param array  $ids List of ids.
 	 *
 	 * @return string
+	 *
+	 * @throws RepositoryNotRegisteredException
+	 * @throws OrderShipmentDetailsNotFound
 	 */
 	public function bulk_print_labels( $redirect_to, $action, $ids ) {
 		if ( self::BULK_ACTION_ID !== $action ) {
 			return esc_url_raw( $redirect_to );
 		}
 
-		$ids    = apply_filters( 'woocommerce_bulk_action_ids', array_reverse( array_map( 'absint', $ids ) ), $action, 'order' );
-		$labels = array();
+		$ids   = apply_filters( 'woocommerce_bulk_action_ids', array_reverse( array_map( 'absint', $ids ) ), $action, 'order' );
+		$links = array();
 		foreach ( $ids as $order_id ) {
-			$order = \WC_Order_Factory::get_order( $order_id );
-			if ( $order && $order->meta_exists( Order_Meta_Keys::IS_PACKLINK ) ) {
-				$labels[] = $this->get_print_labels( $order );
+			$shipment_details = $this->get_order_shipment_details_service()->getDetailsByOrderId( ( string ) $order_id );
+			if ( null !== $shipment_details ) {
+				$labels  = $this->get_labels_to_print( $shipment_details );
+				$links[] = $this->print_labels( $shipment_details->getReference(), $labels );
 			}
 		}
 
-		$labels = call_user_func_array( 'array_merge', $labels );
-		if ( ! empty( $labels ) ) {
-			$this->merge_labels( $labels );
+		$links = call_user_func_array( 'array_merge', $links );
+		if ( ! empty( $links ) ) {
+			$this->merge_labels( $links );
 			$this->set_download_cookie();
 			exit;
 		}
@@ -219,13 +231,13 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 	/**
 	 * Merges shipment labels and sets merged pdf file for download.
 	 *
-	 * @param array $labels Array of shipment labels.
+	 * @param array $links Array of shipment label links.
 	 */
-	protected function merge_labels( array $labels ) {
+	protected function merge_labels( array $links ) {
 		try {
 			$paths = array();
-			foreach ( $labels as $index => $label ) {
-				if ( $path = $this->download_pdf( $label ) ) {
+			foreach ( $links as $link ) {
+				if ( $path = $this->download_pdf( $link ) ) {
 					$paths[] = $path;
 				}
 			}
@@ -245,7 +257,7 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 			Logger::logError(
 				__( 'Unable to create bulk labels file', 'packlink-pro-shipping' ),
 				'Integration',
-				array( 'labels' => $labels )
+				array( 'labels' => $links )
 			);
 		}
 	}
@@ -253,33 +265,49 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 	/**
 	 * Returns order labels and marks them as printed.
 	 *
-	 * @param WC_Order $order WooCommerce order.
+	 * @param OrderShipmentDetails $shipment_details
 	 *
-	 * @return string[] Label paths.
+	 * @return ShipmentLabel[] Label paths.
+	 *
+	 * @throws RepositoryNotRegisteredException
 	 */
-	private function get_print_labels( WC_Order $order ) {
-		$status = $order->get_meta( Order_Meta_Keys::SHIPMENT_STATUS );
-
+	private function get_labels_to_print( $shipment_details ) {
 		/** @var OrderService $order_service */
 		$order_service = ServiceRegister::getService( OrderService::CLASS_NAME );
-		if ( ! $order_service->isReadyToFetchShipmentLabels( $status ) ) {
+		if ( ! $order_service->isReadyToFetchShipmentLabels( $shipment_details->getShippingStatus() ) ) {
 			return array();
 		}
 
-		$labels = $order->get_meta( Order_Meta_Keys::LABELS );
+		$labels = $shipment_details->getShipmentLabels();
 
 		if ( empty( $labels ) ) {
-			$reference = $order->get_meta( Order_Meta_Keys::SHIPMENT_REFERENCE );
-			$labels = $order_service->getShipmentLabels( $reference );
-			$labels = array_map( function ( ShipmentLabel $label ) {
-				return $label->getLink();
-			}, $labels );
-			$order->update_meta_data( Order_Meta_Keys::LABELS, $labels );
-			$order->update_meta_data( Order_Meta_Keys::LABEL_PRINTED, 'yes' );
-			$order->save();
+			$labels = $order_service->getShipmentLabels( $shipment_details->getReference() );
+			$shipment_details->setShipmentLabels( $labels );
+			$shipment_details_repository = RepositoryRegistry::getRepository( OrderShipmentDetails::CLASS_NAME );
+			$shipment_details_repository->update( $shipment_details );
 		}
 
-		return ! empty( $labels ) ? $labels : array();
+		return $labels;
+	}
+
+	/**
+	 * Marks labels as printed and returns their links.
+	 *
+	 * @param string          $reference
+	 * @param ShipmentLabel[] $labels
+	 *
+	 * @return array
+	 *
+	 * @throws OrderShipmentDetailsNotFound
+	 */
+	private function print_labels( $reference, $labels ) {
+		$links = array();
+		foreach ( $labels as $label ) {
+			$this->get_order_shipment_details_service()->markLabelPrinted( $reference, $label->getLink() );
+			$links[] = $label->getLink();
+		}
+
+		return $links;
 	}
 
 	/**
@@ -317,8 +345,7 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 	 *
 	 * @return bool | string
 	 */
-	protected function download_pdf( $link )
-	{
+	protected function download_pdf( $link ) {
 		if ( ( $data = file_get_contents( $link ) ) === false ) {
 			return $data;
 		}
@@ -327,5 +354,18 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 		file_put_contents( $file, $data );
 
 		return $file;
+	}
+
+	/**
+	 * Returns an instance of order shipment details service.
+	 *
+	 * @return OrderShipmentDetailsService
+	 */
+	private function get_order_shipment_details_service() {
+		if ( null === $this->order_shipment_details_service ) {
+			$this->order_shipment_details_service = ServiceRegister::getService( OrderShipmentDetailsService::CLASS_NAME );
+		}
+
+		return $this->order_shipment_details_service;
 	}
 }

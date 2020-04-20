@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use Packlink\BusinessLogic\ShippingMethod\Models\ShippingMethod;
 use Packlink\WooCommerce\Components\Checkout\Checkout_Handler;
-use Packlink\WooCommerce\Components\Order\Order_Meta_Keys;
+use Packlink\WooCommerce\Components\ShippingMethod\Shipping_Method_Helper;
 use Packlink\WooCommerce\Components\Utility\Shop_Helper;
 
 /**
@@ -25,7 +25,7 @@ use Packlink\WooCommerce\Components\Utility\Shop_Helper;
  * @var Checkout_Handler $this
  */
 
-$id_value     = wc()->session->get( Order_Meta_Keys::DROP_OFF_ID, '' );
+$id_value     = wc()->session->get( Shipping_Method_Helper::DROP_OFF_ID, '' );
 $button_label = $id_value ? __( 'Change Drop-Off Location', 'packlink-pro-shipping' ) : __( 'Select Drop-Off Location', 'packlink-pro-shipping' );
 $parts        = explode( '_', get_locale() );
 $locale       = $parts[0];
@@ -37,6 +37,13 @@ $translations = array(
 );
 
 $locations = $this->get_drop_off_locations( $shipping_method->getId() );
+
+if ( $id_value ) {
+	$location_ids = array_column( $locations, 'id' );
+	if ( ! in_array( $id_value, $location_ids, true ) ) {
+		$button_label = __( 'Select Drop-Off Location', 'packlink-pro-shipping' );
+	}
+}
 ?>
 
 <script style="display: none;">

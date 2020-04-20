@@ -5,6 +5,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased](https://github.com/logeecom/pl_woocommerce_module/compare/master...dev)
 
+## [v2.2.0](https://github.com/logeecom/pl_woocommerce_module/compare/v2.1.2...v2.2.0) - 2020-03-06
+### Changed
+- Updated to the latest Packlink Integration Core v2.0.0. The most important changes:
+  * Update interval for shipment details is optimized. Now, the data for active shipments will be updated once a day.
+  * Optimized code
+  * Added a background task for cleaning up the task runner queue for completed tasks.
+
+### Added
+- Added more supported countries for Packlink accounts and shipments.
+
 ## [v2.1.2](https://github.com/logeecom/pl_woocommerce_module/compare/v2.1.1...v2.1.2) - 2019-12-16
 ### Changed
 - Fixed the mechanism for updating information about created shipments.

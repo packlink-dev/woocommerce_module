@@ -19,6 +19,7 @@ use Packlink\BusinessLogic\ShippingMethod\Models\ShippingMethod;
 use Packlink\BusinessLogic\ShippingMethod\ShippingMethodService;
 use Packlink\WooCommerce\Components\Checkout\Checkout_Handler;
 use Packlink\WooCommerce\Components\Services\Config_Service;
+use Packlink\WooCommerce\Components\Utility\Shop_Helper;
 
 /**
  * Class Shop_Shipping_Method_Service
@@ -122,6 +123,19 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 	}
 
 	/**
+	 * @inheritDoc
+	 */
+	public function getCarrierLogoFilePath( $carrier_name ) {
+		$file_name = \strtolower( str_replace( ' ', '-', $carrier_name ) );
+
+		$file_path  = dirname( dirname( __DIR__ ) ) . '/resources/images/carriers/' . $file_name . '.png';
+		$image_path = Shop_Helper::get_plugin_base_url() . 'resources/images/carriers/' . $file_name . '.png';
+		$default    = Shop_Helper::get_plugin_base_url() . 'resources/images/box.svg';
+
+		return file_exists( $file_path ) ? $image_path : $default;
+	}
+
+	/**
 	 * Adds all active shipping methods to zone.
 	 *
 	 * @param \WC_Shipping_Zone $zone Shipping zone.
@@ -204,8 +218,6 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 
 	/**
 	 * Deletes shipping method in shop integration.
-	 *
-	 * @noinspection PhpDocMissingThrowsInspection
 	 *
 	 * @param ShippingMethod $shipping_method Shipping method.
 	 *
