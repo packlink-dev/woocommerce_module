@@ -5,6 +5,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased](https://github.com/logeecom/pl_woocommerce_module/compare/master...dev)
 
+## [v2.2.1](https://github.com/logeecom/pl_woocommerce_module/compare/v2.2.0...v2.2.1) - 2020-04-27
+### Changed
+- Prevent export of order with no shippable products.
+- Check order status before export to Packlink.
+- Fix order export if orders are not made with Packlink shipping method.
+
 ## [v2.2.0](https://github.com/logeecom/pl_woocommerce_module/compare/v2.1.2...v2.2.0) - 2020-03-06
 ### Changed
 - Updated to the latest Packlink Integration Core v2.0.0. The most important changes:
