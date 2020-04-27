@@ -33,7 +33,7 @@ class Paid_Order_Handler {
 	 */
 	public static function handle( $order_id, WC_Order $order ) {
 
-		if ( $order->is_paid() && static::is_packlink_order( $order ) ) {
+		if ( $order->is_paid() && static::is_packlink_order( $order ) && static::has_shippable_product( $order ) ) {
 			/** @var ShipmentDraftService $draft_service */
 			$draft_service = ServiceRegister::getService( ShipmentDraftService::CLASS_NAME );
 			$draft_service->enqueueCreateShipmentDraftTask( (string) $order_id );
@@ -54,5 +54,24 @@ class Paid_Order_Handler {
 		$method = Shipping_Method_Helper::get_packlink_shipping_method_from_order( $order );
 
 		return $method !== null;
+	}
+
+	/**
+	 * Checks if order has shippable product(s).
+	 *
+	 * @param WC_Order $order Order instance.
+	 *
+	 * @return bool Returns true if order has shippable product(s).
+	 */
+	protected static function has_shippable_product( WC_Order $order ) {
+		/** @var \WC_Order_Item_Product $item */
+		foreach ( $order->get_items() as $item ) {
+			$product = $item->get_product();
+			if ( ! $product->is_downloadable() && ! $product->is_virtual() ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 }
