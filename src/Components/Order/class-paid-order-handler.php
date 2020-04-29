@@ -9,6 +9,7 @@ namespace Packlink\WooCommerce\Components\Order;
 
 use Logeecom\Infrastructure\ServiceRegister;
 use Packlink\BusinessLogic\ShipmentDraft\ShipmentDraftService;
+use Packlink\WooCommerce\Components\ShippingMethod\Shipping_Method_Helper;
 use WC_Order;
 
 /**
@@ -31,10 +32,46 @@ class Paid_Order_Handler {
 	 * @param WC_Order $order WooCommerce order instance.
 	 */
 	public static function handle( $order_id, WC_Order $order ) {
-		if ( $order->is_paid() ) {
+
+		if ( $order->is_paid() && static::is_packlink_order( $order ) && static::has_shippable_product( $order ) ) {
 			/** @var ShipmentDraftService $draft_service */
 			$draft_service = ServiceRegister::getService( ShipmentDraftService::CLASS_NAME );
 			$draft_service->enqueueCreateShipmentDraftTask( (string) $order_id );
 		}
+	}
+
+	/**
+	 * Checks if order is Packlink order.
+	 *
+	 * @param WC_Order $order Order.
+	 *
+	 * @return bool Returns TRUE if the order is created with Packlink shipping method.
+	 *
+	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException
+	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException
+	 */
+	protected static function is_packlink_order( WC_Order $order ) {
+		$method = Shipping_Method_Helper::get_packlink_shipping_method_from_order( $order );
+
+		return $method !== null;
+	}
+
+	/**
+	 * Checks if order has shippable product(s).
+	 *
+	 * @param WC_Order $order Order instance.
+	 *
+	 * @return bool Returns true if order has shippable product(s).
+	 */
+	protected static function has_shippable_product( WC_Order $order ) {
+		/** @var \WC_Order_Item_Product $item */
+		foreach ( $order->get_items() as $item ) {
+			$product = $item->get_product();
+			if ( ! $product->is_downloadable() && ! $product->is_virtual() ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 }

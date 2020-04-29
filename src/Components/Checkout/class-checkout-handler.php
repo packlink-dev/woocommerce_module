@@ -11,9 +11,9 @@ use Logeecom\Infrastructure\Logger\Logger;
 use Logeecom\Infrastructure\ORM\RepositoryRegistry;
 use Logeecom\Infrastructure\ServiceRegister;
 use Packlink\BusinessLogic\Location\LocationService;
-use Packlink\BusinessLogic\ShipmentDraft\ShipmentDraftService;
 use Packlink\BusinessLogic\ShippingMethod\Models\ShippingMethod;
 use Packlink\WooCommerce\Components\Order\Order_Drop_Off_Map;
+use Packlink\WooCommerce\Components\Order\Paid_Order_Handler;
 use Packlink\WooCommerce\Components\ShippingMethod\Packlink_Shipping_Method;
 use Packlink\WooCommerce\Components\ShippingMethod\Shipping_Method_Helper;
 use Packlink\WooCommerce\Components\Utility\Script_Loader;
@@ -171,9 +171,10 @@ class Checkout_Handler {
 			wc()->session->set( Shipping_Method_Helper::DROP_OFF_ID, '' );
 		}
 
-		/** @var ShipmentDraftService $draft_service */
-		$draft_service = ServiceRegister::getService( ShipmentDraftService::CLASS_NAME );
-		$draft_service->enqueueCreateShipmentDraftTask( (string) $order_id );
+		$wc_order = \WC_Order_Factory::get_order( $order_id );
+		if ( $wc_order !== false ) {
+			Paid_Order_Handler::handle( $order_id, $wc_order );
+		}
 	}
 
 	/**
