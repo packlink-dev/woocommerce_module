@@ -1,9 +1,18 @@
-#packlink_column {
+#packlink_column,
+.packlink_column {
 	text-align: center;
 }
 
-.pl-image-link img {
+.button.pl-draft-button {
+	display: flex;
+	padding: 4px 20px;
+	margin: 0 auto;
+	width: 175px;
+}
+
+.pl-image {
 	width: 25px;
 	margin: auto !important;
 	display: block;
+	padding-right: 3px;
 }
