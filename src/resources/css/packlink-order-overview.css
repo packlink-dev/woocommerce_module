@@ -1,13 +1,12 @@
-#packlink_column,
-.packlink_column {
-	text-align: center;
+.button.pl-draft-button,
+.button.pl-create-draft-button {
+	display: flex;
+	padding: 4px 18px;
+	width: 170px;
 }
 
-.button.pl-draft-button {
-	display: flex;
-	padding: 4px 20px;
-	margin: 0 auto;
-	width: 175px;
+.button.pl-draft-button:disabled {
+	pointer-events: none;
 }
 
 .pl-image {

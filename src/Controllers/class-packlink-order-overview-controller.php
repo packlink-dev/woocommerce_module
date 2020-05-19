@@ -7,6 +7,7 @@
 
 namespace Packlink\WooCommerce\Controllers;
 
+use Automattic\WooCommerce\Admin\API\Reports\ParameterException;
 use iio\libmergepdf\Merger;
 use Logeecom\Infrastructure\Logger\Logger;
 use Logeecom\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
@@ -135,20 +136,83 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 
 			switch ( $draft_status->status ) {
 				case QueueItem::COMPLETED:
-					$url  = $shipment_details->getShipmentUrl();
-					$html = '<a target="_blank" class="button pl-draft-button" href="' . esc_url( $url ) . '"><img class="pl-image" src="' . esc_url( $src ) . '" alt="">' . __( 'View on Packlink', 'packlink-pro-shipping' ) . '</a>';
+					$deleted = $this->get_order_shipment_details_service()->isShipmentDeleted( $shipment_details->getReference() );
+					$url     = '';
+					if ( ! $deleted ) {
+						$url = $shipment_details->getShipmentUrl();
+					}
+
+					$html = '<a ' . ( $deleted ? 'disabled' : 'target="_blank"  href="' . esc_url( $url ) . '"' )
+					        . ' class="button pl-draft-button" ><img class="pl-image" src="' . esc_url( $src ) . '" alt="">'
+					        . __( 'View on Packlink', 'packlink-pro-shipping' ) . '</a>';
 					break;
+				case QueueItem::QUEUED:
 				case QueueItem::IN_PROGRESS:
-					$html = __( 'Draft is currently being created.', 'packlink-pro-shipping' );
+					$html = '<div class="pl-draft-in-progress" data-order-id="' . $post->ID . '">'
+					        . __( 'Draft is currently being created.', 'packlink-pro-shipping' )
+					        . '</div>';
 					break;
-				case QueueItem::FAILED:
-					$html = __( 'Previous attempt to create a draft failed.', 'packlink-pro-shipping' );
+				case QueueItem::ABORTED:
+					$html = __( 'Previous attempt to create a draft was aborted.', 'packlink-pro-shipping' ) . ' ' . $draft_status->message;
 					break;
 				default:
-					$html = '<button class="button pl-draft-button"><img class="pl-image" src="' . esc_url( $src ) . '" alt="">' . __( 'Send with Packlink', 'packlink-pro-shipping' ) . '</a>';
+					$html = '<button class="button pl-create-draft-button" data-order-id="' . $post->ID . '"><img class="pl-image" src="' . esc_url( $src ) . '" alt="">'
+					        . __( 'Send with Packlink', 'packlink-pro-shipping' )
+					        . '</button>';
 			}
 
 			echo $html;
+		}
+	}
+
+	/**
+	 * Adds hidden fields for Packlink controller URLs and translations to the orders overview page.
+	 */
+	public function add_packlink_hidden_fields() {
+		include dirname( __DIR__ ) . '/resources/views/order-overview-hidden-fields.php';
+	}
+
+	/**
+	 * Returns draft status for the WooCommerce order.
+	 *
+	 * @throws OrderShipmentDetailsNotFound
+	 * @throws ParameterException
+	 */
+	public function get_draft_status() {
+		$this->validate( 'no', true );
+
+		$order_id = ! empty( $_GET['order_id'] ) ? $_GET['order_id'] : null;
+
+		if ( ! $order_id ) {
+			throw new ParameterException( 'Order ID missing.' );
+		}
+
+		/** @var ShipmentDraftService $draft_service */
+		$draft_service = ServiceRegister::getService( ShipmentDraftService::CLASS_NAME );
+		$draft_status  = $draft_service->getDraftStatus( (string) $order_id );
+
+		if ( QueueItem::COMPLETED === $draft_status->status ) {
+			$shipment_details = $this->get_order_shipment_details_service()->getDetailsByOrderId( (string) $order_id );
+
+			if ( null === $shipment_details ) {
+				throw new OrderShipmentDetailsNotFound( 'Order details not found' );
+			}
+
+			$this->return_json( array(
+				'status'       => 'created',
+				'shipment_url' => $shipment_details->getShipmentUrl(),
+			) );
+		} else {
+			$response = array(
+				'status'       => $draft_status->status,
+				'shipment_url' => '',
+			);
+
+			if ( QueueItem::ABORTED === $draft_status->status ) {
+				$response['message'] = $draft_status->message;
+			}
+
+			$this->return_json( $response );
 		}
 	}
 
@@ -244,6 +308,7 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 				array(
 					'js/core/packlink-ajax-service.js',
 					'js/packlink-order-overview.js',
+					'js/packlink-order-overview-draft.js',
 				)
 			);
 			Script_Loader::load_css( array( 'css/packlink-order-overview.css' ) );
