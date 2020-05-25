@@ -7,7 +7,6 @@ document.addEventListener(
 			checkDraftStatusEndpoint = document.querySelector('#pl-check-status'),
 			draftInProgressMessage = document.querySelector('#pl-draft-in-progress'),
 			draftFailedMessage = document.querySelector('#pl-draft-failed'),
-			draftAbortedMessage = document.querySelector('#pl-draft-aborted'),
 			draftButtonTemplate = document.querySelector('#pl-draft-button-template'),
 			createDraftTemplate = document.querySelector('#pl-create-draft-template'),
 			createDraftButtons = document.getElementsByClassName('pl-create-draft-button'),
@@ -52,16 +51,13 @@ document.addEventListener(
 					viewDraftButton.id = '';
 					viewDraftButton.href = response.shipment_url;
 					viewDraftButton.classList.remove('hidden');
-
 					parent.innerHTML = '';
 					parent.appendChild(viewDraftButton);
-				} else if (response.status === 'failed') {
+				} else if (['failed', 'aborted'].includes(response.status)) {
 					parent.innerText = draftFailedMessage.value;
 					setTimeout(function () {
 						displayCreateDraftButton(parent, orderId)
 					}, 5000)
-				} else if (response.status === 'aborted') {
-					parent.innerText = draftAbortedMessage.value + ' ' + response.message;
 				} else {
 					setTimeout(function () {
 						checkDraftStatus(parent, orderId)

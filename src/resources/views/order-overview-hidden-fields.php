@@ -20,8 +20,6 @@ $src = Shop_Helper::get_plugin_base_url() . 'resources/images/logo.png';
 		   value="<?php echo __( 'Draft is currently being created.', 'packlink-pro-shipping' ) ?>"/>
 	<input type="hidden" id="pl-draft-failed"
 		   value="<?php echo __( 'Previous attempt to create a draft failed.', 'packlink-pro-shipping' ) ?>"/>
-	<input type="hidden" id="pl-draft-aborted"
-		   value="<?php echo __( 'Previous attempt to create a draft was aborted.', 'packlink-pro-shipping' ) ?>"/>
 
 	<a target="_blank" id="pl-draft-button-template" class="button pl-draft-button hidden">
 		<img class="pl-image" src="<?php echo esc_url( $src ) ?>" alt="">

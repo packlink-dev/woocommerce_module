@@ -152,9 +152,6 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 					        . __( 'Draft is currently being created.', 'packlink-pro-shipping' )
 					        . '</div>';
 					break;
-				case QueueItem::ABORTED:
-					$html = __( 'Previous attempt to create a draft was aborted.', 'packlink-pro-shipping' ) . ' ' . $draft_status->message;
-					break;
 				default:
 					$html = '<button class="button pl-create-draft-button" data-order-id="' . $post->ID . '"><img class="pl-image" src="' . esc_url( $src ) . '" alt="">'
 					        . __( 'Send with Packlink', 'packlink-pro-shipping' )
@@ -207,10 +204,6 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 				'status'       => $draft_status->status,
 				'shipment_url' => '',
 			);
-
-			if ( QueueItem::ABORTED === $draft_status->status ) {
-				$response['message'] = $draft_status->message;
-			}
 
 			$this->return_json( $response );
 		}
