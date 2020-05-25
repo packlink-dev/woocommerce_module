@@ -133,7 +133,7 @@ class Shop_Helper {
 
 		$query = array_merge( $query, $params );
 
-		return get_site_url() . '/?' . http_build_query( $query );
+		return get_home_url() . '/?' . http_build_query( $query );
 	}
 
 	/**
