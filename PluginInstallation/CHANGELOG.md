@@ -5,6 +5,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased](https://github.com/logeecom/pl_woocommerce_module/compare/master...dev)
 
+## [v2.2.2](https://github.com/logeecom/pl_woocommerce_module/compare/v2.2.1...v2.2.2) - 2020-05-26
+### Changed
+- Added top margin to drop-off button on checkout page.
+- Fix retrieving controller url.
+
 ## [v2.2.1](https://github.com/logeecom/pl_woocommerce_module/compare/v2.2.0...v2.2.1) - 2020-04-27
 ### Changed
 - Prevent export of order with no shippable products.

@@ -42,7 +42,9 @@
 }
 
 #packlink-drop-off-picker {
+	margin-top: 1.5rem;
 	margin-left: 1em;
+	margin-bottom: 1rem;
 	line-height: inherit;
 }
 
