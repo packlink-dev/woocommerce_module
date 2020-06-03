@@ -144,7 +144,7 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 
 					$html = '<a ' . ( $deleted ? 'disabled' : 'target="_blank"  href="' . esc_url( $url ) . '"' )
 					        . ' class="button pl-draft-button" ><img class="pl-image" src="' . esc_url( $src ) . '" alt="">'
-					        . __( 'View on Packlink', 'packlink-pro-shipping' ) . '</a>';
+					        . '<span>' . __( 'View on Packlink', 'packlink-pro-shipping' ) . '</span></a>';
 					break;
 				case QueueItem::QUEUED:
 				case QueueItem::IN_PROGRESS:
@@ -154,7 +154,7 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 					break;
 				default:
 					$html = '<button class="button pl-create-draft-button" data-order-id="' . $post->ID . '"><img class="pl-image" src="' . esc_url( $src ) . '" alt="">'
-					        . __( 'Send with Packlink', 'packlink-pro-shipping' )
+					        . '<span>' . __( 'Send with Packlink', 'packlink-pro-shipping' ) . '</span>'
 					        . '</button>';
 			}
 
