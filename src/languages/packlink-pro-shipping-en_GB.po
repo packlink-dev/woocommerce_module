@@ -83,6 +83,22 @@ msgstr "Print label"
 msgid "Unable to create bulk labels file"
 msgstr "Unable to create bulk labels file"
 
+#: Controllers/class-packlink-order-overview-controller.php:147
+msgid "View on Packlink"
+msgstr "View on Packlink"
+
+#: Controllers/class-packlink-order-overview-controller.php:152
+msgid "Draft is currently being created."
+msgstr "Draft is currently being created."
+
+#: Controllers/class-packlink-order-overview-controller.php:157
+msgid "Send with Packlink"
+msgstr "Send with Packlink"
+
+#: resources/views/login.php:22
+msgid "Previous attempt to create a draft failed."
+msgstr "Previous attempt to create a draft failed."
+
 #: Controllers/class-packlink-frontend-controller.php:349
 msgid "Shipping method successfully selected."
 msgstr "Shipping method successfully selected."
