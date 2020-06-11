@@ -1,9 +1,36 @@
-#packlink_column {
-	text-align: center;
+.button.pl-draft-button,
+.button.pl-create-draft-button {
+	display: flex;
+	padding: 4px 18px;
+	width: max-content;
+	min-width: 180px;
+	max-width: 185px;
+	min-height: 38px;
 }
 
-.pl-image-link img {
-	width: 25px;
-	margin: auto !important;
-	display: block;
+.button.pl-draft-button span,
+.button.pl-create-draft-button span {
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	overflow: hidden;
 }
+
+.button.pl-draft-button:disabled {
+	pointer-events: none;
+}
+
+.pl-image {
+	width: 25px;
+	display: block;
+	padding-right: 3px;
+}
+
+@media only screen and (max-width: 1350px) {
+	.button.pl-draft-button,
+	.button.pl-create-draft-button {
+		min-width: unset;
+		width: 100%;
+		padding: 4px 0;
+	}
+}
+

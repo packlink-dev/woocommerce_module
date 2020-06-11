@@ -81,6 +81,22 @@ msgstr "Stampa etichette"
 msgid "Unable to create bulk labels file"
 msgstr "Impossibile creare il file di etichette in blocco"
 
+#: Controllers/class-packlink-order-overview-controller.php:147
+msgid "View on Packlink"
+msgstr "Vedi su Packlink"
+
+#: Controllers/class-packlink-order-overview-controller.php:152
+msgid "Draft is currently being created."
+msgstr "La bozza è attualmente in fase di creazione."
+
+#: Controllers/class-packlink-order-overview-controller.php:157
+msgid "Send with Packlink"
+msgstr "Spedisci con Packlink"
+
+#: resources/views/login.php:22
+msgid "Previous attempt to create a draft failed."
+msgstr "Il precedente tentativo di creare una bozza è fallito."
+
 #: Controllers/class-packlink-frontend-controller.php:349
 msgid "Shipping method successfully selected."
 msgstr "Servizio di spedizione selezionato con successo."

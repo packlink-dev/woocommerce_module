@@ -80,6 +80,22 @@ msgstr "Versandetikett drucken"
 msgid "Unable to create bulk labels file"
 msgstr "Die Datei der Versandetiketten konnte nicht erstellt werden"
 
+#: Controllers/class-packlink-order-overview-controller.php:147
+msgid "View on Packlink"
+msgstr "Auf Packlink ansehen"
+
+#: Controllers/class-packlink-order-overview-controller.php:152
+msgid "Draft is currently being created."
+msgstr "Der Entwurf wird gerade erstellt."
+
+#: Controllers/class-packlink-order-overview-controller.php:157
+msgid "Send with Packlink"
+msgstr "Mit Packlink versenden"
+
+#: resources/views/login.php:22
+msgid "Previous attempt to create a draft failed."
+msgstr "Der Versuch der Entwurfserstellung ist fehlgeschlagen."
+
 #: Controllers/class-packlink-frontend-controller.php:349
 msgid "Shipping method successfully selected."
 msgstr "Versanddienst erfolgreich ausgewählt."
