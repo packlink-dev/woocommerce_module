@@ -4,7 +4,7 @@ Tags: woocommerce, shipment, shipping, packlink
 Requires at least: 4.7
 Requires PHP: 5.5
 Tested up to: 5.3.2
-Stable tag: 2.2.2
+Stable tag: 2.2.3
 License: LICENSE-2.0
 License URI: http://www.apache.org/licenses/LICENSE-2.0
 
@@ -70,6 +70,10 @@ Click <a href="https://support-pro.packlink.com/hc/es-es/articles/210158585" tar
 
 
 == Upgrade Notice ==
+
+= 2.2.3 =
+
+* Added "Send with Packlink" button on order overview page.
 
 = 2.2.2 =
 
