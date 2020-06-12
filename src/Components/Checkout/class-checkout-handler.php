@@ -17,6 +17,7 @@ use Packlink\WooCommerce\Components\Order\Paid_Order_Handler;
 use Packlink\WooCommerce\Components\ShippingMethod\Packlink_Shipping_Method;
 use Packlink\WooCommerce\Components\ShippingMethod\Shipping_Method_Helper;
 use Packlink\WooCommerce\Components\Utility\Script_Loader;
+use Packlink\WooCommerce\Components\Utility\Shop_Helper;
 use WC_Shipping_Rate;
 
 /**
@@ -57,7 +58,7 @@ class Checkout_Handler {
 		}
 
 		$fields = array(
-			'packlink_image_url'   => $shipping_method->getLogoUrl() ?: '',
+			'packlink_image_url'   => $shipping_method->getLogoUrl() ?: Shop_Helper::get_plugin_base_url() . 'resources/images/box.svg',
 			'packlink_show_image'  => $shipping_method->isDisplayLogo() ? 'yes' : 'no',
 			'packlink_is_drop_off' => $shipping_method->isDestinationDropOff() ? 'yes' : 'no',
 		);
