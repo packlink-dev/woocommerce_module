@@ -15,13 +15,6 @@ use Packlink\WooCommerce\Components\Services\Logger_Service;
  * @package Packlink\WooCommerce\Components\Utility
  */
 class Shop_Helper {
-
-	/**
-	 * Country domain.
-	 *
-	 * @var string
-	 */
-	private static $country_domain;
 	/**
 	 * The version of the plugin.
 	 *
@@ -180,6 +173,10 @@ class Shop_Helper {
 	 */
 	private static function is_plugin_active( $plugin_name ) {
 		$all_plugins = get_option( 'active_plugins' );
+
+		if ( is_multisite() ) {
+			$all_plugins = array_merge( $all_plugins, array_keys( get_site_option( 'active_sitewide_plugins' ) ) );
+		}
 
 		foreach ( $all_plugins as $plugin ) {
 			if ( false !== strpos( $plugin, '/' . $plugin_name ) ) {
