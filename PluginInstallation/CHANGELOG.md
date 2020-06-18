@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 ## [Unreleased](https://github.com/logeecom/pl_woocommerce_module/compare/master...dev)
 ### Added
 - Added support for network activated WooCommerce plugin.
+### Changed
+- Added Hungary to the list of supported countries.
+- Updated to breaking changes regarding queue item priority.
 
 ## [v2.2.3](https://github.com/logeecom/pl_woocommerce_module/compare/v2.2.2...v2.2.3) - 2020-06-11
 ### Changed
