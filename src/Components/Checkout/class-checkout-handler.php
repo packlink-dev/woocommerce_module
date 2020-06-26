@@ -300,8 +300,7 @@ class Checkout_Handler {
 	 * @return mixed
 	 */
 	private function get_param( $key, $is_text = true ) {
-		$nonce = 'woocommerce-process-checkout-nonce';
-		if ( isset( $_REQUEST[ $key ], $_REQUEST[ $nonce ] ) && wp_verify_nonce( sanitize_key( $_REQUEST[ $nonce ] ), 'woocommerce-process_checkout' ) ) {
+		if ( isset( $_REQUEST[ $key ] ) ) {
 			return sanitize_text_field( wp_unslash( $is_text ? $_REQUEST[ $key ] : $_REQUEST[ $key ][0] ) );
 		}
 
