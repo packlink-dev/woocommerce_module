@@ -555,6 +555,7 @@ class Plugin {
 		add_action( 'add_meta_boxes', array( $this, 'add_packlink_shipping_box' ), 10, 2 );
 		add_filter( 'manage_edit-shop_order_columns', array( $handler, 'add_packlink_order_columns' ) );
 		add_action( 'manage_shop_order_posts_custom_column', array( $handler, 'populate_packlink_column' ) );
+		add_action( 'admin_head', array( $handler, 'add_packlink_hidden_fields' ) );
 		add_filter( 'bulk_actions-edit-shop_order', array( $handler, 'add_packlink_bulk_action' ) );
 		add_filter( 'handle_bulk_actions-edit-shop_order', array( $handler, 'bulk_print_labels' ), 10, 3 );
 		add_action( 'admin_enqueue_scripts', array( $handler, 'load_scripts' ) );
