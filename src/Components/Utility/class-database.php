@@ -128,6 +128,17 @@ class Database {
 	}
 
 	/**
+	 * Adds additional index column to the Packlink entity table.
+	 */
+	public function add_additional_index() {
+		$table_name = $this->db->prefix . self::BASE_TABLE;
+
+		$sql = 'ALTER TABLE ' . $table_name . ' ADD `index_8` VARCHAR(127)';
+
+		$this->db->query( $sql );
+	}
+
+	/**
 	 * Prepares database queries for inserting tables.
 	 *
 	 * @return array
@@ -146,6 +157,7 @@ class Database {
             `index_5` VARCHAR(127),
             `index_6` VARCHAR(127),
             `index_7` VARCHAR(127),
+            `index_8` VARCHAR(127),
             `data` LONGTEXT,
             PRIMARY KEY (`id`)
         )';

@@ -167,6 +167,10 @@ msgstr "Ireland"
 msgid "United Kingdom"
 msgstr "United Kingdom"
 
+#: Controllers/class-packlink-frontend-controller.php:518
+msgid "Hungary"
+msgstr "Hungary"
+
 #: resources/views/login.php:35
 msgid "Don't have an account?"
 msgstr "Don't have an account?"
