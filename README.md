@@ -1,4 +1,5 @@
 [![CircleCI](https://circleci.com/gh/packlink-dev/woocommerce_module.svg?style=svg&circle-token=d06e0f1584eb81581966c36b1fb9aa310969e9f4)](https://circleci.com/gh/packlink-dev/woocommerce_module)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/2c7f382158ce4b85ba550c84bb65371f)](https://www.codacy.com/gh/packlink-dev/woocommerce_module?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=packlink-dev/woocommerce_module&amp;utm_campaign=Badge_Grade)
 
 ![Packlink logo](https://pro.packlink.es/public-assets/common/images/icons/packlink.svg)
 
