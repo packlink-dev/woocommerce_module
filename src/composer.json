@@ -7,7 +7,7 @@
     {
       "type": "vcs",
       "no-api": true,
-      "url": "git@github.com:packlink-dev/ecommerce_module_core.git"
+      "url": "git@github.com:logeecom/pl_module_core.git"
     }
   ],
   "require": {
@@ -38,5 +38,9 @@
     "platform": {
       "php": "5.5.9"
     }
+  },
+  "scripts": {
+    "post-update-cmd": "./copy-resources",
+    "post-install-cmd": "./copy-resources"
   }
 }

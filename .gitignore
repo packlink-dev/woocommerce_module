@@ -8,3 +8,8 @@ vendor
 wp-cli.phar
 packlink-pro-shipping
 *.swp
+!src/resources/packlink/.gitkeep
+src/resources/packlink/js/*
+src/resources/packlink/css/*
+src/resources/packlink/img/*
+src/resources/packlink/templates/*
