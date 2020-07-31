@@ -338,4 +338,8 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 		$configuration = ServiceRegister::getService( Config_Service::CLASS_NAME );
 		$configuration->set_default_shipping_method( $shipping_method );
 	}
+
+	public function disableShopServices() {
+		// TODO: Implement disableShopServices() method.
+	}
 }
