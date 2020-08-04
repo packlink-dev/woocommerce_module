@@ -103,8 +103,8 @@ $data = $this->resolve_view_arguments();
 					getDataUrl: "<?php echo Shop_Helper::get_controller_url( 'Configuration', 'get' ); //phpcs:ignore ?>"
 				},
 				'system-info': {
-					getStatusUrl: "",
-					setStatusUrl: ""
+					getStatusUrl: "<?php echo Shop_Helper::get_controller_url( 'Debug', 'get_status' ); //phpcs:ignore ?>",
+					setStatusUrl: "<?php echo Shop_Helper::get_controller_url( 'Debug', 'set_status' ); //phpcs:ignore ?>"
 				},
 				'order-status-mapping': {
 					getMappingAndStatusesUrl: "",
