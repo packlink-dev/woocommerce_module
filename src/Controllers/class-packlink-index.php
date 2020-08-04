@@ -61,6 +61,7 @@ class Packlink_Index extends Packlink_Base_Controller {
 			'Regions',
 			'Register',
 			'Onboarding_State',
+			'Parcel',
 		);
 
 		return in_array( $controller_name, $allowed_controllers, true );

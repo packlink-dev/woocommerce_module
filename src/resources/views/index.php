@@ -86,8 +86,8 @@ $data = $this->resolve_view_arguments();
 				},
 				'onboarding-welcome': {},
 				'onboarding-overview': {
-					defaultParcelGet: "",
-					defaultWarehouseGet: ""
+					defaultParcelGet: "<?php echo Shop_Helper::get_controller_url( 'Parcel', 'get' ); //phpcs:ignore ?>",
+					defaultWarehouseGet: "<?php echo Shop_Helper::get_controller_url( 'Parcel', 'submit' ); //phpcs:ignore ?>"
 				},
 				'default-parcel': {
 					getUrl: "",
@@ -192,7 +192,7 @@ $data = $this->resolve_view_arguments();
 
 			Packlink.state.display();
 
-			calculateContentHeight(30);
+			calculateContentHeight(5);
 
 			/**
 			 * Calculates content height.
