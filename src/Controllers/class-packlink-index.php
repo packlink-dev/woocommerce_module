@@ -65,6 +65,7 @@ class Packlink_Index extends Packlink_Base_Controller {
 			'Warehouse',
 			'My_Shipping_Services',
 			'Shop_Shipping_Methods',
+			'Configuration',
 		);
 
 		return in_array( $controller_name, $allowed_controllers, true );

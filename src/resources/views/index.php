@@ -100,7 +100,7 @@ $data = $this->resolve_view_arguments();
 					searchPostalCodesUrl: "<?php echo Shop_Helper::get_controller_url( 'Warehouse', 'search_postal_codes' ); //phpcs:ignore ?>"
 				},
 				'configuration': {
-					getDataUrl: ""
+					getDataUrl: "<?php echo Shop_Helper::get_controller_url( 'Configuration', 'get' ); //phpcs:ignore ?>"
 				},
 				'system-info': {
 					getStatusUrl: "",
