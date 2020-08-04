@@ -67,6 +67,8 @@ class Packlink_Order_Status_Controller extends Packlink_Base_Controller {
 		$raw     = $this->get_raw_input();
 		$payload = json_decode( $raw, true );
 		$this->controller->setMappings( $payload );
+
+		$this->return_json( array( 'success' => true ) );
 	}
 
 	/**
