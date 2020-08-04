@@ -82,7 +82,7 @@ $data = $this->resolve_view_arguments();
 					submit: "<?php echo Shop_Helper::get_controller_url( 'Register', 'submit' ); //phpcs:ignore ?>"
 				},
 				'onboarding-state': {
-					getState: ""
+					getState: "<?php echo Shop_Helper::get_controller_url( 'Onboarding_State', 'get_current_state' ); //phpcs:ignore ?>"
 				},
 				'onboarding-welcome': {},
 				'onboarding-overview': {
