@@ -111,9 +111,9 @@ $data = $this->resolve_view_arguments();
 					setUrl: ""
 				},
 				'my-shipping-services': {
-					getServicesUrl: "",
-					deleteServiceUrl: "",
-					disableCarriersUrl: ""
+					getServicesUrl: "<?php echo Shop_Helper::get_controller_url( 'My_Shipping_Services', 'get' ); //phpcs:ignore ?>",
+					deleteServiceUrl: "<?php echo Shop_Helper::get_controller_url( 'My_Shipping_Services', 'deactivate' ); //phpcs:ignore ?>",
+					disableCarriersUrl: "<?php echo Shop_Helper::get_controller_url( 'Shop_Shipping_Methods', 'disable_shop_shipping_methods' ); //phpcs:ignore ?>"
 				},
 				'pick-shipping-service': {
 					getServicesUrl: "",

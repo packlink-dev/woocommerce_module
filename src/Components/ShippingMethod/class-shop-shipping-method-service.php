@@ -7,6 +7,7 @@
 
 namespace Packlink\WooCommerce\Components\ShippingMethod;
 
+use Exception;
 use Logeecom\Infrastructure\Logger\Logger;
 use Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException;
 use Logeecom\Infrastructure\ORM\Interfaces\RepositoryInterface;
@@ -16,10 +17,12 @@ use Logeecom\Infrastructure\ServiceRegister;
 use Logeecom\Infrastructure\Singleton;
 use Packlink\BusinessLogic\ShippingMethod\Interfaces\ShopShippingMethodService;
 use Packlink\BusinessLogic\ShippingMethod\Models\ShippingMethod;
+use Packlink\BusinessLogic\ShippingMethod\Models\ShippingPricePolicy;
 use Packlink\BusinessLogic\ShippingMethod\ShippingMethodService;
 use Packlink\WooCommerce\Components\Checkout\Checkout_Handler;
 use Packlink\WooCommerce\Components\Services\Config_Service;
 use Packlink\WooCommerce\Components\Utility\Shop_Helper;
+use WC_Shipping_Zone;
 
 /**
  * Class Shop_Shipping_Method_Service
@@ -64,7 +67,7 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 
 		try {
 			foreach ( Shipping_Method_Helper::get_all_shipping_zone_ids() as $zone_id ) {
-				$zone        = new \WC_Shipping_Zone( $zone_id );
+				$zone        = new WC_Shipping_Zone( $zone_id );
 				$instance_id = $zone->add_shipping_method( 'packlink_shipping_method' );
 
 				if ( 0 !== $instance_id ) {
@@ -81,7 +84,7 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 					$this->add_to_shipping_method_map( $instance_id, $shipping_method->getId(), $zone_id );
 				}
 			}
-		} catch ( \Exception $e ) {
+		} catch ( Exception $e ) {
 			Logger::logError( $e->getMessage(), 'Integration', $shipping_method->toArray() );
 
 			return false;
@@ -101,20 +104,14 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 		$default = new ShippingMethod();
 		$default->setId( - 1 );
 		$default->setTitle( Checkout_Handler::DEFAULT_SHIPPING );
-		switch ( $shipping_method->getPricingPolicy() ) {
-			case ShippingMethod::PRICING_POLICY_PERCENT:
-				$default->setPercentPricePolicy( $shipping_method->getPercentPricePolicy() );
-				break;
-			case ShippingMethod::PRICING_POLICY_FIXED_PRICE_BY_WEIGHT:
-				$default->setFixedPriceByWeightPolicy( $shipping_method->getFixedPriceByWeightPolicy() );
-				break;
-			case ShippingMethod::PRICING_POLICY_FIXED_PRICE_BY_VALUE:
-				$default->setFixedPriceByValuePolicy( $shipping_method->getFixedPriceByValuePolicy() );
-				break;
-			default:
-				$default->setPacklinkPricePolicy();
-				break;
+		$default->setUsePacklinkPriceIfNotInRange( $shipping_method->isUsePacklinkPriceIfNotInRange() );
+
+		foreach ( $shipping_method->getPricingPolicies() as $policy ) {
+			$default->addPricingPolicy( clone $policy );
 		}
+
+		$default->setShipToAllCountries( true );
+		$default->setTaxClass( $shipping_method->getTaxClass() );
 
 		$this->add( $default );
 		$this->set_default_shipping_method( $default );
@@ -123,24 +120,39 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 	}
 
 	/**
-	 * @inheritDoc
+	 * Gets the carrier logo path based on carrier name.
+	 *
+	 * @param string $carrier_name Carrier name.
+	 *
+	 * @return string Carrier logo path.
 	 */
 	public function getCarrierLogoFilePath( $carrier_name ) {
-		$file_name = \strtolower( str_replace( ' ', '-', $carrier_name ) );
+		$file_name = strtolower( str_replace( ' ', '-', $carrier_name ) );
 
-		$file_path  = dirname( dirname( __DIR__ ) ) . '/resources/images/carriers/' . $file_name . '.png';
-		$image_path = Shop_Helper::get_plugin_base_url() . 'resources/images/carriers/' . $file_name . '.png';
+		$file_path  = dirname( dirname( __DIR__ ) ) . '/resources/packlink/images/carriers/' . $file_name . '.png';
+		$image_path = Shop_Helper::get_plugin_base_url() . 'resources/packlink/images/carriers/' . $file_name . '.png';
 		$default    = Shop_Helper::get_plugin_base_url() . 'resources/images/box.svg';
 
 		return file_exists( $file_path ) ? $image_path : $default;
 	}
 
 	/**
+	 * Disables shop shipping services/carriers.
+	 *
+	 * @return boolean TRUE if operation succeeded; otherwise, false.
+	 */
+	public function disableShopServices() {
+		Shipping_Method_Helper::disable_shop_shipping_methods();
+
+		return true;
+	}
+
+	/**
 	 * Adds all active shipping methods to zone.
 	 *
-	 * @param \WC_Shipping_Zone $zone Shipping zone.
+	 * @param WC_Shipping_Zone $zone Shipping zone.
 	 */
-	public function add_active_methods_to_zone( \WC_Shipping_Zone $zone ) {
+	public function add_active_methods_to_zone( WC_Shipping_Zone $zone ) {
 		/**
 		 * Shipping method service.
 		 *
@@ -239,7 +251,7 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 
 				$this->repository->delete( $item );
 			}
-		} catch ( \Exception $e ) {
+		} catch ( Exception $e ) {
 			Logger::logError( $e->getMessage(), 'Integration', $shipping_method->toArray() );
 
 			return false;
@@ -271,17 +283,25 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 	 * @return string Pricing policy.
 	 */
 	private function get_shipping_method_pricing_policy( ShippingMethod $shipping_method ) {
-		$pricing_policy = __( 'Packlink prices', 'packlink_pro_shipping' );
-		switch ( $shipping_method->getPricingPolicy() ) {
-			case ShippingMethod::PRICING_POLICY_PERCENT:
-				$pricing_policy = __( '% of Packlink prices', 'packlink_pro_shipping' );
-				break;
-			case ShippingMethod::PRICING_POLICY_FIXED_PRICE_BY_WEIGHT:
-				$pricing_policy = __( 'Fixed price', 'packlink_pro_shipping' );
-				break;
+		$result = '';
+
+		$pricing_policies = $shipping_method->getPricingPolicies();
+
+		foreach ( $pricing_policies as $price_policy ) {
+			switch ( $price_policy->pricingPolicy ) { // phpcs:ignore
+				case ShippingPricePolicy::POLICY_PACKLINK:
+					$result .= __( '% of Packlink prices', 'packlink_pro_shipping' ) . ' | ';
+					break;
+				case ShippingPricePolicy::POLICY_PACKLINK_ADJUST:
+					$result .= __( 'Packlink prices', 'packlink_pro_shipping' ) . ' | ';
+					break;
+				case ShippingPricePolicy::POLICY_FIXED_PRICE:
+					$result .= __( 'Fixed price', 'packlink_pro_shipping' ) . ' | ';
+					break;
+			}
 		}
 
-		return $pricing_policy;
+		return $result;
 	}
 
 	/**
@@ -311,7 +331,7 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 	 */
 	private function get_woocommerce_shipping_methods( $packlink_method_id ) {
 		$filter = new QueryFilter();
-		/** @noinspection PhpUnhandledExceptionInspection */
+		/** @noinspection PhpUnhandledExceptionInspection */ // phpcs:ignore
 		$filter->where( 'packlinkShippingMethodId', '=', $packlink_method_id );
 
 		/**
@@ -339,7 +359,4 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 		$configuration->set_default_shipping_method( $shipping_method );
 	}
 
-	public function disableShopServices() {
-		// TODO: Implement disableShopServices() method.
-	}
 }

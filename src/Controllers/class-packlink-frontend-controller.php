@@ -85,6 +85,7 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 				'packlink/js/TranslationService.js',
 				'packlink/js/ValidationService.js',
 				'packlink/js/GridResizerService.js',
+				'packlink/js/ShippingServicesRenderer.js',
 				'packlink/js/AutoTestController.js',
 				'packlink/js/ConfigurationController.js',
 				'packlink/js/CountrySelectorController.js',
