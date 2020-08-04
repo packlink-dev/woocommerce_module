@@ -87,17 +87,17 @@ $data = $this->resolve_view_arguments();
 				'onboarding-welcome': {},
 				'onboarding-overview': {
 					defaultParcelGet: "<?php echo Shop_Helper::get_controller_url( 'Parcel', 'get' ); //phpcs:ignore ?>",
-					defaultWarehouseGet: "<?php echo Shop_Helper::get_controller_url( 'Parcel', 'submit' ); //phpcs:ignore ?>"
+					defaultWarehouseGet: "<?php echo Shop_Helper::get_controller_url( 'Warehouse', 'get' ); //phpcs:ignore ?>"
 				},
 				'default-parcel': {
-					getUrl: "",
-					submitUrl: ""
+					getUrl: "<?php echo Shop_Helper::get_controller_url( 'Parcel', 'get' ); //phpcs:ignore ?>",
+					submitUrl: "<?php echo Shop_Helper::get_controller_url( 'Parcel', 'submit' ); //phpcs:ignore ?>"
 				},
 				'default-warehouse': {
-					getUrl: "",
-					getSupportedCountriesUrl: "",
-					submitUrl: "",
-					searchPostalCodesUrl: ""
+					getUrl: "<?php echo Shop_Helper::get_controller_url( 'Warehouse', 'get' ); //phpcs:ignore ?>",
+					getSupportedCountriesUrl: "<?php echo Shop_Helper::get_controller_url( 'Warehouse', 'get_countries' ); //phpcs:ignore ?>",
+					submitUrl: "<?php echo Shop_Helper::get_controller_url( 'Warehouse', 'submit' ); //phpcs:ignore ?>",
+					searchPostalCodesUrl: "<?php echo Shop_Helper::get_controller_url( 'Warehouse', 'search_postal_codes' ); //phpcs:ignore ?>"
 				},
 				'configuration': {
 					getDataUrl: ""
