@@ -73,6 +73,7 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 			array(
 				'packlink/css/app.css',
 				'css/packlink-wp-override.css',
+				'css/packlink-core-override.css'
 			)
 		);
 
