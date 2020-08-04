@@ -46,7 +46,7 @@ class Packlink_Debug_Controller extends Packlink_Base_Controller {
 	 */
 	public function get_status() {
 		$status = array(
-			'status'       => $this->controller->getStatus(),
+			'status'      => $this->controller->getStatus(),
 			'downloadUrl' => Shop_Helper::get_controller_url( 'Debug', 'download' ),
 		);
 
