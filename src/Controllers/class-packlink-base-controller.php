@@ -7,7 +7,7 @@
 
 namespace Packlink\WooCommerce\Controllers;
 
-use Packlink\BusinessLogic\DTO\BaseDto;
+use Logeecom\Infrastructure\Data\DataTransferObject;
 use Packlink\BusinessLogic\DTO\ValidationError;
 use Packlink\WooCommerce\Components\Utility\Shop_Helper;
 
@@ -75,7 +75,7 @@ class Packlink_Base_Controller {
 	/**
 	 * Converts DTOs to array and returns a JSON response.
 	 *
-	 * @param BaseDto[] $entities
+	 * @param DataTransferObject[] $entities Entities to be transformed to json.
 	 */
 	protected function return_dto_entities_response( array $entities ) {
 		$response = array();
@@ -96,7 +96,7 @@ class Packlink_Base_Controller {
 		$response = array();
 
 		foreach ( $errors as $error ) {
-			$response[$error->field] = $this->get_validation_error_message( $error->code, $error->field );
+			$response[ $error->field ] = $this->get_validation_error_message( $error->code, $error->field );
 		}
 
 		$this->return_json( $response, 400 );

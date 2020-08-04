@@ -1,0 +1,225 @@
+<?php
+/**
+ * Packlink PRO Shipping WooCommerce Integration.
+ *
+ * @package Packlink
+ */
+
+use Packlink\WooCommerce\Components\Utility\Shop_Helper;
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+$data = $this->resolve_view_arguments();
+
+?>
+
+<div id="pl-page">
+	<header id="pl-main-header">
+		<div class="pl-main-logo">
+			<img src="https://cdn.packlink.com/apps/giger/logos/packlink-pro.svg" alt="logo">
+		</div>
+		<div class="pl-header-holder" id="pl-header-section"></div>
+	</header>
+
+	<main id="pl-main-page-holder"></main>
+
+	<div class="pl-spinner pl-hidden" id="pl-spinner">
+		<div></div>
+	</div>
+
+	<template id="pl-alert">
+		<div class="pl-alert-wrapper">
+			<div class="pl-alert">
+				<span class="pl-alert-text"></span>
+				<i class="material-icons">close</i>
+			</div>
+		</div>
+	</template>
+
+	<template id="pl-modal">
+		<div id="pl-modal-mask" class="pl-modal-mask pl-hidden">
+			<div class="pl-modal">
+				<div class="pl-modal-close-button">
+					<i class="material-icons">close</i>
+				</div>
+				<div class="pl-modal-title">
+
+				</div>
+				<div class="pl-modal-body">
+
+				</div>
+				<div class="pl-modal-footer">
+				</div>
+			</div>
+		</div>
+	</template>
+
+	<template id="pl-error-template">
+		<div class="pl-error-message" data-pl-element="error">
+		</div>
+	</template>
+</div>
+
+<script>
+	document.addEventListener(
+		'DOMContentLoaded',
+		() => {
+			Packlink.translations = {
+				default: <?php echo $data['lang']['default']; //phpcs:ignore ?>,
+				current: <?php echo $data['lang']['current']; //phpcs:ignore ?>
+			};
+
+			const pageConfiguration = {
+				'login': {
+					submit: "<?php echo Shop_Helper::get_controller_url( 'Login', 'login' ); //phpcs:ignore ?>",
+					listOfCountriesUrl: "<?php echo Shop_Helper::get_controller_url( 'Regions', 'get_regions' ); //phpcs:ignore ?>",
+					logoPath: "" // Not used. Logos are retrieved based on the base resource url.
+				},
+				'register': {
+					getRegistrationData: "<?php echo Shop_Helper::get_controller_url( 'Register', 'get' ); //phpcs:ignore ?>",
+					submit: "<?php echo Shop_Helper::get_controller_url( 'Register', 'submit' ); //phpcs:ignore ?>"
+				},
+				'onboarding-state': {
+					getState: ""
+				},
+				'onboarding-welcome': {},
+				'onboarding-overview': {
+					defaultParcelGet: "",
+					defaultWarehouseGet: ""
+				},
+				'default-parcel': {
+					getUrl: "",
+					submitUrl: ""
+				},
+				'default-warehouse': {
+					getUrl: "",
+					getSupportedCountriesUrl: "",
+					submitUrl: "",
+					searchPostalCodesUrl: ""
+				},
+				'configuration': {
+					getDataUrl: ""
+				},
+				'system-info': {
+					getStatusUrl: "",
+					setStatusUrl: ""
+				},
+				'order-status-mapping': {
+					getMappingAndStatusesUrl: "",
+					setUrl: ""
+				},
+				'my-shipping-services': {
+					getServicesUrl: "",
+					deleteServiceUrl: "",
+					disableCarriersUrl: ""
+				},
+				'pick-shipping-service': {
+					getServicesUrl: "",
+					getTaskStatusUrl: "",
+					startAutoConfigureUrl: ""
+				},
+				'edit-service': {
+					getServiceUrl: "",
+					saveServiceUrl: "",
+					getTaxClassesUrl: "",
+					getCountriesListUrl: "",
+					hasTaxConfiguration: true,
+					hasCountryConfiguration: true,
+					canDisplayCarrierLogos: true
+				}
+			};
+
+			Packlink.state = new Packlink.StateController(
+				{
+					baseResourcesUrl: "<?php echo Shop_Helper::get_plugin_base_url() . '/resources/packlink/'; //phpcs:ignore ?>",
+					stateUrl: "<?php echo Shop_Helper::get_controller_url( 'Module_State', 'get_state' ); //phpcs:ignore ?>",
+					pageConfiguration: pageConfiguration,
+					templates: {
+						'pl-login-page': {
+							'pl-main-page-holder': <?php echo $data['templates']['login']; //phpcs:ignore ?>
+						},
+						'pl-register-page': {
+							'pl-main-page-holder': <?php echo $data['templates']['register']; //phpcs:ignore ?>
+						},
+						'pl-register-modal': <?php echo $data['templates']['register-modal']; //phpcs:ignore ?>
+						,
+						'pl-onboarding-welcome-page': {
+							'pl-main-page-holder': <?php echo $data['templates']['onboarding-welcome']; //phpcs:ignore ?>
+						},
+						'pl-onboarding-overview-page': {
+							'pl-main-page-holder': <?php echo $data['templates']['onboarding-overview']; //phpcs:ignore ?>
+						},
+						'pl-default-parcel-page': {
+							'pl-main-page-holder': <?php echo $data['templates']['default-parcel']; //phpcs:ignore ?>
+						},
+						'pl-default-warehouse-page': {
+							'pl-main-page-holder': <?php echo $data['templates']['default-warehouse']; //phpcs:ignore ?>
+						},
+						'pl-configuration-page': {
+							'pl-main-page-holder': <?php echo $data['templates']['configuration']; //phpcs:ignore ?>,
+							'pl-header-section': ''
+						},
+						'pl-order-status-mapping-page': {
+							'pl-main-page-holder': <?php echo $data['templates']['order-status-mapping']; //phpcs:ignore ?>,
+							'pl-header-section': ''
+						},
+						'pl-system-info-modal': <?php echo $data['templates']['system-info-modal']; //phpcs:ignore ?>,
+						'pl-my-shipping-services-page': {
+							'pl-main-page-holder': <?php echo $data['templates']['my-shipping-services']; //phpcs:ignore ?>,
+							'pl-header-section': <?php echo $data['templates']['shipping-services-header']; //phpcs:ignore ?>,
+							'pl-shipping-services-table': <?php echo $data['templates']['shipping-services-table']; //phpcs:ignore ?>,
+							'pl-shipping-services-list': <?php echo $data['templates']['shipping-services-list']; //phpcs:ignore ?>
+						},
+						'pl-disable-carriers-modal': <?php echo $data['templates']['disable-carriers-modal']; //phpcs:ignore ?>,
+						'pl-pick-service-page': {
+							'pl-header-section': '',
+							'pl-main-page-holder': <?php echo $data['templates']['pick-shipping-services']; //phpcs:ignore ?>,
+							'pl-shipping-services-table': <?php echo $data['templates']['shipping-services-table']; //phpcs:ignore ?>,
+							'pl-shipping-services-list': <?php echo $data['templates']['shipping-services-list']; //phpcs:ignore ?>
+						},
+						'pl-edit-service-page': {
+							'pl-header-section': '',
+							'pl-main-page-holder': <?php echo $data['templates']['edit-shipping-service']; //phpcs:ignore ?>,
+							'pl-pricing-policies': <?php echo $data['templates']['pricing-policies-list']; //phpcs:ignore ?>
+						},
+						'pl-pricing-policy-modal': <?php echo $data['templates']['pricing-policy-modal']; //phpcs:ignore ?>,
+						'pl-countries-selection-modal': <?php echo $data['templates']['countries-selection-modal']; //phpcs:ignore ?>,
+					}
+				}
+			);
+
+			Packlink.state.display();
+
+			calculateContentHeight(30);
+
+			/**
+			 * Calculates content height.
+			 *
+			 * Footer can be dynamically hidden or displayed by WooCommerce,
+			 * so we have to periodically recalculate content height.
+			 *
+			 * @param {number} offset
+			 */
+			function calculateContentHeight(offset) {
+				if (typeof offset === 'undefined') {
+					offset = 0;
+				}
+
+				let content = document.getElementById('pl-page');
+				let localOffset = offset + content.offsetTop + 20;
+
+				let footer = document.getElementById('wpfooter');
+				if (footer) {
+					localOffset += footer.clientHeight;
+				}
+
+				content.style.height = `calc(100% - ${localOffset}px`;
+
+				setTimeout(calculateContentHeight, 250, offset);
+			}
+		},
+		false
+	);
+</script>

@@ -11,5 +11,6 @@ packlink-pro-shipping
 !src/resources/packlink/.gitkeep
 src/resources/packlink/js/*
 src/resources/packlink/css/*
-src/resources/packlink/img/*
+src/resources/packlink/images/*
 src/resources/packlink/templates/*
+src/resources/packlink/lang/*

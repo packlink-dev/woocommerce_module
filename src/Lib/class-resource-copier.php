@@ -25,8 +25,9 @@ class Resource_Copier {
 		$map = array(
 			$from_base . 'js'        => $to_base . 'js',
 			$from_base . 'css'       => $to_base . 'css',
-			$from_base . 'images'    => $to_base . 'img',
+			$from_base . 'images'    => $to_base . 'images',
 			$from_base . 'templates' => $to_base . 'templates',
+			$from_base . 'lang'      => $to_base . 'lang',
 		);
 
 		foreach ( $map as $from => $to ) {
