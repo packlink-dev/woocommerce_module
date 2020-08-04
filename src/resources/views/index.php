@@ -107,8 +107,8 @@ $data = $this->resolve_view_arguments();
 					setStatusUrl: "<?php echo Shop_Helper::get_controller_url( 'Debug', 'set_status' ); //phpcs:ignore ?>"
 				},
 				'order-status-mapping': {
-					getMappingAndStatusesUrl: "",
-					setUrl: ""
+					getMappingAndStatusesUrl: "<?php echo Shop_Helper::get_controller_url( 'Order_Status', 'get' ); //phpcs:ignore ?>",
+					setUrl: "<?php echo Shop_Helper::get_controller_url( 'Order_Status', 'submit' ); //phpcs:ignore ?>"
 				},
 				'my-shipping-services': {
 					getServicesUrl: "<?php echo Shop_Helper::get_controller_url( 'My_Shipping_Services', 'get' ); //phpcs:ignore ?>",
