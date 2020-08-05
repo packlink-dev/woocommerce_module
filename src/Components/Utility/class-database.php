@@ -85,18 +85,7 @@ class Database {
 	 */
 	public function update( $version_file_reader ) {
 		while ( $version_file_reader->has_next() ) {
-			$statements = $version_file_reader->read_next();
-			foreach ( $statements as $statement ) {
-				try {
-					$this->db->query( $statement );
-				} catch ( \Exception $ex ) {
-					Bootstrap_Component::init();
-					Logger::logInfo( $ex->getMessage(), 'Database Update' );
-					Logger::logInfo( $statement, 'SQL' );
-
-					return false;
-				}
-			}
+			$version_file_reader->execute();
 		}
 
 		return true;
