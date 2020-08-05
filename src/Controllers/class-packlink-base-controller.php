@@ -8,7 +8,6 @@
 namespace Packlink\WooCommerce\Controllers;
 
 use Logeecom\Infrastructure\Data\DataTransferObject;
-use Packlink\BusinessLogic\DTO\ValidationError;
 use Packlink\WooCommerce\Components\Utility\Shop_Helper;
 
 /**
@@ -23,17 +22,6 @@ class Packlink_Base_Controller {
 	 * @var bool
 	 */
 	protected $is_internal = true;
-	/**
-	 * Translation messages for fields that are being validated.
-	 *
-	 * @var array
-	 */
-	private $validation_messages = array(
-		'email'       => 'Field must be valid email.',
-		'phone'       => 'Field must be valid phone number.',
-		'weight'      => 'Weight must be a positive decimal number.',
-		'postal_code' => 'Postal code is not correct.',
-	);
 
 	/**
 	 * Processes request. Reads 'action' parameter and calls action method if provided.
@@ -76,50 +64,26 @@ class Packlink_Base_Controller {
 	 * Converts DTOs to array and returns a JSON response.
 	 *
 	 * @param DataTransferObject[] $entities Entities to be transformed to json.
+	 * @param int                  $status Response status.
 	 */
-	protected function return_dto_entities_response( array $entities ) {
+	protected function return_dto_entities_response( array $entities, $status = 200 ) {
 		$response = array();
 
 		foreach ( $entities as $entity ) {
 			$response[] = $entity->toArray();
 		}
 
-		$this->return_json( $response );
+		$this->return_json( $response, $status );
 	}
 
 	/**
-	 * Returns 400 response with validation errors.
+	 * Returns error message with the provided status.
 	 *
-	 * @param ValidationError[] $errors
+	 * @param string $error_message Message to be returned.
+	 * @param int    $status Status code.
 	 */
-	protected function return_validation_errors_response( array $errors ) {
-		$response = array();
-
-		foreach ( $errors as $error ) {
-			$response[ $error->field ] = $this->get_validation_error_message( $error->code, $error->field );
-		}
-
-		$this->return_json( $response, 400 );
-	}
-
-	/**
-	 * Returns a validation message for validation error.
-	 *
-	 * @param string $code
-	 * @param string $field
-	 *
-	 * @return string
-	 */
-	private function get_validation_error_message( $code, $field ) {
-		if ( ValidationError::ERROR_REQUIRED_FIELD === $code ) {
-			return __( 'Field is required.', 'packlink-pro-shipping' );
-		}
-
-		if ( in_array( $code, array( 'width', 'length', 'height' ) ) ) {
-			return __( 'Field must be valid whole number.', 'packlink-pro-shipping' );
-		}
-
-		return __( $this->validation_messages[ $field ], 'packlink-pro-shipping' );
+	protected function return_error( $error_message, $status = 400 ) {
+		$this->return_json( array( 'message' => $error_message ), $status );
 	}
 
 	/**

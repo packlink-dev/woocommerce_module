@@ -121,12 +121,12 @@ $data = $this->resolve_view_arguments();
 					startAutoConfigureUrl: "<?php echo Shop_Helper::get_controller_url( 'Auto_Configure', 'start' ); //phpcs:ignore ?>"
 				},
 				'edit-service': {
-					getServiceUrl: "",
-					saveServiceUrl: "",
+					getServiceUrl: "<?php echo Shop_Helper::get_controller_url( 'Edit_Service', 'get_service' ); //phpcs:ignore ?>",
+					saveServiceUrl: "<?php echo Shop_Helper::get_controller_url( 'Edit_Service', 'update_service' ); //phpcs:ignore ?>",
 					getTaxClassesUrl: "",
 					getCountriesListUrl: "",
-					hasTaxConfiguration: true,
-					hasCountryConfiguration: true,
+					hasTaxConfiguration: false,
+					hasCountryConfiguration: false,
 					canDisplayCarrierLogos: true
 				}
 			};
