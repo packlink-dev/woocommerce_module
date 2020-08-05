@@ -20,14 +20,15 @@ class Resource_Copier {
 	 */
 	public static function copy() {
 		$from_base = __DIR__ . '/../vendor/packlink/integration-core/src/BusinessLogic/Resources/';
-		$to_base   = __DIR__ . '/../resources/packlink/';
+		$to_base   = __DIR__ . '/../resources/';
 
 		$map = array(
-			$from_base . 'js'        => $to_base . 'js',
-			$from_base . 'css'       => $to_base . 'css',
-			$from_base . 'images'    => $to_base . 'images',
-			$from_base . 'templates' => $to_base . 'templates',
-			$from_base . 'lang'      => $to_base . 'lang',
+			$from_base . 'js'               => $to_base . 'packlink/js',
+			$from_base . 'css'              => $to_base . 'packlink/css',
+			$from_base . 'images'           => $to_base . 'packlink/images',
+			$from_base . 'templates'        => $to_base . 'packlink/templates',
+			$from_base . 'lang'             => $to_base . 'packlink/lang',
+			$from_base . 'images/carriers/' => $to_base . 'images/carriers',
 		);
 
 		foreach ( $map as $from => $to ) {
