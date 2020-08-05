@@ -67,7 +67,7 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	 * Loads JS and CSS files for the current page.
 	 */
 	private function load_static_content() {
-		wp_enqueue_style( 'material', 'https://fonts.googleapis.com/icon?family=Material+Icons+Outlined' );
+		wp_enqueue_style( 'material', 'https://fonts.googleapis.com/icon?family=Material+Icons+Outlined' ); // phpcs:ignore
 
 		Script_Loader::load_css(
 			array(
@@ -138,48 +138,30 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	private function get_templates() {
 		$base_dir = __DIR__ . '/../resources/packlink/templates/';
 
+		//@codingStandardsIgnoreStart
 		return array(
 			'configuration'             => json_encode( file_get_contents( $base_dir . 'configuration.html' ) ),
-			//phpcs:ignore
 			'countries-selection-modal' => json_encode( file_get_contents( $base_dir . 'countries-selection-modal.html' ) ),
-			//phpcs:ignore
 			'default-parcel'            => json_encode( file_get_contents( $base_dir . 'default-parcel.html' ) ),
-			//phpcs:ignore
 			'default-warehouse'         => json_encode( file_get_contents( $base_dir . 'default-warehouse.html' ) ),
-			//phpcs:ignore
 			'disable-carriers-modal'    => json_encode( file_get_contents( $base_dir . 'disable-carriers-modal.html' ) ),
-			//phpcs:ignore
 			'edit-shipping-service'     => json_encode( file_get_contents( $base_dir . 'edit-shipping-service.html' ) ),
-			//phpcs:ignore
 			'login'                     => json_encode( file_get_contents( $base_dir . 'login.html' ) ),
-			//phpcs:ignore
 			'my-shipping-services'      => json_encode( file_get_contents( $base_dir . 'my-shipping-services.html' ) ),
-			//phpcs:ignore
 			'onboarding-overview'       => json_encode( file_get_contents( $base_dir . 'onboarding-overview.html' ) ),
-			//phpcs:ignore
 			'onboarding-welcome'        => json_encode( file_get_contents( $base_dir . 'onboarding-welcome.html' ) ),
-			//phpcs:ignore
 			'order-status-mapping'      => json_encode( file_get_contents( $base_dir . 'order-status-mapping.html' ) ),
-			//phpcs:ignore
 			'pick-shipping-services'    => json_encode( file_get_contents( $base_dir . 'pick-shipping-services.html' ) ),
-			//phpcs:ignore
 			'pricing-policies-list'     => json_encode( file_get_contents( $base_dir . 'pricing-policies-list.html' ) ),
-			//phpcs:ignore
 			'pricing-policy-modal'      => json_encode( file_get_contents( $base_dir . 'pricing-policy-modal.html' ) ),
-			//phpcs:ignore
 			'register'                  => json_encode( file_get_contents( $base_dir . 'register.html' ) ),
-			//phpcs:ignore
 			'register-modal'            => json_encode( file_get_contents( $base_dir . 'register-modal.html' ) ),
-			//phpcs:ignore
 			'shipping-services-header'  => json_encode( file_get_contents( $base_dir . 'shipping-services-header.html' ) ),
-			//phpcs:ignore
 			'shipping-services-list'    => json_encode( file_get_contents( $base_dir . 'shipping-services-list.html' ) ),
-			//phpcs:ignore
 			'shipping-services-table'   => json_encode( file_get_contents( $base_dir . 'shipping-services-table.html' ) ),
-			//phpcs:ignore
 			'system-info-modal'         => json_encode( file_get_contents( $base_dir . 'system-info-modal.html' ) ),
-			//phpcs:ignore
 		);
+		//@codingStandardsIgnoreEnd
 	}
 
 	/**
