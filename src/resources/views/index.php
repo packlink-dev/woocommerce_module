@@ -116,9 +116,9 @@ $data = $this->resolve_view_arguments();
 					disableCarriersUrl: "<?php echo Shop_Helper::get_controller_url( 'Shop_Shipping_Methods', 'disable_shop_shipping_methods' ); //phpcs:ignore ?>"
 				},
 				'pick-shipping-service': {
-					getServicesUrl: "",
-					getTaskStatusUrl: "",
-					startAutoConfigureUrl: ""
+					getServicesUrl: "<?php echo Shop_Helper::get_controller_url( 'Shipping_Service', 'get' ); //phpcs:ignore ?>",
+					getTaskStatusUrl: "<?php echo Shop_Helper::get_controller_url( 'Shipping_Service', 'get_task_status' ); //phpcs:ignore ?>",
+					startAutoConfigureUrl: "<?php echo Shop_Helper::get_controller_url( 'Auto_Configure', 'start' ); //phpcs:ignore ?>"
 				},
 				'edit-service': {
 					getServiceUrl: "",
