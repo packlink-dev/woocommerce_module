@@ -124,9 +124,9 @@ $data = $this->resolve_view_arguments();
 					getServiceUrl: "<?php echo Shop_Helper::get_controller_url( 'Edit_Service', 'get_service' ); //phpcs:ignore ?>",
 					saveServiceUrl: "<?php echo Shop_Helper::get_controller_url( 'Edit_Service', 'update_service' ); //phpcs:ignore ?>",
 					getTaxClassesUrl: "",
-					getCountriesListUrl: "",
+					getCountriesListUrl: "<?php echo Shop_Helper::get_controller_url( 'Shipping_Zones', 'get_shipping_zones' ); //phpcs:ignore ?>",
 					hasTaxConfiguration: false,
-					hasCountryConfiguration: false,
+					hasCountryConfiguration: true,
 					canDisplayCarrierLogos: true
 				}
 			};

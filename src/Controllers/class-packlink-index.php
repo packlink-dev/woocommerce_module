@@ -69,6 +69,7 @@ class Packlink_Index extends Packlink_Base_Controller {
 			'Order_Status',
 			'Shipping_Service',
 			'Edit_Service',
+			'Shipping_Zones',
 		);
 
 		return in_array( $controller_name, $allowed_controllers, true );
