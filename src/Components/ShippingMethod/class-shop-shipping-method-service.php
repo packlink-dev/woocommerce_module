@@ -63,26 +63,15 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 	 * @return bool TRUE if activation succeeded; otherwise, FALSE.
 	 */
 	public function add( ShippingMethod $shipping_method ) {
-		$pricing_policy = $this->get_shipping_method_pricing_policy( $shipping_method );
-
 		try {
-			foreach ( Shipping_Method_Helper::get_all_shipping_zone_ids() as $zone_id ) {
-				$zone        = new WC_Shipping_Zone( $zone_id );
-				$instance_id = $zone->add_shipping_method( 'packlink_shipping_method' );
+			if ( $shipping_method->isShipToAllCountries() ) {
+				$zone_ids = Shipping_Method_Helper::get_all_shipping_zone_ids();
+			} else {
+				$zone_ids = $shipping_method->getShippingCountries();
+			}
 
-				if ( 0 !== $instance_id ) {
-					$new = new Packlink_Shipping_Method( $instance_id );
-					$new->set_post_data(
-						array(
-							'woocommerce_packlink_shipping_method_title'        => $shipping_method->getTitle(),
-							'woocommerce_packlink_shipping_method_price_policy' => $pricing_policy,
-						)
-					);
-
-					$_REQUEST['instance_id'] = $instance_id;
-					$new->process_admin_options();
-					$this->add_to_shipping_method_map( $instance_id, $shipping_method->getId(), $zone_id );
-				}
+			foreach ( $zone_ids as $zone_id ) {
+				$this->add_method_to_zone( $shipping_method, $zone_id );
 			}
 		} catch ( Exception $e ) {
 			Logger::logError( $e->getMessage(), 'Integration', $shipping_method->toArray() );
@@ -173,22 +162,11 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 		}
 
 		foreach ( $shipping_methods as $shipping_method ) {
-			$pricing_policy = $this->get_shipping_method_pricing_policy( $shipping_method );
-			$instance_id    = $zone->add_shipping_method( 'packlink_shipping_method' );
-
-			if ( 0 !== $instance_id ) {
-				$new = new Packlink_Shipping_Method( $instance_id );
-				$new->set_post_data(
-					array(
-						'woocommerce_packlink_shipping_method_title'        => $shipping_method->getTitle(),
-						'woocommerce_packlink_shipping_method_price_policy' => $pricing_policy,
-					)
-				);
-
-				$_REQUEST['instance_id'] = $instance_id;
-				$new->process_admin_options();
-				$this->add_to_shipping_method_map( $instance_id, $shipping_method->getId(), $zone->get_id() );
+			if ( ! $shipping_method->isShipToAllCountries() ) {
+				continue;
 			}
+
+			$this->add_method_to_zone( $shipping_method, $zone->get_id() );
 		}
 	}
 
@@ -198,34 +176,8 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 	 * @param ShippingMethod $shipping_method Shipping method.
 	 */
 	public function update( ShippingMethod $shipping_method ) {
-		$pricing_policy = $this->get_shipping_method_pricing_policy( $shipping_method );
-		$is_enabled     = $shipping_method->isEnabled() && $shipping_method->isActivated() ? 'yes' : 'no';
-
-		global $wpdb;
-
-		$items = $this->get_woocommerce_shipping_methods( $shipping_method->getId() );
-		foreach ( $items as $item ) {
-			$instance_id = $item->getWoocommerceShippingMethodId();
-
-			$packlink_shipping_method = new Packlink_Shipping_Method( $instance_id );
-			$packlink_shipping_method->set_post_data(
-				array(
-					'woocommerce_packlink_shipping_method_title'        => $shipping_method->getTitle(),
-					'woocommerce_packlink_shipping_method_price_policy' => $pricing_policy,
-				)
-			);
-
-			if ( $is_enabled !== $packlink_shipping_method->enabled ) {
-				$wpdb->update(  // phpcs:ignore
-					"{$wpdb->prefix}woocommerce_shipping_zone_methods",
-					array( 'is_enabled' => $is_enabled ),
-					array( 'instance_id' => absint( $instance_id ) )
-				);
-			}
-
-			$_REQUEST['instance_id'] = $instance_id;
-			$packlink_shipping_method->process_admin_options();
-		}
+		$this->delete( $shipping_method );
+		$this->add( $shipping_method );
 	}
 
 	/**
@@ -273,6 +225,32 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 		$this->set_default_shipping_method();
 
 		return true;
+	}
+
+	/**
+	 * Adds shipping method to zone.
+	 *
+	 * @param ShippingMethod $shipping_method Shipping method to be added.
+	 * @param int            $zone_id Zone id.
+	 */
+	protected function add_method_to_zone( ShippingMethod $shipping_method, $zone_id ) {
+		$pricing_policy = $this->get_shipping_method_pricing_policy( $shipping_method );
+		$zone           = new WC_Shipping_Zone( $zone_id );
+		$instance_id    = $zone->add_shipping_method( 'packlink_shipping_method' );
+
+		if ( 0 !== $instance_id ) {
+			$new = new Packlink_Shipping_Method( $instance_id );
+			$new->set_post_data(
+				array(
+					'woocommerce_packlink_shipping_method_title'        => $shipping_method->getTitle(),
+					'woocommerce_packlink_shipping_method_price_policy' => $pricing_policy,
+				)
+			);
+
+			$_REQUEST['instance_id'] = $instance_id;
+			$new->process_admin_options();
+			$this->add_to_shipping_method_map( $instance_id, $shipping_method->getId(), $zone_id );
+		}
 	}
 
 	/**
