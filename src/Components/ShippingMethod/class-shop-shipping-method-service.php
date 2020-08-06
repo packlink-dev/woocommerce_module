@@ -279,7 +279,7 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 			}
 		}
 
-		return $result;
+		return rtrim( $result, ' | ' );
 	}
 
 	/**

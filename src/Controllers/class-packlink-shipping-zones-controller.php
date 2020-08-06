@@ -28,7 +28,7 @@ class Packlink_Shipping_Zones_Controller extends Packlink_Base_Controller {
 		$result = array_map(
 			static function ( $zone ) {
 				return array(
-					'code'  => $zone['zone_id'],
+					'value'  => $zone['zone_id'],
 					'label' => $zone['formatted_zone_location'],
 				);
 			},
