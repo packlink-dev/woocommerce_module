@@ -45,7 +45,11 @@ class Packlink_Register_Controller extends Packlink_Base_Controller {
 	 * Retrieves registration data.
 	 */
 	public function get() {
-		$this->return_json( $this->base_controller->getRegisterData() );
+		if ( empty( $_GET['country'] ) ) { // phpcs:ignore
+			$this->return_error( 'Not found!', 404 );
+		}
+
+		$this->return_json( $this->base_controller->getRegisterData( $_GET['country'] ) ); // phpcs:ignore
 	}
 
 	/**
