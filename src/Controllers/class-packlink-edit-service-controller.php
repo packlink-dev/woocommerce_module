@@ -74,6 +74,12 @@ class Packlink_Edit_Service_Controller extends Packlink_Base_Controller {
 			return;
 		}
 
+		if ( $configuration->activated ) {
+			$this->controller->activate( $configuration->id );
+		} else {
+			$this->controller->deactivate( $configuration->id );
+		}
+
 		$response = $this->controller->save( $configuration );
 		$response = $response ? $response->toArray() : array();
 

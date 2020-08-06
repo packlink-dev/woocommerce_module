@@ -64,6 +64,14 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 	 */
 	public function add( ShippingMethod $shipping_method ) {
 		try {
+			$map = Shipping_Method_Helper::get_shipping_method_map_for_packlink_shipping_method( $shipping_method->getId() );
+
+			if ( ! empty( $map ) ) {
+				// Method already added.
+
+				return true;
+			}
+
 			if ( $shipping_method->isShipToAllCountries() ) {
 				$zone_ids = Shipping_Method_Helper::get_all_shipping_zone_ids();
 			} else {
@@ -93,7 +101,7 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 		$default = new ShippingMethod();
 		$default->setId( - 1 );
 		$default->setTitle( Checkout_Handler::DEFAULT_SHIPPING );
-		$default->setUsePacklinkPriceIfNotInRange( $shipping_method->isUsePacklinkPriceIfNotInRange() );
+		$default->setUsePacklinkPriceIfNotInRange( true );
 
 		foreach ( $shipping_method->getPricingPolicies() as $policy ) {
 			$default->addPricingPolicy( clone $policy );
