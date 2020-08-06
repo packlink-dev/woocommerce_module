@@ -47,21 +47,12 @@ root="$PWD";
 source="$PWD/packlink-pro-shipping/vendor/packlink/integration-core/src/BusinessLogic/Resources";
 destination="$PWD/packlink-pro-shipping/resources";
 
-if [ ! -d "$destination/js/core" ]; then
-  mkdir "$destination/js/core"
-fi
 if [ ! -d "$destination/js/location-picker" ]; then
   mkdir "$destination/js/location-picker"
 fi
 
-cp -r ${source}/js/* ${destination}/js/core
 cp -r ${source}/LocationPicker/js/* ${destination}/js/location-picker
 cp -r ${source}/LocationPicker/css/* ${destination}/css
-
-cd ${destination}/js/core
-for file in ./* ; do
-    mv "$file" "$(echo $file|sed -e 's/^.\//packlink\-/' -e 's/\([A-Z]\)/\-\L\1/g' -e 's/\-\-/\-/')"
-done
 
 cd ${destination}/js/location-picker
 for file in ./* ; do
