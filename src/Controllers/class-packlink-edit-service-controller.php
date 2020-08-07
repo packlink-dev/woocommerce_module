@@ -7,9 +7,13 @@
 
 namespace Packlink\WooCommerce\Controllers;
 
+use Logeecom\Infrastructure\ServiceRegister;
 use Packlink\BusinessLogic\Controllers\DTO\ShippingMethodConfiguration;
 use Packlink\BusinessLogic\Controllers\ShippingMethodController;
 use Packlink\BusinessLogic\DTO\Exceptions\FrontDtoValidationException;
+use Packlink\BusinessLogic\ShippingMethod\Interfaces\ShopShippingMethodService;
+use Packlink\BusinessLogic\ShippingMethod\Models\ShippingMethod;
+use Packlink\BusinessLogic\ShippingMethod\ShippingMethodService;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
@@ -31,10 +35,26 @@ class Packlink_Edit_Service_Controller extends Packlink_Base_Controller {
 	private $controller;
 
 	/**
+	 * Shipping method service.
+	 *
+	 * @var ShippingMethodService
+	 */
+	private $service;
+
+	/**
+	 * Shop shipping method service.
+	 *
+	 * @var ShopShippingMethodService
+	 */
+	private $shop_shipping_method_service;
+
+	/**
 	 * Packlink_Edit_Service_Controller constructor.
 	 */
 	public function __construct() {
-		$this->controller = new ShippingMethodController();
+		$this->controller                   = new ShippingMethodController();
+		$this->service                      = ServiceRegister::getService( ShippingMethodService::CLASS_NAME );
+		$this->shop_shipping_method_service = ServiceRegister::getService( ShopShippingMethodService::CLASS_NAME );
 	}
 
 	/**
@@ -74,13 +94,15 @@ class Packlink_Edit_Service_Controller extends Packlink_Base_Controller {
 			return;
 		}
 
-		if ( $configuration->activated ) {
-			$this->controller->activate( $configuration->id );
-		} else {
-			$this->controller->deactivate( $configuration->id );
-		}
+		$can_backup_be_added = $configuration->activated && ! $this->service->isAnyMethodActive();
 
 		$response = $this->controller->save( $configuration );
+
+		if ( $can_backup_be_added ) {
+			$backup = ShippingMethod::fromArray( $response->toArray() );
+			$this->shop_shipping_method_service->addBackupShippingMethod( $backup );
+		}
+
 		$response = $response ? $response->toArray() : array();
 
 		$this->return_json( $response );
