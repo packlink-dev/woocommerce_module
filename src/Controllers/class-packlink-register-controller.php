@@ -7,6 +7,7 @@
 
 namespace Packlink\WooCommerce\Controllers;
 
+use Exception;
 use Packlink\BusinessLogic\Controllers\RegistrationController;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -60,7 +61,18 @@ class Packlink_Register_Controller extends Packlink_Base_Controller {
 		$raw                   = $this->get_raw_input();
 		$payload               = json_decode( $raw, true );
 		$payload['ecommerces'] = static::$ecommerce_identifiers;
-		$status                = $this->base_controller->register( $payload );
+		try {
+			$status = $this->base_controller->register( $payload );
+		} catch ( Exception $e ) {
+			$this->return_json(
+				array(
+					'success' => false,
+					'error'   => $e->getMessage(),
+				)
+			);
+
+			return;
+		}
 
 		$this->return_json( array( 'success' => $status ) );
 	}
