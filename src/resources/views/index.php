@@ -17,7 +17,7 @@ $data = $this->resolve_view_arguments();
 
 <div id="pl-page">
 	<header id="pl-main-header">
-		<div class="pl-main-logo">
+		<div class="pl-main-logo" style="width: 200px">
 			<img src="https://cdn.packlink.com/apps/giger/logos/packlink-pro.svg" alt="logo">
 		</div>
 		<div class="pl-header-holder" id="pl-header-section"></div>
