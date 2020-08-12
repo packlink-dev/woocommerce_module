@@ -2,12 +2,6 @@
 
 /** @noinspection PhpUnusedParameterInspection */
 
-/**
- * Packlink PRO Shipping WooCommerce Integration.
- *
- * @package Packlink
- */
-
 namespace Packlink\WooCommerce;
 
 use Logeecom\Infrastructure\Logger\Logger;
