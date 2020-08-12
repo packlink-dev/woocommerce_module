@@ -12,7 +12,6 @@ use Packlink\BusinessLogic\Controllers\DTO\ShippingMethodConfiguration;
 use Packlink\BusinessLogic\Controllers\ShippingMethodController;
 use Packlink\BusinessLogic\DTO\Exceptions\FrontDtoValidationException;
 use Packlink\BusinessLogic\ShippingMethod\Interfaces\ShopShippingMethodService;
-use Packlink\BusinessLogic\ShippingMethod\Models\ShippingMethod;
 use Packlink\BusinessLogic\ShippingMethod\ShippingMethodService;
 
 if ( ! defined( 'ABSPATH' ) ) {
