@@ -1,3 +1,44 @@
-#pl-main-page-holder {
-	all: initial;
+#pl-page .pl-form-group select.pl-with-label {
+	padding: 7px 0 0 15px;
+	max-width: none;
+}
+
+#pl-page .pl-form-group select.pl-with-label ~ i {
+	top: 18px;
+	right: 2px;
+}
+
+#pl-page select {
+	-moz-appearance: none;
+	-webkit-appearance: none;
+	appearance: none;
+	background: rgba(1, 1, 1, 0) !important;
+}
+
+#pl-page .pl-form-group input {
+	padding: 21px 15px 13px;
+}
+
+#pl-page input[type=checkbox]:checked:before {
+	top: 6px;
+	left: 3px;
+}
+
+#pl-page .pl-form-group select {
+	padding-left: 15px;
+}
+
+#pl-page .pl-status-mapping .pl-half-width {
+	flex-direction: row;
+	max-width: 50%;
+	min-width: 50%;
+	align-items: center;
+	padding: 0;
+	margin-top: 5px;
+	margin-bottom: 5px;
+}
+
+#pl-page .pl-form-group select + i {
+	cursor: default;
+	pointer-events: none;
 }
