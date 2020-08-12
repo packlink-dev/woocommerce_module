@@ -94,17 +94,8 @@ class Packlink_Edit_Service_Controller extends Packlink_Base_Controller {
 			return;
 		}
 
-		$can_backup_be_added = $configuration->activated && ! $this->service->isAnyMethodActive();
-
 		$response = $this->controller->save( $configuration );
 
-		if ( $can_backup_be_added ) {
-			$backup = ShippingMethod::fromArray( $response->toArray() );
-			$this->shop_shipping_method_service->addBackupShippingMethod( $backup );
-		}
-
-		$response = $response ? $response->toArray() : array();
-
-		$this->return_json( $response );
+		$this->return_json( $response ? $response->toArray() : array() );
 	}
 }
