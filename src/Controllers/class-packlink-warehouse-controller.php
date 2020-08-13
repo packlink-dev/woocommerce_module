@@ -52,6 +52,7 @@ class Packlink_Warehouse_Controller extends Packlink_Base_Controller {
 	public function __construct() {
 		$this->warehouse_controller = new WarehouseController();
 		$this->country_controller   = new RegistrationRegionsController();
+		$this->locations_controller = new LocationsController();
 	}
 
 	/**
