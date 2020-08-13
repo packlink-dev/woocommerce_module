@@ -16,6 +16,7 @@ use Packlink\BusinessLogic\OrderShipmentDetails\OrderShipmentDetailsService;
 use Packlink\BusinessLogic\ShipmentDraft\ShipmentDraftService;
 use Packlink\WooCommerce\Components\ShippingMethod\Shipping_Method_Helper;
 use Packlink\WooCommerce\Components\Utility\Script_Loader;
+use Packlink\WooCommerce\Components\Utility\Shop_Helper;
 use WP_Post;
 
 /**
@@ -44,7 +45,7 @@ class Packlink_Order_Details_Controller extends Packlink_Base_Controller {
 		/** @var OrderShipmentDetailsService $shipment_details_service */
 		$shipment_details_service = ServiceRegister::getService( OrderShipmentDetailsService::CLASS_NAME );
 		/** @var ShipmentDraftService $draft_service */
-		$draft_service = ServiceRegister::getService( ShipmentDraftService::CLASS_NAME );
+		$draft_service      = ServiceRegister::getService( ShipmentDraftService::CLASS_NAME );
 		$order_details      = $shipment_details_service->getDetailsByOrderId( (string) $wp_post->ID );
 		$last_status_update = '';
 		if ( $order_details && $order_details->getLastStatusUpdateTime() ) {
@@ -53,8 +54,12 @@ class Packlink_Order_Details_Controller extends Packlink_Base_Controller {
 		}
 
 		$shipment_deleted = $order_details ? $shipment_details_service->isShipmentDeleted( $order_details->getReference() ) : true;
-		$draft_status = $draft_service->getDraftStatus( (string) $wp_post->ID );
-		$shipping_method = Shipping_Method_Helper::get_packlink_shipping_method_from_order( $wc_order );
+		$draft_status     = $draft_service->getDraftStatus( (string) $wp_post->ID );
+		$shipping_method  = Shipping_Method_Helper::get_packlink_shipping_method_from_order( $wc_order );
+
+		if ( $shipping_method && empty( $shipping_method->getLogoUrl() ) ) {
+			$shipping_method->setLogoUrl( Shop_Helper::get_plugin_base_url() . 'resources/images/box.svg' );
+		}
 
 		include dirname( __DIR__ ) . '/resources/views/meta-post-box.php';
 	}
@@ -66,6 +71,7 @@ class Packlink_Order_Details_Controller extends Packlink_Base_Controller {
 	 * @throws \Logeecom\Infrastructure\TaskExecution\Exceptions\QueueStorageUnavailableException
 	 * @throws \Packlink\BusinessLogic\ShipmentDraft\Exceptions\DraftTaskMapExists
 	 * @throws \Packlink\BusinessLogic\ShipmentDraft\Exceptions\DraftTaskMapNotFound
+	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException
 	 */
 	public function create_draft() {
 		$this->validate( 'yes' );
