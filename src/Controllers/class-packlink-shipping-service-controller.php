@@ -45,6 +45,13 @@ class Packlink_Shipping_Service_Controller extends Packlink_Base_Controller {
 	}
 
 	/**
+	 * Provides active shipping services.
+	 */
+	public function get_active() {
+		$this->return_dto_entities_response( $this->controller->getActive() );
+	}
+
+	/**
 	 * Provides UpdateShippingServicesTask status.
 	 */
 	public function get_task_status() {

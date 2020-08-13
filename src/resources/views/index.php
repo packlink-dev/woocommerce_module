@@ -113,12 +113,13 @@ $data = $this->resolve_view_arguments();
 				'my-shipping-services': {
 					getServicesUrl: "<?php echo Shop_Helper::get_controller_url( 'My_Shipping_Services', 'get' ); //phpcs:ignore ?>",
 					deleteServiceUrl: "<?php echo Shop_Helper::get_controller_url( 'My_Shipping_Services', 'deactivate' ); //phpcs:ignore ?>",
-					disableCarriersUrl: "<?php echo Shop_Helper::get_controller_url( 'Shop_Shipping_Methods', 'disable_shop_shipping_methods' ); //phpcs:ignore ?>"
 				},
 				'pick-shipping-service': {
+					getActiveServicesUrl: "<?php echo Shop_Helper::get_controller_url( 'Shipping_Service', 'get_active' ); //phpcs:ignore ?>",
 					getServicesUrl: "<?php echo Shop_Helper::get_controller_url( 'Shipping_Service', 'get' ); //phpcs:ignore ?>",
 					getTaskStatusUrl: "<?php echo Shop_Helper::get_controller_url( 'Shipping_Service', 'get_task_status' ); //phpcs:ignore ?>",
-					startAutoConfigureUrl: "<?php echo Shop_Helper::get_controller_url( 'Auto_Configure', 'start' ); //phpcs:ignore ?>"
+					startAutoConfigureUrl: "<?php echo Shop_Helper::get_controller_url( 'Auto_Configure', 'start' ); //phpcs:ignore ?>",
+					disableCarriersUrl: "<?php echo Shop_Helper::get_controller_url( 'Shop_Shipping_Methods', 'disable_shop_shipping_methods' ); //phpcs:ignore ?>"
 				},
 				'edit-service': {
 					getServiceUrl: "<?php echo Shop_Helper::get_controller_url( 'Edit_Service', 'get_service' ); //phpcs:ignore ?>",
