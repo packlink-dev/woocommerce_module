@@ -7,14 +7,12 @@
 
 namespace Packlink\WooCommerce\Controllers;
 
-use Exception;
-use Logeecom\Infrastructure\ServiceRegister;
 use Logeecom\Infrastructure\TaskExecution\Exceptions\QueueStorageUnavailableException;
-use Packlink\BusinessLogic\Country\CountryService;
+use Packlink\BusinessLogic\Controllers\LocationsController;
+use Packlink\BusinessLogic\Controllers\RegistrationRegionsController;
+use Packlink\BusinessLogic\Controllers\WarehouseController;
 use Packlink\BusinessLogic\DTO\Exceptions\FrontDtoNotRegisteredException;
 use Packlink\BusinessLogic\DTO\Exceptions\FrontDtoValidationException;
-use Packlink\BusinessLogic\Location\LocationService;
-use Packlink\BusinessLogic\Warehouse\WarehouseService;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
@@ -28,40 +26,39 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Packlink_Warehouse_Controller extends Packlink_Base_Controller {
 
 	/**
-	 * Warehouse service.
+	 * Warehouse controller.
 	 *
-	 * @var WarehouseService
+	 * @var WarehouseController
 	 */
-	private $service;
+	private $warehouse_controller;
 
 	/**
-	 * Country service.
+	 * Country controller.
 	 *
-	 * @var CountryService
+	 * @var RegistrationRegionsController
 	 */
-	private $countries_service;
+	private $country_controller;
 
 	/**
-	 * Locations service.
+	 * Locations controller.
 	 *
-	 * @var LocationService
+	 * @var LocationsController
 	 */
-	private $locations_service;
+	private $locations_controller;
 
 	/**
 	 * Packlink_Warehouse_Controller constructor.
 	 */
 	public function __construct() {
-		$this->service           = ServiceRegister::getService( WarehouseService::CLASS_NAME );
-		$this->countries_service = ServiceRegister::getService( CountryService::CLASS_NAME );
-		$this->locations_service = ServiceRegister::getService( LocationService::CLASS_NAME );
+		$this->warehouse_controller = new WarehouseController();
+		$this->country_controller   = new RegistrationRegionsController();
 	}
 
 	/**
 	 * Retrieves senders warehouse.
 	 */
 	public function get() {
-		$warehouse = $this->service->getWarehouse();
+		$warehouse = $this->warehouse_controller->getWarehouse();
 
 		$this->return_json( $warehouse ? $warehouse->toArray() : array() );
 	}
@@ -77,16 +74,16 @@ class Packlink_Warehouse_Controller extends Packlink_Base_Controller {
 		$this->validate( 'yes', true );
 		$raw     = $this->get_raw_input();
 		$payload = json_decode( $raw, true );
-		$this->service->updateWarehouseData( $payload );
+		$result  = $this->warehouse_controller->updateWarehouse( $payload );
 
-		$this->get();
+		$this->return_json( $result->toArray() );
 	}
 
 	/**
 	 * Retrieves supported countries.
 	 */
 	public function get_countries() {
-		$countries = $this->countries_service->getSupportedCountries( false );
+		$countries = $this->country_controller->getRegions();
 
 		$this->return_dto_entities_response( $countries );
 	}
@@ -99,18 +96,6 @@ class Packlink_Warehouse_Controller extends Packlink_Base_Controller {
 		$raw     = $this->get_raw_input();
 		$payload = json_decode( $raw, true );
 
-		if ( empty( $payload['query'] ) || empty( $payload['country'] ) ) {
-			$this->return_json( array() );
-		}
-
-		$result = array();
-
-		try {
-			$result = $this->locations_service->searchLocations( $payload['country'], $payload['query'] );
-		} catch ( Exception $e ) {
-			$this->return_json( $result );
-		}
-
-		$this->return_dto_entities_response( $result );
+		$this->return_dto_entities_response( $this->locations_controller->searchLocations( $payload ) );
 	}
 }

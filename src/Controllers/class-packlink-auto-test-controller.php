@@ -7,13 +7,10 @@
 
 namespace Packlink\WooCommerce\Controllers;
 
-use Logeecom\Infrastructure\AutoTest\AutoTestLogger;
-use Logeecom\Infrastructure\AutoTest\AutoTestService;
-use Logeecom\Infrastructure\Exceptions\StorageNotAccessibleException;
 use Logeecom\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
 use Logeecom\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException;
-use Logeecom\Infrastructure\TaskExecution\Exceptions\QueueStorageUnavailableException;
+use Packlink\BusinessLogic\Controllers\AutoTestController;
 use Packlink\WooCommerce\Components\Services\Logger_Service;
 use Packlink\WooCommerce\Components\Utility\Script_Loader;
 use Packlink\WooCommerce\Components\Utility\Shop_Helper;
@@ -28,6 +25,20 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @package Packlink\WooCommerce\Controllers
  */
 class Packlink_Auto_Test_Controller extends Packlink_Base_Controller {
+	/**
+	 * Auto test controller.
+	 *
+	 * @var AutoTestController
+	 */
+	private $controller;
+
+	/**
+	 * Packlink_Auto_Test_Controller constructor.
+	 */
+	public function __construct() {
+		$this->controller = new AutoTestController();
+	}
+
 	/**
 	 * Renders appropriate view.
 	 */
@@ -54,26 +65,11 @@ class Packlink_Auto_Test_Controller extends Packlink_Base_Controller {
 
 	/**
 	 * Runs the auto-test and returns the queue item ID.
-	 *
-	 * @throws QueueStorageUnavailableException When database is not accessible.
 	 */
 	protected function start() {
-		$service = new AutoTestService();
-		try {
-			$this->return_json(
-				array(
-					'success' => true,
-					'itemId'  => $service->startAutoTest(),
-				)
-			);
-		} catch ( StorageNotAccessibleException $e ) {
-			$this->return_json(
-				array(
-					'success' => false,
-					'error'   => __( 'Database not accessible.' ),
-				)
-			);
-		}
+		$status = $this->controller->start();
+
+		$this->return_json( $status );
 	}
 
 	/**
@@ -84,24 +80,17 @@ class Packlink_Auto_Test_Controller extends Packlink_Base_Controller {
 	 * @throws RepositoryNotRegisteredException When repository is not registered in bootstrap.
 	 */
 	protected function checkStatus() {
-		$service = new AutoTestService();
-		$status  = $service->getAutoTestTaskStatus( $this->get_param( 'queueItemId' ) );
+		$status = $this->controller->checkStatus( $this->get_param( 'queueItemId' ) );
 
-		if ( $status->finished ) {
-			$service->stopAutoTestMode(
+		if ( $status['finished'] ) {
+			$this->controller->stop(
 				static function () {
 					return Logger_Service::getInstance();
 				}
 			);
 		}
 
-		$this->return_json(
-			array(
-				'finished' => $status->finished,
-				'error'    => __( $status->error, 'packlink-pro-shipping' ), // phpcs:ignore
-				'logs'     => AutoTestLogger::getInstance()->getLogsArray(),
-			)
-		);
+		$this->return_json( $status );
 	}
 
 	/**
@@ -114,7 +103,7 @@ class Packlink_Auto_Test_Controller extends Packlink_Base_Controller {
 			define( 'JSON_PRETTY_PRINT', 128 );
 		}
 
-		$data = wp_json_encode( AutoTestLogger::getInstance()->getLogsArray(), JSON_PRETTY_PRINT );
+		$data = wp_json_encode( $this->controller->getLogs(), JSON_PRETTY_PRINT );
 		self::dieFileFromString( $data, 'auto-test-logs.json' );
 	}
 

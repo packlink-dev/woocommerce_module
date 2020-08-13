@@ -7,8 +7,7 @@
 
 namespace Packlink\WooCommerce\Controllers;
 
-use Logeecom\Infrastructure\ServiceRegister;
-use Packlink\BusinessLogic\Country\CountryService;
+use Packlink\BusinessLogic\Controllers\RegistrationRegionsController;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
@@ -20,15 +19,24 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @package Packlink\WooCommerce\Controllers
  */
 class Packlink_Regions_Controller extends Packlink_Base_Controller {
+	/**
+	 * Registration regions controller.
+	 *
+	 * @var RegistrationRegionsController
+	 */
+	private $controller;
+
+	/**
+	 * Packlink_Regions_Controller constructor.
+	 */
+	public function __construct() {
+		$this->controller = new RegistrationRegionsController();
+	}
 
 	/**
 	 * Retrieves available registration regions.
 	 */
 	public function get_regions() {
-		/** @var CountryService $country_service */ // phpcs:ignore
-		$country_service     = ServiceRegister::getService( CountryService::CLASS_NAME );
-		$supported_countries = $country_service->getSupportedCountries( false );
-
-		$this->return_dto_entities_response( $supported_countries );
+		$this->return_dto_entities_response( $this->controller->getRegions() );
 	}
 }
