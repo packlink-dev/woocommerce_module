@@ -8,6 +8,7 @@
 namespace Packlink\WooCommerce\Controllers;
 
 use Logeecom\Infrastructure\Data\DataTransferObject;
+use Packlink\BusinessLogic\DTO\ValidationError;
 use Packlink\WooCommerce\Components\Utility\Shop_Helper;
 
 /**
@@ -71,6 +72,10 @@ class Packlink_Base_Controller {
 
 		foreach ( $entities as $entity ) {
 			$response[] = $entity->toArray();
+		}
+
+		if ( ! empty( $entities[0] ) && $entities[0] instanceof ValidationError ) {
+			$response = array( 'messages' => $response );
 		}
 
 		$this->return_json( $response, $status );

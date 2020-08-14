@@ -9,6 +9,7 @@ namespace Packlink\WooCommerce\Controllers;
 
 use Exception;
 use Packlink\BusinessLogic\Controllers\RegistrationController;
+use Packlink\BusinessLogic\DTO\Exceptions\FrontDtoValidationException;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
@@ -63,6 +64,10 @@ class Packlink_Register_Controller extends Packlink_Base_Controller {
 		$payload['ecommerces'] = static::$ecommerce_identifiers;
 		try {
 			$status = $this->base_controller->register( $payload );
+		} catch ( FrontDtoValidationException $e ) {
+			$this->return_dto_entities_response( $e->getValidationErrors() );
+
+			return;
 		} catch ( Exception $e ) {
 			$this->return_json(
 				array(
