@@ -302,6 +302,7 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 		if ( $post && 'shop_order' === $post->post_type && 'raw' === $post->filter ) {
 			Script_Loader::load_js(
 				array(
+					'packlink/js/StateUUIDService.js',
 					'packlink/js/ResponseService.js',
 					'packlink/js/AjaxService.js',
 					'js/packlink-order-overview.js',

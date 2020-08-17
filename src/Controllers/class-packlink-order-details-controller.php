@@ -45,6 +45,7 @@ class Packlink_Order_Details_Controller extends Packlink_Base_Controller {
 		Script_Loader::load_css( array( 'css/packlink-order-details.css' ) );
 		Script_Loader::load_js(
 			array(
+				'packlink/js/StateUUIDService.js',
 				'packlink/js/ResponseService.js',
 				'packlink/js/AjaxService.js',
 				'js/packlink-order-details.js',

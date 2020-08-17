@@ -52,6 +52,7 @@ class Packlink_Auto_Test_Controller extends Packlink_Base_Controller {
 		);
 		Script_Loader::load_js(
 			array(
+				'packlink/js/StateUUIDService.js',
 				'packlink/js/ResponseService.js',
 				'packlink/js/TemplateService.js',
 				'packlink/js/AjaxService.js',

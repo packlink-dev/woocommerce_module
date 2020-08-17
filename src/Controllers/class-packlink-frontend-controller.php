@@ -79,6 +79,7 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 
 		Script_Loader::load_js(
 			array(
+				'packlink/js/StateUUIDService.js',
 				'packlink/js/AjaxService.js',
 				'packlink/js/UtilityService.js',
 				'packlink/js/TemplateService.js',

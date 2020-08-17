@@ -213,6 +213,7 @@ class Checkout_Handler {
 	public function load_scripts() {
 		Script_Loader::load_js(
 			array(
+				'packlink/js/StateUUIDService.js',
 				'packlink/js/ResponseService.js',
 				'packlink/js/AjaxService.js',
 				'js/location-picker/packlink-translations.js',
