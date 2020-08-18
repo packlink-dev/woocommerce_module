@@ -42,9 +42,7 @@ function get_transformed_pricing_policy( array $method ) {
 			$pricing_policy                = new ShippingPricePolicy();
 			$pricing_policy->rangeType     = ShippingPricePolicy::RANGE_PRICE_AND_WEIGHT;
 			$pricing_policy->fromWeight    = 0;
-			$pricing_policy->toWeight      = 10000;
 			$pricing_policy->fromPrice     = 0;
-			$pricing_policy->toPrice       = 1000;
 			$pricing_policy->pricingPolicy = ShippingPricePolicy::POLICY_PACKLINK_ADJUST;
 			$pricing_policy->increase      = $method['percentPricePolicy']['increase'];
 			$pricing_policy->changePercent = $method['percentPricePolicy']['amount'];
@@ -56,7 +54,7 @@ function get_transformed_pricing_policy( array $method ) {
 				$pricing_policy                = new ShippingPricePolicy();
 				$pricing_policy->rangeType     = ShippingPricePolicy::RANGE_WEIGHT;
 				$pricing_policy->fromWeight    = $policy['from'];
-				$pricing_policy->toWeight      = $policy['to'];
+				$pricing_policy->toWeight      = !empty( $policy['to'] ) ? $policy['to'] : null;
 				$pricing_policy->pricingPolicy = ShippingPricePolicy::POLICY_FIXED_PRICE;
 				$pricing_policy->fixedPrice    = $policy['amount'];
 				$result[]                      = $pricing_policy->toArray();
@@ -68,7 +66,7 @@ function get_transformed_pricing_policy( array $method ) {
 				$pricing_policy                = new ShippingPricePolicy();
 				$pricing_policy->rangeType     = ShippingPricePolicy::RANGE_PRICE;
 				$pricing_policy->fromPrice     = $policy['from'];
-				$pricing_policy->toPrice       = $policy['to'];
+				$pricing_policy->toPrice       = !empty( $policy['to'] ) ? $policy['to'] : null;
 				$pricing_policy->pricingPolicy = ShippingPricePolicy::POLICY_FIXED_PRICE;
 				$pricing_policy->fixedPrice    = $policy['amount'];
 				$result[]                      = $pricing_policy->toArray();
