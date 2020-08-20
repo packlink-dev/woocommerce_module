@@ -11,8 +11,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-use Logeecom\Infrastructure\ServiceRegister;
-use Packlink\WooCommerce\Components\Services\Config_Service;
 use Packlink\WooCommerce\Components\Utility\Script_Loader;
 use Packlink\WooCommerce\Components\Utility\Shop_Helper;
 use Packlink\WooCommerce\Components\Utility\Task_Queue;
@@ -24,18 +22,9 @@ use Packlink\WooCommerce\Components\Utility\Task_Queue;
  */
 class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	/**
-	 * Configuration service instance.
-	 *
-	 * @var Config_Service
-	 */
-	private $configuration;
-
-	/**
 	 * Packlink_Frontend_Controller constructor.
 	 */
 	public function __construct() {
-		$this->configuration = ServiceRegister::getService( Config_Service::CLASS_NAME );
-
 		Task_Queue::wakeup();
 	}
 
@@ -121,8 +110,8 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 		$locale   = Shop_Helper::get_user_locale();
 		$base_dir = __DIR__ . '/../resources/packlink/lang/';
 
-		$current_lang_filename = $base_dir . $locale . '.json';
-		$current_lang          = file_exists( $current_lang_filename ) ? file_get_contents( $current_lang_filename ) : ''; // phpcs:ignore
+		$current_lang_file = $base_dir . $locale . '.json';
+		$current_lang      = file_exists( $current_lang_file ) ? file_get_contents( $current_lang_file ) : '';
 
 		return array(
 			'default' => file_get_contents( $base_dir . 'en.json' ), // phpcs:ignore

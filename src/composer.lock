@@ -62,12 +62,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:logeecom/pl_module_core.git",
-                "reference": "d4f97ffb8d860612ce5f8025714dab05b220be59"
+                "reference": "fb2da0f409ebb31f77a6d58d02a5fdbec2b1088b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/logeecom/pl_module_core/zipball/d4f97ffb8d860612ce5f8025714dab05b220be59",
-                "reference": "d4f97ffb8d860612ce5f8025714dab05b220be59",
+                "url": "https://api.github.com/repos/logeecom/pl_module_core/zipball/fb2da0f409ebb31f77a6d58d02a5fdbec2b1088b",
+                "reference": "fb2da0f409ebb31f77a6d58d02a5fdbec2b1088b",
                 "shasum": ""
             },
             "require": {
@@ -104,7 +104,7 @@
                 "proprietary"
             ],
             "description": "Packlink integrations core library",
-            "time": "2020-08-17T11:49:19+00:00"
+            "time": "2020-08-20T09:42:38+00:00"
         },
         {
             "name": "setasign/fpdf",
@@ -1314,20 +1314,6 @@
                 "polyfill",
                 "portable"
             ],
-            "funding": [
-                {
-                    "url": "https://symfony.com/sponsor",
-                    "type": "custom"
-                },
-                {
-                    "url": "https://github.com/fabpot",
-                    "type": "github"
-                },
-                {
-                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
-                    "type": "tidelift"
-                }
-            ],
             "time": "2020-07-14T12:35:20+00:00"
         },
         {
@@ -1387,20 +1373,6 @@
             ],
             "description": "Symfony Yaml Component",
             "homepage": "https://symfony.com",
-            "funding": [
-                {
-                    "url": "https://symfony.com/sponsor",
-                    "type": "custom"
-                },
-                {
-                    "url": "https://github.com/fabpot",
-                    "type": "github"
-                },
-                {
-                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
-                    "type": "tidelift"
-                }
-            ],
             "time": "2020-07-23T09:37:51+00:00"
         },
         {
@@ -1469,6 +1441,5 @@
     "platform-dev": [],
     "platform-overrides": {
         "php": "5.5.9"
-    },
-    "plugin-api-version": "1.1.0"
+    }
 }

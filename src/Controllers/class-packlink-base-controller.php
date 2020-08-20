@@ -8,6 +8,7 @@
 namespace Packlink\WooCommerce\Controllers;
 
 use Logeecom\Infrastructure\Data\DataTransferObject;
+use Packlink\BusinessLogic\Configuration;
 use Packlink\BusinessLogic\DTO\ValidationError;
 use Packlink\WooCommerce\Components\Utility\Shop_Helper;
 
@@ -30,6 +31,7 @@ class Packlink_Base_Controller {
 	 * @param string $action Request action.
 	 */
 	public function process( $action = '' ) {
+		Configuration::setCurrentLanguage(Shop_Helper::get_user_locale());
 		if ( $this->is_internal ) {
 			$this->validate_internal_call();
 		}
