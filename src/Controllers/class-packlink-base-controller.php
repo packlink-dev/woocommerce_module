@@ -28,10 +28,10 @@ class Packlink_Base_Controller {
 	/**
 	 * Processes request. Reads 'action' parameter and calls action method if provided.
 	 *
-	 * @param string $action Request action.
+	 * @param string|null $action Request action.
 	 */
 	public function process( $action = '' ) {
-		Configuration::setCurrentLanguage(Shop_Helper::get_user_locale());
+		Configuration::setCurrentLanguage( Shop_Helper::get_user_locale() );
 		if ( $this->is_internal ) {
 			$this->validate_internal_call();
 		}
