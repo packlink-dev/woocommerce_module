@@ -45,10 +45,6 @@ vendor/bin/phpcs src/ --standard=WordPress --colors --severity=10
 
 Correct **all** errors reported but the code sniffer.
 
-### Generating translation files
-
-Use Loco Translate WP plugin for generating translation .pot files.
-
 ### Running the tests
 
 Tests are run on WordPress testing SDK. More on this can be found [here](https://make.wordpress.org/cli/handbook/plugin-unit-tests/).
