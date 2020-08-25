@@ -159,9 +159,41 @@ class Shop_Helper {
 			}
 
 			$dir = rtrim( $dir ) . '/';
-			file_put_contents( $dir . '.htaccess', 'deny from all' );
-			file_put_contents( $dir . 'index.html', '' );
+			file_put_contents( $dir . '.htaccess', 'deny from all' ); // phpcs:ignore
+			file_put_contents( $dir . 'index.html', '' ); // phpcs:ignore
 		}
+	}
+
+	/**
+	 * Retrieves user locale.
+	 *
+	 * @return string
+	 */
+	public static function get_user_locale() {
+		$parts  = explode( '_', get_user_locale() );
+		$locale = $parts[0];
+
+		return strtolower( $locale );
+	}
+
+	/**
+	 * Retrieves admin user data.
+	 *
+	 * @param int $user_id Admin user id.
+	 *
+	 * @return array | bool Returns admin user data as an array. Returns FALSE on failure.
+	 */
+	public static function get_admin_user_data( $user_id ) {
+		$user = get_user_by( 'id', $user_id );
+
+		if ( false === $user ) {
+			return $user;
+		}
+
+		return array(
+			'email' => $user->user_email,
+			'phone' => get_user_meta( $user_id, 'billing_phone' ),
+		);
 	}
 
 	/**
