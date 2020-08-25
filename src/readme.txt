@@ -3,7 +3,7 @@ Contributors: packlink
 Tags: woocommerce, shipment, shipping, packlink
 Requires at least: 4.7
 Requires PHP: 5.5
-Tested up to: 5.3.2
+Tested up to: 5.5
 Stable tag: 3.0.0
 License: LICENSE-2.0
 License URI: http://www.apache.org/licenses/LICENSE-2.0
