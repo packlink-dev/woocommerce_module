@@ -8,6 +8,7 @@
 namespace Packlink\WooCommerce\Controllers;
 
 use Automattic\WooCommerce\Admin\API\Reports\ParameterException;
+use Exception;
 use iio\libmergepdf\Merger;
 use Logeecom\Infrastructure\Logger\Logger;
 use Logeecom\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
@@ -105,7 +106,7 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 
 					if ( empty( $labels ) ) {
 						$params = array(
-							'order_id' => $post->ID
+							'order_id' => $post->ID,
 						);
 
 						$label_url = Shop_Helper::get_controller_url( 'Order_Overview', 'print_single_label', $params );
@@ -195,10 +196,12 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 				throw new OrderShipmentDetailsNotFound( 'Order details not found' );
 			}
 
-			$this->return_json( array(
-				'status'       => 'created',
-				'shipment_url' => $shipment_details->getShipmentUrl(),
-			) );
+			$this->return_json(
+				array(
+					'status'       => 'created',
+					'shipment_url' => $shipment_details->getShipmentUrl(),
+				)
+			);
 		} else {
 			$response = array(
 				'status'       => $draft_status->status,
@@ -225,7 +228,7 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 			exit;
 		}
 
-		$shipment_details = $this->get_order_shipment_details_service()->getDetailsByOrderId( ( string ) $order_id );
+		$shipment_details = $this->get_order_shipment_details_service()->getDetailsByOrderId( (string) $order_id );
 		if ( null === $shipment_details ) {
 			echo esc_html( __( 'Label is not yet available.', 'packlink-pro-shipping' ) );
 			exit;
@@ -263,7 +266,7 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 		$ids   = apply_filters( 'woocommerce_bulk_action_ids', array_reverse( array_map( 'absint', $ids ) ), $action, 'order' );
 		$links = array();
 		foreach ( $ids as $order_id ) {
-			$shipment_details = $this->get_order_shipment_details_service()->getDetailsByOrderId( ( string ) $order_id );
+			$shipment_details = $this->get_order_shipment_details_service()->getDetailsByOrderId( (string) $order_id );
 			if ( null !== $shipment_details ) {
 				$labels  = $this->get_labels_to_print( $shipment_details );
 				$links[] = $this->print_labels( $shipment_details->getReference(), $labels );
@@ -299,7 +302,9 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 		if ( $post && 'shop_order' === $post->post_type && 'raw' === $post->filter ) {
 			Script_Loader::load_js(
 				array(
-					'js/core/packlink-ajax-service.js',
+					'packlink/js/StateUUIDService.js',
+					'packlink/js/ResponseService.js',
+					'packlink/js/AjaxService.js',
 					'js/packlink-order-overview.js',
 					'js/packlink-order-overview-draft.js',
 				)
@@ -333,7 +338,7 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 					$this->return_file( $file );
 				}
 			}
-		} catch ( \Exception $e ) {
+		} catch ( Exception $e ) {
 			Logger::logError(
 				__( 'Unable to create bulk labels file', 'packlink-pro-shipping' ),
 				'Integration',

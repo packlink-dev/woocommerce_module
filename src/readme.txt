@@ -3,8 +3,8 @@ Contributors: packlink
 Tags: woocommerce, shipment, shipping, packlink
 Requires at least: 4.7
 Requires PHP: 5.5
-Tested up to: 5.3.2
-Stable tag: 2.2.4
+Tested up to: 5.5
+Stable tag: 3.0.0
 License: LICENSE-2.0
 License URI: http://www.apache.org/licenses/LICENSE-2.0
 
@@ -31,8 +31,6 @@ Connect your WooCommerce account with Packlink PRO.
 No download costs, installation or monthly fees - you pay purely for the shipments you book!
 
 **<a href="https://pro.packlink.es/cmslp/woocommerce" target="_blank" title="Subscription">Register free</a> in Packlink PRO and get started!**
-
-== Installation ==
 
 == Installation ==
 
@@ -68,82 +66,121 @@ This is how the WooCommerce integration with Packlink PRO works.
 
 Click <a href="https://support-pro.packlink.com/hc/es-es/articles/210158585" target="_blank" title="support">here</a> to get more information about the installation of the module.
 
+== Changelog ==
 
-== Upgrade Notice ==
+#### 3.0.0 - August 26, 2020
 
-= 2.2.4 =
-* Added support for the network activated WooCommerce plugin.
-* Added Hungary to the list of supported countries.
-* Fixed not saved drop-off point details on the order.
+**Updates**
 
-= 2.2.3 =
+- New module design with new pricing policy.
 
-* Added "Send with Packlink" button on order overview page.
+#### 2.2.4
 
-= 2.2.2 =
+**Updates**
 
-* Added top margin to drop-off button on checkout page.
+- Added support for the network activated WooCommerce plugin.
+- Added Hungary to the list of supported countries.
+- Fixed not saved drop-off point details on the order.
 
-= 2.2.1 =
+#### 2.2.3
 
-* Prevented export of order with no shippable products.
-* Fix order export if orders are not made with Packlink shipping method.
+**Updates**
 
-* Fixed the mechanism for updating information about created shipments.
+- Added "Send with Packlink" button on order overview page.
 
-= 2.1.2 =
+#### 2.2.2
 
-* Fixed the mechanism for updating information about created shipments.
+**Updates**
 
-= 2.1.1 =
+- Added top margin to drop-off button on checkout page.
 
-* Allow setting the lowest boundary for fixed price policies per shipping method.
-* Changed the update interval for getting shipment data from Packlink API.
-* Updated compatibility with the latest WP and WC versions
+#### 2.2.1
 
-= 2.1.0 =
+**Updates**
 
-* Added automatic re-configuration of the module based on WooCommerce and WordPress settings in cases when the module cannot run with the default shop and server settings.
+- Prevented export of order with no shippable products.
+- Fixed order export if orders are not made with Packlink shipping method.
+- Fixed the mechanism for updating information about created shipments.
 
-= 2.0.9 =
+#### 2.1.2
 
-* Fixed compatibility bug with the WooCommerce prior to 3.0.4 for order shipping and billing addresses.
+**Updates**
 
-= 2.0.8 =
+- Fixed the mechanism for updating information about created shipments.
 
-* Fixed compatibility bug with the PHP versions prior to 5.5.
+#### 2.1.1
 
-= 2.0.7 =
+**Updates**
 
-* Fixed compatibility bug with the WooCommerce prior to 3.2 for shipment methods that require drop-off location.
+- Allow setting the lowest boundary for fixed price policies per shipping method.
+- Changed the update interval for getting shipment data from Packlink API.
+- Updated compatibility with the latest WP and WC versions
 
-= 2.0.6 =
+#### 2.1.0
 
-* Fixed backward compatibility with the WooCommerce prior to 3.2
-* Fixed problem in updating shipping information from Packlink
+**Updates**
 
-= 2.0.5 =
+- Added automatic re-configuration of the module based on WooCommerce and WordPress settings in cases when the module cannot run with the default shop and server settings.
 
-* Added new registration links
-* Fixed some CSS issues
+#### 2.0.9
 
-= 2.0.4 =
+**Updates**
 
-* Added update message mechanism
-* Minor bug fixes
+- Fixed compatibility bug with the WooCommerce prior to 3.0.4 for order shipping and billing addresses.
 
-= 2.0.3 =
+#### 2.0.8
 
-* The Add-on configuration page is completely redesigned with advanced options
-* Added possibility for admin to enable only specific shipping services for end customers
-* Each shipping service can be additionally configured by admin - title, logo display, advanced pricing policy configuration
-* Enhanced integration with Packlink API
-* End customers can now select a specific drop-off point for such shipping services during the checkout process
-* Order list now has information about Packlink shipments and option to print shipping labels directly from the order list
-* Order details page now contains more information about each shipment
+**Updates**
 
-= 1.0.2 =
-* Tested up to: 4.9.1
+- Fixed compatibility bug with the PHP versions prior to 5.5.
 
-= 1.0 =
-* Initial version.
+#### 2.0.7
+
+**Updates**
+
+- Fixed compatibility bug with the WooCommerce prior to 3.2 for shipment methods that require drop-off location.
+
+#### 2.0.6
+
+**Updates**
+
+- Fixed backward compatibility with the WooCommerce prior to 3.2
+- Fixed problem in updating shipping information from Packlink
+
+#### 2.0.5
+
+**Updates**
+
+- Added new registration links
+- Fixed some CSS issues
+
+#### 2.0.4
+
+**Updates**
+
+- Added update message mechanism
+- Minor bug fixes
+
+#### 2.0.3
+
+**Updates**
+
+- The Add-on configuration page is completely redesigned with advanced options
+- Added possibility for admin to enable only specific shipping services for end customers
+- Each shipping service can be additionally configured by admin - title, logo display, advanced pricing policy configuration
+- Enhanced integration with Packlink API
+- End customers can now select a specific drop-off point for such shipping services during the checkout process
+- Order list now has information about Packlink shipments and option to print shipping labels directly from the order list
+- Order details page now contains more information about each shipment
+
+#### 1.0.2
+
+**Updates**
+
+- Tested up to: 4.9.1
+
+#### 1.0.0
+
+**Updates**
+
+- Initial version.

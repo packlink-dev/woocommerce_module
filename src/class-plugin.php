@@ -2,12 +2,6 @@
 
 /** @noinspection PhpUnusedParameterInspection */
 
-/**
- * Packlink PRO Shipping WooCommerce Integration.
- *
- * @package Packlink
- */
-
 namespace Packlink\WooCommerce;
 
 use Logeecom\Infrastructure\Logger\Logger;
@@ -15,6 +9,7 @@ use Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException;
 use Logeecom\Infrastructure\ServiceRegister;
 use Logeecom\Infrastructure\TaskExecution\Exceptions\TaskRunnerStatusStorageUnavailableException;
 use Packlink\BusinessLogic\ShippingMethod\Interfaces\ShopShippingMethodService;
+use Packlink\BusinessLogic\ShippingMethod\Utility\ShipmentStatus;
 use Packlink\WooCommerce\Components\Bootstrap_Component;
 use Packlink\WooCommerce\Components\Checkout\Checkout_Handler;
 use Packlink\WooCommerce\Components\Order\Paid_Order_Handler;
@@ -433,8 +428,9 @@ class Plugin {
 			$config_service->setTaskRunnerStatus( '', null );
 			$config_service->setOrderStatusMappings(
 				array(
-					'processing' => 'wc-processing',
-					'delivered'  => 'wc-completed',
+					ShipmentStatus::STATUS_ACCEPTED  => 'wc-processing',
+					ShipmentStatus::STATUS_DELIVERED => 'wc-completed',
+					ShipmentStatus::STATUS_CANCELLED => 'wc-cancelled'
 				)
 			);
 		} catch ( TaskRunnerStatusStorageUnavailableException $e ) {
@@ -483,9 +479,7 @@ class Plugin {
 
 	/**
 	 * Updates plugin on single WordPress site.
-	 *
-	 * @throws RepositoryNotRegisteredException
-	 */
+	 * `     */
 	private function update_plugin_on_single_site() {
 		$previous_version = $this->get_config_service()->get_database_version();
 

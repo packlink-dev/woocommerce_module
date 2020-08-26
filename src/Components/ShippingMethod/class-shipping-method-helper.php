@@ -7,6 +7,7 @@
 
 namespace Packlink\WooCommerce\Components\ShippingMethod;
 
+use Logeecom\Infrastructure\ORM\Entity;
 use Logeecom\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
 use Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException;
 use Logeecom\Infrastructure\ORM\QueryFilter\QueryFilter;
@@ -16,6 +17,9 @@ use Packlink\BusinessLogic\ShippingMethod\Models\ShippingMethod;
 use Packlink\BusinessLogic\ShippingMethod\ShippingMethodService;
 use Packlink\BusinessLogic\Utility\Php\Php55;
 use Packlink\WooCommerce\Components\Services\Config_Service;
+use WC_Order;
+use WC_Shipping_Method;
+use WC_Shipping_Zones;
 
 /**
  * Class Shipping_Method_Helper
@@ -29,16 +33,34 @@ class Shipping_Method_Helper {
 	const DROP_OFF_EXTRA = '_packlink_drop_off_extra';
 
 	/**
+	 * Retrieves map for a given shipping method id.
+	 *
+	 * @param int $method_id Packlink shipping method id.
+	 *
+	 * @return Entity[]
+	 * @throws QueryFilterInvalidParamException When query filter invalid.
+	 * @throws RepositoryNotRegisteredException When repository not registered.
+	 */
+	public static function get_shipping_method_map_for_packlink_shipping_method( $method_id ) {
+		/** @noinspection PhpUnhandledExceptionInspection */
+		$repository = RepositoryRegistry::getRepository( Shipping_Method_Map::CLASS_NAME );
+		$query      = new QueryFilter();
+		$query->where( 'packlinkShippingMethodId', '=', $method_id );
+
+		return $repository->select( $query );
+	}
+
+	/**
 	 * Returns Packlink shipping method.
 	 *
-	 * @param \WC_Order $wc_order WooCommerce order.
+	 * @param WC_Order $wc_order WooCommerce order.
 	 *
 	 * @return ShippingMethod Returns Packlink shipping method.
 	 *
 	 * @throws QueryFilterInvalidParamException
 	 * @throws RepositoryNotRegisteredException
 	 */
-	public static function get_packlink_shipping_method_from_order( \WC_Order $wc_order ) {
+	public static function get_packlink_shipping_method_from_order( WC_Order $wc_order ) {
 		$shipping = $wc_order->get_shipping_methods();
 		if ( empty( $shipping ) ) {
 			return null;
@@ -119,7 +141,7 @@ class Shipping_Method_Helper {
 		$count = 0;
 
 		foreach ( self::get_all_shipping_zone_ids() as $zone_id ) {
-			$zone = \WC_Shipping_Zones::get_zone( $zone_id );
+			$zone = WC_Shipping_Zones::get_zone( $zone_id );
 			if ( ! $zone ) {
 				continue;
 			}
@@ -141,7 +163,7 @@ class Shipping_Method_Helper {
 		global $wpdb;
 
 		foreach ( self::get_all_shipping_zone_ids() as $zone_id ) {
-			$zone = \WC_Shipping_Zones::get_zone( $zone_id );
+			$zone = WC_Shipping_Zones::get_zone( $zone_id );
 			if ( ! $zone ) {
 				continue;
 			}
@@ -149,11 +171,11 @@ class Shipping_Method_Helper {
 			/**
 			 * WooCommerce shipping method.
 			 *
-			 * @var \WC_Shipping_Method $item
+			 * @var WC_Shipping_Method $item
 			 */
 			foreach ( $zone->get_shipping_methods( true ) as $item ) {
 				if ( ( Packlink_Shipping_Method::PACKLINK_SHIPPING_METHOD !== $item->id )
-				     && $wpdb->update( "{$wpdb->prefix}woocommerce_shipping_zone_methods", array( 'is_enabled' => 0 ), array( 'instance_id' => absint( $item->instance_id ) ) )
+					 && $wpdb->update( "{$wpdb->prefix}woocommerce_shipping_zone_methods", array( 'is_enabled' => 0 ), array( 'instance_id' => absint( $item->instance_id ) ) )
 				) {
 					do_action( 'woocommerce_shipping_zone_method_status_toggled', $item->instance_id, $item->id, $zone_id, 0 );
 				}
@@ -183,7 +205,7 @@ class Shipping_Method_Helper {
 	 * @return int[] Zone ids.
 	 */
 	public static function get_all_shipping_zone_ids() {
-		$all_zones = \WC_Shipping_Zones::get_zones();
+		$all_zones = WC_Shipping_Zones::get_zones();
 		$zone_ids  = Php55::arrayColumn( $all_zones, 'zone_id' );
 		// Locations not covered by other zones.
 		if ( ! in_array( 0, $zone_ids, true ) ) {

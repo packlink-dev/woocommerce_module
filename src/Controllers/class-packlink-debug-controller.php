@@ -14,7 +14,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 use Logeecom\Infrastructure\Configuration\Configuration;
 use Logeecom\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
 use Logeecom\Infrastructure\ServiceRegister;
+use Packlink\BusinessLogic\Controllers\DebugController;
 use Packlink\WooCommerce\Components\Utility\Debug_Helper;
+use Packlink\WooCommerce\Components\Utility\Shop_Helper;
 
 /**
  * Class Packlink_Debug_Controller
@@ -24,6 +26,44 @@ use Packlink\WooCommerce\Components\Utility\Debug_Helper;
 class Packlink_Debug_Controller extends Packlink_Base_Controller {
 
 	const SYSTEM_INFO_FILE_NAME = 'packlink-debug-data.zip';
+
+	/**
+	 * Debug controller.
+	 *
+	 * @var DebugController
+	 */
+	private $controller;
+
+	/**
+	 * Packlink_Debug_Controller constructor.
+	 */
+	public function __construct() {
+		$this->controller = new DebugController();
+	}
+
+	/**
+	 * Retrieves debug status.
+	 */
+	public function get_status() {
+		$status = array(
+			'status'      => $this->controller->getStatus(),
+			'downloadUrl' => Shop_Helper::get_controller_url( 'Debug', 'download' ),
+		);
+
+		$this->return_json( $status );
+	}
+
+	/**
+	 * Sets debug status.
+	 */
+	public function set_status() {
+		$this->validate( 'yes', true );
+		$raw     = $this->get_raw_input();
+		$payload = json_decode( $raw, true );
+		if ( array_key_exists( 'status', $payload ) ) {
+			$this->controller->setStatus( $payload['status'] );
+		}
+	}
 
 	/**
 	 * Starts download of debug information.
@@ -56,36 +96,40 @@ class Packlink_Debug_Controller extends Packlink_Base_Controller {
 		$config = ServiceRegister::getService( Configuration::CLASS_NAME );
 		$url    = $config->getAsyncProcessUrl( 'test' );
 
-		$curl = curl_init();
+		/** @noinspection PhpComposerExtensionStubsInspection */
+		$curl    = curl_init();
 		$verbose = fopen( 'php://temp', 'wb+' );
 		/** @noinspection CurlSslServerSpoofingInspection */
+		/** @noinspection PhpComposerExtensionStubsInspection */
 		curl_setopt_array(
 			$curl,
 			array(
-				CURLOPT_URL             => $url,
-				CURLOPT_RETURNTRANSFER  => true,
-				CURLOPT_SSL_VERIFYHOST  => false,
-				CURLOPT_SSL_VERIFYPEER  => false,
-				CURLOPT_HEADER          => true,
+				CURLOPT_URL            => $url,
+				CURLOPT_RETURNTRANSFER => true,
+				CURLOPT_SSL_VERIFYHOST => false,
+				CURLOPT_SSL_VERIFYPEER => false,
+				CURLOPT_HEADER         => true,
 				// CURLOPT_SSLVERSION      => CURL_SSLVERSION_TLSv1_0,
 				// CURLOPT_HTTP_VERSION    => CURL_HTTP_VERSION_1_1,
-				CURLOPT_FOLLOWLOCATION  => true,
-				CURLOPT_TIMEOUT         => 2,
-				CURLOPT_CUSTOMREQUEST   => 'POST',
-				CURLOPT_VERBOSE         => true,
-				CURLOPT_STDERR          => $verbose,
+				CURLOPT_FOLLOWLOCATION => true,
+				CURLOPT_TIMEOUT        => 2,
+				CURLOPT_CUSTOMREQUEST  => 'POST',
+				CURLOPT_VERBOSE        => true,
+				CURLOPT_STDERR         => $verbose,
 				// CURLOPT_SSL_CIPHER_LIST => 'TLSv1.2',
-				CURLOPT_HTTPHEADER      => array(
+				CURLOPT_HTTPHEADER     => array(
 					'Cache-Control: no-cache',
 				),
 			)
 		);
 
+		/** @noinspection PhpComposerExtensionStubsInspection */
 		$response = curl_exec( $curl );
 
 		rewind( $verbose );
 		echo '<pre>', stream_get_contents( $verbose );
 
+		/** @noinspection PhpComposerExtensionStubsInspection */
 		curl_close( $curl );
 
 		echo $response;

@@ -51,19 +51,17 @@ class Version_File_Reader {
 	}
 
 	/**
-	 * Read next file from list of files for execution
+	 * Execute next migration script file from list of files for execution
 	 *
-	 * @return mixed|null
+	 * @return void
 	 */
-	public function read_next() {
-		$file_content = null;
-
-		if ( $this->has_next() ) {
-			$file_content = include $this->migrations_directory . $this->sorted_files_for_execution[ $this->pointer ];
-			$this->pointer ++;
+	public function execute() {
+		if ( ! $this->has_next() ) {
+			return;
 		}
 
-		return $file_content;
+		include $this->migrations_directory . $this->sorted_files_for_execution[ $this->pointer ];
+		$this->pointer ++;
 	}
 
 	/**

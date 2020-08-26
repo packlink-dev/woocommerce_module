@@ -56,6 +56,20 @@ class Packlink_Index extends Packlink_Base_Controller {
 			'Debug',
 			'Auto_Test',
 			'Auto_Configure',
+			'Module_State',
+			'Login',
+			'Regions',
+			'Register',
+			'Onboarding_State',
+			'Parcel',
+			'Warehouse',
+			'My_Shipping_Services',
+			'Shop_Shipping_Methods',
+			'Configuration',
+			'Order_Status',
+			'Shipping_Service',
+			'Edit_Service',
+			'Shipping_Zones',
 		);
 
 		return in_array( $controller_name, $allowed_controllers, true );

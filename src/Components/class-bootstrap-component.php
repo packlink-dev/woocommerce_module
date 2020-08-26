@@ -23,6 +23,7 @@ use Logeecom\Infrastructure\TaskExecution\QueueItem;
 use Packlink\BusinessLogic\BootstrapComponent;
 use Packlink\BusinessLogic\Order\Interfaces\ShopOrderService;
 use Packlink\BusinessLogic\OrderShipmentDetails\Models\OrderShipmentDetails;
+use Packlink\BusinessLogic\Registration\RegistrationInfoService;
 use Packlink\BusinessLogic\Scheduler\Models\Schedule;
 use Packlink\BusinessLogic\ShipmentDraft\Models\OrderSendDraftTaskMap;
 use Packlink\BusinessLogic\ShippingMethod\Interfaces\ShopShippingMethodService;
@@ -33,6 +34,7 @@ use Packlink\WooCommerce\Components\Repositories\Base_Repository;
 use Packlink\WooCommerce\Components\Repositories\Queue_Item_Repository;
 use Packlink\WooCommerce\Components\Services\Config_Service;
 use Packlink\WooCommerce\Components\Services\Logger_Service;
+use Packlink\WooCommerce\Components\Services\Registration_Info_Service;
 use Packlink\WooCommerce\Components\ShippingMethod\Shipping_Method_Map;
 use Packlink\WooCommerce\Components\ShippingMethod\Shop_Shipping_Method_Service;
 
@@ -87,6 +89,14 @@ class Bootstrap_Component extends BootstrapComponent {
 			HttpClient::CLASS_NAME,
 			static function () {
 				return new CurlHttpClient();
+			}
+		);
+
+		ServiceRegister::registerService(
+			RegistrationInfoService::CLASS_NAME,
+			static function () {
+				return new Registration_Info_Service();
+
 			}
 		);
 	}
