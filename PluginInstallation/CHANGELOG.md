@@ -3,12 +3,24 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [v3.0.1](https://github.com/logeecom/pl_woocommerce_module/compare/v3.0.0...v3.0.1) - 2020-08-28
+### Changed
+- Fix changing shop order status upon shipment status update.
+
+## [v3.0.0](https://github.com/logeecom/pl_woocommerce_module/compare/v2.2.4...v3.0.0) - 2020-08-26
+###
+- Added an option for selecting specific shipping zones for a shipping service
+
+### Changed
+- Applied the new UI design
+- Changed pricing policies management
+
 ## [v2.2.4](https://github.com/logeecom/pl_woocommerce_module/compare/v2.2.3...v2.2.4) - 2020-06-29
 ### Added
 - Added support for the network activated WooCommerce plugin.
 ### Changed
 - Added Hungary to the list of supported countries.
-- Updated to breaking changes regarding queue item priority.
+- Updated to breaking changes regarding the queue item priority.
 - Fixed not saved drop-off point details on the order.
 
 ## [v2.2.3](https://github.com/logeecom/pl_woocommerce_module/compare/v2.2.2...v2.2.3) - 2020-06-11
@@ -83,7 +95,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [v2.0.3](https://github.com/logeecom/pl_woocommerce_module/compare/v2.0.1...v2.0.2) - 2019-07-04
 ### Changed
-- Replaced the core PDF merge library with the one that was acceptable for WordPress
+- Replaced the core PDF merge library with the one acceptable for WordPress
 - Prepared the code for the release
 
 ## [v2.0.2](https://github.com/logeecom/pl_woocommerce_module/compare/v2.0.2...v2.0.1) - 2019-06-01
