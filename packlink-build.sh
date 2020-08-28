@@ -1,17 +1,13 @@
 #!/bin/bash
-
-echo
-echo -e "\e[48;5;124m ALWAYS RUN UNIT TESTS AND CHECK CODING STANDARDS BEFORE CREATING DEPLOYMENT PACKAGE! \e[0m"
-echo
-sleep 2
+set -e
 
 # Cleanup any leftovers
-echo -e "\e[32mCleaning up...\e[39m"
+echo "\e[32mCleaning up...\e[39m"
 rm -rf ./packlink-pro-shipping.zip
 rm -rf ./packlink-pro-shipping
 
 # Create deployment source
-echo -e "\e[32mSTEP 1:\e[39m Copying plugin source..."
+echo "\e[32mSTEP 1:\e[39m Copying plugin source..."
 mkdir packlink-pro-shipping
 cp -r ./src/* packlink-pro-shipping
 rm -rf ./packlink-pro-shipping/tests
@@ -20,13 +16,13 @@ rm -rf ./packlink-pro-shipping/phpunit.xml
 rm -rf ./packlink-pro-shipping/vendor
 
 # Ensure proper composer dependencies
-echo -e "\e[32mSTEP 2:\e[39m Installing composer dependencies..."
+echo "\e[32mSTEP 2:\e[39m Installing composer dependencies..."
 cd packlink-pro-shipping
 composer install --no-dev
 cd ..
 
 # Remove unnecessary files from final release archive
-echo -e "\e[32mSTEP 3:\e[39m Removing unnecessary files from final release archive..."
+echo "\e[32mSTEP 3:\e[39m Removing unnecessary files from final release archive..."
 rm -rf packlink-pro-shipping/vendor/packlink/integration-core/.git
 rm -rf packlink-pro-shipping/vendor/packlink/integration-core/.gitignore
 rm -rf packlink-pro-shipping/vendor/packlink/integration-core/.idea
@@ -42,7 +38,7 @@ rm -rf packlink-pro-shipping/vendor/setasign/fpdf/doc
 rm -rf packlink-pro-shipping/vendor/setasign/fpdf/tutorial
 
 # Copy resources
-echo -e "\e[32mSTEP 4:\e[39m Copying resources from core to the integration..."
+echo "\e[32mSTEP 4:\e[39m Copying resources from core to the integration..."
 root="$PWD";
 source="$PWD/packlink-pro-shipping/vendor/packlink/integration-core/src/BusinessLogic/Resources";
 destination="$PWD/packlink-pro-shipping/resources";
@@ -65,7 +61,7 @@ mv ./locationPicker.css ./packlink-location-picker.css
 cd "${root}"
 
 # get plugin version
-echo -e "\e[32mSTEP 5:\e[39m Reading module version..."
+echo "\e[32mSTEP 5:\e[39m Reading module version..."
 
 version="$1"
 if [ "$version" = "" ]; then
@@ -78,24 +74,9 @@ if [ "$version" = "" ]; then
     fi
 fi
 
+# add version to artifact
+echo "$1" > ./packlink-pro-shipping/release.version
+
 # Create plugin archive
-echo -e "\e[32mSTEP 6:\e[39m Creating new archive..."
+echo "\e[32mSTEP 6:\e[39m Creating new archive..."
 zip -r -q  packlink-pro-shipping.zip ./packlink-pro-shipping
-
-if [ "$version" != "" ]; then
-    if [ ! -d ./PluginInstallation/ ]; then
-        mkdir ./PluginInstallation/
-    fi
-    if [ ! -d ./PluginInstallation/"$version"/ ]; then
-        mkdir ./PluginInstallation/"$version"/
-    fi
-
-    mv ./packlink-pro-shipping.zip ./PluginInstallation/${version}/
-    echo -e "\e[34;5;40mSUCCESS!\e[0m"
-    echo -e "\e[93mNew release created under: $PWD/PluginInstallation/$version"
-else
-    echo -e "\e[40;5;34mSUCCESS!\e[0m"
-    echo -e "\e[93mNew plugin archive created: $PWD/packlink-pro-shipping.zip"
-fi
-
-rm -fR ./packlink-pro-shipping
