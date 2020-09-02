@@ -68,7 +68,7 @@ Click <a href="https://support-pro.packlink.com/hc/es-es/articles/210158585" tar
 
 == Changelog ==
 
-#### 3.0.2
+#### 3.0.2 - September 02, 2020
 
 **Updates**
 
