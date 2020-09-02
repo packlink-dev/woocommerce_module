@@ -4,7 +4,7 @@ Tags: woocommerce, shipment, shipping, packlink
 Requires at least: 4.7
 Requires PHP: 5.5
 Tested up to: 5.5
-Stable tag: 3.0.1
+Stable tag: 3.0.2
 License: LICENSE-2.0
 License URI: http://www.apache.org/licenses/LICENSE-2.0
 
@@ -68,12 +68,17 @@ Click <a href="https://support-pro.packlink.com/hc/es-es/articles/210158585" tar
 
 == Changelog ==
 
+#### 3.0.2 - September 02, 2020
+
+**Updates**
+
+- Fix translation issue in italian.
+
 #### 3.0.1
 
 **Updates**
 
 - Fix changing shop order status upon shipment status update.
-
 
 #### 3.0.0 - August 26, 2020
 
