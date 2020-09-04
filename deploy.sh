@@ -51,18 +51,18 @@ if [ ! -d "$destination/js/location-picker" ]; then
   mkdir "$destination/js/location-picker"
 fi
 
-cp -r "${source}/LocationPicker/js/*" "${destination}/js/location-picker"
-cp -r "${source}/LocationPicker/css/*" "${destination}/css"
+cp -r ${source}/LocationPicker/js/* ${destination}/js/location-picker
+cp -r ${source}/LocationPicker/css/* ${destination}/css
 
-cd "${destination}/js/location-picker"
+cd ${destination}/js/location-picker
 for file in ./* ; do
-    mv "$file" "$(echo "$file"|sed -e 's/^.\//packlink\-/' -e 's/\([A-Z]\)/\-\L\1/g' -e 's/\-\-/\-/')"
+    mv "$file" "$(echo $file|sed -e 's/^.\//packlink\-/' -e 's/\([A-Z]\)/\-\L\1/g' -e 's/\-\-/\-/')"
 done
 
-cd "${destination}/css"
+cd ${destination}/css
 mv ./locationPicker.css ./packlink-location-picker.css
 
-cd "${root}"
+cd ${root}
 
 # get plugin version
 echo -e "\e[32mSTEP 5:\e[39m Reading module version..."
@@ -72,7 +72,7 @@ if [ "$version" = "" ]; then
     version=$(php -r "echo json_decode(file_get_contents('src/composer.json'), true)['version'];")
     if [ "$version" = "" ]; then
         echo "Please enter new plugin version (leave empty to use root folder as destination) [ENTER]:"
-        read -r version
+        read version
     else
         echo -e "\e[35mVersion read from the composer.json file: $version\e[39m"
     fi
