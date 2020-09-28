@@ -111,7 +111,7 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 		$base_dir = __DIR__ . '/../resources/packlink/lang/';
 
 		$current_lang_file = $base_dir . $locale . '.json';
-		$current_lang      = file_exists( $current_lang_file ) ? file_get_contents( $current_lang_file ) : '';
+		$current_lang      = file_exists( $current_lang_file ) ? file_get_contents( $current_lang_file ) : '{}';
 
 		return array(
 			'default' => file_get_contents( $base_dir . 'en.json' ), // phpcs:ignore
