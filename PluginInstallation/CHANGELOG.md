@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [v3.0.4](https://github.com/logeecom/pl_woocommerce_module/compare/v3.0.3...v3.0.4) - 2020-09-28
+### Changed
+- Check whether Packlink object is defined before initializing checkout script.
+- Fix error when plugin translations for a language don't exist.
+
 ## [v3.0.3](https://github.com/logeecom/pl_woocommerce_module/compare/v3.0.2...v3.0.3) - 2020-09-04
 ### Changed
 - Fixed location picker issue.
