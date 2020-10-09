@@ -40,7 +40,7 @@
     }
   },
   "scripts": {
-    "post-update-cmd": "./copy-resources",
-    "post-install-cmd": "./copy-resources"
+    "post-update-cmd": "php ./copy-resources.php",
+    "post-install-cmd": "php ./copy-resources.php"
   }
 }
