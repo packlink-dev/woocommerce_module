@@ -47,8 +47,8 @@ if [ ! -d "$destination/js/location-picker" ]; then
   mkdir "$destination/js/location-picker"
 fi
 
-cp -r "${source}/LocationPicker/js/*" "${destination}/js/location-picker"
-cp -r "${source}/LocationPicker/css/*" "${destination}/css"
+cp -r "${source}/LocationPicker/js/"* "${destination}/js/location-picker"
+cp -r "${source}/LocationPicker/css/"* "${destination}/css"
 
 cd "${destination}/js/location-picker"
 for file in ./* ; do
