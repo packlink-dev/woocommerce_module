@@ -15,6 +15,7 @@ use Logeecom\Infrastructure\ORM\QueryFilter\QueryFilter;
 use Logeecom\Infrastructure\ORM\RepositoryRegistry;
 use Logeecom\Infrastructure\ServiceRegister;
 use Logeecom\Infrastructure\Singleton;
+use Packlink\BusinessLogic\Controllers\AnalyticsController;
 use Packlink\BusinessLogic\ShippingMethod\Interfaces\ShopShippingMethodService;
 use Packlink\BusinessLogic\ShippingMethod\Models\ShippingMethod;
 use Packlink\BusinessLogic\ShippingMethod\Models\ShippingPricePolicy;
@@ -132,6 +133,7 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 	 */
 	public function disableShopServices() {
 		Shipping_Method_Helper::disable_shop_shipping_methods();
+		AnalyticsController::sendOtherServicesDisabledEvent();
 
 		return true;
 	}
