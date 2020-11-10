@@ -54,7 +54,7 @@ class TestQueueItemRepository extends AbstractGenericQueueItemRepositoryTest {
 	 * Cleans up all storage services used by repositories
 	 */
 	public function cleanUpStorage() {
-		return null;
+		self::tearDownAfterClass();
 	}
 
 	/**
@@ -80,6 +80,7 @@ class TestQueueItemRepository extends AbstractGenericQueueItemRepositoryTest {
             `index_5` VARCHAR(100),
             `index_6` VARCHAR(100),
             `index_7` VARCHAR(100),
+            `index_8` VARCHAR(100),
             `data` LONGTEXT,
             PRIMARY KEY (`id`),
             INDEX (index_1, index_2, index_3, index_4, index_5, index_6, index_7)
