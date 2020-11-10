@@ -68,6 +68,14 @@ Click <a href="https://support-pro.packlink.com/hc/es-es/articles/210158585" tar
 
 == Changelog ==
 
+#### 3.0.6 - November 10, 2020
+
+**Updates**
+
+- Add missing HERMES and DPD carrier logos.
+- Fix warnings on the cart page.
+- Fix setting warehouse postal code and city from the module.
+
 #### 3.0.5 - October 21, 2020
 
 **Updates**

@@ -3,9 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
-## [v3.0.6](https://github.com/logeecom/pl_woocommerce_module/compare/v3.0.5...v3.0.6) - 2020-11-09
+## [v3.0.6](https://github.com/logeecom/pl_woocommerce_module/compare/v3.0.5...v3.0.6) - 2020-11-10
 ### Changed
 - Update to the latest Core 3.0.6.
+- Fix warnings on the cart page.
 
 ## [v3.0.5](https://github.com/logeecom/pl_woocommerce_module/compare/v3.0.4...v3.0.5) - 2020-10-21
 ### Changed
