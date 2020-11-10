@@ -9,41 +9,74 @@ executors:
   test_builder_56:
     docker:
       - image: php:5.6
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_TOKEN
       - image: mysql:5.6
         environment:
           MYSQL_ROOT_PASSWORD: root
         name: mysql.service
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_TOKEN
   test_builder_70:
     docker:
       - image: php:7.0
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_TOKEN
       - image: mysql:5.6
         environment:
           MYSQL_ROOT_PASSWORD: root
         name: mysql.service
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_TOKEN
   test_builder_71:
     docker:
       - image: php:7.1
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_TOKEN
       - image: mysql:5.6
         environment:
           MYSQL_ROOT_PASSWORD: root
         name: mysql.service
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_TOKEN
   test_builder_72:
     docker:
       - image: php:7.2
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_TOKEN
       - image: mysql:5.6
         environment:
           MYSQL_ROOT_PASSWORD: root
         name: mysql.service
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_TOKEN
   test_builder_73:
     docker:
       - image: php:7.3
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_TOKEN
       - image: mysql:5.6
         environment:
           MYSQL_ROOT_PASSWORD: root
         name: mysql.service
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_TOKEN
   deployer:
     docker:
       - image: circleci/php:7.3
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_TOKEN
 
 jobs:
   php_test_56:
@@ -265,6 +298,10 @@ workflows:
   woocommerce_module:
     jobs:
       - php_test_56: &test_php
+          context:
+            - packlink-dockerhub
+            - packlink-gcr-publish
+            - packlink-github
           filters:
             branches:
               ignore: master
@@ -273,6 +310,10 @@ workflows:
       - php_test_72: *test_php
       - php_test_73: *test_php
       - build_publish:
+          context:
+            - packlink-dockerhub
+            - packlink-gcr-publish
+            - packlink-github
           filters:
             branches:
               ignore:
