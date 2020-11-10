@@ -29,7 +29,7 @@ class Packlink_Shipping_Method extends \WC_Shipping_Method {
 	/**
 	 * Fully qualified name of this interface.
 	 */
-	const CLASS_NAME = __CLASS__;
+	const CLASS_NAME               = __CLASS__;
 	const PACKLINK_SHIPPING_METHOD = 'packlink_shipping_method';
 
 	/**
@@ -191,7 +191,7 @@ class Packlink_Shipping_Method extends \WC_Shipping_Method {
 	 * Adds specific cost for shipping class, if set.
 	 *
 	 * @param array $rate
-	 * @param $package
+	 * @param       $package
 	 */
 	private function add_shipping_class_cost( array &$rate, $package ) {
 		$shipping_classes = WC()->shipping->get_shipping_classes();
@@ -229,7 +229,7 @@ class Packlink_Shipping_Method extends \WC_Shipping_Method {
 	 * Evaluate a cost from a sum/string.
 	 *
 	 * @param string $sum
-	 * @param array $args
+	 * @param array  $args
 	 *
 	 * @return mixed
 	 */
@@ -308,7 +308,7 @@ class Packlink_Shipping_Method extends \WC_Shipping_Method {
 	/**
 	 * Builds parcels out of shipping packages.
 	 *
-	 * @param array $package Packages.
+	 * @param array      $package Packages.
 	 * @param ParcelInfo $default Default parcel.
 	 *
 	 * @return Package[] Array of parcels.
@@ -326,10 +326,18 @@ class Packlink_Shipping_Method extends \WC_Shipping_Method {
 			for ( $i = 0; $i < $item['quantity']; $i ++ ) {
 				$parcel = new Package();
 
-				$parcel->weight = wc_get_weight( $product->get_weight(), 'kg' ) ?: $default->weight;
-				$parcel->height = wc_get_dimension( $product->get_height(), 'cm' ) ?: $default->height;
-				$parcel->width  = wc_get_dimension( $product->get_width(), 'cm' ) ?: $default->width;
-				$parcel->length = wc_get_dimension( $product->get_length(), 'cm' ) ?: $default->length;
+				$parcel->weight = is_numeric( $product->get_weight() )
+					? wc_get_weight( (float) $product->get_weight(), 'kg' )
+					: $default->weight;
+				$parcel->height = is_numeric( $product->get_height() )
+					? wc_get_dimension( (float) $product->get_height(), 'cm' )
+					: $default->height;
+				$parcel->width  = is_numeric( $product->get_width() )
+					? wc_get_dimension( (float) $product->get_width(), 'cm' )
+					: $default->width;
+				$parcel->length = is_numeric( $product->get_length() )
+					? wc_get_dimension( (float) $product->get_length(), 'cm' )
+					: $default->length;
 
 				$parcels[] = $parcel;
 			}
@@ -341,7 +349,7 @@ class Packlink_Shipping_Method extends \WC_Shipping_Method {
 	/**
 	 * Loads shipping costs.
 	 *
-	 * @param array $package Package.
+	 * @param array          $package Package.
 	 * @param ShippingMethod $shipping_method Shipping method.
 	 *
 	 * @return bool Success indicator.
