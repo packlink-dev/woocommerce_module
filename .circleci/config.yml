@@ -300,7 +300,7 @@ workflows:
       - php_test_56: &test_php
           context:
             - packlink-dockerhub
-            - packlink-gcr-publish
+            - packlink-cdn-publish
             - packlink-github
           filters:
             branches:
@@ -312,7 +312,7 @@ workflows:
       - build_publish:
           context:
             - packlink-dockerhub
-            - packlink-gcr-publish
+            - packlink-cdn-publish
             - packlink-github
           filters:
             branches:
