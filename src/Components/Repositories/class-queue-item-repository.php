@@ -79,15 +79,9 @@ class Queue_Item_Repository extends Base_Repository implements QueueItemReposito
 	            INNER JOIN `$this->table_name` as queueTable
 	            ON queueView.id = queueTable.id";
 
-		$result   = $this->db->get_results( $sql, ARRAY_A );
-		$entities = $this->translateToEntities( $result );
+		$result = $this->db->get_results( $sql, ARRAY_A );
 
-		return array_filter(
-			$entities,
-			function ( QueueItem $item ) {
-				return $item->getPriority() === Priority::NORMAL;
-			}
-		);
+		return $this->translateToEntities( $result );
 	}
 
 	/**
