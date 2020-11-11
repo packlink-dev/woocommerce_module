@@ -1,6 +1,8 @@
 <?php
 
 use Logeecom\Infrastructure\Logger\LoggerConfiguration;
+use Logeecom\Infrastructure\ORM\RepositoryRegistry;
+use Logeecom\Infrastructure\TaskExecution\Interfaces\Priority;
 use Logeecom\Tests\Infrastructure\ORM\AbstractGenericQueueItemRepositoryTest;
 use Packlink\WooCommerce\Components\Repositories\Queue_Item_Repository;
 use Packlink\WooCommerce\Components\Utility\Database;
@@ -21,6 +23,18 @@ class TestQueueItemRepository extends AbstractGenericQueueItemRepositoryTest {
 		parent::setUp();
 
 		$this->createTestTable();
+	}
+
+	/**
+	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\RepositoryClassException
+	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException
+	 */
+	public function testFindOldestQueuedItems()
+	{
+		$this->insertQueueItems();
+		$repository = RepositoryRegistry::getQueueItemRepository();
+
+		$this->assertCount(2, $repository->findOldestQueuedItems(Priority::NORMAL));
 	}
 
 	/**
