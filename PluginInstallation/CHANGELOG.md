@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [v3.0.7](https://github.com/logeecom/pl_woocommerce_module/compare/v3.0.6...v3.0.7) - 2020-11-11
+### Changed
+- Revert change of `findOldestQueuedItems` method.
+- Fix `findOldestQueuedItems` test and add support for PHP unit 5.4.0.
+
 ## [v3.0.6](https://github.com/logeecom/pl_woocommerce_module/compare/v3.0.5...v3.0.6) - 2020-11-10
 ### Changed
 - Update to the latest Core 3.0.6.
