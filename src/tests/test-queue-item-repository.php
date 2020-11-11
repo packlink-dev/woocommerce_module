@@ -1,6 +1,8 @@
 <?php
 
 use Logeecom\Infrastructure\Logger\LoggerConfiguration;
+use Logeecom\Infrastructure\ORM\RepositoryRegistry;
+use Logeecom\Infrastructure\TaskExecution\Interfaces\Priority;
 use Logeecom\Tests\Infrastructure\ORM\AbstractGenericQueueItemRepositoryTest;
 use Packlink\WooCommerce\Components\Repositories\Queue_Item_Repository;
 use Packlink\WooCommerce\Components\Utility\Database;
@@ -21,6 +23,18 @@ class TestQueueItemRepository extends AbstractGenericQueueItemRepositoryTest {
 		parent::setUp();
 
 		$this->createTestTable();
+	}
+
+	/**
+	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\RepositoryClassException
+	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException
+	 */
+	public function testFindOldestQueuedItems()
+	{
+		$this->insertQueueItems();
+		$repository = RepositoryRegistry::getQueueItemRepository();
+
+		$this->assertCount(2, $repository->findOldestQueuedItems(Priority::NORMAL));
 	}
 
 	/**
@@ -54,7 +68,7 @@ class TestQueueItemRepository extends AbstractGenericQueueItemRepositoryTest {
 	 * Cleans up all storage services used by repositories
 	 */
 	public function cleanUpStorage() {
-		return null;
+		self::tearDownAfterClass();
 	}
 
 	/**
@@ -80,6 +94,7 @@ class TestQueueItemRepository extends AbstractGenericQueueItemRepositoryTest {
             `index_5` VARCHAR(100),
             `index_6` VARCHAR(100),
             `index_7` VARCHAR(100),
+            `index_8` VARCHAR(100),
             `data` LONGTEXT,
             PRIMARY KEY (`id`),
             INDEX (index_1, index_2, index_3, index_4, index_5, index_6, index_7)
