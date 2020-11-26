@@ -9,7 +9,6 @@ namespace Packlink\WooCommerce\Controllers;
 
 use Logeecom\Infrastructure\TaskExecution\Exceptions\QueueStorageUnavailableException;
 use Packlink\BusinessLogic\Controllers\LocationsController;
-use Packlink\BusinessLogic\Controllers\RegistrationRegionsController;
 use Packlink\BusinessLogic\Controllers\WarehouseController;
 use Packlink\BusinessLogic\DTO\Exceptions\FrontDtoNotRegisteredException;
 use Packlink\BusinessLogic\DTO\Exceptions\FrontDtoValidationException;
@@ -33,13 +32,6 @@ class Packlink_Warehouse_Controller extends Packlink_Base_Controller {
 	private $warehouse_controller;
 
 	/**
-	 * Country controller.
-	 *
-	 * @var RegistrationRegionsController
-	 */
-	private $country_controller;
-
-	/**
 	 * Locations controller.
 	 *
 	 * @var LocationsController
@@ -51,7 +43,6 @@ class Packlink_Warehouse_Controller extends Packlink_Base_Controller {
 	 */
 	public function __construct() {
 		$this->warehouse_controller = new WarehouseController();
-		$this->country_controller   = new RegistrationRegionsController();
 		$this->locations_controller = new LocationsController();
 	}
 
@@ -84,7 +75,7 @@ class Packlink_Warehouse_Controller extends Packlink_Base_Controller {
 	 * Retrieves supported countries.
 	 */
 	public function get_countries() {
-		$countries = $this->country_controller->getRegions();
+		$countries = $this->warehouse_controller->getWarehouseCountries();
 
 		$this->return_dto_entities_response( $countries );
 	}
