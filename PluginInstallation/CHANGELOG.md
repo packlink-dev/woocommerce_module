@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [v3.1.0](https://github.com/logeecom/pl_woocommerce_module/compare/v3.0.7...v3.1.0) - 2020-12-17
+### Changed
+- Added postal code transformer that transforms postal code into supported postal code format for GB, NL, US and PT countries.
+- Added support for new warehouse countries.
+
 ## [v3.0.7](https://github.com/logeecom/pl_woocommerce_module/compare/v3.0.6...v3.0.7) - 2020-11-11
 ### Changed
 - Revert change of `findOldestQueuedItems` method.

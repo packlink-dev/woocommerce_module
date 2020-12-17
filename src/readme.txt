@@ -68,6 +68,13 @@ Click <a href="https://support-pro.packlink.com/hc/es-es/articles/210158585" tar
 
 == Changelog ==
 
+#### 3.1.0 - December 17, 2020
+
+**Updates**
+
+- Added postal code transformer that transforms postal code into supported postal code format for GB, NL, US and PT countries.
+- Added support for new warehouse countries.
+
 #### 3.0.7 - November 11, 2020
 
 **Updates**
