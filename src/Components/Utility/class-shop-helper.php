@@ -170,8 +170,12 @@ class Shop_Helper {
 	 * @return string
 	 */
 	public static function get_user_locale() {
-		$parts  = explode( '_', get_user_locale() );
-		$locale = $parts[0];
+		$parts = explode( '_', get_user_locale() );
+		if ( count( $parts ) === 2 ) {
+			$locale = $parts[0];
+		} else {
+			$locale = 'en';
+		}
 
 		return strtolower( $locale );
 	}
