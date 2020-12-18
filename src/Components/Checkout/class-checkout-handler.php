@@ -219,22 +219,24 @@ class Checkout_Handler {
 	 * Loads javascript and css resources
 	 */
 	public function load_scripts() {
-		Script_Loader::load_js(
-			array(
-				'packlink/js/StateUUIDService.js',
-				'packlink/js/ResponseService.js',
-				'packlink/js/AjaxService.js',
-				'js/location-picker/packlink-translations.js',
-				'js/location-picker/packlink-location-picker.js',
-				'js/packlink-checkout.js',
-			)
-		);
-		Script_Loader::load_css(
-			array(
-				'css/packlink-checkout.css',
-				'css/packlink-location-picker.css',
-			)
-		);
+		if ( is_cart() || is_checkout() ) {
+			Script_Loader::load_js(
+				array(
+					'packlink/js/StateUUIDService.js',
+					'packlink/js/ResponseService.js',
+					'packlink/js/AjaxService.js',
+					'js/location-picker/packlink-translations.js',
+					'js/location-picker/packlink-location-picker.js',
+					'js/packlink-checkout.js',
+				)
+			);
+			Script_Loader::load_css(
+				array(
+					'css/packlink-checkout.css',
+					'css/packlink-location-picker.css',
+				)
+			);
+		}
 	}
 
 	/**
