@@ -68,6 +68,12 @@ Click <a href="https://support-pro.packlink.com/hc/es-es/articles/210158585" tar
 
 == Changelog ==
 
+#### 3.1.2 - December 21, 2020
+
+**Updates**
+
+- Add migration script to fix the saved parcel.
+
 #### 3.1.0 - December 17, 2020
 
 **Updates**
