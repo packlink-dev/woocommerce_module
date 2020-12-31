@@ -66,6 +66,8 @@ $data = $this->resolve_view_arguments();
 	document.addEventListener(
 		'DOMContentLoaded',
 		() => {
+			hideNotifications();
+
 			Packlink.translations = {
 				default: <?php echo $data['lang']['default']; //phpcs:ignore ?>,
 				current: <?php echo $data['lang']['current']; //phpcs:ignore ?>
@@ -219,6 +221,21 @@ $data = $this->resolve_view_arguments();
 				content.style.height = `calc(100% - ${localOffset}px`;
 
 				setTimeout(calculateContentHeight, 250, offset);
+			}
+
+			/**
+			 * Hides notifications on the Packlink configuration page.
+			 */
+			function hideNotifications() {
+				let notices = document.querySelectorAll('.notice');
+				for (let element of notices) {
+					element.remove();
+				}
+
+				let updates = document.querySelectorAll('.updated');
+				for (let element of updates) {
+					element.remove();
+				}
 			}
 		},
 		false
