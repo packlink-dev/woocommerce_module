@@ -39,6 +39,12 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 	 */
 	protected static $instance;
 	/**
+	 * Shipping class costs.
+	 *
+	 * @var array
+	 */
+	private static $shipping_class_costs = array();
+	/**
 	 * Repository instance.
 	 *
 	 * @var RepositoryInterface
@@ -195,10 +201,11 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 		try {
 			$items = $this->get_woocommerce_shipping_methods( $shipping_method->getId() );
 			foreach ( $items as $item ) {
-				$instance_id                 = $item->getWoocommerceShippingMethodId();
-				$woocommerce_shipping_method = new Packlink_Shipping_Method( $instance_id );
-				$option_key                  = $woocommerce_shipping_method->get_instance_option_key();
-				$table                       = $wpdb->prefix . 'woocommerce_shipping_zone_methods';
+				$instance_id                  = $item->getWoocommerceShippingMethodId();
+				$woocommerce_shipping_method  = new Packlink_Shipping_Method( $instance_id );
+				self::$shipping_class_costs[] = $this->get_shipping_class_costs( $woocommerce_shipping_method );
+				$option_key                   = $woocommerce_shipping_method->get_instance_option_key();
+				$table                        = $wpdb->prefix . 'woocommerce_shipping_zone_methods';
 				if ( $wpdb->delete( $table, array( 'instance_id' => $instance_id ) ) ) { // phpcs:ignore
 					delete_option( $option_key );
 				}
@@ -241,8 +248,8 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 		$instance_id    = $zone->add_shipping_method( 'packlink_shipping_method' );
 
 		if ( 0 !== $instance_id ) {
-			$new = new Packlink_Shipping_Method( $instance_id );
-			$new->set_post_data(
+			$woocommerce_shipping_method = new Packlink_Shipping_Method( $instance_id );
+			$woocommerce_shipping_method->set_post_data(
 				array(
 					'woocommerce_packlink_shipping_method_title'        => $shipping_method->getTitle(),
 					'woocommerce_packlink_shipping_method_price_policy' => $pricing_policy,
@@ -250,8 +257,9 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 			);
 
 			$_REQUEST['instance_id'] = $instance_id;
-			$new->process_admin_options();
+			$woocommerce_shipping_method->process_admin_options();
 			$this->add_to_shipping_method_map( $instance_id, $shipping_method->getId(), $zone_id );
+			$this->set_shipping_class_costs( $woocommerce_shipping_method );
 		}
 	}
 
@@ -339,4 +347,44 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 		$configuration->set_default_shipping_method( $shipping_method );
 	}
 
+	/**
+	 * Retrieves stored shipping class costs for the provided Packlink shipping method.
+	 *
+	 * @param Packlink_Shipping_Method $woocommerce_shipping_method
+	 *
+	 * @return array
+	 */
+	private function get_shipping_class_costs( Packlink_Shipping_Method $woocommerce_shipping_method ) {
+		$shipping_classes = WC()->shipping->get_shipping_classes();
+		$class_costs      = array();
+		foreach ( $shipping_classes as $shipping_class ) {
+			if ( ! empty( $woocommerce_shipping_method->get_option( 'class_cost_' . $shipping_class->term_id ) ) ) {
+				$class_costs[ 'class_cost_' . $shipping_class->term_id ] = $woocommerce_shipping_method->get_option( 'class_cost_' . $shipping_class->term_id );
+			}
+		}
+
+		$class_costs['class_cost_calculation_type'] = $woocommerce_shipping_method->get_option( 'class_cost_calculation_type' );
+
+		return $class_costs;
+	}
+
+	/**
+	 * Saves shipping costs to the provided Packlink shipping method.
+	 *
+	 * @param Packlink_Shipping_Method $woocommerce_shipping_method
+	 */
+	private function set_shipping_class_costs( Packlink_Shipping_Method $woocommerce_shipping_method ) {
+		$shipping_method_settings = get_option( 'woocommerce_packlink_shipping_method_' . $woocommerce_shipping_method->instance_id . '_settings' );
+
+		if ( ! empty( self::$shipping_class_costs ) ) {
+			foreach ( self::$shipping_class_costs[0] as $key => $value ) {
+				$shipping_method_settings[ $key ] = $value;
+			}
+		}
+
+		unset( self::$shipping_class_costs[0] );
+		self::$shipping_class_costs = array_values( self::$shipping_class_costs );
+
+		update_option( 'woocommerce_packlink_shipping_method_' . $woocommerce_shipping_method->instance_id . '_settings', $shipping_method_settings );
+	}
 }
