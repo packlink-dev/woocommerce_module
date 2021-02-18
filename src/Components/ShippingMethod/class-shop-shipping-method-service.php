@@ -9,8 +9,10 @@ namespace Packlink\WooCommerce\Components\ShippingMethod;
 
 use Exception;
 use Logeecom\Infrastructure\Logger\Logger;
+use Logeecom\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
 use Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException;
 use Logeecom\Infrastructure\ORM\Interfaces\RepositoryInterface;
+use Logeecom\Infrastructure\ORM\QueryFilter\Operators;
 use Logeecom\Infrastructure\ORM\QueryFilter\QueryFilter;
 use Logeecom\Infrastructure\ORM\RepositoryRegistry;
 use Logeecom\Infrastructure\ServiceRegister;
@@ -39,12 +41,6 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 	 */
 	protected static $instance;
 	/**
-	 * Shipping class costs.
-	 *
-	 * @var array
-	 */
-	private static $shipping_class_costs = array();
-	/**
 	 * Repository instance.
 	 *
 	 * @var RepositoryInterface
@@ -71,11 +67,7 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 	 */
 	public function add( ShippingMethod $shipping_method ) {
 		try {
-			if ( $shipping_method->isShipToAllCountries() ) {
-				$zone_ids = Shipping_Method_Helper::get_all_shipping_zone_ids();
-			} else {
-				$zone_ids = $shipping_method->getShippingCountries();
-			}
+			$zone_ids = $this->get_selected_shipping_zones( $shipping_method );
 
 			foreach ( $zone_ids as $zone_id ) {
 				$this->add_method_to_zone( $shipping_method, $zone_id );
@@ -182,10 +174,43 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 	 * Updates shipping method in shop integration.
 	 *
 	 * @param ShippingMethod $shipping_method Shipping method.
+	 *
+	 * @throws QueryFilterInvalidParamException
 	 */
 	public function update( ShippingMethod $shipping_method ) {
-		$this->delete( $shipping_method );
-		$this->add( $shipping_method );
+		$zone_ids     = $this->get_selected_shipping_zones( $shipping_method );
+		$items        = $this->get_woocommerce_shipping_methods( $shipping_method->getId() );
+		$instance_ids = array();
+		foreach ( $items as $item ) {
+			$instance_ids[] = $item->getWoocommerceShippingMethodId();
+		}
+
+		$filter = new QueryFilter();
+		$filter->where( 'woocommerceShippingMethodId', Operators::IN, $instance_ids );
+		/** @var Shipping_Method_Map[] $map_items */
+		$map_items      = $this->repository->select( $filter );
+		$existing_zones = array();
+		foreach ( $map_items as $map_item ) {
+			$zone_id                     = $map_item->getZoneId();
+			$instance_id                 = $map_item->getWoocommerceShippingMethodId();
+			$woocommerce_shipping_method = new Packlink_Shipping_Method( $instance_id );
+			/** @noinspection TypeUnsafeArraySearchInspection */
+			if ( ! in_array( $zone_id, $zone_ids ) ) {
+				$this->delete_woocommerce_shipping_method( $woocommerce_shipping_method );
+				$this->repository->delete( $map_item );
+			} else {
+				$this->update_woocommerce_shipping_method( $shipping_method, $woocommerce_shipping_method );
+			}
+
+			if ( ! in_array( $zone_id, $existing_zones, true ) ) {
+				$existing_zones[] = $zone_id;
+			}
+		}
+
+		$new_zones = array_diff( $zone_ids, $existing_zones );
+		foreach ( $new_zones as $new_zone ) {
+			$this->add_method_to_zone( $shipping_method, $new_zone );
+		}
 	}
 
 	/**
@@ -196,19 +221,12 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 	 * @return bool TRUE if deletion succeeded; otherwise, FALSE.
 	 */
 	public function delete( ShippingMethod $shipping_method ) {
-		global $wpdb;
-
 		try {
 			$items = $this->get_woocommerce_shipping_methods( $shipping_method->getId() );
 			foreach ( $items as $item ) {
-				$instance_id                  = $item->getWoocommerceShippingMethodId();
-				$woocommerce_shipping_method  = new Packlink_Shipping_Method( $instance_id );
-				self::$shipping_class_costs[] = $this->get_shipping_class_costs( $woocommerce_shipping_method );
-				$option_key                   = $woocommerce_shipping_method->get_instance_option_key();
-				$table                        = $wpdb->prefix . 'woocommerce_shipping_zone_methods';
-				if ( $wpdb->delete( $table, array( 'instance_id' => $instance_id ) ) ) { // phpcs:ignore
-					delete_option( $option_key );
-				}
+				$instance_id                 = $item->getWoocommerceShippingMethodId();
+				$woocommerce_shipping_method = new Packlink_Shipping_Method( $instance_id );
+				$this->delete_woocommerce_shipping_method( $woocommerce_shipping_method );
 
 				$this->repository->delete( $item );
 			}
@@ -259,7 +277,6 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 			$_REQUEST['instance_id'] = $instance_id;
 			$woocommerce_shipping_method->process_admin_options();
 			$this->add_to_shipping_method_map( $instance_id, $shipping_method->getId(), $zone_id );
-			$this->set_shipping_class_costs( $woocommerce_shipping_method );
 		}
 	}
 
@@ -278,10 +295,10 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 		foreach ( $pricing_policies as $price_policy ) {
 			switch ( $price_policy->pricingPolicy ) { // phpcs:ignore
 				case ShippingPricePolicy::POLICY_PACKLINK:
-					$result .= __( '% of Packlink prices', 'packlink_pro_shipping' ) . ' | ';
+					$result .= __( 'Packlink prices', 'packlink_pro_shipping' ) . ' | ';
 					break;
 				case ShippingPricePolicy::POLICY_PACKLINK_ADJUST:
-					$result .= __( 'Packlink prices', 'packlink_pro_shipping' ) . ' | ';
+					$result .= __( '% of Packlink prices', 'packlink_pro_shipping' ) . ' | ';
 					break;
 				case ShippingPricePolicy::POLICY_FIXED_PRICE:
 					$result .= __( 'Fixed price', 'packlink_pro_shipping' ) . ' | ';
@@ -348,43 +365,53 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 	}
 
 	/**
-	 * Retrieves stored shipping class costs for the provided Packlink shipping method.
+	 * Returns selected shipping zones for the provided shipping method.
 	 *
-	 * @param Packlink_Shipping_Method $woocommerce_shipping_method
+	 * @param ShippingMethod $shipping_method
 	 *
-	 * @return array
+	 * @return array|int[]
 	 */
-	private function get_shipping_class_costs( Packlink_Shipping_Method $woocommerce_shipping_method ) {
-		$shipping_classes = WC()->shipping->get_shipping_classes();
-		$class_costs      = array();
-		foreach ( $shipping_classes as $shipping_class ) {
-			if ( ! empty( $woocommerce_shipping_method->get_option( 'class_cost_' . $shipping_class->term_id ) ) ) {
-				$class_costs[ 'class_cost_' . $shipping_class->term_id ] = $woocommerce_shipping_method->get_option( 'class_cost_' . $shipping_class->term_id );
-			}
+	private function get_selected_shipping_zones( ShippingMethod $shipping_method ) {
+		if ( $shipping_method->isShipToAllCountries() ) {
+			return Shipping_Method_Helper::get_all_shipping_zone_ids();
 		}
 
-		$class_costs['class_cost_calculation_type'] = $woocommerce_shipping_method->get_option( 'class_cost_calculation_type' );
-
-		return $class_costs;
+		return $shipping_method->getShippingCountries();
 	}
 
 	/**
-	 * Saves shipping costs to the provided Packlink shipping method.
+	 * Updates WooCommerce shipping method.
+	 *
+	 * @param ShippingMethod           $method
+	 * @param Packlink_Shipping_Method $woocommerce_shipping_method
+	 */
+	private function update_woocommerce_shipping_method( ShippingMethod $method, Packlink_Shipping_Method $woocommerce_shipping_method ) {
+		$woocommerce_shipping_method->instance_settings['title']        = $method->getTitle();
+		$woocommerce_shipping_method->instance_settings['price_policy'] = $this->get_shipping_method_pricing_policy( $method );
+
+		update_option(
+			$woocommerce_shipping_method->get_instance_option_key(),
+			apply_filters(
+				'woocommerce_packlink_shipping_method_' . $woocommerce_shipping_method->instance_id . '_settings',
+				$woocommerce_shipping_method->instance_settings,
+				$woocommerce_shipping_method
+			)
+		);
+	}
+
+	/**
+	 * Deletes WooCommerce shipping method.
 	 *
 	 * @param Packlink_Shipping_Method $woocommerce_shipping_method
 	 */
-	private function set_shipping_class_costs( Packlink_Shipping_Method $woocommerce_shipping_method ) {
-		$shipping_method_settings = get_option( 'woocommerce_packlink_shipping_method_' . $woocommerce_shipping_method->instance_id . '_settings' );
+	private function delete_woocommerce_shipping_method( Packlink_Shipping_Method $woocommerce_shipping_method ) {
+		global $wpdb;
 
-		if ( ! empty( self::$shipping_class_costs ) ) {
-			foreach ( self::$shipping_class_costs[0] as $key => $value ) {
-				$shipping_method_settings[ $key ] = $value;
-			}
+		$option_key = $woocommerce_shipping_method->get_instance_option_key();
+		$table      = $wpdb->prefix . 'woocommerce_shipping_zone_methods';
+		if ( $wpdb->delete( $table, array( 'instance_id' => $woocommerce_shipping_method->instance_id ) ) ) { // phpcs:ignore
+			delete_option( $option_key );
 		}
-
-		unset( self::$shipping_class_costs[0] );
-		self::$shipping_class_costs = array_values( self::$shipping_class_costs );
-
-		update_option( 'woocommerce_packlink_shipping_method_' . $woocommerce_shipping_method->instance_id . '_settings', $shipping_method_settings );
 	}
+
 }
