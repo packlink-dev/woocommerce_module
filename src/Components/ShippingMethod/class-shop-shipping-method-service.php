@@ -178,32 +178,39 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 	 * @throws QueryFilterInvalidParamException
 	 */
 	public function update( ShippingMethod $shipping_method ) {
-		$zone_ids     = $this->get_selected_shipping_zones( $shipping_method );
-		$items        = $this->get_woocommerce_shipping_methods( $shipping_method->getId() );
-		$instance_ids = array();
+		$zone_ids       = $this->get_selected_shipping_zones( $shipping_method );
+		$existing_zones = array();
+		$items          = $this->get_woocommerce_shipping_methods( $shipping_method->getId() );
+		$instance_ids   = array();
 		foreach ( $items as $item ) {
 			$instance_ids[] = $item->getWoocommerceShippingMethodId();
 		}
 
-		$filter = new QueryFilter();
-		$filter->where( 'woocommerceShippingMethodId', Operators::IN, $instance_ids );
-		/** @var Shipping_Method_Map[] $map_items */
-		$map_items      = $this->repository->select( $filter );
-		$existing_zones = array();
-		foreach ( $map_items as $map_item ) {
-			$zone_id                     = $map_item->getZoneId();
-			$instance_id                 = $map_item->getWoocommerceShippingMethodId();
-			$woocommerce_shipping_method = new Packlink_Shipping_Method( $instance_id );
-			/** @noinspection TypeUnsafeArraySearchInspection */
-			if ( ! in_array( $zone_id, $zone_ids ) ) {
-				$this->delete_woocommerce_shipping_method( $woocommerce_shipping_method );
-				$this->repository->delete( $map_item );
-			} else {
-				$this->update_woocommerce_shipping_method( $shipping_method, $woocommerce_shipping_method );
-			}
+		if ( ! empty( $instance_ids ) ) {
+			$filter = new QueryFilter();
+			$filter->where( 'woocommerceShippingMethodId', Operators::IN, $instance_ids );
+			/** @var Shipping_Method_Map[] $map_items */
+			$map_items = $this->repository->select( $filter );
+			foreach ( $map_items as $map_item ) {
+				$zone_id                     = $map_item->getZoneId();
+				$instance_id                 = $map_item->getWoocommerceShippingMethodId();
+				$woocommerce_shipping_method = new Packlink_Shipping_Method( $instance_id );
+				$zone                        = new WC_Shipping_Zone( $zone_id );
+				$zone_methods                = array_keys( $zone->get_shipping_methods() );
+				/** @noinspection TypeUnsafeArraySearchInspection */
+				if ( ! in_array( $zone_id, $zone_ids ) || ! in_array( $instance_id, $zone_methods ) ) {
+					$this->delete_woocommerce_shipping_method( $woocommerce_shipping_method );
+					$this->repository->delete( $map_item );
 
-			if ( ! in_array( $zone_id, $existing_zones, true ) ) {
-				$existing_zones[] = $zone_id;
+					if ( ! in_array( $instance_id, $zone_methods, true ) ) {
+						$this->add_method_to_zone( $shipping_method, $zone_id );
+					}
+				} else {
+					$this->update_woocommerce_shipping_method( $shipping_method, $woocommerce_shipping_method );
+				}
+				if ( ! in_array( $zone_id, $existing_zones, true ) ) {
+					$existing_zones[] = $zone_id;
+				}
 			}
 		}
 
