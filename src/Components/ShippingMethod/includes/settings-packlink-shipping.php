@@ -38,10 +38,12 @@ if ( ! empty( $shipping_classes ) ) {
 		'default'     => '',
 		'description' => $desc,
 	);
+
 	foreach ( $shipping_classes as $shipping_class ) {
 		if ( ! isset( $shipping_class->term_id ) ) {
 			continue;
 		}
+
 		$settings[ 'class_cost_' . $shipping_class->term_id ] = array(
 			/* translators: %s: shipping class name */
 			'title'       => sprintf( __( '"%s" shipping class cost', 'woocommerce' ), esc_html( $shipping_class->name ) ),

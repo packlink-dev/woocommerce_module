@@ -109,6 +109,11 @@ class Shop_Order_Service extends Singleton implements BaseShopOrderService {
 		$order      = $this->get_order_by_id( $order_id );
 		$status_map = $this->configuration->getOrderStatusMappings();
 		$old_status = $order->get_status();
+		if ($old_status === 'cancelled') {
+			// We don't want to update order status of cancelled order.
+			return;
+		}
+
 		if ( ! empty( $status_map[ $shipping_status ] ) && $status_map[ $shipping_status ] !== $old_status ) {
 			$order->set_status( $status_map[ $shipping_status ], __( 'Status set by Packlink PRO.', 'packlink-pro-shipping' ) );
 		}
