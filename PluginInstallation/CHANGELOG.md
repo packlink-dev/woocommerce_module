@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [v3.1.3](https://github.com/logeecom/pl_woocommerce_module/compare/v3.1.2...v3.1.3) - 2021-03-01
+### Changed
+- Preserve shipping class costs configuration when updating Packlink carriers.
+- Remove notifications on the configuration page.
+- Fix order status cancelled update.
+
 ## [v3.1.0](https://github.com/logeecom/pl_woocommerce_module/compare/v3.0.7...v3.1.0) - 2020-12-17
 ### Changed
 - Added postal code transformer that transforms postal code into supported postal code format for GB, NL, US and PT countries.
