@@ -28,6 +28,7 @@ use Packlink\BusinessLogic\Scheduler\Models\Schedule;
 use Packlink\BusinessLogic\ShipmentDraft\Models\OrderSendDraftTaskMap;
 use Packlink\BusinessLogic\ShippingMethod\Interfaces\ShopShippingMethodService;
 use Packlink\BusinessLogic\ShippingMethod\Models\ShippingMethod;
+use Packlink\BusinessLogic\SystemInformation\SystemInfoService;
 use Packlink\WooCommerce\Components\Order\Order_Drop_Off_Map;
 use Packlink\WooCommerce\Components\Order\Shop_Order_Service;
 use Packlink\WooCommerce\Components\Repositories\Base_Repository;
@@ -35,6 +36,7 @@ use Packlink\WooCommerce\Components\Repositories\Queue_Item_Repository;
 use Packlink\WooCommerce\Components\Services\Config_Service;
 use Packlink\WooCommerce\Components\Services\Logger_Service;
 use Packlink\WooCommerce\Components\Services\Registration_Info_Service;
+use Packlink\WooCommerce\Components\Services\System_Info_Service;
 use Packlink\WooCommerce\Components\ShippingMethod\Shipping_Method_Map;
 use Packlink\WooCommerce\Components\ShippingMethod\Shop_Shipping_Method_Service;
 
@@ -96,7 +98,13 @@ class Bootstrap_Component extends BootstrapComponent {
 			RegistrationInfoService::CLASS_NAME,
 			static function () {
 				return new Registration_Info_Service();
+			}
+		);
 
+		ServiceRegister::registerService(
+			SystemInfoService::CLASS_NAME,
+			static function () {
+				return new System_Info_Service();
 			}
 		);
 	}
