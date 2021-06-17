@@ -26,7 +26,7 @@ class System_Info_Service implements SystemInfoService {
 		$currency = get_woocommerce_currency();
 
 		return array(SystemInfo::fromArray(array(
-			'system_id' => null,
+			'system_id' => 1,
 			'system_name' => get_bloginfo( 'name' ),
 			'currencies' => array($currency),
 		)));

@@ -115,19 +115,24 @@ $data = $this->resolve_view_arguments();
 				'my-shipping-services': {
 					getServicesUrl: "<?php echo Shop_Helper::get_controller_url( 'My_Shipping_Services', 'get' ); //phpcs:ignore ?>",
 					deleteServiceUrl: "<?php echo Shop_Helper::get_controller_url( 'My_Shipping_Services', 'deactivate' ); //phpcs:ignore ?>",
+					getCurrencyDetailsUrl: "<?php echo Shop_Helper::get_controller_url( 'System_Info', 'get' ); //phpcs:ignore ?>",
+					systemId: 1
 				},
 				'pick-shipping-service': {
 					getActiveServicesUrl: "<?php echo Shop_Helper::get_controller_url( 'Shipping_Service', 'get_active' ); //phpcs:ignore ?>",
 					getServicesUrl: "<?php echo Shop_Helper::get_controller_url( 'Shipping_Service', 'get' ); //phpcs:ignore ?>",
 					getTaskStatusUrl: "<?php echo Shop_Helper::get_controller_url( 'Shipping_Service', 'get_task_status' ); //phpcs:ignore ?>",
 					startAutoConfigureUrl: "<?php echo Shop_Helper::get_controller_url( 'Auto_Configure', 'start' ); //phpcs:ignore ?>",
-					disableCarriersUrl: "<?php echo Shop_Helper::get_controller_url( 'Shop_Shipping_Methods', 'disable_shop_shipping_methods' ); //phpcs:ignore ?>"
+					disableCarriersUrl: "<?php echo Shop_Helper::get_controller_url( 'Shop_Shipping_Methods', 'disable_shop_shipping_methods' ); //phpcs:ignore ?>",
+					getCurrencyDetailsUrl: "<?php echo Shop_Helper::get_controller_url( 'System_Info', 'get' ); //phpcs:ignore ?>",
+					systemId: 1
 				},
 				'edit-service': {
 					getServiceUrl: "<?php echo Shop_Helper::get_controller_url( 'Edit_Service', 'get_service' ); //phpcs:ignore ?>",
 					saveServiceUrl: "<?php echo Shop_Helper::get_controller_url( 'Edit_Service', 'update_service' ); //phpcs:ignore ?>",
 					getTaxClassesUrl: "",
 					getCountriesListUrl: "<?php echo Shop_Helper::get_controller_url( 'Shipping_Zones', 'get_shipping_zones' ); //phpcs:ignore ?>",
+					getCurrencyDetailsUrl: "<?php echo Shop_Helper::get_controller_url( 'System_Info', 'get' ); //phpcs:ignore ?>",
 					hasTaxConfiguration: false,
 					hasCountryConfiguration: true,
 					canDisplayCarrierLogos: true

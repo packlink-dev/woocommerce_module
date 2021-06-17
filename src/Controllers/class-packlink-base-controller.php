@@ -31,7 +31,7 @@ class Packlink_Base_Controller {
 	 * @param string|null $action Request action.
 	 */
 	public function process( $action = '' ) {
-		Configuration::setCurrentLanguage( Shop_Helper::get_user_locale() );
+		Configuration::setUICountryCode( Shop_Helper::get_user_locale() );
 		if ( $this->is_internal ) {
 			$this->validate_internal_call();
 		}
