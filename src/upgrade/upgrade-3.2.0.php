@@ -52,10 +52,12 @@ function get_current_shipping_methods( $db, $table_name ) {
 function get_transformed_pricing_policies( array $service ) {
 	$policies = array();
 
-	foreach ( $service['pricingPolicies'] as $pricing_policy ) {
-		$pricing_policy['system_id']    = null;
-		$pricing_policy['uses_default'] = false;
-		$policies[]                     = $pricing_policy;
+	if ( ! empty( $service['pricingPolicies'] ) ) {
+		foreach ( $service['pricingPolicies'] as $pricing_policy ) {
+			$pricing_policy['system_id']    = null;
+			$pricing_policy['uses_default'] = false;
+			$policies[]                     = $pricing_policy;
+		}
 	}
 
 	return $policies;
