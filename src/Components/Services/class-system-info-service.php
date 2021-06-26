@@ -16,6 +16,10 @@ use Packlink\BusinessLogic\SystemInformation\SystemInfoService;
  * @package Packlink\WooCommerce\Components\Services
  */
 class System_Info_Service implements SystemInfoService {
+	/**
+	 * System ID.
+	 */
+	const SYSTEM_ID = 'woocommerce';
 
 	/**
 	 * Returns system information.
@@ -26,7 +30,7 @@ class System_Info_Service implements SystemInfoService {
 		$currency = get_woocommerce_currency();
 
 		return array(SystemInfo::fromArray(array(
-			'system_id' => 1,
+			'system_id' => self::SYSTEM_ID,
 			'system_name' => get_bloginfo( 'name' ),
 			'currencies' => array($currency),
 		)));

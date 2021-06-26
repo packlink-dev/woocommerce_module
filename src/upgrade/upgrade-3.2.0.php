@@ -13,6 +13,7 @@ use Packlink\BusinessLogic\Configuration;
 use Packlink\BusinessLogic\ShippingMethod\Models\ShippingMethod;
 use Packlink\BusinessLogic\Tasks\UpdateShippingServicesTask;
 use Packlink\WooCommerce\Components\Services\Config_Service;
+use Packlink\WooCommerce\Components\Services\System_Info_Service;
 use Packlink\WooCommerce\Components\Utility\Database;
 
 //@codingStandardsIgnoreStart
@@ -43,6 +44,26 @@ function get_current_shipping_methods( $db, $table_name ) {
 }
 
 /**
+ * Transforms existing pricing policies for a given shipping method.
+ *
+ * @param array $service
+ *
+ * @return array
+ */
+function get_transformed_pricing_policies( array $service ) {
+	$policies = array();
+
+	if ( ! empty( $service['pricingPolicies'] ) ) {
+		foreach ( $service['pricingPolicies'] as $pricing_policy ) {
+			$pricing_policy['system_id'] = System_Info_Service::SYSTEM_ID;
+			$policies[]                  = $pricing_policy;
+		}
+	}
+
+	return $policies;
+}
+
+/**
  * Updates a shipping service.
  *
  * @param array $service
@@ -53,6 +74,7 @@ function update_shipping_service( array $service ) {
 	$service['currency']        = 'EUR';
 	$service['fixedPrices']     = null;
 	$service['systemDefaults']  = null;
+	$service['pricingPolicies'] = get_transformed_pricing_policies( $service );
 
 	return $service;
 }
