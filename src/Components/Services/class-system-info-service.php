@@ -7,6 +7,7 @@
 
 namespace Packlink\WooCommerce\Components\Services;
 
+use Logeecom\Infrastructure\Logger\Logger;
 use Packlink\BusinessLogic\Http\DTO\SystemInfo;
 use Packlink\BusinessLogic\SystemInformation\SystemInfoService;
 
@@ -39,11 +40,26 @@ class System_Info_Service implements SystemInfoService {
 	/**
 	 * Returns system information for a particular system, identified by the system ID.
 	 *
-	 * @param string $systemId
+	 * @param string $system_id
 	 *
 	 * @return SystemInfo|null
 	 */
-	public function getSystemInfo( $systemId ) {
-		return $this->getSystemDetails()[0];
+	public function getSystemInfo( $system_id ) {
+		$details = $this->getSystemDetails();
+
+		if ( empty( $details ) ) {
+			Logger::logError( 'No system details found!' );
+
+			return null;
+		}
+
+		$system_info = $details[0];
+		if ( $system_info->systemId !== $system_id ) {
+			Logger::logError( "System with ID $system_id not found!" );
+
+			return null;
+		}
+
+		return $system_info;
 	}
 }
