@@ -33,7 +33,7 @@ use Packlink\WooCommerce\Components\Utility\Database;
  *
  * @return array
  */
-function get_current_shipping_methods( $db, $table_name ) {
+function pl_v320_get_current_shipping_methods( $db, $table_name ) {
 	$query = "SELECT * FROM {$table_name} WHERE type = 'ShippingService' ";
 
 	$results = $db->get_results( $query, ARRAY_A );
@@ -50,7 +50,7 @@ function get_current_shipping_methods( $db, $table_name ) {
  *
  * @return array
  */
-function get_transformed_pricing_policies( array $service ) {
+function pl_v320_get_transformed_pricing_policies( array $service ) {
 	$policies = array();
 
 	if ( ! empty( $service['pricingPolicies'] ) ) {
@@ -70,11 +70,11 @@ function get_transformed_pricing_policies( array $service ) {
  *
  * @return array
  */
-function update_shipping_service( array $service ) {
+function pl_v320_update_shipping_service( array $service ) {
 	$service['currency']        = 'EUR';
 	$service['fixedPrices']     = null;
 	$service['systemDefaults']  = null;
-	$service['pricingPolicies'] = get_transformed_pricing_policies( $service );
+	$service['pricingPolicies'] = pl_v320_get_transformed_pricing_policies( $service );
 
 	return $service;
 }
@@ -88,7 +88,7 @@ global $wpdb;
 $db = $wpdb;
 
 $table_name   = $db->prefix . Database::BASE_TABLE;
-$raw_services = get_current_shipping_methods( $db, $table_name );
+$raw_services = pl_v320_get_current_shipping_methods( $db, $table_name );
 
 // ***********************************************************************************
 // STEP 2. ***************************************************************************
@@ -96,7 +96,7 @@ $raw_services = get_current_shipping_methods( $db, $table_name );
 // ***********************************************************************************
 
 foreach ( $raw_services as $index => $service ) {
-	$raw_services[ $index ] = update_shipping_service( $service );
+	$raw_services[ $index ] = pl_v320_update_shipping_service( $service );
 }
 
 // ***********************************************************************************
