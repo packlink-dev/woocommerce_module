@@ -79,7 +79,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 			<?php if ( $order_details->getShippingCost() > 0 ) : ?>
 				<div class="pl-order-detail-section">
 					<h4><?php echo __( 'Packlink shipping price', 'packlink-pro-shipping' ); ?></h4>
-					<?php echo wc_price( $order_details->getShippingCost() ); ?>
+					<?php echo wc_price(
+							$order_details->getShippingCost(),
+							array('currency' => $order_details->getCurrency())
+					); ?>
 				</div>
 			<?php endif; ?>
 		</li>
