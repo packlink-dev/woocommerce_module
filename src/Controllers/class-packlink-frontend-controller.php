@@ -11,6 +11,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+use Logeecom\Infrastructure\ServiceRegister;
+use Packlink\BusinessLogic\CountryLabels\Interfaces\CountryService;
 use Packlink\WooCommerce\Components\Utility\Script_Loader;
 use Packlink\WooCommerce\Components\Utility\Shop_Helper;
 use Packlink\WooCommerce\Components\Utility\Task_Queue;
@@ -81,6 +83,7 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 				'packlink/js/DefaultParcelController.js',
 				'packlink/js/DefaultWarehouseController.js',
 				'packlink/js/EditServiceController.js',
+				'packlink/js/SingleStorePricePolicyController.js',
 				'packlink/js/LoginController.js',
 				'packlink/js/ModalService.js',
 				'packlink/js/MyShippingServicesController.js',
@@ -97,6 +100,7 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 				'packlink/js/ServiceCountriesModalController.js',
 				'packlink/js/StateController.js',
 				'packlink/js/SystemInfoController.js',
+				'packlink/js/SettingsButtonService.js',
 			)
 		);
 	}
@@ -107,15 +111,16 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	 * @return array
 	 */
 	private function get_lang() {
-		$locale   = Shop_Helper::get_user_locale();
-		$base_dir = __DIR__ . '/../resources/packlink/lang/';
+		$locale = Shop_Helper::get_user_locale();
 
-		$current_lang_file = $base_dir . $locale . '.json';
-		$current_lang      = file_exists( $current_lang_file ) ? file_get_contents( $current_lang_file ) : '{}';
+		/** @var CountryService $country_service */
+		$country_service = ServiceRegister::getService( CountryService::class );
+		$default         = $country_service->getAllLabels( 'en' );
+		$current_lang    = $country_service->getAllLabels( $locale );
 
 		return array(
-			'default' => file_get_contents( $base_dir . 'en.json' ), // phpcs:ignore
-			'current' => $current_lang,
+			'default' => json_encode($default['en']),
+			'current' => json_encode($current_lang[$locale]),
 		);
 	}
 

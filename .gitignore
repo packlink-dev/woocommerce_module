@@ -9,9 +9,11 @@ wp-cli.phar
 packlink-pro-shipping
 *.swp
 !src/resources/packlink/.gitkeep
+!src/resources/packlink/brand/.gitkeep
 src/resources/packlink/js/*
 src/resources/packlink/css/*
 src/resources/packlink/images/*
 src/resources/packlink/templates/*
-src/resources/packlink/lang/*
+src/resources/packlink/countries/*
+src/resources/packlink/brand/*
 src/resources/images/carriers/*

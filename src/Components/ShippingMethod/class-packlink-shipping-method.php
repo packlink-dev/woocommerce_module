@@ -17,6 +17,7 @@ use Packlink\BusinessLogic\ShippingMethod\Models\ShippingMethod;
 use Packlink\BusinessLogic\ShippingMethod\ShippingCostCalculator;
 use Packlink\BusinessLogic\ShippingMethod\ShippingMethodService;
 use Packlink\WooCommerce\Components\Services\Config_Service;
+use Packlink\WooCommerce\Components\Services\System_Info_Service;
 use WC_Eval_Math;
 use WC_Product;
 
@@ -373,7 +374,8 @@ class Packlink_Shipping_Method extends \WC_Shipping_Method {
 				$to_country,
 				$to_zip,
 				$this->build_parcels( $package, $default_parcel ),
-				$package['contents_cost']
+				$package['contents_cost'],
+				System_Info_Service::SYSTEM_ID
 			);
 
 			static::$loaded = true;

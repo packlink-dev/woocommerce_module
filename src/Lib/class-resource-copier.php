@@ -19,15 +19,17 @@ class Resource_Copier {
 	 * Copies resources from vendor to resource directory.
 	 */
 	public static function copy() {
-		$from_base = __DIR__ . '/../vendor/packlink/integration-core/src/BusinessLogic/Resources/';
-		$to_base   = __DIR__ . '/../resources/';
+		$from_base  = __DIR__ . '/../vendor/packlink/integration-core/src/BusinessLogic/Resources/';
+		$brand_base = __DIR__ . '/../vendor/packlink/integration-core/src/Brands/Packlink/Resources/';
+		$to_base    = __DIR__ . '/../resources/';
 
 		$map = array(
 			$from_base . 'js'               => $to_base . 'packlink/js',
 			$from_base . 'css'              => $to_base . 'packlink/css',
 			$from_base . 'images'           => $to_base . 'packlink/images',
 			$from_base . 'templates'        => $to_base . 'packlink/templates',
-			$from_base . 'lang'             => $to_base . 'packlink/lang',
+			$from_base . 'countries'        => $to_base . 'packlink/countries',
+			$brand_base . 'countries'       => $to_base . 'packlink/brand/countries',
 			$from_base . 'images/carriers/' => $to_base . 'images/carriers',
 		);
 
@@ -73,7 +75,7 @@ class Resource_Copier {
 	 * @throws RuntimeException If directory can not be created.
 	 */
 	private static function mkdir( $destination ) {
-		if ( ! file_exists( $destination ) && ! mkdir( $destination ) && ! is_dir( $destination ) ) {
+		if ( ! file_exists( $destination ) && ! mkdir( $destination, 0777, true ) && ! is_dir( $destination ) ) {
 			throw new RuntimeException( sprintf( 'Directory "%s" was not created', $destination ) );
 		}
 	}
