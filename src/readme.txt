@@ -68,12 +68,11 @@ Click <a href="https://support-pro.packlink.com/hc/es-es/articles/210158585" tar
 
 == Changelog ==
 
-#### 3.2.0
+#### 3.2.0 - July 07, 2021
 
 **Updates**
 
-- Updated to the module white-label changes.
-- Updated to the multi-currency changes.
+- Add support for multi-currency.
 
 #### 3.1.3 - March 01, 2021
 
