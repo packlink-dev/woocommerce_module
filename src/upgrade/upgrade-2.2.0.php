@@ -7,7 +7,6 @@ use Logeecom\Infrastructure\ServiceRegister;
 use Logeecom\Infrastructure\TaskExecution\QueueItem;
 use Logeecom\Infrastructure\TaskExecution\QueueService;
 use Packlink\BusinessLogic\Configuration;
-use Packlink\BusinessLogic\Country\CountryService;
 use Packlink\BusinessLogic\Http\DTO\ShipmentLabel;
 use Packlink\BusinessLogic\OrderShipmentDetails\Models\OrderShipmentDetails;
 use Packlink\BusinessLogic\Scheduler\Models\HourlySchedule;
@@ -43,8 +42,6 @@ if ( ! empty( $order_ids ) ) {
 	/** @var OrderSendDraftTaskMapService $order_draft_task_map_service */
 	$order_draft_task_map_service = ServiceRegister::getService( OrderSendDraftTaskMapService::CLASS_NAME );
 
-	/** @var CountryService $country_service */
-	$country_service = ServiceRegister::getService( CountryService::CLASS_NAME );
 	$user_info       = $config_service->getUserInfo();
 	$user_domain     = 'com';
 	if ( $user_info && in_array( $user_info->country, array( 'ES', 'DE', 'FR', 'IT' ) ) ) {
