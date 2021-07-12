@@ -47,7 +47,7 @@ if ( ! empty( $order_ids ) ) {
 	$country_service = ServiceRegister::getService( CountryService::CLASS_NAME );
 	$user_info       = $config_service->getUserInfo();
 	$user_domain     = 'com';
-	if ( $user_info && $country_service->isBaseCountry( $user_info->country ) ) {
+	if ( $user_info && in_array( $user_info->country, array( 'ES', 'DE', 'FR', 'IT' ) ) ) {
 		$user_domain = strtolower( $user_info->country );
 	}
 
