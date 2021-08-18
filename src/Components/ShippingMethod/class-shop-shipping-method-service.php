@@ -22,6 +22,7 @@ use Packlink\BusinessLogic\ShippingMethod\Interfaces\ShopShippingMethodService;
 use Packlink\BusinessLogic\ShippingMethod\Models\ShippingMethod;
 use Packlink\BusinessLogic\ShippingMethod\Models\ShippingPricePolicy;
 use Packlink\BusinessLogic\ShippingMethod\ShippingMethodService;
+use Packlink\BusinessLogic\User\UserAccountService;
 use Packlink\WooCommerce\Components\Checkout\Checkout_Handler;
 use Packlink\WooCommerce\Components\Services\Config_Service;
 use Packlink\WooCommerce\Components\Utility\Shop_Helper;
@@ -56,6 +57,18 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 		parent::__construct();
 
 		$this->repository = RepositoryRegistry::getRepository( Shipping_Method_Map::CLASS_NAME );
+	}
+
+	/**
+	 * Creates instance of this class.
+	 *
+	 * @return static
+	 *
+	 * @noinspection PhpDocSignatureInspection
+	 */
+	public static function create()
+	{
+		return new self();
 	}
 
 	/**

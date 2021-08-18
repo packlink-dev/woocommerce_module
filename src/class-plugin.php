@@ -430,7 +430,8 @@ class Plugin {
 				array(
 					ShipmentStatus::STATUS_ACCEPTED  => 'wc-processing',
 					ShipmentStatus::STATUS_DELIVERED => 'wc-completed',
-					ShipmentStatus::STATUS_CANCELLED => 'wc-cancelled'
+					ShipmentStatus::STATUS_CANCELLED => 'wc-cancelled',
+					ShipmentStatus::INCIDENT => 'wc-failed'
 				)
 			);
 		} catch ( TaskRunnerStatusStorageUnavailableException $e ) {

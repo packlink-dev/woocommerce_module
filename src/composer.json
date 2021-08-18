@@ -1,18 +1,18 @@
 {
   "name": "packlink/woocommerce",
   "description": "Packlink WooCommerce Integration",
-  "version": "3.2.0",
+  "version": "3.2.1",
   "type": "library",
   "repositories": [
     {
       "type": "vcs",
       "no-api": true,
-      "url": "git@github.com:packlink-dev/ecommerce_module_core.git"
+      "url": "git@github.com:logeecom/pl_module_core.git"
     }
   ],
   "require": {
     "php": ">=5.6",
-    "packlink/integration-core": "3.3.0",
+    "packlink/integration-core": "dev-dev",
     "ext-json": "*",
     "ext-curl": "*",
     "ext-zip": "*",

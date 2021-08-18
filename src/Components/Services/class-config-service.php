@@ -10,6 +10,7 @@ namespace Packlink\WooCommerce\Components\Services;
 use Logeecom\Infrastructure\Logger\Logger;
 use Packlink\BusinessLogic\Configuration;
 use Packlink\BusinessLogic\ShippingMethod\Models\ShippingMethod;
+use Packlink\BusinessLogic\User\UserAccountService;
 use Packlink\WooCommerce\Components\Utility\Shop_Helper;
 
 /**
@@ -45,6 +46,18 @@ class Config_Service extends Configuration {
 	 */
 	public function getIntegrationName() {
 		return 'WooCommerce';
+	}
+
+	/**
+	 * Creates instance of this class.
+	 *
+	 * @return static
+	 *
+	 * @noinspection PhpDocSignatureInspection
+	 */
+	public static function create()
+	{
+		return new self();
 	}
 
 	/**
