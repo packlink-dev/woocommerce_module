@@ -10,7 +10,6 @@ namespace Packlink\WooCommerce\Components\Services;
 use Logeecom\Infrastructure\Logger\Logger;
 use Packlink\BusinessLogic\Configuration;
 use Packlink\BusinessLogic\ShippingMethod\Models\ShippingMethod;
-use Packlink\BusinessLogic\User\UserAccountService;
 use Packlink\WooCommerce\Components\Utility\Shop_Helper;
 
 /**
@@ -55,8 +54,7 @@ class Config_Service extends Configuration {
 	 *
 	 * @noinspection PhpDocSignatureInspection
 	 */
-	public static function create()
-	{
+	public static function create() {
 		return new self();
 	}
 

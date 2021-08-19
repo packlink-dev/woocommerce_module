@@ -13,7 +13,6 @@ use Logeecom\Infrastructure\Logger\Logger;
 use Logeecom\Infrastructure\Logger\LoggerConfiguration;
 use Logeecom\Infrastructure\ServiceRegister;
 use Logeecom\Infrastructure\Singleton;
-use Packlink\BusinessLogic\User\UserAccountService;
 use Packlink\WooCommerce\Components\Utility\Shop_Helper;
 
 /**
@@ -51,8 +50,7 @@ class Logger_Service extends Singleton implements LoggerAdapter {
 	 *
 	 * @noinspection PhpDocSignatureInspection
 	 */
-	public static function create()
-	{
+	public static function create() {
 		return new self();
 	}
 
