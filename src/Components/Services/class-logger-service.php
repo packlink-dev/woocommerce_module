@@ -13,6 +13,7 @@ use Logeecom\Infrastructure\Logger\Logger;
 use Logeecom\Infrastructure\Logger\LoggerConfiguration;
 use Logeecom\Infrastructure\ServiceRegister;
 use Logeecom\Infrastructure\Singleton;
+use Packlink\BusinessLogic\User\UserAccountService;
 use Packlink\WooCommerce\Components\Utility\Shop_Helper;
 
 /**
@@ -41,6 +42,18 @@ class Logger_Service extends Singleton implements LoggerAdapter {
 		$upload_dir = wp_get_upload_dir();
 
 		return $upload_dir['basedir'] . '/packlink-logs/' . date( 'Y-m-d' ) . '.log';
+	}
+
+	/**
+	 * Creates instance of this class.
+	 *
+	 * @return static
+	 *
+	 * @noinspection PhpDocSignatureInspection
+	 */
+	public static function create()
+	{
+		return new self();
 	}
 
 	/**

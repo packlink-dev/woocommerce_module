@@ -20,6 +20,7 @@ use Packlink\BusinessLogic\Order\Interfaces\ShopOrderService as BaseShopOrderSer
 use Packlink\BusinessLogic\Order\Objects\Address;
 use Packlink\BusinessLogic\Order\Objects\Item;
 use Packlink\BusinessLogic\Order\Objects\Order;
+use Packlink\BusinessLogic\User\UserAccountService;
 use Packlink\WooCommerce\Components\Services\Config_Service;
 use Packlink\WooCommerce\Components\ShippingMethod\Shipping_Method_Helper;
 use WC_Order;
@@ -52,6 +53,18 @@ class Shop_Order_Service extends Singleton implements BaseShopOrderService {
 		parent::__construct();
 
 		$this->configuration = ServiceRegister::getService( Config_Service::CLASS_NAME );
+	}
+
+	/**
+	 * Creates instance of this class.
+	 *
+	 * @return static
+	 *
+	 * @noinspection PhpDocSignatureInspection
+	 */
+	public static function create()
+	{
+		return new self();
 	}
 
 	/**
