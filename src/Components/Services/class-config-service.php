@@ -48,17 +48,6 @@ class Config_Service extends Configuration {
 	}
 
 	/**
-	 * Creates instance of this class.
-	 *
-	 * @return static
-	 *
-	 * @noinspection PhpDocSignatureInspection
-	 */
-	public static function create() {
-		return new self();
-	}
-
-	/**
 	 * Returns order draft source.
 	 *
 	 * @return string

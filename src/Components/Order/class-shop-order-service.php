@@ -55,18 +55,6 @@ class Shop_Order_Service extends Singleton implements BaseShopOrderService {
 	}
 
 	/**
-	 * Creates instance of this class.
-	 *
-	 * @return static
-	 *
-	 * @noinspection PhpDocSignatureInspection
-	 */
-	public static function create()
-	{
-		return new self();
-	}
-
-	/**
 	 * Fetches and returns system order by its unique identifier.
 	 *
 	 * @param string $order_id $orderId Unique order id.

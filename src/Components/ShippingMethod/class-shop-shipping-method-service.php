@@ -59,17 +59,6 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 	}
 
 	/**
-	 * Creates instance of this class.
-	 *
-	 * @return static
-	 *
-	 * @noinspection PhpDocSignatureInspection
-	 */
-	public static function create() {
-		return new self();
-	}
-
-	/**
 	 * Adds / Activates shipping method in shop integration.
 	 *
 	 * @param ShippingMethod $shipping_method Shipping method.
