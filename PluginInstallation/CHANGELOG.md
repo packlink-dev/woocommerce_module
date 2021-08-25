@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [v3.2.1](https://github.com/logeecom/pl_woocommerce_module/compare/v3.2.0...v3.2.1) - 2021-08-25
+### Changed
+- Updated to the new shipping statuses and sending custom shipment reference to the Packlink API.
+
 ## [v3.2.0](https://github.com/logeecom/pl_woocommerce_module/compare/v3.1.3...v3.2.0) - 2021-07-07
 ### Changed
 - Updated to the module white-label changes.
