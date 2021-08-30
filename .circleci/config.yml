@@ -269,6 +269,9 @@ jobs:
     executor: deployer
     working_directory: ~/woocommerce
     steps:
+      - run:
+          name: Export Python 2
+          command: export CLOUDSDK_PYTHON=python2
       - checkout
       - gcp-cli/install
       - gcp-cli/initialize
