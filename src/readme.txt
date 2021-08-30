@@ -68,12 +68,12 @@ Click <a href="https://support-pro.packlink.com/hc/es-es/articles/210158585" tar
 
 == Changelog ==
 
-#### 3.2.1
+#### 3.2.1 - August 30, 2021
 
 **Updates**
 
 - Add order reference sync.
-- Support additional statuses
+- Add support for additional statuses.
 
 #### 3.2.0 - July 07, 2021
 

@@ -70,6 +70,7 @@ class Shop_Order_Service extends Singleton implements BaseShopOrderService {
 
 		$order = new Order();
 		$order->setId( $order_id );
+		$order->setOrderNumber( $wc_order->get_order_number() );
 		$order->setStatus( $wc_order->get_status() );
 		$order->setBasePrice( $wc_order->get_subtotal() );
 		$order->setCartPrice( $wc_order->get_total() - $wc_order->get_shipping_total() );

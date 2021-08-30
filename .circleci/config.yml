@@ -3,7 +3,7 @@ version: 2.1
 
 orbs:
   slack: circleci/slack@3.4.2
-  gcp-cli: circleci/gcp-cli@1.8.3
+  gcp-cli: circleci/gcp-cli@2.2.0
 
 executors:
   test_builder_56:
