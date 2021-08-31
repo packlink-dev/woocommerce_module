@@ -73,7 +73,7 @@ executors:
           password: $DOCKERHUB_TOKEN
   deployer:
     docker:
-      - image: cimg/base:2021.04
+      - image: cimg/php:7.3.0
         auth:
           username: $DOCKERHUB_USERNAME
           password: $DOCKERHUB_TOKEN
