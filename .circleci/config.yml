@@ -8,7 +8,7 @@ orbs:
 executors:
   test_builder_56:
     docker:
-      - image: php:5.6
+      - image: php:5.6.40
         auth:
           username: $DOCKERHUB_USERNAME
           password: $DOCKERHUB_TOKEN
@@ -47,7 +47,7 @@ executors:
           password: $DOCKERHUB_TOKEN
   test_builder_72:
     docker:
-      - image: php:7.2
+      - image: php:7.2.34
         auth:
           username: $DOCKERHUB_USERNAME
           password: $DOCKERHUB_TOKEN
@@ -271,9 +271,6 @@ jobs:
     steps:
       - checkout
       - gcp-cli/install
-      - run:
-          name: Update Gcloud components
-          command: gcloud components update
       - gcp-cli/initialize
       - run:
           name: Build Package
@@ -301,13 +298,9 @@ workflows:
   woocommerce_module:
     jobs:
       - php_test_56: &test_php
-          context:
-            - packlink-dockerhub
-            - packlink-cdn-publish
-            - packlink-github
           filters:
-            branches:
-              ignore: master
+            tags:
+              ignore: /.*/
       - php_test_70: *test_php
       - php_test_71: *test_php
       - php_test_72: *test_php
@@ -319,9 +312,7 @@ workflows:
             - packlink-github
           filters:
             branches:
-              #ignore:
-              #  - /.*/
-              only:
-                - fix-circleci
-            #tags:
-            #  only: /.*/
+              ignore:
+                - /.*/
+            tags:
+              only: /.*/
