@@ -8,7 +8,7 @@ orbs:
 executors:
   test_builder_56:
     docker:
-      - image: php:5.6
+      - image: php:5.6.40
         auth:
           username: $DOCKERHUB_USERNAME
           password: $DOCKERHUB_TOKEN
@@ -47,7 +47,7 @@ executors:
           password: $DOCKERHUB_TOKEN
   test_builder_72:
     docker:
-      - image: php:7.2
+      - image: php:7.2.34
         auth:
           username: $DOCKERHUB_USERNAME
           password: $DOCKERHUB_TOKEN
@@ -60,7 +60,7 @@ executors:
           password: $DOCKERHUB_TOKEN
   test_builder_73:
     docker:
-      - image: php:7.3
+      - image: php:7.3.21
         auth:
           username: $DOCKERHUB_USERNAME
           password: $DOCKERHUB_TOKEN
@@ -73,7 +73,7 @@ executors:
           password: $DOCKERHUB_TOKEN
   deployer:
     docker:
-      - image: circleci/php:7.3
+      - image: circleci/php:7.3.0
         auth:
           username: $DOCKERHUB_USERNAME
           password: $DOCKERHUB_TOKEN
@@ -88,7 +88,7 @@ jobs:
           name: Install system packages php 5.6
           command: |
             apt-get update
-            apt-get install -y  git wget curl subversion mysql-client zlib1g-dev/oldstable
+            apt-get install -y  git wget curl subversion mysql-client zlib1g-dev/oldoldstable
       - run:
           name: Enable PHP 5.6 modules
           command: |
@@ -126,7 +126,7 @@ jobs:
           name: Install system packages php 7.0
           command: |
             apt-get update
-            apt-get install -y  git wget curl subversion mysql-client php7.0-mysql/oldstable php7.0-zip/oldstable zlib1g-dev/oldstable
+            apt-get install -y  git wget curl subversion mysql-client php7.0-mysql/oldoldstable php7.0-zip/oldoldstable zlib1g-dev/oldoldstable
       - run:
           name: Enable PHP 7.0 modules
           command: |
@@ -163,7 +163,7 @@ jobs:
           name: Install system packages php 7.1
           command: |
             apt-get update
-            apt-get install -y git wget curl subversion default-mysql-client php7.3-mysql/stable php7.3-zip/stable zlib1g-dev/stable php7.3-common/stable
+            apt-get install -y git wget curl subversion default-mysql-client php7.3-mysql/oldstable php7.3-zip/oldstable zlib1g-dev/oldstable php7.3-common/oldstable
       - run:
           name: Enable PHP 7.1 modules
           command: |
@@ -200,7 +200,7 @@ jobs:
           name: Install system packages php 7.2
           command: |
             apt-get update
-            apt-get install -y  wget git curl subversion default-mysql-client php7.3-mysql/stable php7.3-zip/stable zlib1g-dev/stable php7.3-common/stable
+            apt-get install -y  wget git curl subversion default-mysql-client php7.3-mysql/oldstable php7.3-zip/oldstable zlib1g-dev/oldstable php7.3-common/oldstable
       - run:
           name: Enable PHP 7.2 modules
           command: |
@@ -237,7 +237,7 @@ jobs:
           name: Install system packages php 7.3
           command: |
             apt-get update
-            apt-get install -y git wget curl subversion default-mysql-client php7.3-mysql/stable php7.3-zip/stable zlib1g-dev/stable php7.3-common/stable libzip-dev/stable
+            apt-get install -y git wget curl subversion default-mysql-client php7.3-mysql/oldstable php7.3-zip/oldstable zlib1g-dev/oldstable php7.3-common/oldstable libzip-dev/oldstable
       - run:
           name: Enable PHP 7.3 modules
           command: |
@@ -269,9 +269,6 @@ jobs:
     executor: deployer
     working_directory: ~/woocommerce
     steps:
-      - run:
-          name: Export Python 2
-          command: export CLOUDSDK_PYTHON=python2
       - checkout
       - gcp-cli/install
       - gcp-cli/initialize
@@ -301,13 +298,9 @@ workflows:
   woocommerce_module:
     jobs:
       - php_test_56: &test_php
-          context:
-            - packlink-dockerhub
-            - packlink-cdn-publish
-            - packlink-github
           filters:
-            branches:
-              ignore: master
+            tags:
+              ignore: /.*/
       - php_test_70: *test_php
       - php_test_71: *test_php
       - php_test_72: *test_php
