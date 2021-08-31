@@ -274,6 +274,9 @@ jobs:
           command: export CLOUDSDK_PYTHON=python2
       - checkout
       - gcp-cli/install
+      - run:
+          name: Update Gcloud components
+          command: gcloud components update
       - gcp-cli/initialize
       - run:
           name: Build Package
