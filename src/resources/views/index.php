@@ -219,10 +219,7 @@ $data = $this->resolve_view_arguments();
 				let content = document.getElementById('pl-page');
 				let localOffset = offset + content.offsetTop + 20;
 
-				let footer = document.getElementById('wpfooter');
-				if (footer) {
-					localOffset += footer.clientHeight;
-				}
+				localOffset += <?php echo Shop_Helper::get_footer_height(); ?>;
 
 				content.style.height = `calc(100% - ${localOffset}px`;
 
