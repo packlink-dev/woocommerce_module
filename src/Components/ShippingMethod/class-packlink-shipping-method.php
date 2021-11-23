@@ -374,7 +374,7 @@ class Packlink_Shipping_Method extends \WC_Shipping_Method {
 				$to_country,
 				$to_zip,
 				$this->build_parcels( $package, $default_parcel ),
-				wc_tax_enabled() ? $package['cart_subtotal'] : $package['contents_cost'],
+				$package['cart_subtotal'],
 				System_Info_Service::SYSTEM_ID
 			);
 
