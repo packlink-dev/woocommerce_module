@@ -4,6 +4,7 @@ namespace Packlink\WooCommerce\Controllers;
 
 use Logeecom\Infrastructure\Configuration\Configuration;
 use Logeecom\Infrastructure\ServiceRegister;
+use Packlink\WooCommerce\Components\Services\Config_Service;
 
 /**
  * Class Packlink_Support_Controller
@@ -11,44 +12,63 @@ use Logeecom\Infrastructure\ServiceRegister;
  * @package Packlink\WooCommerce\Controllers
  */
 class Packlink_Support_Controller extends Packlink_Base_Controller {
-    /**
-     * @var Configuration
-     */
-    private $config_service;
+	/**
+	 * @var Configuration
+	 */
+	private $config_service;
 
-    /**
-     * Retrieves async process request timeout value.
-     */
-    public function get() {
-        $this->return_json([
-            'ASYNC_PROCESS_TIMEOUT' => $this->get_config_service()->getAsyncRequestTimeout(),
-        ]);
-    }
+	/**
+	 * Retrieves configs.
+	 */
+	public function get() {
+		$this->return_json( [
+			'ASYNC_PROCESS_TIMEOUT' => $this->get_config_service()->getAsyncRequestTimeout(),
+			'FOOTER_HEIGHT'         => $this->get_config_service()->get_footer_height(),
+		] );
+	}
 
-    /**
-     * Sets async process request timeout value.
-     */
-    public function set() {
-        $body = json_decode($this->get_raw_input(), true);
+	/**
+	 * Sets configs.
+	 */
+	public function set() {
+		$body = json_decode( $this->get_raw_input(), true );
 
-        if (!isset($body['asyncProcessTimeout']) || !is_int($body['asyncProcessTimeout'])) {
-            $this->return_json(['success' => false]);
-        }
+		if ( isset( $body['asyncProcessTimeout'] ) ) {
+			$this->set_timeout( $body['asyncProcessTimeout'] );
+		}
 
-        $this->get_config_service()->setAsyncRequestTimeout($body['asyncProcessTimeout']);
+		if ( isset( $body['footerHeight'] ) ) {
+			$this->set_footer_height( $body['footerHeight'] );
+		}
 
-        $this->return_json(['success' => true]);
-    }
+		$this->return_json( [ 'success' => true ] );
+	}
 
-    /**
-     * @return Configuration|object
-     */
-    private function get_config_service()
-    {
-        if ($this->config_service === null) {
-            $this->config_service = ServiceRegister::getService(Configuration::CLASS_NAME);
-        }
+	private function set_footer_height( $height ) {
+		if ( ! is_int( $height ) ) {
+			return;
+		}
 
-        return $this->config_service;
-    }
+		$this->get_config_service()->set_footer_height( $height );
+	}
+
+	private function set_timeout( $timeout ) {
+		if ( ! is_int( $timeout ) ) {
+			return;
+		}
+
+		$this->get_config_service()->setAsyncRequestTimeout( $timeout );
+	}
+
+	/**
+	 * @return Config_Service
+	 */
+	private function get_config_service() {
+		if ( $this->config_service === null ) {
+			$this->config_service = ServiceRegister::getService( Configuration::CLASS_NAME );
+		}
+
+		/** @noinspection PhpIncompatibleReturnTypeInspection */
+		return $this->config_service;
+	}
 }

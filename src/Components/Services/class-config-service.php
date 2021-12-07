@@ -30,6 +30,7 @@ class Config_Service extends Configuration {
 	 * Max inactivity period for a task in seconds
 	 */
 	const MAX_TASK_INACTIVITY_PERIOD = 60;
+	const DEFAULT_FOOTER_HEIGHT = 40;
 
 	/**
 	 * Singleton instance of this class.
@@ -164,5 +165,25 @@ class Config_Service extends Configuration {
 	 */
 	public function set_default_shipping_method( ShippingMethod $shipping_method = null ) {
 		$this->saveConfigValue( 'Default_Shipping', $shipping_method ? $shipping_method->toArray() : null );
+	}
+
+	/**
+	 * Retrieves footer height.
+	 *
+	 * @return int
+	 */
+	public function get_footer_height() {
+		$height = $this->getConfigValue( 'Footer_Height' );
+
+		return $height ?: self::DEFAULT_FOOTER_HEIGHT;
+	}
+
+	/**
+	 * Saves footer height.
+	 *
+	 * @param int $height
+	 */
+	public function set_footer_height( $height ) {
+		$this->saveConfigValue( 'Footer_Height', $height );
 	}
 }

@@ -7,6 +7,9 @@
 
 namespace Packlink\WooCommerce\Components\Utility;
 
+use Logeecom\Infrastructure\ServiceRegister;
+use Packlink\BusinessLogic\Configuration;
+use Packlink\WooCommerce\Components\Services\Config_Service;
 use Packlink\WooCommerce\Components\Services\Logger_Service;
 
 /**
@@ -114,7 +117,7 @@ class Shop_Helper {
 	 *
 	 * @param string $name Name of the controller without "Packlink" and "Controller".
 	 * @param string $action Name of the action.
-	 * @param array  $params Associative array of parameters.
+	 * @param array $params Associative array of parameters.
 	 *
 	 * @return string
 	 */
@@ -198,6 +201,18 @@ class Shop_Helper {
 			'email' => $user->user_email,
 			'phone' => get_user_meta( $user_id, 'billing_phone' ),
 		);
+	}
+
+	/**
+	 * Retrieves footer height.
+	 *
+	 * @return int
+	 */
+	public static function get_footer_height() {
+		/** @var Config_Service $config_service */
+		$config_service = ServiceRegister::getService( Configuration::CLASS_NAME );
+
+		return $config_service->get_footer_height();
 	}
 
 	/**
