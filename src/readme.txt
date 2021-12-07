@@ -68,6 +68,12 @@ Click <a href="https://support-pro.packlink.com/hc/es-es/articles/210158585" tar
 
 == Changelog ==
 
+#### 3.2.5 - December 7, 2021
+
+**Updates**
+- Added configuration for page footer height.
+- Fixed shipping cost calculation.
+
 #### 3.2.4 - August 31, 2021
 
 **Updates**
