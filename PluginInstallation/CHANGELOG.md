@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 ## [v3.2.6](https://github.com/logeecom/pl_woocommerce_module/compare/v3.2.5...v3.2.6) - 2022-02-17
 # Changed
 - Updated to the latest Core changes regarding changing the value of the marketing calls flag.
-- Updated compatible versions of WordPress (5.9.0) and WooCommerce (6.1.0).
+- Updated compatible versions of WordPress (5.9.0) and WooCommerce (6.2.0).
 
 ## [v3.2.5](https://github.com/logeecom/pl_woocommerce_module/compare/v3.2.4...v3.2.5) - 2021-12-07
 ### Added
