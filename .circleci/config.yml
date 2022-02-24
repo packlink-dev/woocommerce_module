@@ -284,12 +284,12 @@ jobs:
             gsutil acl ch -u AllUsers:R gs://${PROD_CDN_URL}/modules/woocommerce/statics/${CIRCLE_TAG}.zip
       - slack/notify:
           color: '#00FF00'
-          channel: 'logeecom'
+          channel: '${SLACK_CHANNEL}'
           message: 'A new version has been released: ${CIRCLE_TAG}'
           webhook: '${SLACK_WEBHOOK}'
       - slack/notify:
           color: '#00FF00'
-          channel: 'releases'
+          channel: '${SLACK_CHANNEL_RELEASES}'
           message: 'A new version has been released: ${CIRCLE_TAG}'
           webhook: '${SLACK_WEBHOOK}'
 
