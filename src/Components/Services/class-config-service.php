@@ -30,7 +30,11 @@ class Config_Service extends Configuration {
 	 * Max inactivity period for a task in seconds
 	 */
 	const MAX_TASK_INACTIVITY_PERIOD = 60;
-	const DEFAULT_FOOTER_HEIGHT = 40;
+	const DEFAULT_FOOTER_HEIGHT      = 40;
+	/**
+	 * The default async request timeout when manual sync enabled
+	 */
+	const DEFAULT_ASYNC_REQUEST_TIMEOUT_WITH_MANUAL_SYNC = 300000;
 
 	/**
 	 * Singleton instance of this class.
@@ -130,6 +134,19 @@ class Config_Service extends Configuration {
 	}
 
 	/**
+	 * Returns async process timeout in milliseconds.
+	 *
+	 * @return int|null
+	 */
+	public function getAsyncRequestTimeout() {
+		if ( $this->get_manual_sync_status() ) {
+			return self::DEFAULT_ASYNC_REQUEST_TIMEOUT_WITH_MANUAL_SYNC;
+		}
+
+		return $this->getConfigValue( 'asyncRequestTimeout' );
+	}
+
+	/**
 	 * Sets database version for migration scripts
 	 *
 	 * @param string $database_version Database version.
@@ -185,5 +202,25 @@ class Config_Service extends Configuration {
 	 */
 	public function set_footer_height( $height ) {
 		$this->saveConfigValue( 'Footer_Height', $height );
+	}
+
+	/**
+	 * Retrieves manual synchronization status.
+	 *
+	 * @return bool
+	 */
+	public function get_manual_sync_status() {
+		$manual_sync_status = $this->getConfigValue( 'Manual_Sync' );
+
+		return $manual_sync_status ?: false;
+	}
+
+	/**
+	 * Saves manual synchronization status.
+	 *
+	 * @param bool $manual_sync_status
+	 */
+	public function set_manual_sync_status( $manual_sync_status ) {
+		$this->saveConfigValue( 'Manual_Sync', $manual_sync_status );
 	}
 }
