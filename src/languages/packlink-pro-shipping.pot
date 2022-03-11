@@ -762,3 +762,11 @@ msgstr ""
 #. Author URI of the plugin
 msgid "https://pro.packlink.es/"
 msgstr ""
+
+#: Components/Services/class-shipment-draft-service.php:59
+msgid "Shipment draft for order %s created successfully"
+msgstr ""
+
+#: Components/Services/class-shipment-draft-service.php:66
+msgid "Previous attempt to create a draft failed. Error: Draft already exists"
+msgstr ""
