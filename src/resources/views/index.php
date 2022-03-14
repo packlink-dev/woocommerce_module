@@ -102,6 +102,10 @@ $data = $this->resolve_view_arguments();
 					submitUrl: "<?php echo Shop_Helper::get_controller_url( 'Warehouse', 'submit' ); //phpcs:ignore ?>",
 					searchPostalCodesUrl: "<?php echo Shop_Helper::get_controller_url( 'Warehouse', 'search_postal_codes' ); //phpcs:ignore ?>"
 				},
+				'manual-sync': {
+					getUrl: "<?php echo Shop_Helper::get_controller_url( 'Manual_Sync', 'get_manual_sync_status' ); //phpcs:ignore ?>",
+					submitUrl: "<?php echo Shop_Helper::get_controller_url( 'Manual_Sync', 'set_manual_sync_status' ); //phpcs:ignore ?>",
+				},
 				'configuration': {
 					getDataUrl: "<?php echo Shop_Helper::get_controller_url( 'Configuration', 'get' ); //phpcs:ignore ?>"
 				},

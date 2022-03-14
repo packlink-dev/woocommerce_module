@@ -71,7 +71,8 @@ class Packlink_Index extends Packlink_Base_Controller {
 			'System_Info',
 			'Edit_Service',
 			'Shipping_Zones',
-            'Support'
+			'Support',
+			'Manual_Sync'
 		);
 
 		return in_array( $controller_name, $allowed_controllers, true );
