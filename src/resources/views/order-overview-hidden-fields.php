@@ -13,6 +13,8 @@ $src = Shop_Helper::get_plugin_base_url() . 'resources/images/logo.png';
 <div class="pl-hidden-fields-container">
 	<input type="hidden" id="pl-create-endpoint"
 		   value="<?php echo Shop_Helper::get_controller_url( 'Order_Details', 'create_draft' ); ?>"/>
+	<input type="hidden" id="pl-check-manual-sync-status"
+		   value="<?php echo Shop_Helper::get_controller_url( 'Manual_Sync', 'get_manual_sync_status' ); ?>"/>
 	<input type="hidden" id="pl-check-status"
 		   value="<?php echo Shop_Helper::get_controller_url( 'Order_Overview', 'get_draft_status' ); ?>"/>
 
