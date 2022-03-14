@@ -24,6 +24,7 @@ use Packlink\BusinessLogic\OrderShipmentDetails\Models\OrderShipmentDetails;
 use Packlink\BusinessLogic\OrderShipmentDetails\OrderShipmentDetailsService;
 use Packlink\BusinessLogic\ShipmentDraft\ShipmentDraftService;
 use Packlink\WooCommerce\Components\Services\Config_Service;
+use Packlink\WooCommerce\Components\Services\Shipment_Draft_Service;
 use Packlink\WooCommerce\Components\Utility\Script_Loader;
 use Packlink\WooCommerce\Components\Utility\Shop_Helper;
 
@@ -82,7 +83,8 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 	}
 
 	/**
-	 * Populates column with print label buttons.
+	 * Populates one column with print label buttons
+	 * and one column with Packlink shipping button.
 	 *
 	 * @param string $column Column.
 	 *
@@ -130,36 +132,7 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 		}
 
 		if ( static::COLUMN_PACKLINK_ID === $column && ! empty( $this->get_config_service()->getAuthorizationToken() ) ) {
-			/** @var ShipmentDraftService $draft_service */
-			$draft_service = ServiceRegister::getService( ShipmentDraftService::CLASS_NAME );
-			$draft_status  = $draft_service->getDraftStatus( (string) $post->ID );
-			$src           = Shop_Helper::get_plugin_base_url() . 'resources/images/logo.png';
-
-			switch ( $draft_status->status ) {
-				case QueueItem::COMPLETED:
-					$deleted = $this->get_order_shipment_details_service()->isShipmentDeleted( $shipment_details->getReference() );
-					$url     = '';
-					if ( ! $deleted ) {
-						$url = $shipment_details->getShipmentUrl();
-					}
-
-					$html = '<a ' . ( $deleted ? 'disabled' : 'target="_blank"  href="' . esc_url( $url ) . '"' )
-					        . ' class="button pl-draft-button" ><img class="pl-image" src="' . esc_url( $src ) . '" alt="">'
-					        . '<span>' . __( 'View on Packlink', 'packlink-pro-shipping' ) . '</span></a>';
-					break;
-				case QueueItem::QUEUED:
-				case QueueItem::IN_PROGRESS:
-					$html = '<div class="pl-draft-in-progress" data-order-id="' . $post->ID . '">'
-					        . __( 'Draft is currently being created.', 'packlink-pro-shipping' )
-					        . '</div>';
-					break;
-				default:
-					$html = '<button class="button pl-create-draft-button" data-order-id="' . $post->ID . '"><img class="pl-image" src="' . esc_url( $src ) . '" alt="">'
-					        . '<span>' . __( 'Send with Packlink', 'packlink-pro-shipping' ) . '</span>'
-					        . '</button>';
-			}
-
-			echo $html;
+			echo $this->get_packlink_shipping_button( $post );
 		}
 	}
 
@@ -311,6 +284,46 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 			);
 			Script_Loader::load_css( array( 'css/packlink-order-overview.css' ) );
 		}
+	}
+
+	/**
+	 * Returns appropriate button (Send with Packlink or View on Packlink)
+	 * or label (Draft is currently being crated)
+	 *
+	 * @param $post
+	 *
+	 * @return string
+	 */
+	protected function get_packlink_shipping_button( $post ) {
+		$orderId          = (string) $post->ID;
+		$src              = Shop_Helper::get_plugin_base_url() . 'resources/images/logo.png';
+		$shipment_details = $this->get_order_shipment_details_service()->getDetailsByOrderId( $orderId );
+
+		if ( $shipment_details && ! empty( $shipment_details->getReference() ) ) {
+			$deleted = $this->get_order_shipment_details_service()->isShipmentDeleted( $shipment_details->getReference() );
+			$url     = '';
+			if ( ! $deleted ) {
+				$url = $shipment_details->getShipmentUrl();
+			}
+
+			return '<a ' . ( $deleted ? 'disabled' : 'target="_blank"  href="' . esc_url( $url ) . '"' )
+			       . ' class="button pl-draft-button" ><img class="pl-image" src="' . esc_url( $src ) . '" alt="">'
+			       . '<span>' . __( 'View on Packlink', 'packlink-pro-shipping' ) . '</span></a>';
+		}
+
+		$shipment_draft_service = $this->get_shipment_draft_service();
+		$draft_status           = $shipment_draft_service->getDraftStatus( $orderId );
+		if ( in_array( $draft_status->status, [ QueueItem::QUEUED, QueueItem::IN_PROGRESS ], true ) &&
+		     ! $this->get_config_service()->get_manual_sync_status()
+		) {
+			return '<div class="pl-draft-in-progress" data-order-id="' . $orderId . '">'
+			       . __( 'Draft is currently being created.', 'packlink-pro-shipping' )
+			       . '</div>';
+		}
+
+		return '<button class="button pl-create-draft-button" data-order-id="' . $orderId . '"><img class="pl-image" src="' . esc_url( $src ) . '" alt="">'
+		       . '<span>' . __( 'Send with Packlink', 'packlink-pro-shipping' ) . '</span>'
+		       . '</button>';
 	}
 
 	/**
@@ -466,4 +479,17 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 
 		return $this->config_service;
 	}
+
+	/**
+	 * Returns an instance of shipment draft service.
+	 *
+	 * @return Shipment_Draft_Service
+	 */
+	private function get_shipment_draft_service() {
+		/** @var Shipment_Draft_Service $draft_service */
+		$draft_service = ServiceRegister::getService( ShipmentDraftService::CLASS_NAME );
+
+		return $draft_service;
+	}
 }
+
