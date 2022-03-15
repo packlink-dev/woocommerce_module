@@ -170,6 +170,9 @@ $data = $this->resolve_view_arguments();
 						'pl-default-warehouse-page': {
 							'pl-main-page-holder': <?php echo $data['templates']['default-warehouse']; //phpcs:ignore ?>
 						},
+						'pl-manual-sync-page': {
+							'pl-main-page-holder': <?php echo $data['templates']['manual-sync']; //phpcs:ignore ?>
+						},
 						'pl-configuration-page': {
 							'pl-main-page-holder': <?php echo $data['templates']['configuration']; //phpcs:ignore ?>,
 							'pl-header-section': ''

@@ -126,6 +126,7 @@ class Bootstrap_Component extends BootstrapComponent {
 				return new FileResolverService(array(
 					__DIR__ . '/../resources/packlink/brand/countries',
 					__DIR__ . '/../resources/packlink/countries',
+					__DIR__ . '/../resources/countries',
 				));
 			}
 		);
