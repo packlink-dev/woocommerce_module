@@ -23,20 +23,20 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Packlink_Manual_Sync_Controller extends Packlink_Base_Controller {
 
 	/**
-	 * Returns manual sync status
+	 * Returns whether manual synchronization is enabled.
 	 *
 	 * @return void
 	 */
-	public function get_manual_sync_status() {
+	public function is_manual_sync_enabled() {
 		$this->return_json( [ 'manual_sync_status' => $this->get_config_service()->is_manual_sync_enabled() ] );
 	}
 
 	/**
-	 * Sets manual sync status
+	 * Saves whether manual synchronization is enabled.
 	 *
 	 * @return void
 	 */
-	public function set_manual_sync_status() {
+	public function set_manual_sync_enabled() {
 		$this->validate( 'yes', true );
 		$raw     = $this->get_raw_input();
 		$payload = json_decode( $raw, true );
