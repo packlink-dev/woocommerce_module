@@ -36,7 +36,7 @@ class Paid_Order_Handler {
 	 */
 	public static function handle( $order_id, WC_Order $order ) {
 
-		if ( ! self::get_config_service()->get_manual_sync_status()
+		if ( ! self::get_config_service()->is_manual_sync_enabled()
 		     && $order->is_paid() && static::is_packlink_order( $order ) && static::has_shippable_product( $order ) ) {
 			/** @var ShipmentDraftService $draft_service */
 			$draft_service = ServiceRegister::getService( ShipmentDraftService::CLASS_NAME );

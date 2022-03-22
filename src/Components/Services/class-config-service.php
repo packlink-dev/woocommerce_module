@@ -139,7 +139,7 @@ class Config_Service extends Configuration {
 	 * @return int|null
 	 */
 	public function getAsyncRequestTimeout() {
-		if ( $this->get_manual_sync_status() ) {
+		if ( $this->is_manual_sync_enabled() ) {
 			return self::DEFAULT_ASYNC_REQUEST_TIMEOUT_WITH_MANUAL_SYNC;
 		}
 
@@ -205,22 +205,22 @@ class Config_Service extends Configuration {
 	}
 
 	/**
-	 * Retrieves manual synchronization status.
+	 * Returns whether manual synchronization is enabled.
 	 *
 	 * @return bool
 	 */
-	public function get_manual_sync_status() {
-		$manual_sync_status = $this->getConfigValue( 'Manual_Sync' );
+	public function is_manual_sync_enabled() {
+		$is_manual_sync_enabled = $this->getConfigValue( 'Manual_Sync' );
 
-		return $manual_sync_status ?: false;
+		return $is_manual_sync_enabled ?: false;
 	}
 
 	/**
-	 * Saves manual synchronization status.
+	 * Saves whether manual synchronization is enabled.
 	 *
-	 * @param bool $manual_sync_status
+	 * @param bool $manual_sync_enabled
 	 */
-	public function set_manual_sync_status( $manual_sync_status ) {
-		$this->saveConfigValue( 'Manual_Sync', $manual_sync_status );
+	public function set_manual_sync_enabled( $manual_sync_enabled ) {
+		$this->saveConfigValue( 'Manual_Sync', $manual_sync_enabled );
 	}
 }

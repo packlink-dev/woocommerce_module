@@ -28,7 +28,7 @@ class Packlink_Manual_Sync_Controller extends Packlink_Base_Controller {
 	 * @return void
 	 */
 	public function get_manual_sync_status() {
-		$this->return_json( [ 'manual_sync_status' => $this->get_config_service()->get_manual_sync_status() ] );
+		$this->return_json( [ 'manual_sync_status' => $this->get_config_service()->is_manual_sync_enabled() ] );
 	}
 
 	/**
@@ -40,7 +40,7 @@ class Packlink_Manual_Sync_Controller extends Packlink_Base_Controller {
 		$this->validate( 'yes', true );
 		$raw     = $this->get_raw_input();
 		$payload = json_decode( $raw, true );
-		$this->get_config_service()->set_manual_sync_status( $payload['manual_sync_status'] );
+		$this->get_config_service()->set_manual_sync_enabled( $payload['manual_sync_status'] );
 
 		$this->return_json( [ 'success' => true ] );
 	}

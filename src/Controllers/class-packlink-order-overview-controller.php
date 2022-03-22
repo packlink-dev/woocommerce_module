@@ -314,7 +314,7 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 		$shipment_draft_service = $this->get_shipment_draft_service();
 		$draft_status           = $shipment_draft_service->getDraftStatus( $orderId );
 		if ( in_array( $draft_status->status, [ QueueItem::QUEUED, QueueItem::IN_PROGRESS ], true ) &&
-		     ! $this->get_config_service()->get_manual_sync_status()
+		     ! $this->get_config_service()->is_manual_sync_enabled()
 		) {
 			return '<div class="pl-draft-in-progress" data-order-id="' . $orderId . '">'
 			       . __( 'Draft is currently being created.', 'packlink-pro-shipping' )

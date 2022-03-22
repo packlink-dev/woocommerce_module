@@ -45,7 +45,7 @@ class Shipment_Draft_Service extends ShipmentDraftService
 		delete_transient( 'packlink-pro-success-messages' );
 		delete_transient( 'packlink-pro-error-messages' );
 
-		if (!$this->get_config_service()->get_manual_sync_status()) {
+		if (!$this->get_config_service()->is_manual_sync_enabled()) {
 			parent::enqueueCreateShipmentDraftTask($orderId, $isDelayed, $delayInterval);
 		} else {
 			try {
