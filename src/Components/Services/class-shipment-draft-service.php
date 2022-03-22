@@ -40,35 +40,34 @@ class Shipment_Draft_Service extends ShipmentDraftService
 	 * @throws \Packlink\BusinessLogic\ShipmentDraft\Exceptions\DraftTaskMapExists
 	 * @throws \Packlink\BusinessLogic\ShipmentDraft\Exceptions\DraftTaskMapNotFound
 	 */
-	public function enqueueCreateShipmentDraftTask($orderId, $isDelayed = false, $delayInterval = 5)
+	public function enqueueCreateShipmentDraftTask( $orderId, $isDelayed = false, $delayInterval = 5 )
 	{
 		delete_transient( 'packlink-pro-success-messages' );
 		delete_transient( 'packlink-pro-error-messages' );
 
-		if (!$this->get_config_service()->is_manual_sync_enabled()) {
-			parent::enqueueCreateShipmentDraftTask($orderId, $isDelayed, $delayInterval);
+		if ( ! $this->get_config_service()->is_manual_sync_enabled() ) {
+			parent::enqueueCreateShipmentDraftTask( $orderId, $isDelayed, $delayInterval );
 		} else {
 			try {
-				$isRepositoryRegistered = RepositoryRegistry::isRegistered(OrderShipmentDetails::getClassName());
-				if ($isRepositoryRegistered && $this->is_draft_created($orderId)) {
-					throw new \RuntimeException('Draft already exists');
+				if ( $this->is_draft_created( $orderId ) ) {
+					throw new \RuntimeException( 'Draft already exists' );
 				}
 
-				(new SendDraftTask($orderId))->execute();
+				( new SendDraftTask( $orderId ) )->execute();
 
 				$translation = __(
 					'Shipment draft for order %s created successfully',
 					'packlink-pro-shipping'
 				);
-				$text = sprintf($translation, $orderId);
-				set_transient('packlink-pro-success-messages', $text, 10);
-			} catch (\Exception $e) {
+				$text = sprintf( $translation, $orderId );
+				set_transient( 'packlink-pro-success-messages', $text, 10 );
+			} catch ( \Exception $e ) {
 				$translation = __(
 					'Previous attempt to create a draft failed. Error: %s',
 					'packlink-pro-shipping'
 				);
-				$text = sprintf($translation, $e->getMessage());
-				set_transient('packlink-pro-error-messages', $text, 10);
+				$text = sprintf( $translation, $e->getMessage() );
+				set_transient( 'packlink-pro-error-messages', $text, 10 );
 			}
 		}
 	}
@@ -81,7 +80,7 @@ class Shipment_Draft_Service extends ShipmentDraftService
 	protected function get_config_service()
 	{
 		/** @var Config_Service $config_service */
-		$config_service = ServiceRegister::getService(Config_Service::CLASS_NAME);
+		$config_service = ServiceRegister::getService( Config_Service::CLASS_NAME );
 
 		return $config_service;
 	}
@@ -93,17 +92,17 @@ class Shipment_Draft_Service extends ShipmentDraftService
 	 *
 	 * @return boolean Returns TRUE if draft has been created; FALSE otherwise.
 	 */
-	private function is_draft_created($orderId)
+	private function is_draft_created( $orderId )
 	{
-		$shipmentDetails = $this->get_order_shipment_details_service()->getDetailsByOrderId($orderId);
+		$shipmentDetails = $this->get_order_shipment_details_service()->getDetailsByOrderId( $orderId );
 
-		if ($shipmentDetails === null) {
+		if ( $shipmentDetails === null ) {
 			return false;
 		}
 
 		$reference = $shipmentDetails->getReference();
 
-		return !empty($reference);
+		return ! empty( $reference );
 	}
 
 	/**
@@ -114,7 +113,7 @@ class Shipment_Draft_Service extends ShipmentDraftService
 	private function get_order_shipment_details_service()
 	{
 		/** @var OrderShipmentDetailsService $orderShipmentDetailsService */
-		$orderShipmentDetailsService = ServiceRegister::getService(OrderShipmentDetailsService::CLASS_NAME);
+		$orderShipmentDetailsService = ServiceRegister::getService( OrderShipmentDetailsService::CLASS_NAME );
 
 		return $orderShipmentDetailsService;
 	}
