@@ -39,7 +39,9 @@ document.addEventListener(
 		function checkManualSyncStatus(createDraftButton, orderId) {
 			Packlink.ajaxService.get(checkManualSyncStatusEndpoint.value, function (response) {
 				if (response.manual_sync_status) {
-					location.reload();
+					let arrayOfParameters = ['packlink-hide-success-notice', '_packlink_success_notice_nonce',
+						'packlink-hide-error-notice', '_packlink_error_notice_nonce'];
+					location.href = removeParametersFromUrl(arrayOfParameters);
 				} else {
 					let buttonParent = createDraftButton.parentElement;
 
@@ -48,6 +50,15 @@ document.addEventListener(
 					checkDraftStatus(buttonParent, orderId);
 				}
 			});
+		}
+
+		function removeParametersFromUrl(arrayOfParameters) {
+			let url = new URL(document.location);
+			for (let i = 0; i < arrayOfParameters.length; i++) {
+				url.searchParams.delete(arrayOfParameters[i]);
+			}
+
+			return url.href;
 		}
 
 		function checkDraftStatus(parent, orderId) {

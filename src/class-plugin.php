@@ -229,6 +229,8 @@ class Plugin {
 		);
 
 		$this->dismiss_notices();
+		$this->dismiss_success_notices();
+		$this->dismiss_error_notices();
 	}
 
 	/**
@@ -660,4 +662,31 @@ class Plugin {
 			delete_transient( 'packlink-pro-messages' );
 		}
 	}
+
+	/**
+	 * Hide a success notice if the GET variable is set.
+	 */
+	private function dismiss_success_notices() {
+		if ( function_exists( 'wp_verify_nonce' ) && isset( $_GET['packlink-hide-success-notice'], $_GET['_packlink_success_notice_nonce'] ) ) {
+			if ( ! wp_verify_nonce( sanitize_key( wp_unslash( $_GET['_packlink_success_notice_nonce'] ) ), 'packlink_hide_success_notices_nonce' ) ) {
+				wp_die( esc_html_e( 'Action failed. Please refresh the page and retry.' ) );
+			}
+
+			delete_transient( 'packlink-pro-success-messages' );
+		}
+	}
+
+	/**
+	 * Hide an error notice if the GET variable is set.
+	 */
+	private function dismiss_error_notices() {
+		if ( function_exists( 'wp_verify_nonce' ) && isset( $_GET['packlink-hide-error-notice'], $_GET['_packlink_error_notice_nonce'] ) ) {
+			if ( ! wp_verify_nonce( sanitize_key( wp_unslash( $_GET['_packlink_error_notice_nonce'] ) ), 'packlink_hide_error_notices_nonce' ) ) {
+				wp_die( esc_html_e( 'Action failed. Please refresh the page and retry.' ) );
+			}
+
+			delete_transient( 'packlink-pro-error-messages' );
+		}
+	}
 }
+
