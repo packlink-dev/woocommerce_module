@@ -60,14 +60,14 @@ class Shipment_Draft_Service extends ShipmentDraftService
 					'packlink-pro-shipping'
 				);
 				$text = sprintf( $translation, $orderId );
-				set_transient( 'packlink-pro-success-messages', $text, 10 );
+				set_transient( 'packlink-pro-success-messages', $text, 30 );
 			} catch ( \Exception $e ) {
 				$translation = __(
 					'Previous attempt to create a draft failed. Error: %s',
 					'packlink-pro-shipping'
 				);
 				$text = sprintf( $translation, $e->getMessage() );
-				set_transient( 'packlink-pro-error-messages', $text, 10 );
+				set_transient( 'packlink-pro-error-messages', $text, 30 );
 			}
 		}
 	}
