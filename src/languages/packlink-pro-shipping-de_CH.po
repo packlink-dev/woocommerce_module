@@ -2,21 +2,21 @@
 # This file is distributed under the same license as the Packlink PRO Shipping plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: Packlink PRO Shipping \n"
+"Project-Id-Version: Packlink PRO Shipping\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/packlink-pro-"
 "shipping\n"
 "POT-Creation-Date: 2019-07-16 14:51+0000\n"
-"PO-Revision-Date: 2020-02-08 19:39+0000\n"
+"PO-Revision-Date: 2022-04-08 09:27+0200\n"
 "Last-Translator: Packlink PRO <support@packlink.com>\n"
 "Language-Team: German (Switzerland)\n"
 "Language: de_CH\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Loco https://localise.biz/\n"
-"X-Domain: packlink-pro-shipping\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Loco-Version: 2.3.1; wp-5.3.2"
+"X-Generator: Poedit 3.0.1\n"
+"X-Domain: packlink-pro-shipping\n"
+"X-Loco-Version: 2.3.1; wp-5.3.2\n"
 
 #: class-plugin.php:103
 msgid ""
@@ -784,3 +784,7 @@ msgstr "Packlink Shipping S.L."
 #. Author URI of the plugin
 msgid "https://pro.packlink.es/"
 msgstr "https://pro.packlink.de/"
+
+#: Components/Services/class-shipment-draft-service.php:59
+msgid "Shipment draft for order %s created successfully"
+msgstr "Der Auftragsentwurfs %s wurde erfolgreich erstellt"
