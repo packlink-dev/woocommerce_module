@@ -16,7 +16,7 @@
  * Text Domain: packlink-pro-shipping
  * Domain Path: /languages
  * WC requires at least: 3.0.0
- * WC tested up to: 6.2.0
+ * WC tested up to: 6.3.1
  */
 
 use Packlink\WooCommerce\Plugin;

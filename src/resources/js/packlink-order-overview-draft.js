@@ -4,6 +4,7 @@ document.addEventListener(
 	'DOMContentLoaded',
 	function () {
 		let createDraftEndpoint = document.querySelector('#pl-create-endpoint'),
+			checkManualSyncStatusEndpoint = document.querySelector('#pl-check-manual-sync-status'),
 			checkDraftStatusEndpoint = document.querySelector('#pl-check-status'),
 			draftInProgressMessage = document.querySelector('#pl-draft-in-progress'),
 			draftFailedMessage = document.querySelector('#pl-draft-failed'),
@@ -28,15 +29,36 @@ document.addEventListener(
 		}
 
 		function createDraft(createDraftButton) {
-			let orderId = parseInt(createDraftButton.getAttribute('data-order-id')),
-				buttonParent = createDraftButton.parentElement;
-
-			buttonParent.removeChild(createDraftButton);
-			buttonParent.innerText = draftInProgressMessage.value;
+			let orderId = parseInt(createDraftButton.getAttribute('data-order-id'));
 
 			Packlink.ajaxService.post(createDraftEndpoint.value, {id: orderId}, function () {
-				checkDraftStatus(buttonParent, orderId);
+				checkManualSyncStatus(createDraftButton, orderId);
 			});
+		}
+
+		function checkManualSyncStatus(createDraftButton, orderId) {
+			Packlink.ajaxService.get(checkManualSyncStatusEndpoint.value, function (response) {
+				if (response.manual_sync_status) {
+					let arrayOfParameters = ['packlink-hide-success-notice', '_packlink_success_notice_nonce',
+						'packlink-hide-error-notice', '_packlink_error_notice_nonce'];
+					location.href = removeParametersFromUrl(arrayOfParameters);
+				} else {
+					let buttonParent = createDraftButton.parentElement;
+
+					buttonParent.removeChild(createDraftButton);
+					buttonParent.innerText = draftInProgressMessage.value;
+					checkDraftStatus(buttonParent, orderId);
+				}
+			});
+		}
+
+		function removeParametersFromUrl(arrayOfParameters) {
+			let url = new URL(document.location);
+			for (let i = 0; i < arrayOfParameters.length; i++) {
+				url.searchParams.delete(arrayOfParameters[i]);
+			}
+
+			return url.href;
 		}
 
 		function checkDraftStatus(parent, orderId) {

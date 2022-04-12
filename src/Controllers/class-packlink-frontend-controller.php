@@ -79,7 +79,7 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 				'packlink/js/GridResizerService.js',
 				'packlink/js/ShippingServicesRenderer.js',
 				'packlink/js/AutoTestController.js',
-				'packlink/js/ConfigurationController.js',
+				'js/override/ConfigurationController.js',
 				'packlink/js/DefaultParcelController.js',
 				'packlink/js/DefaultWarehouseController.js',
 				'packlink/js/EditServiceController.js',
@@ -101,6 +101,7 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 				'packlink/js/StateController.js',
 				'packlink/js/SystemInfoController.js',
 				'packlink/js/SettingsButtonService.js',
+				'js/custom/ManualSyncController.js',
 			)
 		);
 	}
@@ -131,10 +132,12 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	 */
 	private function get_templates() {
 		$base_dir = __DIR__ . '/../resources/packlink/templates/';
+		$override_dir = __DIR__ . '/../resources/templates/override/';
+		$custom_dir = __DIR__ . '/../resources/templates/custom/';
 
 		//@codingStandardsIgnoreStart
 		return array(
-			'configuration'             => json_encode( file_get_contents( $base_dir . 'configuration.html' ) ),
+			'configuration'             => json_encode( file_get_contents( $override_dir . 'configuration.html' ) ),
 			'countries-selection-modal' => json_encode( file_get_contents( $base_dir . 'countries-selection-modal.html' ) ),
 			'default-parcel'            => json_encode( file_get_contents( $base_dir . 'default-parcel.html' ) ),
 			'default-warehouse'         => json_encode( file_get_contents( $base_dir . 'default-warehouse.html' ) ),
@@ -154,6 +157,7 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 			'shipping-services-list'    => json_encode( file_get_contents( $base_dir . 'shipping-services-list.html' ) ),
 			'shipping-services-table'   => json_encode( file_get_contents( $base_dir . 'shipping-services-table.html' ) ),
 			'system-info-modal'         => json_encode( file_get_contents( $base_dir . 'system-info-modal.html' ) ),
+			'manual-sync'               => json_encode( file_get_contents( $custom_dir . 'manual-sync.html' ) ),
 		);
 		//@codingStandardsIgnoreEnd
 	}

@@ -102,6 +102,10 @@ $data = $this->resolve_view_arguments();
 					submitUrl: "<?php echo Shop_Helper::get_controller_url( 'Warehouse', 'submit' ); //phpcs:ignore ?>",
 					searchPostalCodesUrl: "<?php echo Shop_Helper::get_controller_url( 'Warehouse', 'search_postal_codes' ); //phpcs:ignore ?>"
 				},
+				'manual-sync': {
+					getUrl: "<?php echo Shop_Helper::get_controller_url( 'Manual_Sync', 'is_manual_sync_enabled' ); //phpcs:ignore ?>",
+					submitUrl: "<?php echo Shop_Helper::get_controller_url( 'Manual_Sync', 'set_manual_sync_enabled' ); //phpcs:ignore ?>",
+				},
 				'configuration': {
 					getDataUrl: "<?php echo Shop_Helper::get_controller_url( 'Configuration', 'get' ); //phpcs:ignore ?>"
 				},
@@ -165,6 +169,9 @@ $data = $this->resolve_view_arguments();
 						},
 						'pl-default-warehouse-page': {
 							'pl-main-page-holder': <?php echo $data['templates']['default-warehouse']; //phpcs:ignore ?>
+						},
+						'pl-manual-sync-page': {
+							'pl-main-page-holder': <?php echo $data['templates']['manual-sync']; //phpcs:ignore ?>
 						},
 						'pl-configuration-page': {
 							'pl-main-page-holder': <?php echo $data['templates']['configuration']; //phpcs:ignore ?>,

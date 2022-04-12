@@ -202,6 +202,8 @@ class Plugin {
 		$this->delete_logs();
 		delete_option( 'PACKLINK_DATABASE_VERSION' );
 		delete_transient( 'packlink-pro-messages' );
+		delete_transient( 'packlink-pro-error-messages' );
+		delete_transient( 'packlink-pro-success-messages' );
 	}
 
 	/**
@@ -227,6 +229,8 @@ class Plugin {
 		);
 
 		$this->dismiss_notices();
+		$this->dismiss_success_notices();
+		$this->dismiss_error_notices();
 	}
 
 	/**
@@ -292,6 +296,28 @@ class Plugin {
 		if ( $messages ) {
 			/** @noinspection DirectoryConstantCanBeUsedInspection */ // phpcs:ignore
 			include dirname( __FILE__ ) . '/resources/views/notice-message.php';
+		}
+	}
+
+	/**
+	 * Displays success message.
+	 */
+	public function admin_notice_messages_no_dismiss() {
+		$messages = get_transient( 'packlink-pro-success-messages' );
+		if ( $messages ) {
+			/** @noinspection DirectoryConstantCanBeUsedInspection */ // phpcs:ignore
+			include dirname( __FILE__ ) . '/resources/views/success-message.php';
+		}
+	}
+
+	/**
+	 * Displays error message.
+	 */
+	public function admin_error_messages() {
+		$messages = get_transient( 'packlink-pro-error-messages' );
+		if ( $messages ) {
+			/** @noinspection DirectoryConstantCanBeUsedInspection */ // phpcs:ignore
+			include dirname( __FILE__ ) . '/resources/views/error-message.php';
 		}
 	}
 
@@ -396,6 +422,8 @@ class Plugin {
 		add_action( 'template_redirect', array( $this, 'plugin_trigger_check' ) );
 		add_action( 'plugins_loaded', array( $this, 'load_plugin_text_domain' ) );
 		add_action( 'admin_notices', array( $this, 'admin_messages' ) );
+		add_action( 'admin_notices', array( $this, 'admin_notice_messages_no_dismiss' ) );
+		add_action( 'admin_notices', array( $this, 'admin_error_messages' ) );
 		if ( is_multisite() ) {
 			add_action( 'delete_blog', array( $this, 'uninstall_plugin_from_deleted_site' ) );
 		}
@@ -634,4 +662,31 @@ class Plugin {
 			delete_transient( 'packlink-pro-messages' );
 		}
 	}
+
+	/**
+	 * Hide a success notice if the GET variable is set.
+	 */
+	private function dismiss_success_notices() {
+		if ( function_exists( 'wp_verify_nonce' ) && isset( $_GET['packlink-hide-success-notice'], $_GET['_packlink_success_notice_nonce'] ) ) {
+			if ( ! wp_verify_nonce( sanitize_key( wp_unslash( $_GET['_packlink_success_notice_nonce'] ) ), 'packlink_hide_success_notices_nonce' ) ) {
+				wp_die( esc_html_e( 'Action failed. Please refresh the page and retry.' ) );
+			}
+
+			delete_transient( 'packlink-pro-success-messages' );
+		}
+	}
+
+	/**
+	 * Hide an error notice if the GET variable is set.
+	 */
+	private function dismiss_error_notices() {
+		if ( function_exists( 'wp_verify_nonce' ) && isset( $_GET['packlink-hide-error-notice'], $_GET['_packlink_error_notice_nonce'] ) ) {
+			if ( ! wp_verify_nonce( sanitize_key( wp_unslash( $_GET['_packlink_error_notice_nonce'] ) ), 'packlink_hide_error_notices_nonce' ) ) {
+				wp_die( esc_html_e( 'Action failed. Please refresh the page and retry.' ) );
+			}
+
+			delete_transient( 'packlink-pro-error-messages' );
+		}
+	}
 }
+

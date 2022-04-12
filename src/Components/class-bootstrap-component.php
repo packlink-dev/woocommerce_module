@@ -29,6 +29,8 @@ use Packlink\BusinessLogic\OrderShipmentDetails\Models\OrderShipmentDetails;
 use Packlink\BusinessLogic\Registration\RegistrationInfoService;
 use Packlink\BusinessLogic\Scheduler\Models\Schedule;
 use Packlink\BusinessLogic\ShipmentDraft\Models\OrderSendDraftTaskMap;
+use Packlink\BusinessLogic\ShipmentDraft\ShipmentDraftService;
+use Packlink\WooCommerce\Components\Services\Shipment_Draft_Service;
 use Packlink\BusinessLogic\ShippingMethod\Interfaces\ShopShippingMethodService;
 use Packlink\BusinessLogic\ShippingMethod\Models\ShippingMethod;
 use Packlink\BusinessLogic\SystemInformation\SystemInfoService;
@@ -124,7 +126,15 @@ class Bootstrap_Component extends BootstrapComponent {
 				return new FileResolverService(array(
 					__DIR__ . '/../resources/packlink/brand/countries',
 					__DIR__ . '/../resources/packlink/countries',
+					__DIR__ . '/../resources/countries',
 				));
+			}
+		);
+
+		ServiceRegister::registerService(
+			ShipmentDraftService::CLASS_NAME,
+			static function () {
+				return Shipment_Draft_Service::getInstance();
 			}
 		);
 	}
