@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [v3.2.7](https://github.com/logeecom/pl_woocommerce_module/compare/v3.2.6...v3.2.7) - 2022-04-12
+# Changed
+- Optimized order sync for users experiencing CPU surcharge by adding an option to switch to manual synchronization.
+
 ## [v3.2.6](https://github.com/logeecom/pl_woocommerce_module/compare/v3.2.5...v3.2.6) - 2022-02-17
 # Changed
 - Updated to the latest Core changes regarding changing the value of the marketing calls flag.
