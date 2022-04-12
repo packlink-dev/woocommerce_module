@@ -68,6 +68,11 @@ Click <a href="https://support-pro.packlink.com/hc/es-es/articles/210158585" tar
 
 == Changelog ==
 
+#### 3.2.7 - April 12, 2022
+
+**Updates**
+- Optimized order sync for users experiencing CPU surcharge by adding an option to switch to manual synchronization.
+
 #### 3.2.6 - February 17, 2022
 
 **Updates**
