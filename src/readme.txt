@@ -3,8 +3,8 @@ Contributors: packlink
 Tags: woocommerce, shipment, shipping, packlink
 Requires at least: 4.7
 Requires PHP: 5.5
-Tested up to: 5.9.2
-Stable tag: 3.2.7
+Tested up to: 5.9.3
+Stable tag: 3.2.8
 License: LICENSE-2.0
 License URI: http://www.apache.org/licenses/LICENSE-2.0
 
@@ -67,6 +67,16 @@ This is how the WooCommerce integration with Packlink PRO works.
 Click <a href="https://support-pro.packlink.com/hc/es-es/articles/210158585" target="_blank" title="support">here</a> to get more information about the installation of the module.
 
 == Changelog ==
+
+#### 3.2.8 - May 10, 2022
+
+**Updates**
+- Added carrier logos for Colis Prive and Shop2Shop shipping services.
+
+#### 3.2.7 - April 12, 2022
+
+**Updates**
+- Optimized order sync for users experiencing CPU surcharge by adding an option to switch to manual synchronization.
 
 #### 3.2.6 - February 17, 2022
 
