@@ -31,10 +31,11 @@ class Config_Service extends Configuration {
 	 */
 	const MAX_TASK_INACTIVITY_PERIOD = 60;
 	const DEFAULT_FOOTER_HEIGHT      = 40;
+
 	/**
-	 * The default async request timeout when manual sync enabled
+	 * Automatic task runner wakeup delay in seconds when manual sync enabled
 	 */
-	const DEFAULT_ASYNC_REQUEST_TIMEOUT_WITH_MANUAL_SYNC = 300000;
+	const DEFAULT_TASK_RUNNER_WAKEUP_DELAY_WITH_MANUAL_SYNC = 300;
 
 	/**
 	 * Singleton instance of this class.
@@ -134,19 +135,6 @@ class Config_Service extends Configuration {
 	}
 
 	/**
-	 * Returns async process timeout in milliseconds.
-	 *
-	 * @return int|null
-	 */
-	public function getAsyncRequestTimeout() {
-		if ( $this->is_manual_sync_enabled() ) {
-			return self::DEFAULT_ASYNC_REQUEST_TIMEOUT_WITH_MANUAL_SYNC;
-		}
-
-		return $this->getConfigValue( 'asyncRequestTimeout' );
-	}
-
-	/**
 	 * Sets database version for migration scripts
 	 *
 	 * @param string $database_version Database version.
@@ -213,6 +201,16 @@ class Config_Service extends Configuration {
 		$is_manual_sync_enabled = $this->getConfigValue( 'Manual_Sync' );
 
 		return $is_manual_sync_enabled ?: false;
+	}
+
+	/** @inheritdoc  */
+	public function getTaskRunnerWakeupDelay()
+	{
+		if ( $this->is_manual_sync_enabled() ) {
+			return self::DEFAULT_TASK_RUNNER_WAKEUP_DELAY_WITH_MANUAL_SYNC;
+		}
+
+		return parent::getTaskRunnerWakeupDelay();
 	}
 
 	/**
