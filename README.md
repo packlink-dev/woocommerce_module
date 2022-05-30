@@ -65,6 +65,17 @@ or go to the root directory and run:
 
 This command will run unit tests on all supported PHP versions from 5.6 to 7.3.
 
+### Manual synchronization
+
+
+For merchants that have a problem with CPU usage on their servers, there is a manual synchronization configuration option that can be set from the module configuration page.
+
+Note: This “big“ timeout will potentially not always work on the windows system.
+
+If the .ini configuration value of [max_execution_time](https://www.php.net/manual/en/info.configuration.php#ini.max-execution-time) is less than 5 minutes, this will not work on the Windows server due to the following restriction which can be found at the following [link](https://www.php.net/manual/en/info.configuration.php#ini.max-execution-time).
+
+The `set_time_limit()` function and the configuration directive `max_execution_time` only affect the execution time of the script itself. Any time spent on activity that happens outside the execution of the script such as system calls using `system()`, stream operations, database queries, etc. is not included when determining the maximum time that the script has been running. This is not true on Windows where the measured time is real.
+
 ### Releasing a new module version
 
 Please follow instructions provided [here](https://logeecom.atlassian.net/wiki/spaces/PACKLINK/pages/1367179297/WC+-+Plugin+Release+Procedure).
