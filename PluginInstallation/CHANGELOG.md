@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [v3.2.9](https://github.com/logeecom/pl_woocommerce_module/compare/v3.2.8...v3.2.9) - 2022-05-30
+### Added
+- Updated async process wakeup delay for manual sync.
+
 ## [v3.2.8](https://github.com/logeecom/pl_woocommerce_module/compare/v3.2.7...v3.2.8) - 2022-05-10
 ### Added
 - Added carrier logos for Colis Prive and Shop2Shop shipping services.
