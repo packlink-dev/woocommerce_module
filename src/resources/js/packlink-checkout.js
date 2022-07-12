@@ -26,9 +26,9 @@ var Packlink = window.Packlink || {};
 
 	function initialize() {
 		modal        = document.getElementById( 'pl-picker-modal' );
+		let isModalLocationChanged = false;
 		closeButton  = document.getElementById( 'pl-picker-modal-close' );
 		updateButton = document.querySelector( "[name='calc_shipping']" );
-
 		[].forEach.call(
 			document.getElementsByName( 'packlink_show_image' ),
 			function (item) {
@@ -46,6 +46,10 @@ var Packlink = window.Packlink || {};
 					button.addEventListener(
 						'click',
 						function () {
+							if (!isModalLocationChanged) {
+								document.body.appendChild(modal);
+								isModalLocationChanged = true;
+							}
 							initLocationPicker();
 							modal.style.display = 'block';
 						}
