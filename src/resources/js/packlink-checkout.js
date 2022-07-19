@@ -24,12 +24,12 @@ var Packlink = window.Packlink || {};
 	Packlink.checkout.setDropOffAddress     = setDropOffAddress;
 	Packlink.checkout.setSelectedLocationId = setSelectedLocationId;
 
+
 	function initialize() {
 		modal        = document.getElementById( 'pl-picker-modal' );
-		let isModalLocationChanged = false;
 		closeButton  = document.getElementById( 'pl-picker-modal-close' );
 		updateButton = document.querySelector( "[name='calc_shipping']" );
-
+		let templates = document.getElementById('packlink-js-templates');
 		[].forEach.call(
 			document.getElementsByName( 'packlink_show_image' ),
 			function (item) {
@@ -47,12 +47,10 @@ var Packlink = window.Packlink || {};
 					button.addEventListener(
 						'click',
 						function () {
-							if (!isModalLocationChanged) {
-								document.body.appendChild(modal);
-								isModalLocationChanged = true;
-							}
 							initLocationPicker();
 							modal.style.display = 'block';
+							document.body.appendChild(templates);
+
 						}
 					);
 				}
