@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [v3.2.10](https://github.com/logeecom/pl_woocommerce_module/compare/v3.2.8...v3.2.9) - 2022-07-19
+### Changed
+- Added compatibility with the new checkout page.
+
 ## [v3.2.9](https://github.com/logeecom/pl_woocommerce_module/compare/v3.2.8...v3.2.9) - 2022-05-30
 ### Changed
 - Updated async process wakeup delay for manual sync.

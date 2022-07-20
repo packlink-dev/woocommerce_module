@@ -60,8 +60,8 @@ if ( $id_value ) {
 
 <?php if ( ! is_cart() ) : ?>
 	<button type="button" id="packlink-drop-off-picker" class="button"><?php echo $button_label; ?></button>
-
-	<div id="pl-picker-modal" style="display: none;">
+	<div id="packlink-js-templates">
+		<div id="pl-picker-modal" style="display: none;">
 		<location-picker>
 			<div class="lp-content" data-lp-id="content">
 				<div class="lp-locations">
@@ -84,7 +84,7 @@ if ( $id_value ) {
 		</svg>
 	</div>
 
-	<location-picker-template>
+		<location-picker-template>
 		<div class="lp-template" id="template-container">
 			<div data-lp-id="working-hours-template" class="lp-hour-wrapper">
 				<div class="day" data-lp-id="day">
@@ -125,4 +125,5 @@ if ( $id_value ) {
 			</div>
 		</div>
 	</location-picker-template>
+	</div>
 <?php endif; ?>

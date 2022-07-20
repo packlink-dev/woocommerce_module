@@ -3,8 +3,8 @@ Contributors: packlink
 Tags: woocommerce, shipment, shipping, packlink
 Requires at least: 4.7
 Requires PHP: 5.5
-Tested up to: 5.9.3
-Stable tag: 3.2.9
+Tested up to: 6.0.0
+Stable tag: 3.2.10
 License: LICENSE-2.0
 License URI: http://www.apache.org/licenses/LICENSE-2.0
 
@@ -67,6 +67,11 @@ This is how the WooCommerce integration with Packlink PRO works.
 Click <a href="https://support-pro.packlink.com/hc/es-es/articles/210158585" target="_blank" title="support">here</a> to get more information about the installation of the module.
 
 == Changelog ==
+
+#### 3.2.10 - July 19, 2022
+
+**Updates**
+- Added compatibility with the new checkout page.
 
 #### 3.2.9 - May 30, 2022
 
