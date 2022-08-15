@@ -98,7 +98,9 @@ class Packlink_Debug_Controller extends Packlink_Base_Controller {
 
 		/** @noinspection PhpComposerExtensionStubsInspection */
 		$curl    = curl_init();
-		$verbose = fopen( 'php://temp', 'wb+' );
+		$upload_dir   = wp_upload_dir()['path'];
+		$verboseFile = $upload_dir.'/'.wp_generate_uuid4().'.curl.log';
+		$verbose = fopen( $verboseFile, 'wb+' );
 		/** @noinspection CurlSslServerSpoofingInspection */
 		/** @noinspection PhpComposerExtensionStubsInspection */
 		curl_setopt_array(
@@ -128,7 +130,7 @@ class Packlink_Debug_Controller extends Packlink_Base_Controller {
 
 		rewind( $verbose );
 		echo '<pre>', stream_get_contents( $verbose );
-
+		unlink($verboseFile);
 		/** @noinspection PhpComposerExtensionStubsInspection */
 		curl_close( $curl );
 

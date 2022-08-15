@@ -33,6 +33,7 @@ rm -rf packlink-pro-shipping/vendor/packlink/integration-core/.idea
 rm -rf packlink-pro-shipping/vendor/packlink/integration-core/tests
 rm -rf packlink-pro-shipping/vendor/packlink/integration-core/generic_tests
 rm -rf packlink-pro-shipping/vendor/packlink/integration-core/README.md
+rm -rf packlink-pro-shipping/vendor/packlink/integration-core/src/DemoUI
 rm -rf packlink-pro-shipping/vendor/packlink/integration-core/src/BusinessLogic/Utility/PdfMerge.php
 rm -rf packlink-pro-shipping/vendor/iio/libmergepdf/tests
 rm -rf packlink-pro-shipping/vendor/iio/libmergepdf/.gitignore
