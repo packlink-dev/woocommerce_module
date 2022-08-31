@@ -29,7 +29,7 @@ var Packlink = window.Packlink || {};
 		modal        = document.getElementById( 'pl-picker-modal' );
 		closeButton  = document.getElementById( 'pl-picker-modal-close' );
 		updateButton = document.querySelector( "[name='calc_shipping']" );
-		let templates = document.getElementById("packlink-js-templates");
+		let isTemplateChanged = false;
 		[].forEach.call(
 			document.getElementsByName( 'packlink_show_image' ),
 			function (item) {
@@ -47,9 +47,13 @@ var Packlink = window.Packlink || {};
 					button.addEventListener(
 						'click',
 						function () {
+							if (!isTemplateChanged) {
+								let templates = document.getElementsByClassName("packlink-js-templates");
+								document.body.appendChild(templates[0]);
+								isTemplateChanged = true;
+							}
 							initLocationPicker();
 							modal.style.display = 'block';
-							document.body.appendChild(templates);
 
 						}
 					);
