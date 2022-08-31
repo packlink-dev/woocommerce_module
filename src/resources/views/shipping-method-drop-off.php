@@ -126,4 +126,11 @@ if ( $id_value ) {
 		</div>
 	</location-picker-template>
 	</div>
+<script>
+	(()=> {
+		const packlinkDropOffTpl = document.querySelector("#packlink-js-templates");
+		packlinkDropOffTpl.parentNode.removeChild(packlinkDropOffTpl);
+		document.body.insertAdjacentHTML( 'beforeend', packlinkDropOffTpl.innerHTML);
+	})()
+</script>
 <?php endif; ?>
