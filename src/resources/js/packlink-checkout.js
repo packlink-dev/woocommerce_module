@@ -5,6 +5,7 @@ var Packlink = window.Packlink || {};
 	let modal;
 	let closeButton;
 	let updateButton;
+	let template;
 	let privateData = {
 		locations: [],
 		endpoint: null,
@@ -23,12 +24,14 @@ var Packlink = window.Packlink || {};
 	Packlink.checkout.setSaveEndpoint       = setSaveEndpoint;
 	Packlink.checkout.setDropOffAddress     = setDropOffAddress;
 	Packlink.checkout.setSelectedLocationId = setSelectedLocationId;
-
+	const getModal = () => {
+		return document.getElementById( 'pl-picker-modal' );
+	}
 	function initialize() {
-		modal        = document.getElementById( 'pl-picker-modal' );
+		modal        = getModal();
 		closeButton  = document.getElementById( 'pl-picker-modal-close' );
 		updateButton = document.querySelector( "[name='calc_shipping']" );
-
+		template = document.getElementById('packlink-js-templates');
 		[].forEach.call(
 			document.getElementsByName( 'packlink_show_image' ),
 			function (item) {
@@ -48,6 +51,8 @@ var Packlink = window.Packlink || {};
 						function () {
 							initLocationPicker();
 							modal.style.display = 'block';
+							document.body.appendChild(modal)
+							modal        = getModal()
 						}
 					);
 				}
@@ -59,6 +64,8 @@ var Packlink = window.Packlink || {};
 				'click',
 				function () {
 					modal.style.display = 'none';
+					template.appendChild(modal)
+					modal = getModal();
 				}
 			);
 
