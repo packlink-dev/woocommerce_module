@@ -24,11 +24,12 @@ var Packlink = window.Packlink || {};
 	Packlink.checkout.setDropOffAddress     = setDropOffAddress;
 	Packlink.checkout.setSelectedLocationId = setSelectedLocationId;
 
+
 	function initialize() {
 		modal        = document.getElementById( 'pl-picker-modal' );
 		closeButton  = document.getElementById( 'pl-picker-modal-close' );
 		updateButton = document.querySelector( "[name='calc_shipping']" );
-
+		let isTemplateChanged = false;
 		[].forEach.call(
 			document.getElementsByName( 'packlink_show_image' ),
 			function (item) {
@@ -46,8 +47,14 @@ var Packlink = window.Packlink || {};
 					button.addEventListener(
 						'click',
 						function () {
+							if (!isTemplateChanged) {
+								let templates = document.getElementsByClassName("packlink-js-templates");
+								document.body.appendChild(templates[0]);
+								isTemplateChanged = true;
+							}
 							initLocationPicker();
 							modal.style.display = 'block';
+
 						}
 					);
 				}
@@ -182,7 +189,6 @@ var Packlink = window.Packlink || {};
 	}
 
 	/**
-	 *
 	 * @param {HTMLElement} imageSrcInput
 	 */
 	function injectImage(imageSrcInput) {
@@ -192,7 +198,11 @@ var Packlink = window.Packlink || {};
 		image.className = 'pl-checkout-carrier-image';
 
 		let label = imageSrcInput.parentElement.querySelector( 'label' );
-		label.prepend( image );
+		if ( label ) {
+			label.prepend( image );
+		} else {
+			imageSrcInput.parentElement.prepend( image );
+		}
 	}
 
 	function initLocationPicker() {
@@ -203,7 +213,6 @@ var Packlink = window.Packlink || {};
 
 				privateData.selectedLocation = id;
 				selected                     = findLocationById( id );
-				// document.getElementById('writer').innerHTML = "SELECTED: " + event.data.payload.id;
 				Packlink.ajaxService.post(
 					privateData.endpoint,
 					selected,
