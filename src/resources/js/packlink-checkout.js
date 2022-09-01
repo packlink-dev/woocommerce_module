@@ -25,30 +25,30 @@ var Packlink = window.Packlink || {};
 	Packlink.checkout.setDropOffAddress     = setDropOffAddress;
 	Packlink.checkout.setSelectedLocationId = setSelectedLocationId;
 	const getModal = () => {
-		let modal = document.getElementById('pl-picker-modal');
+		let modal = document.getElementById("pl-picker-modal");
 		if (modal) {
 			return modal;
 		}
-		let template = document.querySelector('.packlink-js-templates');
+		let template = document.querySelector(".packlink-js-templates");
 		if (template) {
-			let modal = template.querySelector('.pl-picker-modal')
-			let templateContainer = template.querySelector('#template-container');
+			let modal = template.querySelector(".pl-picker-modal");
+			let templateContainer = template.querySelector("#template-container");
 			let templateContainerHtml = templateContainer.outerHTML;
-			modal.id = 'pl-picker-modal';
+			modal.id = "pl-picker-modal";
 			let cloned = modal.outerHTML
 			modal.remove()
-			document.body.insertAdjacentHTML( 'beforeend', cloned );
-			document.body.insertAdjacentHTML( 'beforeend', templateContainerHtml );
+			document.body.insertAdjacentHTML( "beforeend", cloned );
+			document.body.insertAdjacentHTML( "beforeend", templateContainerHtml );
 		}
 		return document.getElementById('pl-picker-modal');
 	}
 	function initialize() {
 		modal        = getModal();
-		closeButton  = document.getElementById( 'pl-picker-modal-close' );
+		closeButton  = document.getElementById( "pl-picker-modal-close" );
 		updateButton = document.querySelector( "[name='calc_shipping']" );
-		template = document.getElementById('packlink-js-templates');
+		template = document.getElementById("packlink-js-templates");
 		[].forEach.call(
-			document.getElementsByName( 'packlink_show_image' ),
+			document.getElementsByName( "packlink_show_image" ),
 			function (item) {
 				let parent     = item.parentElement;
 				let showImage  = item.value;
