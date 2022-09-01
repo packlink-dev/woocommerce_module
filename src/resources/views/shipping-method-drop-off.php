@@ -60,8 +60,8 @@ if ( $id_value ) {
 
 <?php if ( ! is_cart() ) : ?>
 	<button type="button" id="packlink-drop-off-picker" class="button"><?php echo $button_label; ?></button>
-	<div id="packlink-js-templates">
-		<div id="pl-picker-modal" style="display: none;">
+	<div class="packlink-js-templates">
+		<div class="pl-picker-modal" style="display: none;">
 		<location-picker>
 			<div class="lp-content" data-lp-id="content">
 				<div class="lp-locations">

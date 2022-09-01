@@ -25,7 +25,22 @@ var Packlink = window.Packlink || {};
 	Packlink.checkout.setDropOffAddress     = setDropOffAddress;
 	Packlink.checkout.setSelectedLocationId = setSelectedLocationId;
 	const getModal = () => {
-		return document.getElementById( 'pl-picker-modal' );
+		let modal = document.getElementById('pl-picker-modal');
+		if (modal) {
+			return modal;
+		}
+		let template = document.querySelector('.packlink-js-templates');
+		if (template) {
+			let modal = template.querySelector('.pl-picker-modal')
+			let templateContainer = template.querySelector('#template-container');
+			let templateContainerHtml = templateContainer.outerHTML;
+			modal.id = 'pl-picker-modal';
+			let cloned = modal.outerHTML
+			modal.remove()
+			document.body.insertAdjacentHTML( 'beforeend', cloned );
+			document.body.insertAdjacentHTML( 'beforeend', templateContainerHtml );
+		}
+		return document.getElementById('pl-picker-modal');
 	}
 	function initialize() {
 		modal        = getModal();
@@ -48,11 +63,13 @@ var Packlink = window.Packlink || {};
 				if (isDropOff && button) {
 					button.addEventListener(
 						'click',
-						function () {
+						function (ev) {
+							let templates = ev.target.parentNode.querySelector('.packlink-js-templates');
+							if(templates) {
+								templates.remove();
+							}
 							initLocationPicker();
 							modal.style.display = 'block';
-							document.body.appendChild(modal)
-							modal        = getModal()
 						}
 					);
 				}
@@ -64,8 +81,6 @@ var Packlink = window.Packlink || {};
 				'click',
 				function () {
 					modal.style.display = 'none';
-					template.appendChild(modal)
-					modal = getModal();
 				}
 			);
 
