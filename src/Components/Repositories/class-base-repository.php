@@ -332,7 +332,8 @@ class Base_Repository implements RepositoryInterface {
 			 * @var Entity $entity
 			 */
 			$data   = json_decode( $item['data'], true );
-			$entity = isset( $data['class_name'] ) ? new $data['class_name']() : new $this->entity_class();
+			$className = $data['class_name'];
+			$entity = isset( $className ) ? new $className() : new $this->entity_class();
 			$entity->inflate( $data );
 			$entity->setId( $item['id'] );
 
