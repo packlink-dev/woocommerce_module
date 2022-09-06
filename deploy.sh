@@ -40,6 +40,9 @@ rm -rf packlink-pro-shipping/vendor/iio/libmergepdf/.travis.yml
 rm -rf packlink-pro-shipping/vendor/iio/libmergepdf/phpunit.xml.dist
 rm -rf packlink-pro-shipping/vendor/setasign/fpdf/doc
 rm -rf packlink-pro-shipping/vendor/setasign/fpdf/tutorial
+rm -rf packlink-pro-shipping/vendor/setasign/fpdf/fpdf.php
+rm -rf packlink-pro-shipping/vendor/setasign/fpdi/src/PdfParser/Filter/Flate.php
+rm -rf packlink-pro-shipping/vendor/setasign/fpdi/src/PdfParser/StreamReader.php
 
 # Copy resources
 echo -e "\e[32mSTEP 4:\e[39m Copying resources from core to the integration..."
