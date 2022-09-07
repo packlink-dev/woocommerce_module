@@ -45,14 +45,16 @@ class Order_Drop_Off_Map extends Entity {
 	);
 
 	/**
-	 * @inheritDoc
+	 * Returns entity configuration object.
+	 *
+	 * @return EntityConfiguration Configuration object.
 	 */
 	public function getConfig() {
 		$map = new IndexMap();
-		$map->addIntegerIndex('order_id')
-		    ->addIntegerIndex('drop_off_point_id');
+		$map->addIntegerIndex( 'order_id' )
+			->addIntegerIndex( 'drop_off_point_id' );
 
-		return new EntityConfiguration($map, 'Order_Drop_Off_Map');
+		return new EntityConfiguration( $map, 'Order_Drop_Off_Map' );
 	}
 
 	/**
@@ -67,7 +69,7 @@ class Order_Drop_Off_Map extends Entity {
 	/**
 	 * Sets order ID.
 	 *
-	 * @param int $order_id
+	 * @param int $order_id ID to be set.
 	 */
 	public function set_order_id( $order_id ) {
 		$this->order_id = $order_id;
@@ -85,7 +87,7 @@ class Order_Drop_Off_Map extends Entity {
 	/**
 	 * Sets drop-off point ID.
 	 *
-	 * @param int $drop_off_point_id
+	 * @param int $drop_off_point_id Drop-off point ID to be set.
 	 */
 	public function set_drop_off_point_id( $drop_off_point_id ) {
 		$this->drop_off_point_id = $drop_off_point_id;
