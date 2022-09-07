@@ -99,7 +99,7 @@ class Packlink_Shipping_Method extends \WC_Shipping_Method {
 			'instance-settings-modal',
 		);
 
-		/** @noinspection PhpUnhandledExceptionInspection */
+		/** No inspection needed @noinspection PhpUnhandledExceptionInspection */
 		$this->repository              = RepositoryRegistry::getRepository( Shipping_Method_Map::CLASS_NAME );
 		$this->shipping_method_service = ServiceRegister::getService( ShippingMethodService::CLASS_NAME );
 		$this->configuration           = ServiceRegister::getService( Config_Service::CLASS_NAME );
@@ -127,7 +127,7 @@ class Packlink_Shipping_Method extends \WC_Shipping_Method {
 	 * Add an array of fields to be displayed on the gateway's settings screen.
 	 */
 	public function init_form_fields() {
-		$this->instance_form_fields = $this->instance_form_fields = include 'includes/settings-packlink-shipping.php';
+		$this->instance_form_fields = include 'includes/settings-packlink-shipping.php';
 	}
 
 	/**
@@ -170,7 +170,7 @@ class Packlink_Shipping_Method extends \WC_Shipping_Method {
 	/**
 	 * Finds and returns shipping classes and the products with that class.
 	 *
-	 * @param mixed $package
+	 * @param mixed $package Package.
 	 *
 	 * @return array
 	 */
@@ -191,8 +191,8 @@ class Packlink_Shipping_Method extends \WC_Shipping_Method {
 	/**
 	 * Adds specific cost for shipping class, if set.
 	 *
-	 * @param array $rate
-	 * @param       $package
+	 * @param array $rate Rate.
+	 * @param array $package Package.
 	 */
 	private function add_shipping_class_cost( array &$rate, $package ) {
 		$shipping_classes = WC()->shipping->get_shipping_classes();
@@ -202,7 +202,7 @@ class Packlink_Shipping_Method extends \WC_Shipping_Method {
 			$cost                   = 0;
 
 			foreach ( $found_shipping_classes as $shipping_class => $products ) {
-				// Also handles BW compatibility when slugs were used instead of ids
+				// Also handles BW compatibility when slugs were used instead of ids.
 				$shipping_class_term = get_term_by( 'slug', $shipping_class, 'product_shipping_class' );
 				$class_cost_string   = $shipping_class_term && $shipping_class_term->term_id ? $this->get_option( 'class_cost_' . $shipping_class_term->term_id, $this->get_option( 'class_cost_' . $shipping_class, '' ) ) : $this->get_option( 'no_class_cost', '' );
 
@@ -210,10 +210,13 @@ class Packlink_Shipping_Method extends \WC_Shipping_Method {
 					continue;
 				}
 
-				$class_cost = $this->evaluate_cost( $class_cost_string, array(
-					'qty'  => array_sum( wp_list_pluck( $products, 'quantity' ) ),
-					'cost' => array_sum( wp_list_pluck( $products, 'line_total' ) ),
-				) );
+				$class_cost = $this->evaluate_cost(
+					$class_cost_string,
+					array(
+						'qty'  => array_sum( wp_list_pluck( $products, 'quantity' ) ),
+						'cost' => array_sum( wp_list_pluck( $products, 'line_total' ) ),
+					)
+				);
 
 				if ( 'class' === $this->class_cost_calculation_type ) {
 					$cost += $class_cost;
@@ -229,8 +232,8 @@ class Packlink_Shipping_Method extends \WC_Shipping_Method {
 	/**
 	 * Evaluate a cost from a sum/string.
 	 *
-	 * @param string $sum
-	 * @param array  $args
+	 * @param string $sum Sum to be evaluated to string.
+	 * @param array  $args Arguments.
 	 *
 	 * @return mixed
 	 */
@@ -243,36 +246,38 @@ class Packlink_Shipping_Method extends \WC_Shipping_Method {
 			wc_get_price_decimal_separator(),
 			$locale['decimal_point'],
 			$locale['mon_decimal_point'],
-			','
+			',',
 		);
 		$this->fee_cost = $args['cost'];
 
 		add_shortcode( 'fee', array( $this, 'fee' ) );
 
-		$sum = do_shortcode( str_replace(
-			array(
-				'[qty]',
-				'[cost]',
-			),
-			array(
-				$args['qty'],
-				$args['cost'],
-			),
-			$sum
-		) );
+		$sum = do_shortcode(
+			str_replace(
+				array(
+					'[qty]',
+					'[cost]',
+				),
+				array(
+					$args['qty'],
+					$args['cost'],
+				),
+				$sum
+			)
+		);
 
 		remove_shortcode( 'fee', array( $this, 'fee' ) );
 
-		// Remove whitespace from string
+		// Remove whitespace from string.
 		$sum = preg_replace( '/\s+/', '', $sum );
 
-		// Remove locale from string
+		// Remove locale from string.
 		$sum = str_replace( $decimals, '.', $sum );
 
-		// Trim invalid start/end characters
+		// Trim invalid start/end characters.
 		$sum = rtrim( ltrim( $sum, "\t\n\r\0\x0B+*/" ), "\t\n\r\0\x0B+-*/" );
 
-		// Do the math
+		// Do the math.
 		return $sum ? WC_Eval_Math::evaluate( $sum ) : 0;
 	}
 
@@ -285,7 +290,7 @@ class Packlink_Shipping_Method extends \WC_Shipping_Method {
 	 */
 	private function get_packlink_shipping_method() {
 		$filter = new QueryFilter();
-		/** @noinspection PhpUnhandledExceptionInspection */
+		/** No inspection needed @noinspection PhpUnhandledExceptionInspection */
 		$filter->where( 'woocommerceShippingMethodId', '=', $this->instance_id );
 
 		/**

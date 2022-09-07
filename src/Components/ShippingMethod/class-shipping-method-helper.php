@@ -42,7 +42,7 @@ class Shipping_Method_Helper {
 	 * @throws RepositoryNotRegisteredException When repository not registered.
 	 */
 	public static function get_shipping_method_map_for_packlink_shipping_method( $method_id ) {
-		/** @noinspection PhpUnhandledExceptionInspection */
+		/** No inspection needed @noinspection PhpUnhandledExceptionInspection */
 		$repository = RepositoryRegistry::getRepository( Shipping_Method_Map::CLASS_NAME );
 		$query      = new QueryFilter();
 		$query->where( 'packlinkShippingMethodId', '=', $method_id );
@@ -57,8 +57,8 @@ class Shipping_Method_Helper {
 	 *
 	 * @return ShippingMethod Returns Packlink shipping method.
 	 *
-	 * @throws QueryFilterInvalidParamException
-	 * @throws RepositoryNotRegisteredException
+	 * @throws QueryFilterInvalidParamException Exception.
+	 * @throws RepositoryNotRegisteredException Exception.
 	 */
 	public static function get_packlink_shipping_method_from_order( WC_Order $wc_order ) {
 		$shipping = $wc_order->get_shipping_methods();
@@ -80,8 +80,8 @@ class Shipping_Method_Helper {
 	 *
 	 * @return ShippingMethod Shipping method.
 	 *
-	 * @throws RepositoryNotRegisteredException
-	 * @throws QueryFilterInvalidParamException
+	 * @throws RepositoryNotRegisteredException Exception.
+	 * @throws QueryFilterInvalidParamException Exception.
 	 *
 	 * @noinspection PhpUnhandledExceptionInspection
 	 */
@@ -112,7 +112,7 @@ class Shipping_Method_Helper {
 			return $configuration->get_default_shipping_method();
 		}
 
-		/** @var ShippingMethodService $shipping_method_service */
+		/** ShippingMethodService instance @var ShippingMethodService $shipping_method_service */
 		$shipping_method_service = ServiceRegister::getService( ShippingMethodService::CLASS_NAME );
 
 		return $shipping_method_service->getShippingMethod( $map_entry->getPacklinkShippingMethodId() );
@@ -241,7 +241,7 @@ class Shipping_Method_Helper {
 	 * @return Shipping_Method_Map[] Array of shipping method map entries.
 	 */
 	private static function get_shipping_method_map() {
-		/** @noinspection PhpUnhandledExceptionInspection */
+		/** No inspection needed @noinspection PhpUnhandledExceptionInspection */
 		$repository = RepositoryRegistry::getRepository( Shipping_Method_Map::CLASS_NAME );
 		/**
 		 * Shipping method map entries.

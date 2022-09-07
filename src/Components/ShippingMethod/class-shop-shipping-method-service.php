@@ -175,7 +175,7 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 	 *
 	 * @param ShippingMethod $shipping_method Shipping method.
 	 *
-	 * @throws QueryFilterInvalidParamException
+	 * @throws QueryFilterInvalidParamException Exception.
 	 */
 	public function update( ShippingMethod $shipping_method ) {
 		$zone_ids       = $this->get_selected_shipping_zones( $shipping_method );
@@ -189,7 +189,7 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 		if ( ! empty( $instance_ids ) ) {
 			$filter = new QueryFilter();
 			$filter->where( 'woocommerceShippingMethodId', Operators::IN, $instance_ids );
-			/** @var Shipping_Method_Map[] $map_items */
+			/** Shipping_Method_Map instance @var Shipping_Method_Map[] $map_items */
 			$map_items = $this->repository->select( $filter );
 			foreach ( $map_items as $map_item ) {
 				$zone_id                     = $map_item->getZoneId();
@@ -197,7 +197,7 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 				$woocommerce_shipping_method = new Packlink_Shipping_Method( $instance_id );
 				$zone                        = new WC_Shipping_Zone( $zone_id );
 				$zone_methods                = array_keys( $zone->get_shipping_methods() );
-				/** @noinspection TypeUnsafeArraySearchInspection */
+				/** No inspection needed @noinspection TypeUnsafeArraySearchInspection */
 				if ( ! in_array( $zone_id, $zone_ids ) || ! in_array( $instance_id, $zone_methods ) ) {
 					$this->delete_woocommerce_shipping_method( $woocommerce_shipping_method );
 					$this->repository->delete( $map_item );
@@ -343,7 +343,7 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 	 */
 	private function get_woocommerce_shipping_methods( $packlink_method_id ) {
 		$filter = new QueryFilter();
-		/** @noinspection PhpUnhandledExceptionInspection */ // phpcs:ignore
+		/** No inspection needed @noinspection PhpUnhandledExceptionInspection */ // phpcs:ignore
 		$filter->where( 'packlinkShippingMethodId', '=', $packlink_method_id );
 
 		/**
@@ -374,7 +374,7 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 	/**
 	 * Returns selected shipping zones for the provided shipping method.
 	 *
-	 * @param ShippingMethod $shipping_method
+	 * @param ShippingMethod $shipping_method Provided shipping method.
 	 *
 	 * @return array|int[]
 	 */
@@ -389,8 +389,8 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 	/**
 	 * Updates WooCommerce shipping method.
 	 *
-	 * @param ShippingMethod           $method
-	 * @param Packlink_Shipping_Method $woocommerce_shipping_method
+	 * @param ShippingMethod           $method Shipping method.
+	 * @param Packlink_Shipping_Method $woocommerce_shipping_method Packlink shipping method.
 	 */
 	private function update_woocommerce_shipping_method( ShippingMethod $method, Packlink_Shipping_Method $woocommerce_shipping_method ) {
 		$woocommerce_shipping_method->instance_settings['title']        = $method->getTitle();
@@ -409,7 +409,7 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 	/**
 	 * Deletes WooCommerce shipping method.
 	 *
-	 * @param Packlink_Shipping_Method $woocommerce_shipping_method
+	 * @param Packlink_Shipping_Method $woocommerce_shipping_method WooCommerce shipping method to be deleted.
 	 */
 	private function delete_woocommerce_shipping_method( Packlink_Shipping_Method $woocommerce_shipping_method ) {
 		global $wpdb;
