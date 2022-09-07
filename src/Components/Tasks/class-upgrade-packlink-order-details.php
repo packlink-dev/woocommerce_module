@@ -9,6 +9,7 @@ namespace Packlink\WooCommerce\Components\Tasks;
 
 use Logeecom\Infrastructure\Http\Exceptions\HttpUnhandledException;
 use Logeecom\Infrastructure\Logger\Logger;
+use Logeecom\Infrastructure\Serializer\Interfaces\Serializable;
 use Logeecom\Infrastructure\ServiceRegister;
 use Logeecom\Infrastructure\TaskExecution\Task;
 use Logeecom\Infrastructure\Utility\TimeProvider;
@@ -88,14 +89,21 @@ class Upgrade_Packlink_Order_Details extends Task {
 	}
 
 	/**
-	 * @inheritDoc
+	 * Transforms array into serializable object,
+	 *
+	 * @param array $array Data that is used to instantiate serializable object.
+	 *
+	 * @return Serializable
+	 * Instance of serialized object.
 	 */
 	public static function fromArray( array $array ) {
 		return new static( $array['order_ids'] );
 	}
 
 	/**
-	 * @inheritDoc
+	 * Transforms serializable object into an array.
+	 *
+	 * @return array Array representation of a serializable object.
 	 */
 	public function toArray() {
 		return array( 'order_ids' => $this->order_ids );
@@ -133,7 +141,7 @@ class Upgrade_Packlink_Order_Details extends Task {
 			$this->total_orders_count,
 			$this->current_progress,
 			$this->start_date,
-		) = unserialize( $serialized );
+			) = unserialize( $serialized );
 	}
 
 	/**
@@ -264,7 +272,7 @@ class Upgrade_Packlink_Order_Details extends Task {
 	 * @param \WC_Order $order Order object.
 	 * @param Shipment  $shipment Shipment details.
 	 *
-	 * @throws \Packlink\BusinessLogic\OrderShipmentDetails\Exceptions\OrderShipmentDetailsNotFound
+	 * @throws \Packlink\BusinessLogic\OrderShipmentDetails\Exceptions\OrderShipmentDetailsNotFound Exception.
 	 */
 	private function set_shipment_details( \WC_Order $order, Shipment $shipment ) {
 		if ( $this->set_reference( $order, $shipment->reference ) ) {
@@ -285,7 +293,7 @@ class Upgrade_Packlink_Order_Details extends Task {
 		$order->update_meta_data( '_is_packlink_shipment', 'yes' );
 		$order->save();
 
-		$this->get_order_shipment_details_service()->setReference( (string)$order->get_id(), $reference );
+		$this->get_order_shipment_details_service()->setReference( (string) $order->get_id(), $reference );
 
 		return true;
 	}
@@ -295,7 +303,7 @@ class Upgrade_Packlink_Order_Details extends Task {
 	 *
 	 * @param Shipment $shipment Shipment details.
 	 *
-	 * @throws \Packlink\BusinessLogic\OrderShipmentDetails\Exceptions\OrderShipmentDetailsNotFound
+	 * @throws \Packlink\BusinessLogic\OrderShipmentDetails\Exceptions\OrderShipmentDetailsNotFound Exception.
 	 */
 	private function set_shipping_status( Shipment $shipment ) {
 		$shipping_status = ShipmentStatus::getStatus( $shipment->status );
