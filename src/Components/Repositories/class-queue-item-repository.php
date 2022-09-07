@@ -183,10 +183,10 @@ class Queue_Item_Repository extends Base_Repository implements QueueItemReposito
 		$filter->setLimit( 1 );
 		foreach ( $conditions as $column => $value ) {
 			if ( null === $value ) {
-				/** @noinspection PhpUnhandledExceptionInspection */
+				/** No inspection needed @noinspection PhpUnhandledExceptionInspection */
 				$filter->where( $column, 'IS NULL' );
 			} else {
-				/** @noinspection PhpUnhandledExceptionInspection */
+				/** No inspection needed  @noinspection PhpUnhandledExceptionInspection */
 				$filter->where( $column, '=', $value );
 			}
 		}
