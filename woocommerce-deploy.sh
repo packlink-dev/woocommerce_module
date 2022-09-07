@@ -7,46 +7,49 @@ sleep 2
 
 # Cleanup any leftovers
 echo -e "\e[32mCleaning up...\e[39m"
-rm -rf ./packlink-pro-shipping.zip
-rm -rf ./packlink-pro-shipping
+rm -rf ./packlink-pro.zip
+rm -rf ./packlink-pro
 
 # Create deployment source
 echo -e "\e[32mSTEP 1:\e[39m Copying plugin source..."
-mkdir packlink-pro-shipping
-cp -r ./src/* packlink-pro-shipping
-rm -rf ./packlink-pro-shipping/tests
-rm -rf ./packlink-pro-shipping/bin
-rm -rf ./packlink-pro-shipping/phpunit.xml
-rm -rf ./packlink-pro-shipping/vendor
+mkdir packlink-pro
+cp -r ./src/* packlink-pro
+rm -rf ./packlink-pro/tests
+rm -rf ./packlink-pro/bin
+rm -rf ./packlink-pro/phpunit.xml
+rm -rf ./packlink-pro/vendor
 
 # Ensure proper composer dependencies
 echo -e "\e[32mSTEP 2:\e[39m Installing composer dependencies..."
-cd packlink-pro-shipping
+cd packlink-pro
 composer install --no-dev
 cd ..
 
 # Remove unnecessary files from final release archive
 echo -e "\e[32mSTEP 3:\e[39m Removing unnecessary files from final release archive..."
-rm -rf packlink-pro-shipping/vendor/packlink/integration-core/.git
-rm -rf packlink-pro-shipping/vendor/packlink/integration-core/.gitignore
-rm -rf packlink-pro-shipping/vendor/packlink/integration-core/.idea
-rm -rf packlink-pro-shipping/vendor/packlink/integration-core/tests
-rm -rf packlink-pro-shipping/vendor/packlink/integration-core/generic_tests
-rm -rf packlink-pro-shipping/vendor/packlink/integration-core/README.md
-rm -rf packlink-pro-shipping/vendor/packlink/integration-core/src/DemoUI
-rm -rf packlink-pro-shipping/vendor/packlink/integration-core/src/BusinessLogic/Utility/PdfMerge.php
-rm -rf packlink-pro-shipping/vendor/iio/libmergepdf/tests
-rm -rf packlink-pro-shipping/vendor/iio/libmergepdf/.gitignore
-rm -rf packlink-pro-shipping/vendor/iio/libmergepdf/.travis.yml
-rm -rf packlink-pro-shipping/vendor/iio/libmergepdf/phpunit.xml.dist
-rm -rf packlink-pro-shipping/vendor/setasign/fpdf/doc
-rm -rf packlink-pro-shipping/vendor/setasign/fpdf/tutorial
+rm -rf packlink-pro/vendor/packlink/integration-core/.git
+rm -rf packlink-pro/vendor/packlink/integration-core/.gitignore
+rm -rf packlink-pro/vendor/packlink/integration-core/.idea
+rm -rf packlink-pro/vendor/packlink/integration-core/tests
+rm -rf packlink-pro/vendor/packlink/integration-core/generic_tests
+rm -rf packlink-pro/vendor/packlink/integration-core/README.md
+rm -rf packlink-pro/vendor/packlink/integration-core/src/DemoUI
+rm -rf packlink-pro/vendor/packlink/integration-core/src/BusinessLogic/Utility/PdfMerge.php
+rm -rf packlink-pro/vendor/iio/libmergepdf/tests
+rm -rf packlink-pro/vendor/iio/libmergepdf/.gitignore
+rm -rf packlink-pro/vendor/iio/libmergepdf/.travis.yml
+rm -rf packlink-pro/vendor/iio/libmergepdf/phpunit.xml.dist
+rm -rf packlink-pro/vendor/setasign/fpdf/doc
+rm -rf packlink-pro/vendor/setasign/fpdf/tutorial
+rm -rf packlink-pro/vendor/setasign/fpdf/fpdf.php
+rm -rf packlink-pro/vendor/setasign/fpdi/src/PdfParser/Filter/Flate.php
+rm -rf packlink-pro/vendor/setasign/fpdi/src/PdfParser/StreamReader.php
 
 # Copy resources
 echo -e "\e[32mSTEP 4:\e[39m Copying resources from core to the integration..."
 root="$PWD";
-source="$PWD/packlink-pro-shipping/vendor/packlink/integration-core/src/BusinessLogic/Resources";
-destination="$PWD/packlink-pro-shipping/resources";
+source="$PWD/packlink-pro/vendor/packlink/integration-core/src/BusinessLogic/Resources";
+destination="$PWD/packlink-pro/resources";
 
 if [ ! -d "$destination/js/location-picker" ]; then
   mkdir "$destination/js/location-picker"
@@ -81,7 +84,7 @@ fi
 
 # Create plugin archive
 echo -e "\e[32mSTEP 6:\e[39m Creating new archive..."
-zip -r -q  packlink-pro-shipping.zip ./packlink-pro-shipping
+zip -r -q  packlink-pro.zip ./packlink-pro
 
 if [ "$version" != "" ]; then
     if [ ! -d ./PluginInstallation/ ]; then
@@ -91,12 +94,12 @@ if [ "$version" != "" ]; then
         mkdir ./PluginInstallation/"$version"/
     fi
 
-    mv ./packlink-pro-shipping.zip ./PluginInstallation/${version}/
+    mv ./packlink-pro.zip ./PluginInstallation/${version}/
     echo -e "\e[34;5;40mSUCCESS!\e[0m"
     echo -e "\e[93mNew release created under: $PWD/PluginInstallation/$version"
 else
     echo -e "\e[40;5;34mSUCCESS!\e[0m"
-    echo -e "\e[93mNew plugin archive created: $PWD/packlink-pro-shipping.zip"
+    echo -e "\e[93mNew plugin archive created: $PWD/packlink-pro.zip"
 fi
 
-rm -fR ./packlink-pro-shipping
+rm -fR ./packlink-pro
