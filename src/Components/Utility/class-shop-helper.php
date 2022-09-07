@@ -117,7 +117,7 @@ class Shop_Helper {
 	 *
 	 * @param string $name Name of the controller without "Packlink" and "Controller".
 	 * @param string $action Name of the action.
-	 * @param array $params Associative array of parameters.
+	 * @param array  $params Associative array of parameters.
 	 *
 	 * @return string
 	 */
@@ -209,7 +209,7 @@ class Shop_Helper {
 	 * @return int
 	 */
 	public static function get_footer_height() {
-		/** @var Config_Service $config_service */
+		/** Config_Service instance @var Config_Service $config_service */
 		$config_service = ServiceRegister::getService( Configuration::CLASS_NAME );
 
 		return $config_service->get_footer_height();
