@@ -89,7 +89,7 @@ class Packlink_Support_Controller extends Packlink_Base_Controller {
 	 * @return Config_Service
 	 */
 	private function get_config_service() {
-		if ( null == $this->config_service ) {
+		if ( null === $this->config_service ) {
 			$this->config_service = ServiceRegister::getService( Configuration::CLASS_NAME );
 		}
 

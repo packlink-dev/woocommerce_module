@@ -170,7 +170,7 @@ class Packlink_Shipping_Method extends \WC_Shipping_Method {
 	/**
 	 * Finds and returns shipping classes and the products with that class.
 	 *
-	 * @param mixed $package Package.
+	 * @param array $package Package.
 	 *
 	 * @return array
 	 */

@@ -46,9 +46,9 @@ class Shipping_Method_Map extends Entity {
 	 */
 	protected $fields = array(
 		'id',
-		'woocommerceShippingMethodId',
-		'packlinkShippingMethodId',
-		'zoneId',
+		'woocommerce_shipping_method_id',
+		'packlink_shipping_method_id',
+		'zone_id',
 	);
 
 	/**
