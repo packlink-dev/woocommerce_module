@@ -1,5 +1,5 @@
 <?php
-/** @noinspection PhpUnhandledExceptionInspection */
+/** No inspection needed @noinspection PhpUnhandledExceptionInspection */
 
 use Logeecom\Infrastructure\Configuration\Configuration;
 use Logeecom\Infrastructure\ORM\RepositoryRegistry;
@@ -16,7 +16,7 @@ $repository    = RepositoryRegistry::getRepository( Schedule::getClassName() );
 
 $schedules = $repository->select();
 
-/** @var Schedule $schedule */
+/** Schedule instance @var Schedule $schedule */
 foreach ( $schedules as $schedule ) {
 	$task = $schedule->getTask();
 

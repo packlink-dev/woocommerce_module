@@ -12,8 +12,8 @@ use Packlink\WooCommerce\Components\Utility\Database;
 
 //@codingStandardsIgnoreStart
 
-/** @noinspection SqlNoDataSourceInspection */
-/** @noinspection SqlResolve */
+/** No inspection needed @noinspection SqlNoDataSourceInspection */
+/** No inspection needed @noinspection SqlResolve */
 
 // ***********************************************************************************
 // Method definitions ****************************************************************
@@ -54,7 +54,7 @@ function get_transformed_pricing_policy( array $method ) {
 				$pricing_policy                = new ShippingPricePolicy();
 				$pricing_policy->rangeType     = ShippingPricePolicy::RANGE_WEIGHT;
 				$pricing_policy->fromWeight    = $policy['from'];
-				$pricing_policy->toWeight      = !empty( $policy['to'] ) ? $policy['to'] : null;
+				$pricing_policy->toWeight      = ! empty( $policy['to'] ) ? $policy['to'] : null;
 				$pricing_policy->pricingPolicy = ShippingPricePolicy::POLICY_FIXED_PRICE;
 				$pricing_policy->fixedPrice    = $policy['amount'];
 				$result[]                      = $pricing_policy->toArray();
@@ -66,7 +66,7 @@ function get_transformed_pricing_policy( array $method ) {
 				$pricing_policy                = new ShippingPricePolicy();
 				$pricing_policy->rangeType     = ShippingPricePolicy::RANGE_PRICE;
 				$pricing_policy->fromPrice     = $policy['from'];
-				$pricing_policy->toPrice       = !empty( $policy['to'] ) ? $policy['to'] : null;
+				$pricing_policy->toPrice       = ! empty( $policy['to'] ) ? $policy['to'] : null;
 				$pricing_policy->pricingPolicy = ShippingPricePolicy::POLICY_FIXED_PRICE;
 				$pricing_policy->fixedPrice    = $policy['amount'];
 				$result[]                      = $pricing_policy->toArray();
@@ -77,8 +77,8 @@ function get_transformed_pricing_policy( array $method ) {
 	return $result;
 }
 
-function get_logo_url($method) {
-	return str_replace('/resources/', '/resources/packlink/', $method['logoUrl']);
+function get_logo_url( $method ) {
+	return str_replace( '/resources/', '/resources/packlink/', $method['logoUrl'] );
 }
 
 
@@ -125,7 +125,7 @@ $shipping_methods = array_map( static function ( array $raw_method ) {
 // Save the updated shipping methods.                                                *
 // ***********************************************************************************
 
-/** @noinspection PhpUnhandledExceptionInspection */
+/** No inspection needed @noinspection PhpUnhandledExceptionInspection */
 $repository = RepositoryRegistry::getRepository( ShippingMethod::getClassName() );
 foreach ( $shipping_methods as $method ) {
 	$repository->save( $method );
