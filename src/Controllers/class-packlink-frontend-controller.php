@@ -58,7 +58,7 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	 * Loads JS and CSS files for the current page.
 	 */
 	private function load_static_content() {
-		wp_enqueue_style( 'material', 'https://fonts.googleapis.com/icon?family=Material+Icons+Outlined' ); // phpcs:ignore
+		wp_enqueue_style( 'material', 'https://fonts.googleapis.com/icon?family=Material+Icons+Outlined', array( ), false ); // phpcs:ignore
 
 		Script_Loader::load_css(
 			array(
@@ -114,14 +114,14 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	private function get_lang() {
 		$locale = Shop_Helper::get_user_locale();
 
-		/** @var CountryService $country_service */
+		/** CountryService instance @var CountryService $country_service */
 		$country_service = ServiceRegister::getService( CountryService::class );
 		$default         = $country_service->getAllLabels( 'en' );
 		$current_lang    = $country_service->getAllLabels( $locale );
 
 		return array(
-			'default' => json_encode($default['en']),
-			'current' => json_encode($current_lang[$locale]),
+			'default' => json_encode( $default['en'] ),
+			'current' => json_encode( $current_lang[ $locale ] ),
 		);
 	}
 

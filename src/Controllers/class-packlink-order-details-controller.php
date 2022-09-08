@@ -55,15 +55,15 @@ class Packlink_Order_Details_Controller extends Packlink_Base_Controller {
 
 		$wc_order = WC_Order_Factory::get_order( $wp_post->ID );
 
-		/** @var OrderShipmentDetailsService $shipment_details_service */ // phpcs:ignore
+		/** OrderShipmentDetailsService instance @var OrderShipmentDetailsService $shipment_details_service */ // phpcs:ignore
 		$shipment_details_service = ServiceRegister::getService( OrderShipmentDetailsService::CLASS_NAME );
-		/** @var ShipmentDraftService $draft_service */ // phpcs:ignore
+		/** ShipmentDraftService instance @var ShipmentDraftService $draft_service */ // phpcs:ignore
 		$draft_service      = ServiceRegister::getService( ShipmentDraftService::CLASS_NAME );
 		$order_details      = $shipment_details_service->getDetailsByOrderId( (string) $wp_post->ID );
 		$last_status_update = '';
 		if ( $order_details && $order_details->getLastStatusUpdateTime() ) {
 			$update_timestamp   = $order_details->getLastStatusUpdateTime()->getTimestamp();
-			$last_status_update = date( get_option( 'links_updated_date_format' ), $update_timestamp ); // phpcs:ignore
+			$last_status_update = gmdate( get_option( 'links_updated_date_format' ), $update_timestamp ); // phpcs:ignore
 		}
 
 		$shipment_deleted = $order_details ? $shipment_details_service->isShipmentDeleted( $order_details->getReference() ) : true;
@@ -94,7 +94,7 @@ class Packlink_Order_Details_Controller extends Packlink_Base_Controller {
 			$this->return_json( array( 'success' => false ), 400 );
 		}
 
-		/** @var ShipmentDraftService $draft_service */ // phpcs:ignore
+		/** ShipmentDraftService instance @var ShipmentDraftService $draft_service */ // phpcs:ignore
 		$draft_service = ServiceRegister::getService( ShipmentDraftService::CLASS_NAME );
 		$draft_service->enqueueCreateShipmentDraftTask( (string) $payload['id'] );
 
