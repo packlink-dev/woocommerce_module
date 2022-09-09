@@ -62,13 +62,13 @@ class Packlink_Edit_Service_Controller extends Packlink_Base_Controller {
 	public function get_service() {
 		// Method get_query_var fails to provide the id query parameter when it is present.
 
-		if ( empty( $_GET['id'] ) ) { // phpcs:ignore
+		if ( empty( $id = $_GET['id'] ) ) { // phpcs:ignore
 			$this->return_error( 'Not found!', 404 );
 
 			return;
 		}
 
-		$method = $this->controller->getShippingMethod( $_GET['id'] ); // phpcs:ignore
+		$method = $this->controller->getShippingMethod( $id ); // phpcs:ignore
 		if ( null === $method ) {
 			$this->return_error( 'Not found!', 404 );
 

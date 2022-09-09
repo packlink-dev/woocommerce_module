@@ -1,11 +1,11 @@
 <?php
-/** @noinspection PhpUnhandledExceptionInspection */
+/** No inspection needed @noinspection PhpUnhandledExceptionInspection */
 
 use Packlink\WooCommerce\Components\Utility\Shop_Helper;
 
 // This section will be triggered when upgrading to 2.0.4 or later version of plugin.
 
-/** @noinspection HtmlUnknownTarget */ // phpcs:ignore
+/** No inspection needed @noinspection HtmlUnknownTarget */ // phpcs:ignore
 /* translators: %s: Module URL. */
 $translation = __(
 	'With this version you will have access to any shipping service that your clients demand. Go to the <a href="%s">configuration</a> and select which shipping services should be offered to your customers!',

@@ -15,6 +15,7 @@ use Logeecom\Infrastructure\ORM\RepositoryRegistry;
 use Logeecom\Infrastructure\ServiceRegister;
 use Logeecom\Infrastructure\Singleton;
 use Packlink\BusinessLogic\Http\DTO\Shipment;
+use Packlink\BusinessLogic\Http\DTO\Tracking;
 use Packlink\BusinessLogic\Order\Exceptions\OrderNotFound;
 use Packlink\BusinessLogic\Order\Interfaces\ShopOrderService as BaseShopOrderService;
 use Packlink\BusinessLogic\Order\Objects\Address;
@@ -62,8 +63,8 @@ class Shop_Order_Service extends Singleton implements BaseShopOrderService {
 	 * @return Order Order object.
 	 *
 	 * @throws OrderNotFound When order with provided id is not found.
-	 * @throws QueryFilterInvalidParamException
-	 * @throws RepositoryNotRegisteredException
+	 * @throws QueryFilterInvalidParamException Exception.
+	 * @throws RepositoryNotRegisteredException Exception.
 	 */
 	public function getOrderAndShippingData( $order_id ) {
 		$wc_order = $this->get_order_by_id( $order_id );
@@ -98,19 +99,28 @@ class Shop_Order_Service extends Singleton implements BaseShopOrderService {
 	}
 
 	/**
-	 * @inheritDoc
+	 * Handles updated tracking info for order with a given ID.
+	 *
+	 * @param string     $order_id Shop order ID.
+	 * @param Shipment   $shipment Shipment object containing tracking codes and tracking url.
+	 * @param Tracking[] $tracking_history Shipment tracking history.
 	 */
 	public function updateTrackingInfo( $order_id, Shipment $shipment, array $tracking_history ) {
 	}
 
 	/**
-	 * @inheritDoc
+	 * Sets order Packlink shipping status to an order with a given ID.
+	 *
+	 * @param string $order_id Shop order ID.
+	 * @param string $shipping_status Packlink shipping status.
+	 *
+	 * @throws OrderNotFound When order for provided reference is not found.
 	 */
 	public function updateShipmentStatus( $order_id, $shipping_status ) {
 		$order      = $this->get_order_by_id( $order_id );
 		$status_map = $this->configuration->getOrderStatusMappings();
 		$old_status = $order->get_status();
-		if ($old_status === 'cancelled') {
+		if ( 'cancelled' === $old_status ) {
 			// We don't want to update order status of cancelled order.
 			return;
 		}
@@ -258,12 +268,12 @@ class Shop_Order_Service extends Singleton implements BaseShopOrderService {
 	/**
 	 * Returns order drop-off point ID, if exists.
 	 *
-	 * @param int $order_id
+	 * @param int $order_id Order ID.
 	 *
 	 * @return int|null
 	 *
-	 * @throws QueryFilterInvalidParamException
-	 * @throws RepositoryNotRegisteredException
+	 * @throws QueryFilterInvalidParamException Exception.
+	 * @throws RepositoryNotRegisteredException Exception.
 	 */
 	private function get_drop_off_point_id( $order_id ) {
 		$order_drop_off_map_repository = RepositoryRegistry::getRepository( Order_Drop_Off_Map::CLASS_NAME );
@@ -271,7 +281,7 @@ class Shop_Order_Service extends Singleton implements BaseShopOrderService {
 		$filter = new QueryFilter();
 		$filter->where( 'order_id', Operators::EQUALS, $order_id );
 
-		/** @var Order_Drop_Off_Map $order_drop_off_map */
+		/** Order drop-off map instance @var Order_Drop_Off_Map $order_drop_off_map */
 		$order_drop_off_map = $order_drop_off_map_repository->selectOne( $filter );
 
 		return $order_drop_off_map ? $order_drop_off_map->get_drop_off_point_id() : null;

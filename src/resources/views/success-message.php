@@ -10,7 +10,7 @@ $url = wp_nonce_url( add_query_arg( 'packlink-hide-success-notice', '1' ), 'pack
 ?>
 <div class="notice notice-success" style="position: relative;">
 	<p><strong><?php esc_html_e( 'Packlink PRO Shipping', 'packlink-pro-shipping' ); ?>:</strong>
-		<?php echo get_transient( 'packlink-pro-success-messages' ); // phpcs:ignore ?>
+		<?php echo get_transient( 'packlink-pro-success-messages' ); //phpcs:ignore WordPress.Security.EscapeOutput ?>
 	</p>
 	<a style="text-decoration: none;display:flex;" class="notice-dismiss" href="<?php echo esc_url( $url ); ?>">
 		<?php esc_html_e( 'Dismiss' ); ?>

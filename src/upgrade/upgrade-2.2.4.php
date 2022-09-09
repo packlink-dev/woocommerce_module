@@ -1,6 +1,5 @@
 <?php
-
-/** @noinspection PhpUnhandledExceptionInspection */
+/** No inspection needed @noinspection PhpUnhandledExceptionInspection */
 
 use Packlink\WooCommerce\Components\Utility\Database;
 

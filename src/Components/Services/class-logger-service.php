@@ -40,7 +40,7 @@ class Logger_Service extends Singleton implements LoggerAdapter {
 	public static function get_log_file() {
 		$upload_dir = wp_get_upload_dir();
 
-		return $upload_dir['basedir'] . '/packlink-logs/' . date( 'Y-m-d' ) . '.log';
+		return $upload_dir['basedir'] . '/packlink-logs/' . gmdate( 'Y-m-d' ) . '.log';
 	}
 
 	/**
@@ -91,7 +91,8 @@ class Logger_Service extends Singleton implements LoggerAdapter {
 		}
 
 		$filename = self::get_log_file();
-		if ( ( $log = fopen( $filename, 'ab+' ) ) !== false ) {
+		$log      = fopen( $filename, 'ab+' );
+		if ( false !== $log ) {
 			fwrite( $log, $message );
 			fclose( $log );
 		}

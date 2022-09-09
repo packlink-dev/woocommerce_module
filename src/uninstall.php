@@ -18,5 +18,5 @@ global $wpdb;
 
 Packlink\WooCommerce\Components\Bootstrap_Component::init();
 
-$plugin = new \Packlink\WooCommerce\Plugin( $wpdb, __FILE__ );
+$plugin = new \Packlink\WooCommerce\Plugin( $wpdb, __FILE__ ); // phpcs:ignore
 $plugin->uninstall();

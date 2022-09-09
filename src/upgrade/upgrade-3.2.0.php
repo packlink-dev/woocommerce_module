@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Packlink PRO Shipping WooCommerce Integration.
  *
@@ -18,7 +17,7 @@ use Packlink\WooCommerce\Components\Utility\Database;
 
 //@codingStandardsIgnoreStart
 
-/** @noinspection SqlNoDataSourceInspection */
+/** No inspection needed @noinspection SqlNoDataSourceInspection */
 
 // ***********************************************************************************
 // Method definitions ****************************************************************
@@ -113,7 +112,7 @@ $shipping_methods = array_map( static function ( array $raw_method ) {
 // Save the updated shipping methods.                                                *
 // ***********************************************************************************
 
-/** @noinspection PhpUnhandledExceptionInspection */
+/** No inspection needed @noinspection PhpUnhandledExceptionInspection */
 $repository = RepositoryRegistry::getRepository( ShippingMethod::getClassName() );
 foreach ( $shipping_methods as $method ) {
 	$repository->save( $method );
@@ -124,13 +123,13 @@ foreach ( $shipping_methods as $method ) {
 // Enqueue task for updating shipping services.                                      *
 // ***********************************************************************************
 
-/** @var Config_Service $config_service */
+/** Config_Service instance @var Config_Service $config_service */
 $config_service = ServiceRegister::getService( Configuration::CLASS_NAME );
-/** @var QueueService $queue_service */
+/** QueueService instance @var QueueService $queue_service */
 $queue_service = ServiceRegister::getService( QueueService::CLASS_NAME );
 
 if ( null !== $queue_service->findLatestByType( 'UpdateShippingServicesTask' ) ) {
-	/** @noinspection PhpUnhandledExceptionInspection */
+	/** No inspection needed @noinspection PhpUnhandledExceptionInspection */
 	$queue_service->enqueue( $config_service->getDefaultQueueName(), new UpdateShippingServicesTask() );
 }
 

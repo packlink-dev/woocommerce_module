@@ -37,8 +37,8 @@ class Paid_Order_Handler {
 	public static function handle( $order_id, WC_Order $order ) {
 
 		if ( ! self::get_config_service()->is_manual_sync_enabled()
-		     && $order->is_paid() && static::is_packlink_order( $order ) && static::has_shippable_product( $order ) ) {
-			/** @var ShipmentDraftService $draft_service */
+			 && $order->is_paid() && static::is_packlink_order( $order ) && static::has_shippable_product( $order ) ) {
+			/** ShipmentDraftService instance @var ShipmentDraftService $draft_service */
 			$draft_service = ServiceRegister::getService( ShipmentDraftService::CLASS_NAME );
 			$draft_service->enqueueCreateShipmentDraftTask( (string) $order_id );
 		}
@@ -53,13 +53,13 @@ class Paid_Order_Handler {
 	 *
 	 * @return bool Returns TRUE if the order is created with Packlink shipping method.
 	 *
-	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException
-	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException
+	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException Exception.
+	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException Exception.
 	 */
 	protected static function is_packlink_order( WC_Order $order ) {
 		$method = Shipping_Method_Helper::get_packlink_shipping_method_from_order( $order );
 
-		return $method !== null;
+		return null !== $method;
 	}
 
 	/**
@@ -70,7 +70,7 @@ class Paid_Order_Handler {
 	 * @return bool Returns true if order has shippable product(s).
 	 */
 	protected static function has_shippable_product( WC_Order $order ) {
-		/** @var \WC_Order_Item_Product $item */
+		/** WC_Order_Item_Product instance @var \WC_Order_Item_Product $item */
 		foreach ( $order->get_items() as $item ) {
 			$product = $item->get_product();
 			if ( ! $product->is_downloadable() && ! $product->is_virtual() ) {
@@ -87,7 +87,7 @@ class Paid_Order_Handler {
 	 * @return Config_Service Configuration service.
 	 */
 	protected static function get_config_service() {
-		/** @var Config_Service $config_service */
+		/** Config_Service instance @var Config_Service $config_service */
 		$config_service = ServiceRegister::getService( Config_Service::CLASS_NAME );
 
 		return $config_service;
@@ -99,7 +99,7 @@ class Paid_Order_Handler {
 	 * @return TaskRunnerWakeupService Configuration service.
 	 */
 	protected static function get_task_runner_wakeup_service() {
-		/** @var TaskRunnerWakeupService $task_runner_wakeup_service */
+		/** TaskRunnerWakeupService instance @var TaskRunnerWakeupService $task_runner_wakeup_service */
 		$task_runner_wakeup_service = ServiceRegister::getService( TaskRunnerWakeup::CLASS_NAME );
 
 		return $task_runner_wakeup_service;

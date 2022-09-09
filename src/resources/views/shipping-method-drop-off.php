@@ -28,7 +28,7 @@ use Packlink\WooCommerce\Components\Utility\Shop_Helper;
 $id_value     = wc()->session->get( Shipping_Method_Helper::DROP_OFF_ID, '' );
 $button_label = $id_value ? __( 'Change Drop-Off Location', 'packlink-pro-shipping' ) : __( 'Select Drop-Off Location', 'packlink-pro-shipping' );
 $parts        = explode( '_', get_locale() );
-$locale       = $parts[0];
+$locale       = $parts[0];  // phpcs:ignore
 
 $translations = array(
 	'pickDropOff'   => __( 'Select Drop-Off Location', 'packlink-pro-shipping' ),
@@ -47,21 +47,22 @@ if ( $id_value ) {
 ?>
 
 <script style="display: none;">
-	Packlink.checkout.setLocale('<?php echo $locale; ?>');
+	Packlink.checkout.setLocale('<?php echo $locale; //phpcs:ignore WordPress.Security.EscapeOutput ?>');
 	Packlink.checkout.setTranslations(<?php echo wp_json_encode( $translations ); ?>);
 	Packlink.checkout.setIsCart(<?php echo is_cart() ? 'true' : 'false'; ?>);
 	Packlink.checkout.setLocations(<?php echo wp_json_encode( $locations ); ?>);
-	Packlink.checkout.setSelectedLocationId('<?php echo $id_value; ?>');
-	Packlink.checkout.setSaveEndpoint('<?php echo Shop_Helper::get_controller_url( 'Checkout', 'save_selected' ); ?>');
+	Packlink.checkout.setSelectedLocationId('<?php echo $id_value; //phpcs:ignore WordPress.Security.EscapeOutput ?>');
+	Packlink.checkout.setSaveEndpoint('<?php echo Shop_Helper::get_controller_url( 'Checkout', 'save_selected' ); //phpcs:ignore WordPress.Security.EscapeOutput ?>');
 	<?php if ( ! is_cart() ) : ?>
 	Packlink.checkout.setDropOffAddress();
 	<?php endif; ?>
 </script>
 
 <?php if ( ! is_cart() ) : ?>
-	<button type="button" id="packlink-drop-off-picker" class="button"><?php echo $button_label; ?></button>
-	<div id="packlink-js-templates">
-		<div id="pl-picker-modal" style="display: none;">
+	<button type="button" id="packlink-drop-off-picker"
+			class="button"><?php echo $button_label; //phpcs:ignore WordPress.Security.EscapeOutput ?></button>
+
+	<div id="pl-picker-modal" style="display: none;">
 		<location-picker>
 			<div class="lp-content" data-lp-id="content">
 				<div class="lp-locations">
@@ -84,7 +85,7 @@ if ( $id_value ) {
 		</svg>
 	</div>
 
-		<location-picker-template>
+	<location-picker-template>
 		<div class="lp-template" id="template-container">
 			<div data-lp-id="working-hours-template" class="lp-hour-wrapper">
 				<div class="day" data-lp-id="day">
@@ -125,5 +126,4 @@ if ( $id_value ) {
 			</div>
 		</div>
 	</location-picker-template>
-	</div>
 <?php endif; ?>

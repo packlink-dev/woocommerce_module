@@ -111,9 +111,12 @@ class Database {
 			return array();
 		}
 
-		return array_map( function ( $order ) {
-			return $order['id'];
-		}, $results );
+		return array_map(
+			function ( $order ) {
+				return $order['id'];
+			},
+			$results
+		);
 	}
 
 	/**

@@ -1,6 +1,5 @@
 <?php
-
-/** @noinspection PhpUnhandledExceptionInspection */
+/** No inspection needed @noinspection PhpUnhandledExceptionInspection */
 
 use Logeecom\Infrastructure\ORM\RepositoryRegistry;
 use Logeecom\Infrastructure\ServiceRegister;
@@ -27,7 +26,7 @@ $database = new Database( $wpdb );
 
 $order_ids = $database->get_packlink_order_ids();
 
-/** @var Config_Service $config_service */
+/** Config_Service instance @var Config_Service $config_service */
 $config_service = ServiceRegister::getService( Configuration::CLASS_NAME );
 
 // **********************************************
@@ -35,11 +34,11 @@ $config_service = ServiceRegister::getService( Configuration::CLASS_NAME );
 // Move data from meta table to Packlink table. *
 // **********************************************
 if ( ! empty( $order_ids ) ) {
-	/** @var Base_Repository $order_shipment_details_repository */
+	/** Base_Repository instance @var Base_Repository $order_shipment_details_repository */
 	$order_shipment_details_repository = RepositoryRegistry::getRepository( OrderShipmentDetails::CLASS_NAME );
-	/** @var Base_Repository $order_drop_off_map_repository */
+	/** Base_Repository instance @var Base_Repository $order_drop_off_map_repository */
 	$order_drop_off_map_repository = RepositoryRegistry::getRepository( Order_Drop_Off_Map::CLASS_NAME );
-	/** @var OrderSendDraftTaskMapService $order_draft_task_map_service */
+	/** OrderSendDraftTaskMapService instance @var OrderSendDraftTaskMapService $order_draft_task_map_service */
 	$order_draft_task_map_service = ServiceRegister::getService( OrderSendDraftTaskMapService::CLASS_NAME );
 
 	$user_info       = $config_service->getUserInfo();
@@ -119,7 +118,7 @@ $database->remove_packlink_meta_data();
 // Enqueue task for updating shipping services. *
 // **********************************************
 
-/** @var QueueService $queue_service */
+/** QueueService instance @var QueueService $queue_service */
 $queue_service = ServiceRegister::getService( QueueService::CLASS_NAME );
 
 if ( null !== $queue_service->findLatestByType( 'UpdateShippingServicesTask' ) ) {

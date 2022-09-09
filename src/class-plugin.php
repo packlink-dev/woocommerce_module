@@ -1,6 +1,5 @@
 <?php
-
-/** @noinspection PhpUnusedParameterInspection */
+/** No inspection needed @noinspection PhpUnusedParameterInspection */
 
 namespace Packlink\WooCommerce;
 
@@ -78,7 +77,7 @@ class Plugin {
 	 * @param string $packlink_plugin_file Plugin file.
 	 *
 	 * @return Plugin Plugin instance.
-	 * @throws RepositoryNotRegisteredException
+	 * @throws RepositoryNotRegisteredException Exception.
 	 */
 	public static function instance( $wpdb, $packlink_plugin_file ) {
 		if ( null === self::$instance ) {
@@ -125,9 +124,9 @@ class Plugin {
 		} elseif ( $is_network_wide && is_multisite() ) {
 			foreach ( get_sites() as $site ) {
 				switch_to_blog( $site->blog_id );
-				/** @noinspection DisconnectedForeachInstructionInspection */ // phpcs:ignore
+				/** No inspection needed @noinspection DisconnectedForeachInstructionInspection */ // phpcs:ignore
 				$this->init_database();
-				/** @noinspection DisconnectedForeachInstructionInspection */ // phpcs:ignore
+				/** No inspection needed @noinspection DisconnectedForeachInstructionInspection */ // phpcs:ignore
 				$this->init_config();
 				restore_current_blog();
 			}
@@ -161,7 +160,7 @@ class Plugin {
 	/**
 	 * Injects plugin update options to force update.
 	 *
-	 * @param \stdClass $update_info
+	 * @param \stdClass $update_info Update info.
 	 *
 	 * @return \stdClass Altered $update_info object.
 	 */
@@ -173,9 +172,9 @@ class Plugin {
 		$response = $update_info->no_update['packlink-pro-shipping/packlink-pro-shipping.php'];
 		unset( $update_info->no_update['packlink-pro-shipping/packlink-pro-shipping.php'] );
 
-		// set to the version you want to update
+		// set to the version you want to update.
 		$response->new_version = '2.1.2';
-		// set the URI to the update package
+		// set the URI to the update package.
 		$response->package = '';
 		$response->tested  = get_bloginfo( 'version' );
 
@@ -294,7 +293,7 @@ class Plugin {
 	public function admin_messages() {
 		$messages = get_transient( 'packlink-pro-messages' );
 		if ( $messages ) {
-			/** @noinspection DirectoryConstantCanBeUsedInspection */ // phpcs:ignore
+			/** No inspection needed @noinspection DirectoryConstantCanBeUsedInspection */ // phpcs:ignore
 			include dirname( __FILE__ ) . '/resources/views/notice-message.php';
 		}
 	}
@@ -305,7 +304,7 @@ class Plugin {
 	public function admin_notice_messages_no_dismiss() {
 		$messages = get_transient( 'packlink-pro-success-messages' );
 		if ( $messages ) {
-			/** @noinspection DirectoryConstantCanBeUsedInspection */ // phpcs:ignore
+			/** No inspection needed @noinspection DirectoryConstantCanBeUsedInspection */ // phpcs:ignore
 			include dirname( __FILE__ ) . '/resources/views/success-message.php';
 		}
 	}
@@ -316,7 +315,7 @@ class Plugin {
 	public function admin_error_messages() {
 		$messages = get_transient( 'packlink-pro-error-messages' );
 		if ( $messages ) {
-			/** @noinspection DirectoryConstantCanBeUsedInspection */ // phpcs:ignore
+			/** No inspection needed @noinspection DirectoryConstantCanBeUsedInspection */ // phpcs:ignore
 			include dirname( __FILE__ ) . '/resources/views/error-message.php';
 		}
 	}
@@ -363,7 +362,7 @@ class Plugin {
 		$data_store->create( $zone );
 
 		if ( $zone->get_id() ) {
-			/** @var Shop_Shipping_Method_Service $service */ // phpcs:ignore
+			/** Shop_Shipping_Method_Service instance @var Shop_Shipping_Method_Service $service */ // phpcs:ignore
 			$service = ServiceRegister::getService( ShopShippingMethodService::CLASS_NAME );
 			$service->add_active_methods_to_zone( $zone );
 		}
@@ -392,7 +391,7 @@ class Plugin {
 	/**
 	 * Initializes the plugin.
 	 *
-	 * @throws RepositoryNotRegisteredException
+	 * @throws RepositoryNotRegisteredException Exception.
 	 */
 	private function initialize() {
 		Bootstrap_Component::init();
@@ -430,10 +429,15 @@ class Plugin {
 
 		if ( defined( '_PL_DEBUG_' ) ) {
 			add_filter( 'site_transient_update_plugins', array( $this, 'packlink_plugin_update_info_debug' ), 20, 3 );
-			add_filter( 'set_site_transient_update_plugins', array(
-				$this,
-				'packlink_plugin_update_info_debug'
-			), 20, 3 );
+			add_filter(
+				'set_site_transient_update_plugins',
+				array(
+					$this,
+					'packlink_plugin_update_info_debug',
+				),
+				20,
+				3
+			);
 		}
 	}
 
@@ -459,7 +463,7 @@ class Plugin {
 					ShipmentStatus::STATUS_ACCEPTED  => 'wc-processing',
 					ShipmentStatus::STATUS_DELIVERED => 'wc-completed',
 					ShipmentStatus::STATUS_CANCELLED => 'wc-cancelled',
-					ShipmentStatus::INCIDENT => 'wc-failed'
+					ShipmentStatus::INCIDENT => 'wc-failed',
 				)
 			);
 		} catch ( TaskRunnerStatusStorageUnavailableException $e ) {
@@ -481,14 +485,14 @@ class Plugin {
 	/**
 	 * Plugin update method.
 	 *
-	 * @throws RepositoryNotRegisteredException
+	 * @throws RepositoryNotRegisteredException Exception.
 	 */
 	private function update() {
 		if ( is_multisite() ) {
 			$site_ids = get_sites();
 			foreach ( $site_ids as $site_id ) {
 				switch_to_blog( $site_id->blog_id );
-				/** @noinspection DisconnectedForeachInstructionInspection */ // phpcs:ignore
+				/** No inspection needed @noinspection DisconnectedForeachInstructionInspection */ // phpcs:ignore
 				$this->update_plugin_on_single_site();
 				restore_current_blog();
 			}

@@ -28,7 +28,7 @@ class Packlink_Manual_Sync_Controller extends Packlink_Base_Controller {
 	 * @return void
 	 */
 	public function is_manual_sync_enabled() {
-		$this->return_json( [ 'manual_sync_status' => $this->get_config_service()->is_manual_sync_enabled() ] );
+		$this->return_json( array( 'manual_sync_status' => $this->get_config_service()->is_manual_sync_enabled() ) );
 	}
 
 	/**
@@ -42,7 +42,7 @@ class Packlink_Manual_Sync_Controller extends Packlink_Base_Controller {
 		$payload = json_decode( $raw, true );
 		$this->get_config_service()->set_manual_sync_enabled( $payload['manual_sync_status'] );
 
-		$this->return_json( [ 'success' => true ] );
+		$this->return_json( array( 'success' => true ) );
 	}
 
 	/**
@@ -51,9 +51,9 @@ class Packlink_Manual_Sync_Controller extends Packlink_Base_Controller {
 	 * @return Config_Service
 	 */
 	private function get_config_service() {
-		/** @var Config_Service $configService */
-		$configService = ServiceRegister::getService( Configuration::CLASS_NAME );
+		/** Configuration service instance @var Config_Service $config_service */
+		$config_service = ServiceRegister::getService( Configuration::CLASS_NAME );
 
-		return $configService;
+		return $config_service;
 	}
 }
