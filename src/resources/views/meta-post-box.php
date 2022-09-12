@@ -32,30 +32,30 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<li class="wide">
 			<?php if ( $shipping_method ) : ?>
 				<div class="pl-order-detail-section">
-					<h4><?php echo __( 'Carrier', 'packlink-pro-shipping' ); //phpcs:ignore WordPress.Security.EscapeOutput ?></h4>
+					<h4><?php echo __( 'Carrier', 'packlink-pro-shipping' );// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></h4>
 					<div>
 						<img
 								class="pl-carrier-image"
-								src="<?php echo $shipping_method->getLogoUrl(); //phpcs:ignore WordPress.Security.EscapeOutput ?>"
+								src="<?php echo $shipping_method->getLogoUrl();// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>"
 								alt="carrier image"
 						/>
-						<span><?php echo $shipping_method->getTitle(); //phpcs:ignore WordPress.Security.EscapeOutput ?></span>
+						<span><?php echo $shipping_method->getTitle();// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
 					</div>
 
 					<?php if ( ! empty( $order_details->getCarrierTrackingNumbers() ) ) : ?>
 						<dl>
 							<dt><?php echo __( 'Carrier tracking codes:', 'packlink-pro-shipping' ); //phpcs:ignore WordPress.Security.EscapeOutput ?></dt>
 							<?php foreach ( $order_details->getCarrierTrackingNumbers() as $carrier_code ) : ?>
-								<dd><?php echo $carrier_code; //phpcs:ignore WordPress.Security.EscapeOutput ?></dd>
+								<dd><?php echo $carrier_code;// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></dd>
 							<?php endforeach; ?>
 						</dl>
 					<?php endif; ?>
 
 					<?php if ( $order_details->getCarrierTrackingUrl() ) : ?>
-						<a href="<?php echo $order_details->getCarrierTrackingUrl(); //phpcs:ignore WordPress.Security.EscapeOutput ?>" target="_blank">
+						<a href="<?php echo $order_details->getCarrierTrackingUrl();// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>" target="_blank">
 							<button type="button" class="button pl-button-view pl-carrier-button"
 									name="view on packlink" value="View">
-								<?php echo __( 'Track it!', 'packlink-pro-shipping' ); //phpcs:ignore WordPress.Security.EscapeOutput ?>
+								<?php echo __( 'Track it!', 'packlink-pro-shipping' );// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 							</button>
 						</a>
 						<br/>
@@ -64,23 +64,23 @@ if ( ! defined( 'ABSPATH' ) ) {
 			<?php endif; ?>
 
 			<div class="pl-order-detail-section">
-				<h4><?php echo __( 'Status', 'packlink-pro-shipping' ); //phpcs:ignore WordPress.Security.EscapeOutput ?></h4>
+				<h4><?php echo __( 'Status', 'packlink-pro-shipping' );// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></h4>
 				<span class="pl-timestamp">
-					<?php echo $last_status_update; //phpcs:ignore WordPress.Security.EscapeOutput ?>
-					<b><?php echo ucfirst( $order_details->getShippingStatus() ); //phpcs:ignore WordPress.Security.EscapeOutput ?></b>
+					<?php echo $last_status_update;// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+					<b><?php echo ucfirst( $order_details->getShippingStatus() );// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></b>
 				</span>
 			</div>
 
 			<div class="pl-order-detail-section">
-				<h4><?php echo __( 'Reference number', 'packlink-pro-shipping' ); //phpcs:ignore WordPress.Security.EscapeOutput ?></h4>
-				<span><?php echo $order_details->getReference(); //phpcs:ignore WordPress.Security.EscapeOutput ?></span>
+				<h4><?php echo __( 'Reference number', 'packlink-pro-shipping' );// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></h4>
+				<span><?php echo $order_details->getReference();// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
 			</div>
 
 			<?php if ( $order_details->getShippingCost() > 0 ) : ?>
 				<div class="pl-order-detail-section">
-					<h4><?php echo __( 'Packlink shipping price', 'packlink-pro-shipping' ); //phpcs:ignore WordPress.Security.EscapeOutput ?></h4>
+					<h4><?php echo __( 'Packlink shipping price', 'packlink-pro-shipping' );// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></h4>
 					<?php
-					echo wc_price( //phpcs:ignore WordPress.Security.EscapeOutput
+					echo wc_price(// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 						$order_details->getShippingCost(),
 						array( 'currency' => $order_details->getCurrency() )
 					);
@@ -91,16 +91,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 		<?php if ( ! $shipment_deleted ) : ?>
 			<li class="wide">
-				<a href="<?php echo $order_details->getShipmentUrl(); //phpcs:ignore WordPress.Security.EscapeOutput ?>" target="_blank">
+				<a href="<?php echo $order_details->getShipmentUrl();// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>" target="_blank">
 					<button type="button" class="button pl-button-view" name="view on packlink" value="View">
-						<?php echo __( 'View on Packlink PRO', 'packlink-pro-shipping' ); //phpcs:ignore WordPress.Security.EscapeOutput ?>
+						<?php echo __( 'View on Packlink PRO', 'packlink-pro-shipping' );// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 					</button>
 				</a>
 
 				<?php if ( $order_details->getShipmentLabels() ) : ?>
-					<a href="<?php echo $order_details->getShipmentLabels()[0]->getLink(); //phpcs:ignore WordPress.Security.EscapeOutput ?>" target="_blank">
+					<a href="<?php echo $order_details->getShipmentLabels()[0]->getLink();// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>" target="_blank">
 						<button type="button" class="button button-primary" name="print label" value="Print">
-							<?php echo __( 'Print label', 'packlink-pro-shipping' ); //phpcs:ignore WordPress.Security.EscapeOutput ?>
+							<?php echo __( 'Print label', 'packlink-pro-shipping' );// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 						</button>
 					</a>
 				<?php endif; ?>
@@ -116,17 +116,17 @@ if ( ! defined( 'ABSPATH' ) ) {
 				<?php endif; ?>
 
 				<input type="hidden" id="pl-create-endpoint"
-					   value="<?php echo Shop_Helper::get_controller_url( 'Order_Details', 'create_draft' ); //phpcs:ignore WordPress.Security.EscapeOutput ?>"/>
+					   value="<?php echo Shop_Helper::get_controller_url( 'Order_Details', 'create_draft' );// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>"/>
 				<button type="button" class="button button-primary" id="pl-create-draft"
-						value="<?php echo $wc_order->get_id(); //phpcs:ignore WordPress.Security.EscapeOutput ?>">
-					<?php echo __( 'Create draft', 'packlink-pro-shipping' ); //phpcs:ignore WordPress.Security.EscapeOutput ?>
+						value="<?php echo $wc_order->get_id();// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>">
+					<?php echo __( 'Create draft', 'packlink-pro-shipping' );// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 				</button>
 			</div>
 		</li>
 	<?php else : ?>
 		<li class="wide">
 			<div class="pl-order-detail-section pl-create-draft">
-				<span><?php echo __( 'Draft is currently being created in Packlink', 'packlink-pro-shipping' ); //phpcs:ignore WordPress.Security.EscapeOutput ?></span>
+				<span><?php echo __( 'Draft is currently being created in Packlink', 'packlink-pro-shipping' );// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
 			</div>
 		</li>
 	<?php endif; ?>

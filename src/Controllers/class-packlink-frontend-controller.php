@@ -58,7 +58,7 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	 * Loads JS and CSS files for the current page.
 	 */
 	private function load_static_content() {
-		wp_enqueue_style( 'material', 'https://fonts.googleapis.com/icon?family=Material+Icons+Outlined', array( ), false ); // phpcs:ignore
+		wp_enqueue_style( 'material', 'https://fonts.googleapis.com/icon?family=Material+Icons+Outlined', array(), wp_get_theme()->get( 'Version' ) );
 
 		Script_Loader::load_css(
 			array(
@@ -131,9 +131,9 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	 * @return array
 	 */
 	private function get_templates() {
-		$base_dir = __DIR__ . '/../resources/packlink/templates/';
+		$base_dir     = __DIR__ . '/../resources/packlink/templates/';
 		$override_dir = __DIR__ . '/../resources/templates/override/';
-		$custom_dir = __DIR__ . '/../resources/templates/custom/';
+		$custom_dir   = __DIR__ . '/../resources/templates/custom/';
 
 		//@codingStandardsIgnoreStart
 		return array(
