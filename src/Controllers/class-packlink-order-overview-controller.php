@@ -136,7 +136,7 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 		}
 
 		if ( static::COLUMN_PACKLINK_ID === $column && ! empty( $this->get_config_service()->getAuthorizationToken() ) ) {
-			echo $this->get_packlink_shipping_button( $post ); // phpcs:ignore WordPress.Security.EscapeOutput
+			echo $this->get_packlink_shipping_button( $post ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		}
 	}
 
@@ -156,11 +156,12 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 	public function get_draft_status() {
 		$this->validate( 'no', true );
 
-		$order_id = ! empty( $_GET['order_id'] ) ? $_GET['order_id'] : null; // phpcs:ignore
+		if ( empty( $_GET['order_id'] ) ) {
 
-		if ( ! $order_id ) {
 			throw new ParameterException( 'Order ID missing.' );
 		}
+
+		$order_id = intval( $_GET['order_id'] );
 
 		/** ShipmentDraftService instance  @var ShipmentDraftService $draft_service */
 		$draft_service = ServiceRegister::getService( ShipmentDraftService::CLASS_NAME );
@@ -198,12 +199,11 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 	public function print_single_label() {
 		$this->validate( 'no', true );
 
-		$order_id = ! empty( $_GET['order_id'] ) ? $_GET['order_id'] : null; // phpcs:ignore
-
-		if ( ! $order_id ) {
+		if ( empty( $_GET['order_id'] ) ) {
 			echo esc_html( __( 'Label is not yet available.', 'packlink-pro-shipping' ) );
 			exit;
 		}
+		$order_id = intval( $_GET['order_id'] );
 
 		$shipment_details = $this->get_order_shipment_details_service()->getDetailsByOrderId( (string) $order_id );
 		if ( null === $shipment_details ) {
@@ -437,7 +437,7 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 		header( 'Expires: Sat, 26 Jul 1997 05:00:00 GMT' );
 		header( 'Last-Modified: ' . gmdate( 'D, d M Y H:i:s' ) . ' GMT' );
 
-		echo $file; // phpcs:ignore WordPress.Security.EscapeOutput
+		echo $file; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
 
 	/**

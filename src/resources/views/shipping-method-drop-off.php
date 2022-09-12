@@ -28,7 +28,7 @@ use Packlink\WooCommerce\Components\Utility\Shop_Helper;
 $id_value     = wc()->session->get( Shipping_Method_Helper::DROP_OFF_ID, '' );
 $button_label = $id_value ? __( 'Change Drop-Off Location', 'packlink-pro-shipping' ) : __( 'Select Drop-Off Location', 'packlink-pro-shipping' );
 $parts        = explode( '_', get_locale() );
-$locale       = $parts[0];  // phpcs:ignore
+$locale       = $parts[0];// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 
 $translations = array(
 	'pickDropOff'   => __( 'Select Drop-Off Location', 'packlink-pro-shipping' ),
@@ -47,12 +47,12 @@ if ( $id_value ) {
 ?>
 
 <script style="display: none;">
-	Packlink.checkout.setLocale('<?php echo $locale; //phpcs:ignore WordPress.Security.EscapeOutput ?>');
+	Packlink.checkout.setLocale('<?php echo $locale;// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>');
 	Packlink.checkout.setTranslations(<?php echo wp_json_encode( $translations ); ?>);
 	Packlink.checkout.setIsCart(<?php echo is_cart() ? 'true' : 'false'; ?>);
 	Packlink.checkout.setLocations(<?php echo wp_json_encode( $locations ); ?>);
-	Packlink.checkout.setSelectedLocationId('<?php echo $id_value; //phpcs:ignore WordPress.Security.EscapeOutput ?>');
-	Packlink.checkout.setSaveEndpoint('<?php echo Shop_Helper::get_controller_url( 'Checkout', 'save_selected' ); //phpcs:ignore WordPress.Security.EscapeOutput ?>');
+	Packlink.checkout.setSelectedLocationId('<?php echo $id_value;// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>');
+	Packlink.checkout.setSaveEndpoint('<?php echo Shop_Helper::get_controller_url( 'Checkout', 'save_selected' );// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>');
 	<?php if ( ! is_cart() ) : ?>
 	Packlink.checkout.setDropOffAddress();
 	<?php endif; ?>
@@ -60,7 +60,7 @@ if ( $id_value ) {
 
 <?php if ( ! is_cart() ) : ?>
 	<button type="button" id="packlink-drop-off-picker"
-			class="button"><?php echo $button_label; //phpcs:ignore WordPress.Security.EscapeOutput ?></button>
+			class="button"><?php echo $button_label;// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></button>
 
 	<div id="pl-picker-modal" style="display: none;">
 		<location-picker>

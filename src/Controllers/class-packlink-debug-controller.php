@@ -129,12 +129,12 @@ class Packlink_Debug_Controller extends Packlink_Base_Controller {
 		$response = curl_exec( $curl );
 
 		rewind( $verbose );
-		echo '<pre>', stream_get_contents( $verbose ); // phpcs:ignore WordPress.Security.EscapeOutput
+		echo '<pre>', stream_get_contents( $verbose );// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		unlink( $verboseFile );
 		/** No inspection needed @noinspection PhpComposerExtensionStubsInspection */
 		curl_close( $curl );
 
-		echo $response; // phpcs:ignore WordPress.Security.EscapeOutput
+		echo $response;// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 
 		echo '</pre>';
 		exit;
