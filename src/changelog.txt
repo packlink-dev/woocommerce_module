@@ -1,4 +1,7 @@
-*** WooCommerce Packlink Changelog ***
+*** Packlink PRO Changelog ***
+
+2022-07-19 - version 3.2.10
+* Update - Added compatibility with the new checkout page.
 
 2022-05-30 - version 3.2.9
 * Update - Async process wakeup delay for manual sync.

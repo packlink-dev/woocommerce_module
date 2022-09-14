@@ -44,6 +44,8 @@ rm -rf packlink-pro/vendor/setasign/fpdf/tutorial
 rm -rf packlink-pro/vendor/setasign/fpdf/fpdf.php
 rm -rf packlink-pro/vendor/setasign/fpdi/src/PdfParser/Filter/Flate.php
 rm -rf packlink-pro/vendor/setasign/fpdi/src/PdfParser/StreamReader.php
+rm -rf packlink-pro/resources/packlink/countries/fromCSV.php
+rm -rf packlink-pro/resources/packlink/countries/toCSV.php
 
 # Copy resources
 echo -e "\e[32mSTEP 4:\e[39m Copying resources from core to the integration..."
