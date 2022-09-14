@@ -123,7 +123,7 @@ class Packlink_Auto_Test_Controller extends Packlink_Base_Controller {
 		header( 'Pragma: public' );
 		header( 'Content-Length: ' . strlen( $content ) );
 
-		echo $content; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		echo wp_kses_post( $content );
 
 		die( 200 );
 	}

@@ -136,7 +136,7 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 		}
 
 		if ( static::COLUMN_PACKLINK_ID === $column && ! empty( $this->get_config_service()->getAuthorizationToken() ) ) {
-			echo $this->get_packlink_shipping_button( $post ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			echo wp_kses_post( $this->get_packlink_shipping_button( $post ) );
 		}
 	}
 
@@ -437,7 +437,7 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 		header( 'Expires: Sat, 26 Jul 1997 05:00:00 GMT' );
 		header( 'Last-Modified: ' . gmdate( 'D, d M Y H:i:s' ) . ' GMT' );
 
-		echo $file; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		echo wp_kses_post( $file );
 	}
 
 	/**
