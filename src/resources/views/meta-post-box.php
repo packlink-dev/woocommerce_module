@@ -32,31 +32,31 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<li class="wide">
 			<?php if ( $shipping_method ) : ?>
 				<div class="pl-order-detail-section">
-					<h4><?php echo wp_kses_post( __( 'Carrier', 'packlink-pro-shipping' ) ); ?></h4>
+					<h4><?php echo esc_attr( __( 'Carrier', 'packlink-pro-shipping' ) ); ?></h4>
 					<div>
 						<img
 								class="pl-carrier-image"
-								src="<?php echo wp_kses_post( $shipping_method->getLogoUrl() ); ?>"
+								src="<?php echo esc_url_raw( $shipping_method->getLogoUrl() ); ?>"
 								alt="carrier image"
 						/>
-						<span><?php echo wp_kses_post( $shipping_method->getTitle() ); ?></span>
+						<span><?php echo esc_attr( $shipping_method->getTitle() ); ?></span>
 					</div>
 
 					<?php if ( ! empty( $order_details->getCarrierTrackingNumbers() ) ) : ?>
 						<dl>
-							<dt><?php echo wp_kses_post( __( 'Carrier tracking codes:', 'packlink-pro-shipping' ) ); ?></dt>
+							<dt><?php echo esc_attr( __( 'Carrier tracking codes:', 'packlink-pro-shipping' ) ); ?></dt>
 							<?php foreach ( $order_details->getCarrierTrackingNumbers() as $carrier_code ) : ?>
-								<dd><?php echo wp_kses_post( $carrier_code ); ?></dd>
+								<dd><?php echo esc_attr( $carrier_code ); ?></dd>
 							<?php endforeach; ?>
 						</dl>
 					<?php endif; ?>
 
 					<?php if ( $order_details->getCarrierTrackingUrl() ) : ?>
-						<a href="<?php echo wp_kses_post( $order_details->getCarrierTrackingUrl() ); ?>"
+						<a href="<?php echo esc_url_raw( $order_details->getCarrierTrackingUrl() ); ?>"
 						   target="_blank">
 							<button type="button" class="button pl-button-view pl-carrier-button"
 									name="view on packlink" value="View">
-								<?php echo wp_kses_post( __( 'Track it!', 'packlink-pro-shipping' ) ); ?>
+								<?php echo esc_attr( __( 'Track it!', 'packlink-pro-shipping' ) ); ?>
 							</button>
 						</a>
 						<br/>
@@ -65,23 +65,23 @@ if ( ! defined( 'ABSPATH' ) ) {
 			<?php endif; ?>
 
 			<div class="pl-order-detail-section">
-				<h4><?php echo wp_kses_post( __( 'Status', 'packlink-pro-shipping' ) ); ?></h4>
+				<h4><?php echo esc_attr( __( 'Status', 'packlink-pro-shipping' ) ); ?></h4>
 				<span class="pl-timestamp">
-					<?php echo wp_kses_post( $last_status_update ); ?>
-					<b><?php echo wp_kses_post( ucfirst( $order_details->getShippingStatus() ) ); ?></b>
+					<?php echo esc_attr( $last_status_update ); ?>
+					<b><?php echo esc_attr( ucfirst( $order_details->getShippingStatus() ) ); ?></b>
 				</span>
 			</div>
 
 			<div class="pl-order-detail-section">
-				<h4><?php echo wp_kses_post( __( 'Reference number', 'packlink-pro-shipping' ) ); ?></h4>
-				<span><?php echo wp_kses_post( $order_details->getReference() ); ?></span>
+				<h4><?php echo esc_attr( __( 'Reference number', 'packlink-pro-shipping' ) ); ?></h4>
+				<span><?php echo esc_attr( $order_details->getReference() ); ?></span>
 			</div>
 
 			<?php if ( $order_details->getShippingCost() > 0 ) : ?>
 				<div class="pl-order-detail-section">
-					<h4><?php echo wp_kses_post( __( 'Packlink shipping price', 'packlink-pro-shipping' ) ); ?></h4>
+					<h4><?php echo esc_attr( __( 'Packlink shipping price', 'packlink-pro-shipping' ) ); ?></h4>
 					<?php
-					echo wp_kses_post(
+					echo esc_attr(
 						wc_price(
 							$order_details->getShippingCost(),
 							array( 'currency' => $order_details->getCurrency() )
@@ -94,18 +94,18 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 		<?php if ( ! $shipment_deleted ) : ?>
 			<li class="wide">
-				<a href="<?php echo wp_kses_post( $order_details->getShipmentUrl() ); ?>"
+				<a href="<?php echo esc_url_raw( $order_details->getShipmentUrl() ); ?>"
 				   target="_blank">
 					<button type="button" class="button pl-button-view" name="view on packlink" value="View">
-						<?php echo wp_kses_post( __( 'View on Packlink PRO', 'packlink-pro-shipping' ) ); ?>
+						<?php echo esc_attr( __( 'View on Packlink PRO', 'packlink-pro-shipping' ) ); ?>
 					</button>
 				</a>
 
 				<?php if ( $order_details->getShipmentLabels() ) : ?>
-					<a href="<?php echo wp_kses_post( $order_details->getShipmentLabels()[0]->getLink() ); ?>"
+					<a href="<?php echo esc_url_raw( $order_details->getShipmentLabels()[0]->getLink() ); ?>"
 					   target="_blank">
 						<button type="button" class="button button-primary" name="print label" value="Print">
-							<?php echo wp_kses_post( __( 'Print label', 'packlink-pro-shipping' ) ); ?>
+							<?php echo esc_attr( __( 'Print label', 'packlink-pro-shipping' ) ); ?>
 						</button>
 					</a>
 				<?php endif; ?>
@@ -119,24 +119,24 @@ if ( ! defined( 'ABSPATH' ) ) {
 					<span>
 					<?php
 					echo /* translators: %s: search term */
-						wp_kses_post( sprintf( __( 'Previous attempt to create a draft failed. Error: %s', 'packlink-pro-shipping' ), $draft_status->message ) );
+					esc_attr( sprintf( __( 'Previous attempt to create a draft failed. Error: %s', 'packlink-pro-shipping' ), $draft_status->message ) );
 					?>
 						</span>
 					<br/>
 				<?php endif; ?>
 
 				<input type="hidden" id="pl-create-endpoint"
-					   value="<?php echo wp_kses_post( Shop_Helper::get_controller_url( 'Order_Details', 'create_draft' ) ); ?>"/>
+					   value="<?php echo esc_url_raw( Shop_Helper::get_controller_url( 'Order_Details', 'create_draft' ) ); ?>"/>
 				<button type="button" class="button button-primary" id="pl-create-draft"
-						value="<?php echo wp_kses_post( $wc_order->get_id() ); ?>">
-					<?php echo wp_kses_post( __( 'Create draft', 'packlink-pro-shipping' ) ); ?>
+						value="<?php echo esc_attr( $wc_order->get_id() ); ?>">
+					<?php echo esc_attr( __( 'Create draft', 'packlink-pro-shipping' ) ); ?>
 				</button>
 			</div>
 		</li>
 	<?php else : ?>
 		<li class="wide">
 			<div class="pl-order-detail-section pl-create-draft">
-				<span><?php echo wp_kses_post( __( 'Draft is currently being created in Packlink', 'packlink-pro-shipping' ) ); ?></span>
+				<span><?php echo esc_attr( __( 'Draft is currently being created in Packlink', 'packlink-pro-shipping' ) ); ?></span>
 			</div>
 		</li>
 	<?php endif; ?>

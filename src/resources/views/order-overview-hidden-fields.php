@@ -12,24 +12,24 @@ $src = Shop_Helper::get_plugin_base_url() . 'resources/images/logo.png';
 
 <div class="pl-hidden-fields-container">
 	<input type="hidden" id="pl-create-endpoint"
-		   value="<?php echo wp_kses_post( Shop_Helper::get_controller_url( 'Order_Details', 'create_draft' ) ); ?>"/>
+		   value="<?php echo esc_url_raw( Shop_Helper::get_controller_url( 'Order_Details', 'create_draft' ) ); ?>"/>
 	<input type="hidden" id="pl-check-manual-sync-status"
-		   value="<?php echo wp_kses_post( Shop_Helper::get_controller_url( 'Manual_Sync', 'is_manual_sync_enabled' ) ); ?>"/>
+		   value="<?php echo esc_url_raw( Shop_Helper::get_controller_url( 'Manual_Sync', 'is_manual_sync_enabled' ) ); ?>"/>
 	<input type="hidden" id="pl-check-status"
-		   value="<?php echo wp_kses_post( Shop_Helper::get_controller_url( 'Order_Overview', 'get_draft_status' ) ); ?>"/>
+		   value="<?php echo esc_url_raw( Shop_Helper::get_controller_url( 'Order_Overview', 'get_draft_status' ) ); ?>"/>
 
 	<input type="hidden" id="pl-draft-in-progress"
-		   value="<?php echo wp_kses_post( __( 'Draft is currently being created.', 'packlink-pro-shipping' ) ); ?>"/>
+		   value="<?php echo esc_attr( __( 'Draft is currently being created.', 'packlink-pro-shipping' ) ); ?>"/>
 	<input type="hidden" id="pl-draft-failed"
-		   value="<?php echo wp_kses_post( __( 'Previous attempt to create a draft failed.', 'packlink-pro-shipping' ) ); ?>"/>
+		   value="<?php echo esc_attr( __( 'Previous attempt to create a draft failed.', 'packlink-pro-shipping' ) ); ?>"/>
 
 	<a target="_blank" id="pl-draft-button-template" class="button pl-draft-button hidden">
 		<img class="pl-image" src="<?php echo esc_url( $src ); ?>" alt="">
-		<?php echo wp_kses_post( __( 'View on Packlink', 'packlink-pro-shipping' ) ); ?>
+		<?php echo esc_attr( __( 'View on Packlink', 'packlink-pro-shipping' ) ); ?>
 	</a>
 
 	<button id="pl-create-draft-template" class="button pl-draft-button hidden">
 		<img class="pl-image" src="<?php echo esc_url( $src ); ?>" alt="">
-		<?php echo wp_kses_post( __( 'Send with Packlink', 'packlink-pro-shipping' ) ); ?>
+		<?php echo esc_attr( __( 'Send with Packlink', 'packlink-pro-shipping' ) ); ?>
 	</button>
 </div>

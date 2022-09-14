@@ -23,23 +23,23 @@ $data = $this->resolve_view_arguments();
 
 <div class="container-fluid pl-main-wrapper" id="pl-main-page-holder">
 	<div class="pl-logo-wrapper">
-		<img src="<?php echo json_encode( $data['dashboard_logo'] ); ?>"
+		<img src="<?php echo esc_url_raw( $data['dashboard_logo'] ); ?>"
 			 class="pl-dashboard-logo"
-			 alt="<?php echo wp_kses_post( __( 'Packlink PRO Shipping', 'packlink-pro-shipping' ) ); ?>">
+			 alt="<?php echo esc_attr( __( 'Packlink PRO Shipping', 'packlink-pro-shipping' ) ); ?>">
 	</div>
 	<div class="pl-auto-test-panel">
 		<div class="pl-auto-test-header">
 			<div class="pl-auto-test-title">
-				<?php echo wp_kses_post( __( 'PacklinkPRO module auto-test', 'packlink-pro-shipping' ) ); ?>
+				<?php echo esc_attr( __( 'PacklinkPRO module auto-test', 'packlink-pro-shipping' ) ); ?>
 			</div>
 			<div class="pl-auto-test-subtitle">
-				<?php echo wp_kses_post( __( 'Use this page to test the system configuration and PacklinkPRO module services.', 'packlink-pro-shipping' ) ); ?>
+				<?php echo esc_attr( __( 'Use this page to test the system configuration and PacklinkPRO module services.', 'packlink-pro-shipping' ) ); ?>
 			</div>
 		</div>
 
 		<div class="pl-auto-test-content col-10" id="pl-auto-test-progress">
 			<button type="button" name="start-test" id="pl-auto-test-start"
-					class="button button-primary btn-lg"><?php echo wp_kses_post( __( 'Start', 'packlink-pro-shipping' ) ); ?></button>
+					class="button button-primary btn-lg"><?php echo esc_attr( __( 'Start', 'packlink-pro-shipping' ) ); ?></button>
 			<div class="pl-auto-test-log-panel" id="pl-auto-test-log-panel">
 				...
 			</div>
@@ -58,7 +58,7 @@ $data = $this->resolve_view_arguments();
 							check_circle
 						</i>
 						<span id="pl-flash-message-text">
-							<?php echo wp_kses_post( __( 'Auto-test passed successfully!', 'packlink-pro-shipping' ) ); ?>
+							<?php echo esc_attr( __( 'Auto-test passed successfully!', 'packlink-pro-shipping' ) ); ?>
 						</span>
 					</div>
 				</div>
@@ -68,25 +68,25 @@ $data = $this->resolve_view_arguments();
 							error
 						</i>
 						<span id="pl-flash-message-text">
-							<?php echo wp_kses_post( __( 'The test did not complete successfully.', 'packlink-pro-shipping' ) ); ?>
+							<?php echo esc_attr( __( 'The test did not complete successfully.', 'packlink-pro-shipping' ) ); ?>
 						</span>
 					</div>
 				</div>
 			</div>
 
-			<a href="<?php echo json_encode( $data['download_log_url'] ); ?>"
+			<a href="<?php echo esc_url_raw( $data['download_log_url'] ); ?>"
 			   value="auto-test-log.json" download>
 				<button type="button" name="download-log"
-						class="button btn-info btn-lg"><?php echo wp_kses_post( __( 'Download test log', 'packlink-pro-shipping' ) ); ?></button>
+						class="button btn-info btn-lg"><?php echo esc_attr( __( 'Download test log', 'packlink-pro-shipping' ) ); ?></button>
 			</a>
-			<a href="<?php echo json_encode( $data['debug_url'] ); ?>"
+			<a href="<?php echo esc_url_raw( $data['debug_url'] ); ?>"
 			   value="packlink-debug-data.zip" download>
 				<button type="button" name="download-system-info-file"
-						class="button btn-info btn-lg"><?php echo wp_kses_post( __( 'Download system info file', 'packlink-pro-shipping' ) ); ?></button>
+						class="button btn-info btn-lg"><?php echo esc_attr( __( 'Download system info file', 'packlink-pro-shipping' ) ); ?></button>
 			</a>
-			<a href="<?php echo json_encode( $data['module_url'] ); ?>">
+			<a href="<?php echo esc_url_raw( $data['module_url'] ); ?>">
 				<button type="button" name="open-module" class="button btn-success btn-lg">
-					<?php echo wp_kses_post( __( 'Open PacklinkPRO module', 'packlink-pro-shipping' ) ); ?>
+					<?php echo esc_attr( __( 'Open PacklinkPRO module', 'packlink-pro-shipping' ) ); ?>
 				</button>
 			</a>
 
@@ -96,6 +96,6 @@ $data = $this->resolve_view_arguments();
 
 <script type="application/javascript">
 	document.addEventListener('DOMContentLoaded', function () {
-		Packlink.AutoTestController("<?php echo $data['start_test_url']; ?>", "<?php echo json_encode( ( $data['check_status_url'] ) ); ?>");
+		Packlink.AutoTestController("<?php echo esc_url_raw( $data['start_test_url'] ); ?>", "<?php echo esc_url_raw( ( $data['check_status_url'] ) ); ?>");
 	}, false);
 </script>

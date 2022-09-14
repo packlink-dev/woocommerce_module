@@ -10,7 +10,7 @@ $url = wp_nonce_url( add_query_arg( 'packlink-hide-error-notice', '1' ), 'packli
 ?>
 <div class="notice notice-error" style="position: relative;">
 	<p><strong><?php esc_html_e( 'Packlink PRO Shipping', 'packlink-pro-shipping' ); ?>:</strong>
-		<?php echo wp_kses_post( get_transient( 'packlink-pro-error-messages' ) ); ?>
+		<?php echo esc_attr( get_transient( 'packlink-pro-error-messages' ) ); ?>
 	</p>
 	<a style="text-decoration: none;display:flex;" class="notice-dismiss" href="<?php echo esc_url( $url ); ?>">
 		<?php esc_html_e( 'Dismiss' ); ?>
