@@ -18,5 +18,5 @@ global $wpdb;
 
 Packlink\WooCommerce\Components\Bootstrap_Component::init();
 
-$plugin = new \Packlink\WooCommerce\Plugin( $wpdb, __FILE__ );// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-$plugin->uninstall();
+$packlink_plugin = new \Packlink\WooCommerce\Plugin( $wpdb, __FILE__ );
+$packlink_plugin->uninstall();
