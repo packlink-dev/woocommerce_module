@@ -1,5 +1,8 @@
 *** Packlink PRO Changelog ***
 
+2022-10-04 - version 3.2.11
+* Update - Added new webhook event.
+
 2022-07-19 - version 3.2.10
 * Update - Added compatibility with the new checkout page.
 
