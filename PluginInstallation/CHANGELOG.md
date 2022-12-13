@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [v3.2.13](https://github.com/logeecom/pl_woocommerce_module/compare/v3.2.11...v3.2.13) - 2022-12-13
+### Changed
+- Fix duplicating shipping methods.
+
 ## [v3.2.12](https://github.com/logeecom/pl_woocommerce_module/compare/v3.2.11...v3.2.12) - 2022-10-10
 ### Changed
 - Stabilize version.
