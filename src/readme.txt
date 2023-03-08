@@ -68,6 +68,11 @@ Click <a href="https://support-pro.packlink.com/hc/es-es/articles/210158585" tar
 
 == Changelog ==
 
+#### 3.2.14 - March 8, 2023
+
+**Updates**
+- Add handling of shipment delivered webhook.
+
 #### 3.2.13 - December 13, 2022
 
 **Updates**

@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [v3.2.14](https://github.com/logeecom/pl_woocommerce_module/compare/v3.2.13...v3.2.14) - 2023-03-08
+### Added
+- Add handling of shipment delivered webhook.
+
 ## [v3.2.13](https://github.com/logeecom/pl_woocommerce_module/compare/v3.2.11...v3.2.13) - 2022-12-13
 ### Changed
 - Fix duplicating shipping methods.
