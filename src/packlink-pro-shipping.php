@@ -9,14 +9,14 @@
  * Plugin Name: Packlink PRO Shipping
  * Plugin URI: https://en.wordpress.org/plugins/packlink-pro-shipping/
  * Description: Save up to 70% on your shipping costs. No fixed fees, no minimum shipping volume required. Manage all your shipments in a single platform.
- * Version: 3.2.10
+ * Version: 3.2.14
  * Author: Packlink Shipping S.L.
  * Author URI: https://pro.packlink.es/
  * License: GPL
  * Text Domain: packlink-pro-shipping
  * Domain Path: /languages
  * WC requires at least: 3.0.0
- * WC tested up to: 7.2.
+ * WC tested up to: 7.2.2
  */
 
 use Packlink\WooCommerce\Plugin;

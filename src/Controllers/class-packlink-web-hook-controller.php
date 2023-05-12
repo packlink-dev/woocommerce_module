@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 namespace Packlink\WooCommerce\Controllers;
 
-use Packlink\BusinessLogic\WebHook\WebHookEventHandler;
+use Packlink\WooCommerce\Components\Services\WebHook_Event_Handler;
 use Packlink\WooCommerce\Components\Utility\Shop_Helper;
 
 /**
@@ -41,7 +41,7 @@ class Packlink_Web_Hook_Controller extends Packlink_Base_Controller {
 			$this->redirect404();
 		}
 
-		$result = WebHookEventHandler::getInstance()->handle( $this->get_raw_input() );
+		$result = WebHook_Event_Handler::getInstance()->handle( $this->get_raw_input() );
 
 		$this->return_json( array( 'success' => $result ), $result ? 200 : 400 );
 	}

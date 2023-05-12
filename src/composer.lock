@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "bc0f75ae973eacf28c276f31e4f5e62f",
+    "content-hash": "21a620aefdfac217a020d479e773e982",
     "packages": [
         {
             "name": "iio/libmergepdf",
@@ -62,16 +62,16 @@
         },
         {
             "name": "packlink/integration-core",
-            "version": "3.3.8",
+            "version": "v3.3.12",
             "source": {
                 "type": "git",
                 "url": "git@github.com:packlink-dev/ecommerce_module_core.git",
-                "reference": "2762650a01458b862a8af55c83dcbe02b6410ac5"
+                "reference": "bc2137d2d34db0fb3d835a8e94607eb2f1199415"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/packlink-dev/ecommerce_module_core/zipball/2762650a01458b862a8af55c83dcbe02b6410ac5",
-                "reference": "2762650a01458b862a8af55c83dcbe02b6410ac5",
+                "url": "https://api.github.com/repos/packlink-dev/ecommerce_module_core/zipball/bc2137d2d34db0fb3d835a8e94607eb2f1199415",
+                "reference": "bc2137d2d34db0fb3d835a8e94607eb2f1199415",
                 "shasum": ""
             },
             "require": {
@@ -110,7 +110,7 @@
                 "proprietary"
             ],
             "description": "Packlink integrations core library",
-            "time": "2022-05-09T14:40:09+00:00"
+            "time": "2023-01-31T09:41:12+00:00"
         },
         {
             "name": "setasign/fpdf",
@@ -340,12 +340,12 @@
             },
             "type": "library",
             "autoload": {
-                "psr-4": {
-                    "DeepCopy\\": "src/DeepCopy/"
-                },
                 "files": [
                     "src/DeepCopy/deep_copy.php"
-                ]
+                ],
+                "psr-4": {
+                    "DeepCopy\\": "src/DeepCopy/"
+                }
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
@@ -1603,12 +1603,12 @@
                 }
             },
             "autoload": {
-                "psr-4": {
-                    "Symfony\\Polyfill\\Ctype\\": ""
-                },
                 "files": [
                     "bootstrap.php"
-                ]
+                ],
+                "psr-4": {
+                    "Symfony\\Polyfill\\Ctype\\": ""
+                }
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
@@ -1777,16 +1777,16 @@
         },
         {
             "name": "yoast/phpunit-polyfills",
-            "version": "1.0.3",
+            "version": "1.0.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Yoast/PHPUnit-Polyfills.git",
-                "reference": "5ea3536428944955f969bc764bbe09738e151ada"
+                "reference": "3c621ff5429d2b1ff96dc5808ad6cde99d31ea4c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Yoast/PHPUnit-Polyfills/zipball/5ea3536428944955f969bc764bbe09738e151ada",
-                "reference": "5ea3536428944955f969bc764bbe09738e151ada",
+                "url": "https://api.github.com/repos/Yoast/PHPUnit-Polyfills/zipball/3c621ff5429d2b1ff96dc5808ad6cde99d31ea4c",
+                "reference": "3c621ff5429d2b1ff96dc5808ad6cde99d31ea4c",
                 "shasum": ""
             },
             "require": {
@@ -1794,7 +1794,7 @@
                 "phpunit/phpunit": "^4.8.36 || ^5.7.21 || ^6.0 || ^7.0 || ^8.0 || ^9.0"
             },
             "require-dev": {
-                "yoast/yoastcs": "^2.2.0"
+                "yoast/yoastcs": "^2.2.1"
             },
             "type": "library",
             "extra": {
@@ -1834,7 +1834,7 @@
                 "issues": "https://github.com/Yoast/PHPUnit-Polyfills/issues",
                 "source": "https://github.com/Yoast/PHPUnit-Polyfills"
             },
-            "time": "2021-11-23T01:37:03+00:00"
+            "time": "2022-11-16T09:07:52+00:00"
         }
     ],
     "aliases": [],
@@ -1852,5 +1852,5 @@
     "platform-overrides": {
         "php": "5.6.0"
     },
-    "plugin-api-version": "1.1.0"
+    "plugin-api-version": "2.1.0"
 }
