@@ -3,6 +3,22 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [v3.2.14](https://github.com/logeecom/pl_woocommerce_module/compare/v3.2.13...v3.2.14) - 2023-03-08
+### Added
+- Add handling of shipment delivered webhook.
+
+## [v3.2.13](https://github.com/logeecom/pl_woocommerce_module/compare/v3.2.11...v3.2.13) - 2022-12-13
+### Changed
+- Fix duplicating shipping methods.
+
+## [v3.2.12](https://github.com/logeecom/pl_woocommerce_module/compare/v3.2.11...v3.2.12) - 2022-10-10
+### Changed
+- Stabilize version.
+
+## [v3.2.10](https://github.com/logeecom/pl_woocommerce_module/compare/v3.2.8...v3.2.9) - 2022-07-19
+### Changed
+- Added compatibility with the new checkout page.
+
 ## [v3.2.9](https://github.com/logeecom/pl_woocommerce_module/compare/v3.2.8...v3.2.9) - 2022-05-30
 ### Changed
 - Updated async process wakeup delay for manual sync.
@@ -172,7 +188,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 ### Changed
 - Updated to the latest core
 - Changed escaping resource URLs
-- Fixed sending full shipping address with address 2 part (in Core) 
+- Fixed sending full shipping address with address 2 part (in Core)
 - Enhanced logging
 - Added update message mechanism
 
@@ -189,7 +205,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 ## [v2.0.1](https://github.com/logeecom/pl_woocommerce_module/compare/v2.0.1...v2.0.0) - 2019-05-29
 ### Changed
 - Updated to the latest core changes
-- Shipment labels are now fetched from Packlink only when order does not have labels set 
+- Shipment labels are now fetched from Packlink only when order does not have labels set
 and shipment status is in one of:
     * READY_TO_PRINT
     * READY_FOR_COLLECTION

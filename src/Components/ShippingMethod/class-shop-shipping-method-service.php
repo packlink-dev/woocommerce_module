@@ -183,7 +183,9 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 		$items          = $this->get_woocommerce_shipping_methods( $shipping_method->getId() );
 		$instance_ids   = array();
 		foreach ( $items as $item ) {
-			$instance_ids[] = $item->getWoocommerceShippingMethodId();
+			if ( $item->getWoocommerceShippingMethodId() !== null ) {
+				$instance_ids[] = $item->getWoocommerceShippingMethodId();
+			}
 		}
 
 		if ( ! empty( $instance_ids ) ) {
