@@ -29,7 +29,7 @@ var Packlink = window.Packlink || {};
 		modal        = document.getElementById( 'pl-picker-modal' );
 		closeButton  = document.getElementById( 'pl-picker-modal-close' );
 		updateButton = document.querySelector( "[name='calc_shipping']" );
-		let templates = document.getElementById('packlink-js-templates');
+		let templates = document.getElementById("packlink-js-templates");
 		[].forEach.call(
 			document.getElementsByName( 'packlink_show_image' ),
 			function (item) {
