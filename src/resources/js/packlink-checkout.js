@@ -49,8 +49,6 @@ var Packlink = window.Packlink || {};
 						function () {
 							initLocationPicker();
 							modal.style.display = 'block';
-							document.body.appendChild(templates);
-
 						}
 					);
 				}
