@@ -615,6 +615,7 @@ class Plugin {
 		add_action( 'woocommerce_checkout_create_order', array( $handler, 'checkout_update_shipping_address' ), 10, 2 );
 		add_action( 'woocommerce_checkout_update_order_meta', array( $handler, 'checkout_update_drop_off' ), 10, 2 );
 		add_action( 'wp_enqueue_scripts', array( $handler, 'load_scripts' ) );
+		add_action( 'woocommerce_before_checkout_form', array( $handler, 'display_drop_off_message' ) );
 	}
 
 	/**
