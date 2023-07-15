@@ -35,14 +35,14 @@ class Packlink_Order_Details_Controller extends Packlink_Base_Controller {
 	/**
 	 * Renders Packlink PRO Shipping post box content.
 	 *
-	 * @param WP_Post $wp_post WordPress post object.
+	 * @param int $id Order id.
 	 *
 	 * @throws QueryFilterInvalidParamException When query filter invalid.
 	 * @throws RepositoryNotRegisteredException When repository not registered.
 	 *
 	 * @noinspection PhpUnusedLocalVariableInspection
 	 */
-	public function render( WP_Post $wp_post ) {
+	public function render( int $id ) {
 		Script_Loader::load_css( array( 'css/packlink-order-details.css' ) );
 		Script_Loader::load_js(
 			array(
@@ -53,13 +53,13 @@ class Packlink_Order_Details_Controller extends Packlink_Base_Controller {
 			)
 		);
 
-		$wc_order = WC_Order_Factory::get_order( $wp_post->ID );
+		$wc_order = WC_Order_Factory::get_order( $id );
 
 		/** @var OrderShipmentDetailsService $shipment_details_service */ // phpcs:ignore
 		$shipment_details_service = ServiceRegister::getService( OrderShipmentDetailsService::CLASS_NAME );
 		/** @var ShipmentDraftService $draft_service */ // phpcs:ignore
 		$draft_service      = ServiceRegister::getService( ShipmentDraftService::CLASS_NAME );
-		$order_details      = $shipment_details_service->getDetailsByOrderId( (string) $wp_post->ID );
+		$order_details      = $shipment_details_service->getDetailsByOrderId( (string) $id );
 		$last_status_update = '';
 		if ( $order_details && $order_details->getLastStatusUpdateTime() ) {
 			$update_timestamp   = $order_details->getLastStatusUpdateTime()->getTimestamp();
@@ -67,7 +67,7 @@ class Packlink_Order_Details_Controller extends Packlink_Base_Controller {
 		}
 
 		$shipment_deleted = $order_details ? $shipment_details_service->isShipmentDeleted( $order_details->getReference() ) : true;
-		$draft_status     = $draft_service->getDraftStatus( (string) $wp_post->ID );
+		$draft_status     = $draft_service->getDraftStatus( (string) $id );
 		$shipping_method  = Shipping_Method_Helper::get_packlink_shipping_method_from_order( $wc_order );
 
 		if ( $shipping_method && empty( $shipping_method->getLogoUrl() ) ) {
