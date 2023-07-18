@@ -381,7 +381,7 @@ class Plugin {
 	 */
 	public function add_packlink_shipping_box( $page, $data ) {
 		if ( ( 'shop_order' === $page && $data && 'auto-draft' !== $data->post_status ) ||
-				( 'woocommerce_page_wc-orders' === $page && $data && $data instanceof WC_Order ) ) {
+		     ( 'woocommerce_page_wc-orders' === $page && $data && $data instanceof WC_Order ) ) {
 			$controller = new Packlink_Order_Details_Controller();
 			$screen     = wc_get_container()->get( CustomOrdersTableController::class )->custom_orders_table_usage_is_enabled()
 				? wc_get_page_screen_id( 'shop-order' )
@@ -457,9 +457,9 @@ class Plugin {
 	private function declare_compatibility_with_hpos() {
 		add_action(
 			'before_woocommerce_init',
-			function() {
+			function () {
 				if ( class_exists( FeaturesUtil::class ) ) {
-						FeaturesUtil::declare_compatibility( 'custom_order_tables', $this->packlink_plugin_file, true );
+					FeaturesUtil::declare_compatibility( 'custom_order_tables', $this->packlink_plugin_file, true );
 				}
 			}
 		);
@@ -487,7 +487,7 @@ class Plugin {
 					ShipmentStatus::STATUS_ACCEPTED  => 'wc-processing',
 					ShipmentStatus::STATUS_DELIVERED => 'wc-completed',
 					ShipmentStatus::STATUS_CANCELLED => 'wc-cancelled',
-					ShipmentStatus::INCIDENT => 'wc-failed'
+					ShipmentStatus::INCIDENT         => 'wc-failed'
 				)
 			);
 		} catch ( TaskRunnerStatusStorageUnavailableException $e ) {
@@ -627,7 +627,10 @@ class Plugin {
 		);
 
 		add_filter( 'manage_woocommerce_page_wc-orders_columns', array( $handler, 'add_packlink_order_columns' ) );
-		add_action( 'manage_woocommerce_page_wc-orders_custom_column', array( $handler, 'populate_packlink_column' ), 10, 2 );
+		add_action( 'manage_woocommerce_page_wc-orders_custom_column', array(
+			$handler,
+			'populate_packlink_column'
+		), 10, 2 );
 
 		add_filter( 'manage_edit-shop_order_columns', array( $handler, 'add_packlink_order_columns' ) );
 		add_action( 'manage_shop_order_posts_custom_column', array( $handler, 'populate_packlink_column' ), 10, 2 );
