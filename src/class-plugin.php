@@ -4,6 +4,7 @@
 
 namespace Packlink\WooCommerce;
 
+use Automattic\WooCommerce\Utilities\FeaturesUtil;
 use Logeecom\Infrastructure\Logger\Logger;
 use Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException;
 use Logeecom\Infrastructure\ServiceRegister;
@@ -27,6 +28,9 @@ use Packlink\WooCommerce\Controllers\Packlink_Frontend_Controller;
 use Packlink\WooCommerce\Controllers\Packlink_Index;
 use Packlink\WooCommerce\Controllers\Packlink_Order_Details_Controller;
 use Packlink\WooCommerce\Controllers\Packlink_Order_Overview_Controller;
+use Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController;
+use WC_Order;
+use WP_Post;
 use wpdb;
 
 /**
@@ -372,17 +376,24 @@ class Plugin {
 	/**
 	 * Adds Packlink PRO Shipping meta post box.
 	 *
-	 * @param string   $page Current page type.
-	 * @param \WP_Post $post WordPress Post.
+	 * @param string             $page Current page type.
+	 * @param WP_Post | WC_Order $data WordPress Post or WooCommerce Order.
 	 */
-	public function add_packlink_shipping_box( $page, $post ) {
-		if ( 'shop_order' === $page && $post && 'auto-draft' !== $post->post_status ) {
+	public function add_packlink_shipping_box( $page, $data ) {
+		if ( ( 'shop_order' === $page && $data && 'auto-draft' !== $data->post_status ) ||
+		     ( 'woocommerce_page_wc-orders' === $page && $data && $data instanceof WC_Order ) ) {
 			$controller = new Packlink_Order_Details_Controller();
+			$screen     = wc_get_container()->get( CustomOrdersTableController::class )->custom_orders_table_usage_is_enabled()
+				? wc_get_page_screen_id( 'shop-order' )
+				: 'shop_order';
 			add_meta_box(
 				'packlink-shipping-modal',
 				__( 'Packlink PRO Shipping', 'packlink-pro-shipping' ),
-				array( $controller, 'render' ),
-				'shop_order',
+				function ( $data ) use ( $controller ) {
+					$data_id = $data->ID;
+					$controller->render( $data_id );
+				},
+				$screen,
 				'side',
 				'core'
 			);
@@ -397,6 +408,7 @@ class Plugin {
 	private function initialize() {
 		Bootstrap_Component::init();
 		$this->load_plugin_init_hooks();
+		$this->declare_compatibility_with_hpos();
 		if ( $this->should_update() ) {
 			$this->update();
 		}
@@ -438,6 +450,22 @@ class Plugin {
 	}
 
 	/**
+	 * Declares extension compatibility.
+	 *
+	 * @return void
+	 */
+	private function declare_compatibility_with_hpos() {
+		add_action(
+			'before_woocommerce_init',
+			function () {
+				if ( class_exists( FeaturesUtil::class ) ) {
+					FeaturesUtil::declare_compatibility( 'custom_order_tables', $this->packlink_plugin_file, true );
+				}
+			}
+		);
+	}
+
+	/**
 	 * Initializes plugin database.
 	 */
 	private function init_database() {
@@ -459,7 +487,7 @@ class Plugin {
 					ShipmentStatus::STATUS_ACCEPTED  => 'wc-processing',
 					ShipmentStatus::STATUS_DELIVERED => 'wc-completed',
 					ShipmentStatus::STATUS_CANCELLED => 'wc-cancelled',
-					ShipmentStatus::INCIDENT => 'wc-failed'
+					ShipmentStatus::INCIDENT         => 'wc-failed'
 				)
 			);
 		} catch ( TaskRunnerStatusStorageUnavailableException $e ) {
@@ -576,8 +604,6 @@ class Plugin {
 		$handler = new Packlink_Order_Overview_Controller();
 
 		add_action( 'add_meta_boxes', array( $this, 'add_packlink_shipping_box' ), 10, 2 );
-		add_filter( 'manage_edit-shop_order_columns', array( $handler, 'add_packlink_order_columns' ) );
-		add_action( 'manage_shop_order_posts_custom_column', array( $handler, 'populate_packlink_column' ) );
 		add_action( 'admin_head', array( $handler, 'add_packlink_hidden_fields' ) );
 		add_filter( 'bulk_actions-edit-shop_order', array( $handler, 'add_packlink_bulk_action' ) );
 		add_filter( 'handle_bulk_actions-edit-shop_order', array( $handler, 'bulk_print_labels' ), 10, 3 );
@@ -599,6 +625,15 @@ class Plugin {
 				}
 			}
 		);
+
+		add_filter( 'manage_woocommerce_page_wc-orders_columns', array( $handler, 'add_packlink_order_columns' ) );
+		add_action( 'manage_woocommerce_page_wc-orders_custom_column', array(
+			$handler,
+			'populate_packlink_column'
+		), 10, 2 );
+
+		add_filter( 'manage_edit-shop_order_columns', array( $handler, 'add_packlink_order_columns' ) );
+		add_action( 'manage_shop_order_posts_custom_column', array( $handler, 'populate_packlink_column' ), 10, 2 );
 	}
 
 	/**
