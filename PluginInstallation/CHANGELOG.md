@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [v3.3.0](https://github.com/logeecom/pl_woocommerce_module/compare/v3.2.18...v3.3.0) - 2023-07-24
+### Changed
+- Add compatibility with WooCommerce HPOS (High-Performance Order Storage) feature
+
 ## [v3.2.18](https://github.com/logeecom/pl_woocommerce_module/compare/v3.2.17...v3.2.18) - 2023-07-19
 ### Changed
 - Fix issues with relay points

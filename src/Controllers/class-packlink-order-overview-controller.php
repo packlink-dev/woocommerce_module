@@ -8,6 +8,7 @@
 namespace Packlink\WooCommerce\Controllers;
 
 use Automattic\WooCommerce\Admin\API\Reports\ParameterException;
+use Automattic\WooCommerce\Utilities\OrderUtil;
 use Exception;
 use iio\libmergepdf\Merger;
 use Logeecom\Infrastructure\Logger\Logger;
@@ -87,13 +88,15 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 	 * and one column with Packlink shipping button.
 	 *
 	 * @param string $column Column.
+	 * @param mixed  $data Data which is sent.
 	 *
 	 * @throws QueryFilterInvalidParamException When invalid filter parameters are set.
 	 */
-	public function populate_packlink_column( $column ) {
-		global $post;
+	public function populate_packlink_column( $column, $data ) {
+		$id = class_exists( OrderUtil::class ) && OrderUtil::custom_orders_table_usage_is_enabled() ?
+			$data->id : $data;
 
-		$shipment_details = $this->get_order_shipment_details_service()->getDetailsByOrderId( (string) $post->ID );
+		$shipment_details = $this->get_order_shipment_details_service()->getDetailsByOrderId( (string) $id );
 
 		if ( null !== $shipment_details ) {
 			if ( static::COLUMN_ID === $column ) {
@@ -108,7 +111,7 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 
 					if ( empty( $labels ) ) {
 						$params = array(
-							'order_id' => $post->ID,
+							'order_id' => $id,
 						);
 
 						$label_url = Shop_Helper::get_controller_url( 'Order_Overview', 'print_single_label', $params );
@@ -125,14 +128,21 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 						? __( 'Printed label', 'packlink-pro-shipping' )
 						: __( 'Print label', 'packlink-pro-shipping' );
 
-					echo '<button data-pl-id="' . esc_attr( $post->ID ) . '" data-pl-label="' . esc_url( $label_url )
+					echo '<button data-pl-id="' . esc_attr( $id ) . '" data-pl-label="' . esc_url( $label_url )
 					     . '" type="button" class="' . esc_attr( $class ) . '" >' . esc_html( $label ) . '</button>';
 				}
 			}
 		}
 
-		if ( static::COLUMN_PACKLINK_ID === $column && ! empty( $this->get_config_service()->getAuthorizationToken() ) ) {
-			echo $this->get_packlink_shipping_button( $post );
+		if (
+			static::COLUMN_PACKLINK_ID === $column &&
+			! empty( $this->get_config_service()->getAuthorizationToken() )
+		) {
+			global $post;
+			$post_data = class_exists( OrderUtil::class ) && OrderUtil::custom_orders_table_usage_is_enabled() ?
+				$data : $post;
+
+			echo $this->get_packlink_shipping_button( $post_data );
 		}
 	}
 
@@ -272,7 +282,8 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 	public function load_scripts() {
 		global $post;
 
-		if ( $post && 'shop_order' === $post->post_type && 'raw' === $post->filter ) {
+		if ( ( $post && 'shop_order' === $post->post_type && 'raw' === $post->filter ) ||
+				( ! empty( $_GET['page'] ) && $_GET['page'] === 'wc-orders' ) ) {
 			Script_Loader::load_js(
 				array(
 					'packlink/js/StateUUIDService.js',
