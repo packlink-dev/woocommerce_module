@@ -4,7 +4,7 @@ Tags: woocommerce, shipment, shipping, packlink
 Requires at least: 4.7
 Requires PHP: 5.5
 Tested up to: 6.2
-Stable tag: 3.2.19
+Stable tag: 3.3.0
 License: LICENSE-2.0
 License URI: http://www.apache.org/licenses/LICENSE-2.0
 
@@ -68,7 +68,7 @@ Click <a href="https://support-pro.packlink.com/hc/es-es/articles/210158585" tar
 
 == Changelog ==
 
-#### 3.2.19 - July 24th, 2023
+#### 3.3.0 - July 24th, 2023
 
 **Updates**
 - Add compatibility with WooCommerce HPOS (High-Performance Order Storage) feature
