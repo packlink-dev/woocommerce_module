@@ -102,8 +102,8 @@ var Packlink = window.Packlink || {};
 	}
 
 	function setHiddenFields(location) {
-		let dropOffId    = document.querySelector( 'input[name="packlink_drop_off_id"]' );
-		let dropOffExtra = document.querySelector( 'input[name="packlink_drop_off_extra"]' );
+		let dropOffId    = document.getElementsByName( 'packlink_drop_off_id' )[1];
+		let dropOffExtra = document.getElementsByName( 'packlink_drop_off_extra' )[1];
 
 		if (dropOffId && dropOffExtra) {
 			dropOffId.value    = location.id;
