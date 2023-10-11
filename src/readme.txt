@@ -3,7 +3,7 @@ Contributors: packlink
 Tags: woocommerce, shipment, shipping, packlink
 Requires at least: 4.7
 Requires PHP: 5.5
-Tested up to: 6.2
+Tested up to: 6.3.1
 Stable tag: 3.3.1
 License: LICENSE-2.0
 License URI: http://www.apache.org/licenses/LICENSE-2.0
@@ -68,10 +68,10 @@ Click <a href="https://support-pro.packlink.com/hc/es-es/articles/210158585" tar
 
 == Changelog ==
 
-#### 3.3.1 - August 14th, 2023
+#### 3.3.1 - October 11th, 2023
 
 **Updates**
-- Add compatibility with WooCommerce 8.0
+- Add compatibility with WooCommerce 8.1.1 and WordPress 6.3.1
 
 #### 3.3.0 - July 24th, 2023
 
