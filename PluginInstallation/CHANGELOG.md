@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [v3.3.2](https://github.com/logeecom/pl_woocommerce_module/compare/v3.3.1...v3.3.2) - 2023-10-17
+### Changed
+- Fix the issue with drop off selection
+
 ## [v3.3.1](https://github.com/logeecom/pl_woocommerce_module/compare/v3.3.0...v3.3.1) - 2023-10-11
 ### Changed
 - Add compatibility with WooCommerce 8.1 and WordPress 6.3
