@@ -72,6 +72,7 @@ Click <a href="https://support-pro.packlink.com/hc/es-es/articles/210158585" tar
 
 **Updates**
 - Fix the issue with drop off selection
+- Update compatible version of WooCommerce (8.2)
 
 #### 3.3.1 - October 11th, 2023
 
