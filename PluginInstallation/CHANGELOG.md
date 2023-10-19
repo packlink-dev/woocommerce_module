@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [v3.3.3](https://github.com/logeecom/pl_woocommerce_module/compare/v3.3.2...v3.3.3) - 2023-10-19
+### Changed
+- Fix different logo image size on order page
+
 ## [v3.3.2](https://github.com/logeecom/pl_woocommerce_module/compare/v3.3.1...v3.3.2) - 2023-10-18
 ### Changed
 - Fix the issue with drop off selection
