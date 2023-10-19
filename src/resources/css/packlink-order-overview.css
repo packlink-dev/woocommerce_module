@@ -20,6 +20,8 @@
 
 .pl-image {
 	width: 25px;
+	height: 25px;
+	padding-top: 2px;
 	display: block;
 	padding-right: 3px;
 }
