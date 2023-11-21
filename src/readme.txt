@@ -68,6 +68,11 @@ Click <a href="https://support-pro.packlink.com/hc/es-es/articles/210158585" tar
 
 == Changelog ==
 
+#### 3.3.4 - November 21st, 2023
+
+**Updates**
+- Updated to the latest Core changes regarding shipping cost calculations.
+
 #### 3.3.3 - October 19th, 2023
 
 **Updates**

@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [v3.3.4](https://github.com/logeecom/pl_woocommerce_module/compare/v3.3.3...v3.3.4) - 2023-11-21
+### Changed
+- Updated to the latest Core changes regarding shipping cost calculations.
+
 ## [v3.3.3](https://github.com/logeecom/pl_woocommerce_module/compare/v3.3.2...v3.3.3) - 2023-10-19
 ### Changed
 - Fix different logo image size on order page
