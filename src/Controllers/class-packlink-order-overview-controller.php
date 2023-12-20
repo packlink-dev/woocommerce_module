@@ -94,7 +94,7 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 	 */
 	public function populate_packlink_column( $column, $data ) {
 		$id = class_exists( OrderUtil::class ) && OrderUtil::custom_orders_table_usage_is_enabled() ?
-			$data->id : $data;
+			$data->get_id() : $data;
 
 		$shipment_details = $this->get_order_shipment_details_service()->getDetailsByOrderId( (string) $id );
 
@@ -283,7 +283,7 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 		global $post;
 
 		if ( ( $post && 'shop_order' === $post->post_type && 'raw' === $post->filter ) ||
-				( ! empty( $_GET['page'] ) && $_GET['page'] === 'wc-orders' ) ) {
+		     ( ! empty( $_GET['page'] ) && $_GET['page'] === 'wc-orders' ) ) {
 			Script_Loader::load_js(
 				array(
 					'packlink/js/StateUUIDService.js',
@@ -306,7 +306,7 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 	 * @return string
 	 */
 	protected function get_packlink_shipping_button( $post ) {
-		$orderId          = (string) $post->ID;
+		$orderId = (string) ($post instanceof \WP_Post) ? $post->ID : $post->get_id();
 		$src              = Shop_Helper::get_plugin_base_url() . 'resources/images/logo.png';
 		$shipment_details = $this->get_order_shipment_details_service()->getDetailsByOrderId( $orderId );
 
