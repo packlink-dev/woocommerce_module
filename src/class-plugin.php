@@ -12,6 +12,7 @@ use Logeecom\Infrastructure\TaskExecution\Exceptions\TaskRunnerStatusStorageUnav
 use Packlink\BusinessLogic\ShippingMethod\Interfaces\ShopShippingMethodService;
 use Packlink\BusinessLogic\ShippingMethod\Utility\ShipmentStatus;
 use Packlink\WooCommerce\Components\Bootstrap_Component;
+use Packlink\WooCommerce\Components\Checkout\Block_Checkout_Handler;
 use Packlink\WooCommerce\Components\Checkout\Checkout_Handler;
 use Packlink\WooCommerce\Components\Order\Paid_Order_Handler;
 use Packlink\WooCommerce\Components\Services\Config_Service;
@@ -390,7 +391,7 @@ class Plugin {
 				'packlink-shipping-modal',
 				__( 'Packlink PRO Shipping', 'packlink-pro-shipping' ),
 				function ( $data ) use ( $controller ) {
-					$data_id = $data->ID;
+					$data_id = $data->get_id();
 					$controller->render( $data_id );
 				},
 				$screen,
@@ -641,6 +642,7 @@ class Plugin {
 	 */
 	private function checkout_hooks_and_actions() {
 		$handler = new Checkout_Handler();
+		$block_handler = new Block_Checkout_Handler();
 
 		add_filter( 'woocommerce_package_rates', array( $handler, 'check_additional_packlink_rate' ) );
 		add_action( 'woocommerce_after_shipping_rate', array( $handler, 'after_shipping_rate' ), 10, 2 );
@@ -651,6 +653,9 @@ class Plugin {
 		add_action( 'woocommerce_checkout_update_order_meta', array( $handler, 'checkout_update_drop_off' ), 10, 2 );
 		add_action( 'wp_enqueue_scripts', array( $handler, 'load_scripts' ) );
 		add_action( 'woocommerce_before_checkout_form', array( $handler, 'display_drop_off_message' ) );
+
+		add_action('woocommerce_blocks_checkout_enqueue_data', array ($block_handler, 'load_data'));
+		add_action('woocommerce_store_api_checkout_update_order_meta', array ($block_handler, 'checkout_update_drop_off'));
 	}
 
 	/**

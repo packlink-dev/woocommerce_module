@@ -10,12 +10,14 @@ namespace Packlink\WooCommerce\Components\ShippingMethod;
 use Logeecom\Infrastructure\ORM\Entity;
 use Logeecom\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
 use Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException;
+use Logeecom\Infrastructure\ORM\QueryFilter\Operators;
 use Logeecom\Infrastructure\ORM\QueryFilter\QueryFilter;
 use Logeecom\Infrastructure\ORM\RepositoryRegistry;
 use Logeecom\Infrastructure\ServiceRegister;
 use Packlink\BusinessLogic\ShippingMethod\Models\ShippingMethod;
 use Packlink\BusinessLogic\ShippingMethod\ShippingMethodService;
 use Packlink\BusinessLogic\Utility\Php\Php55;
+use Packlink\WooCommerce\Components\Order\Order_Drop_Off_Map;
 use Packlink\WooCommerce\Components\Services\Config_Service;
 use WC_Order;
 use WC_Shipping_Method;
@@ -31,6 +33,7 @@ class Shipping_Method_Helper {
 	const SHIPPING_ID    = '_packlink_shipping_method_id';
 	const DROP_OFF_ID    = '_packlink_drop_off_point_id';
 	const DROP_OFF_EXTRA = '_packlink_drop_off_extra';
+	const BLOCK_CHECKOUT = '_packlink_is_block_checkout';
 
 	/**
 	 * Retrieves map for a given shipping method id.
@@ -213,6 +216,25 @@ class Shipping_Method_Helper {
 		}
 
 		return $zone_ids;
+	}
+
+	/**
+	 * Get drop-off map entity from database.
+	 *
+	 * @param int $order_id
+	 *
+	 * @return Entity|null
+	 *
+	 * @throws QueryFilterInvalidParamException
+	 * @throws RepositoryNotRegisteredException
+	 */
+	public static function get_drop_off_map_for_order( $order_id ) {
+		$order_drop_off_map_repository = RepositoryRegistry::getRepository( Order_Drop_Off_Map::CLASS_NAME );
+
+		$filter = new QueryFilter();
+		$filter->where( 'order_id', Operators::EQUALS, $order_id );
+
+		return $order_drop_off_map_repository->selectOne( $filter );
 	}
 
 	/**

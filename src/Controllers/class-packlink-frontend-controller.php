@@ -158,6 +158,7 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 			'shipping-services-table'   => json_encode( file_get_contents( $base_dir . 'shipping-services-table.html' ) ),
 			'system-info-modal'         => json_encode( file_get_contents( $base_dir . 'system-info-modal.html' ) ),
 			'manual-sync'               => json_encode( file_get_contents( $custom_dir . 'manual-sync.html' ) ),
+			'location-picker'           => json_encode( file_get_contents( $custom_dir . 'location-picker.html' ) ),
 		);
 		//@codingStandardsIgnoreEnd
 	}
