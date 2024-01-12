@@ -72,6 +72,7 @@ Click <a href="https://support-pro.packlink.com/hc/es-es/articles/210158585" tar
 
 **Updates**
 - Add compatability with WooCommerce block checkout enhancement
+- Update compatible version of WooCommerce (8.5.0) and WordPress (6.4.2)
 
 #### 3.3.4 - November 21st, 2023
 
