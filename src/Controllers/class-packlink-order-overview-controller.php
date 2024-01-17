@@ -306,7 +306,7 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 	 * @return string
 	 */
 	protected function get_packlink_shipping_button( $post ) {
-		$orderId = (string) ($post instanceof \WP_Post) ? $post->ID : $post->get_id();
+		$orderId = (string) (($post instanceof \WP_Post) ? $post->ID : $post->get_id());
 		$src              = Shop_Helper::get_plugin_base_url() . 'resources/images/logo.png';
 		$shipment_details = $this->get_order_shipment_details_service()->getDetailsByOrderId( $orderId );
 
