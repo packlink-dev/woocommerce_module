@@ -56,12 +56,7 @@ var Packlink = window.Packlink || {};
 		);
 
 		if (modal) {
-			closeButton.addEventListener(
-				'click',
-				function () {
-					modal.style.display = 'none';
-				}
-			);
+			closeButton.addEventListener('click', handleCloseButtonAction);
 
 			initLocationPicker();
 		}
@@ -234,5 +229,35 @@ var Packlink = window.Packlink || {};
 			privateData.selectedLocation,
 			privateData.locale
 		);
+	}
+
+	function handleCloseButtonAction() {
+		modal = document.getElementById( 'pl-picker-modal' );
+		modal.style.display = 'none';
+
+		let shippingZipCode = document.getElementById('shipping_postcode');
+		let billingZipCode = document.getElementById('billing_postcode');
+		let shipToDifferentAddressCheckbox = document.querySelector('#ship-to-different-address-checkbox');
+		let enterShippingAddressMessage = document.getElementById('enter-shipping-address-message');
+
+		if (
+			(shipToDifferentAddressCheckbox && shipToDifferentAddressCheckbox.checked && shippingZipCode && shippingZipCode.value.trim() !== '') ||
+			((!shipToDifferentAddressCheckbox || !shipToDifferentAddressCheckbox.checked) && billingZipCode && billingZipCode.value.trim() !== '') ||
+			enterShippingAddressMessage
+		) {
+			return;
+		}
+
+		let info = document.createElement('div');
+		info.className = 'woocommerce-info';
+		info.innerHTML = 'You have to enter your address first in order to search for Drop-Off location.';
+		let noticeWrapper = document.createElement('div');
+		noticeWrapper.id = 'enter-shipping-address-message';
+		noticeWrapper.appendChild(info);
+		let checkoutElement = document.querySelector('[name="checkout"]');
+
+		if (checkoutElement) {
+			checkoutElement.insertAdjacentElement('beforebegin', noticeWrapper);
+		}
 	}
 })();

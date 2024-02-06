@@ -107,12 +107,7 @@ window.onload = () => Packlink.blockCheckout.init();
 		closeButton = document.getElementById('pl-picker-modal-close');
 
 		if (modal) {
-			closeButton.addEventListener(
-				'click',
-				function () {
-					modal.style.display = 'none';
-				}
-			);
+			closeButton.addEventListener('click', handleCloseButtonAction);
 		}
 
 	}
@@ -364,5 +359,27 @@ window.onload = () => Packlink.blockCheckout.init();
 			privateData.selectedLocation,
 			privateData.locale
 		);
+	}
+
+	function handleCloseButtonAction() {
+		modal.style.display = 'none';
+
+		let shippingPostcodeElement = document.getElementById('shipping-postcode');
+		if ((shippingPostcodeElement && shippingPostcodeElement.value.trim() !== '') ||
+			document.getElementById('enter-shipping-address-message')) {
+			return;
+		}
+
+		let info = document.createElement('div');
+		info.className = 'woocommerce-info';
+		info.innerHTML = 'You have to enter your address first in order to search for Drop-Off location.';
+		let noticeWrapper = document.createElement('div');
+		noticeWrapper.id = 'enter-shipping-address-message';
+		noticeWrapper.appendChild(info);
+		let checkoutBlockElement = document.querySelector('[data-block-name="woocommerce/checkout"]');
+
+		if (checkoutBlockElement) {
+			checkoutBlockElement.insertAdjacentElement('beforebegin', noticeWrapper);
+		}
 	}
 })();

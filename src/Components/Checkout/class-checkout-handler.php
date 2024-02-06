@@ -260,17 +260,6 @@ class Checkout_Handler {
 	}
 
 	/**
-	 * Displays message about drop-off locations search.
-	 *
-	 * @return void
-	 */
-	public function display_drop_off_message() {
-		if (empty($fields['shipping']['address_1']) || empty($fields['shipping']['address_2']) || empty($fields['shipping']['city']) || empty($fields['shipping']['postcode'])) {
-			wc_add_notice( __( 'You have to enter your address first in order to search for Drop-Off location.', 'packlink-pro-shipping' ), 'notice' );
-		}
-	}
-
-	/**
 	 * Returns Packlink shipping method.
 	 *
 	 * @param array $data Order data.
