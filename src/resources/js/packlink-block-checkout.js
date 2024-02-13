@@ -3,6 +3,7 @@ window.onload = () => Packlink.blockCheckout.init();
 (function () {
 	let modal;
 	let closeButton;
+	let methodDetails;
 	let privateData = {
 		locations: [],
 		endpoint: null,
@@ -43,6 +44,7 @@ window.onload = () => Packlink.blockCheckout.init();
 			function (response) {
 				setSelectedLocationId(response['selected_shipping_method']);
 				setTranslations({...response['translations']});
+				setNoDropOffLocationsMessage(response['no_drop_off_locations_message']);
 				privateData.methodDetails = Object.entries(response['method_details']);
 				Array.from(privateData.methodDetails).forEach(details => {
 					let option, dataDiv;
@@ -107,12 +109,17 @@ window.onload = () => Packlink.blockCheckout.init();
 		closeButton = document.getElementById('pl-picker-modal-close');
 
 		if (modal) {
-			closeButton.addEventListener('click', handleCloseButtonAction);
+			closeButton.addEventListener(
+				'click',
+				function () {
+					modal.style.display = 'none';
+				}
+			);
 		}
 
 	}
 
-	function addDropOffButton(dataDiv, methodDetails) {
+	function addDropOffButton(dataDiv, details) {
 		let dropOffButton = document.getElementById('packlink-drop-off-picker');
 		if (dropOffButton === null) {
 			dropOffButton = document.createElement('button');
@@ -127,14 +134,8 @@ window.onload = () => Packlink.blockCheckout.init();
 		buttonDiv.appendChild(dropOffButton);
 		dataDiv.lastChild.before(buttonDiv);
 		dropOffButton.removeAttribute('style');
-		dropOffButton.addEventListener(
-			'click',
-			function () {
-				privateData.locations = methodDetails['packlink_drop_off_locations'];
-				initLocationPicker();
-				modal.style.display = 'block';
-			}
-		);
+		methodDetails = details;
+		dropOffButton.addEventListener('click', handleSelectDropOffLocationAction);
 
 		return buttonDiv;
 	}
@@ -361,25 +362,36 @@ window.onload = () => Packlink.blockCheckout.init();
 		);
 	}
 
-	function handleCloseButtonAction() {
-		modal.style.display = 'none';
-
-		let shippingPostcodeElement = document.getElementById('shipping-postcode');
-		if ((shippingPostcodeElement && shippingPostcodeElement.value.trim() !== '') ||
-			document.getElementById('enter-shipping-address-message')) {
+	function setNoDropOffLocationsMessage(message) {
+		if (document.getElementById('no-drop-off-locations-message')) {
 			return;
 		}
 
-		let info = document.createElement('div');
-		info.className = 'woocommerce-info';
-		info.innerHTML = 'You have to enter your address first in order to search for Drop-Off location.';
+		let messageDiv = document.createElement('div');
+		messageDiv.className = 'woocommerce-info';
+		messageDiv.innerHTML = message;
 		let noticeWrapper = document.createElement('div');
-		noticeWrapper.id = 'enter-shipping-address-message';
-		noticeWrapper.appendChild(info);
+		noticeWrapper.id = 'no-drop-off-locations-message';
+		noticeWrapper.appendChild(messageDiv);
 		let checkoutBlockElement = document.querySelector('[data-block-name="woocommerce/checkout"]');
 
 		if (checkoutBlockElement) {
 			checkoutBlockElement.insertAdjacentElement('beforebegin', noticeWrapper);
+		}
+
+		noticeWrapper.style.display = 'none';
+	}
+
+	function handleSelectDropOffLocationAction() {
+		privateData.locations = methodDetails['packlink_drop_off_locations'];
+		initLocationPicker();
+		let messageElement = document.getElementById('no-drop-off-locations-message');
+		if (privateData.locations.length > 0) {
+			modal.style.display = 'block';
+		}
+
+		if (messageElement) {
+			messageElement.style.display = privateData.locations.length > 0 ? 'none' : 'block';
 		}
 	}
 })();

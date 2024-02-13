@@ -260,6 +260,13 @@ class Checkout_Handler {
 	}
 
 	/**
+	 * @return string
+	 */
+	public function get_drop_off_locations_missing_message() {
+		return __( 'There are no drop-off locations available for the entered address', 'packlink-pro-shipping' );
+	}
+
+	/**
 	 * Returns Packlink shipping method.
 	 *
 	 * @param array $data Order data.

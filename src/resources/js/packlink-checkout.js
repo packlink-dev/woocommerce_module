@@ -14,16 +14,16 @@ var Packlink = window.Packlink || {};
 		locale: 'en'
 	};
 
-	Packlink.checkout                       = {};
-	Packlink.checkout.init                  = initialize;
-	Packlink.checkout.setIsCart             = setIsCart;
-	Packlink.checkout.setLocations          = setLocations;
-	Packlink.checkout.setLocale             = setLocale;
-	Packlink.checkout.setTranslations       = setTranslations;
-	Packlink.checkout.setSaveEndpoint       = setSaveEndpoint;
-	Packlink.checkout.setDropOffAddress     = setDropOffAddress;
-	Packlink.checkout.setSelectedLocationId = setSelectedLocationId;
-
+	Packlink.checkout                       	   = {};
+	Packlink.checkout.init                  	   = initialize;
+	Packlink.checkout.setIsCart             	   = setIsCart;
+	Packlink.checkout.setLocations          	   = setLocations;
+	Packlink.checkout.setLocale             	   = setLocale;
+	Packlink.checkout.setTranslations       	   = setTranslations;
+	Packlink.checkout.setSaveEndpoint       	   = setSaveEndpoint;
+	Packlink.checkout.setDropOffAddress     	   = setDropOffAddress;
+	Packlink.checkout.setSelectedLocationId 	   = setSelectedLocationId;
+	Packlink.checkout.setNoDropOffLocationsMessage = setNoDropOffLocationsMessage;
 
 	function initialize() {
 		modal        = document.getElementById( 'pl-picker-modal' );
@@ -44,21 +44,24 @@ var Packlink = window.Packlink || {};
 				}
 
 				if (isDropOff && button) {
-					button.addEventListener(
-						'click',
-						function () {
-							initLocationPicker();
-							modal.style.display = 'block';
-						}
-					);
+					button.addEventListener('click', handleSelectDropOffLocationAction);
 				}
 			}
 		);
 
 		if (modal) {
-			closeButton.addEventListener('click', handleCloseButtonAction);
+			closeButton.addEventListener(
+				'click',
+				function () {
+					modal.style.display = 'none';
+				}
+			);
 
 			initLocationPicker();
+			let errorMessage = document.getElementById('no-drop-off-locations-message');
+			if (privateData.locations.length > 0) {
+				errorMessage.style.display = 'none';
+			}
 		}
 
 		if ( ! hookedUpdate && updateButton && jQuery) {
@@ -231,33 +234,35 @@ var Packlink = window.Packlink || {};
 		);
 	}
 
-	function handleCloseButtonAction() {
-		modal = document.getElementById( 'pl-picker-modal' );
-		modal.style.display = 'none';
-
-		let shippingZipCode = document.getElementById('shipping_postcode');
-		let billingZipCode = document.getElementById('billing_postcode');
-		let shipToDifferentAddressCheckbox = document.querySelector('#ship-to-different-address-checkbox');
-		let enterShippingAddressMessage = document.getElementById('enter-shipping-address-message');
-
-		if (
-			(shipToDifferentAddressCheckbox && shipToDifferentAddressCheckbox.checked && shippingZipCode && shippingZipCode.value.trim() !== '') ||
-			((!shipToDifferentAddressCheckbox || !shipToDifferentAddressCheckbox.checked) && billingZipCode && billingZipCode.value.trim() !== '') ||
-			enterShippingAddressMessage
-		) {
+	function setNoDropOffLocationsMessage(message) {
+		if (document.getElementById('no-drop-off-locations-message')) {
 			return;
 		}
 
 		let info = document.createElement('div');
 		info.className = 'woocommerce-info';
-		info.innerHTML = 'You have to enter your address first in order to search for Drop-Off location.';
+		info.innerHTML = message;
 		let noticeWrapper = document.createElement('div');
-		noticeWrapper.id = 'enter-shipping-address-message';
+		noticeWrapper.id = 'no-drop-off-locations-message';
 		noticeWrapper.appendChild(info);
 		let checkoutElement = document.querySelector('[name="checkout"]');
 
 		if (checkoutElement) {
 			checkoutElement.insertAdjacentElement('beforebegin', noticeWrapper);
+		}
+
+		noticeWrapper.style.display = 'none';
+	}
+
+	function handleSelectDropOffLocationAction() {
+		initLocationPicker();
+		let errorMessage = document.getElementById('no-drop-off-locations-message');
+		if (privateData.locations.length > 0) {
+			modal.style.display = 'block';
+		}
+
+		if (errorMessage) {
+			errorMessage.style.display = privateData.locations.length > 0 ? 'none' : 'block';
 		}
 	}
 })();
