@@ -3,8 +3,8 @@ Contributors: packlink
 Tags: woocommerce, shipment, shipping, packlink
 Requires at least: 4.7
 Requires PHP: 5.5
-Tested up to: 6.3.2
-Stable tag: 3.4.0
+Tested up to: 6.4.2
+Stable tag: 3.4.1
 License: LICENSE-2.0
 License URI: http://www.apache.org/licenses/LICENSE-2.0
 
@@ -68,10 +68,17 @@ Click <a href="https://support-pro.packlink.com/hc/es-es/articles/210158585" tar
 
 == Changelog ==
 
+#### 3.4.1 - January 17th, 2024
+
+**Updates**
+- Fix rendering order page
+- Fix updating 'Send with Packlink' button
+
 #### 3.4.0 - January 11th, 2024
 
 **Updates**
 - Add compatability with WooCommerce block checkout enhancement
+- Update compatible version of WooCommerce (8.5.0) and WordPress (6.4.2)
 
 #### 3.3.4 - November 21st, 2023
 

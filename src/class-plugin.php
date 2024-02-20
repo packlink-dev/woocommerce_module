@@ -391,7 +391,7 @@ class Plugin {
 				'packlink-shipping-modal',
 				__( 'Packlink PRO Shipping', 'packlink-pro-shipping' ),
 				function ( $data ) use ( $controller ) {
-					$data_id = $data->get_id();
+					$data_id = ($data instanceof \WP_Post) ? $data->ID : $data->get_id();
 					$controller->render( $data_id );
 				},
 				$screen,
