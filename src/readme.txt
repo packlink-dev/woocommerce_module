@@ -68,6 +68,13 @@ Click <a href="https://support-pro.packlink.com/hc/es-es/articles/210158585" tar
 
 == Changelog ==
 
+#### 3.4.2 - February 26th, 2024
+
+**Updates**
+- Add unsupported countries (Bulgaria, Finland, Greece, Australia)
+- Add French overseas territories
+- Fix displaying error message on the checkout page
+
 #### 3.4.1 - January 17th, 2024
 
 **Updates**

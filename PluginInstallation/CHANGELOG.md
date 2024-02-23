@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [v3.4.2](https://github.com/logeecom/pl_woocommerce_module/compare/v3.4.1...v3.4.2) - 2024-02-26
+### Changed
+- Add unsupported countries (Bulgaria, Finland, Greece, Australia)
+- Add French overseas territories
+- Fix displaying error message on the checkout page
+
 ## [v3.4.1](https://github.com/logeecom/pl_woocommerce_module/compare/v3.4.0...v3.4.1) - 2024-01-17
 ### Changed
 - Fix rendering order page
