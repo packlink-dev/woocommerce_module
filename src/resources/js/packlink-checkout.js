@@ -14,16 +14,16 @@ var Packlink = window.Packlink || {};
 		locale: 'en'
 	};
 
-	Packlink.checkout                       = {};
-	Packlink.checkout.init                  = initialize;
-	Packlink.checkout.setIsCart             = setIsCart;
-	Packlink.checkout.setLocations          = setLocations;
-	Packlink.checkout.setLocale             = setLocale;
-	Packlink.checkout.setTranslations       = setTranslations;
-	Packlink.checkout.setSaveEndpoint       = setSaveEndpoint;
-	Packlink.checkout.setDropOffAddress     = setDropOffAddress;
-	Packlink.checkout.setSelectedLocationId = setSelectedLocationId;
-
+	Packlink.checkout                       	   = {};
+	Packlink.checkout.init                  	   = initialize;
+	Packlink.checkout.setIsCart             	   = setIsCart;
+	Packlink.checkout.setLocations          	   = setLocations;
+	Packlink.checkout.setLocale             	   = setLocale;
+	Packlink.checkout.setTranslations       	   = setTranslations;
+	Packlink.checkout.setSaveEndpoint       	   = setSaveEndpoint;
+	Packlink.checkout.setDropOffAddress     	   = setDropOffAddress;
+	Packlink.checkout.setSelectedLocationId 	   = setSelectedLocationId;
+	Packlink.checkout.setNoDropOffLocationsMessage = setNoDropOffLocationsMessage;
 
 	function initialize() {
 		modal        = document.getElementById( 'pl-picker-modal' );
@@ -44,13 +44,7 @@ var Packlink = window.Packlink || {};
 				}
 
 				if (isDropOff && button) {
-					button.addEventListener(
-						'click',
-						function () {
-							initLocationPicker();
-							modal.style.display = 'block';
-						}
-					);
+					button.addEventListener('click', handleSelectDropOffLocationAction);
 				}
 			}
 		);
@@ -64,6 +58,10 @@ var Packlink = window.Packlink || {};
 			);
 
 			initLocationPicker();
+			let errorMessage = document.getElementById('no-drop-off-locations-message');
+			if (privateData.locations.length > 0) {
+				errorMessage.style.display = 'none';
+			}
 		}
 
 		if ( ! hookedUpdate && updateButton && jQuery) {
@@ -234,5 +232,37 @@ var Packlink = window.Packlink || {};
 			privateData.selectedLocation,
 			privateData.locale
 		);
+	}
+
+	function setNoDropOffLocationsMessage(message) {
+		if (document.getElementById('no-drop-off-locations-message')) {
+			return;
+		}
+
+		let info = document.createElement('div');
+		info.className = 'woocommerce-info';
+		info.innerHTML = message;
+		let noticeWrapper = document.createElement('div');
+		noticeWrapper.id = 'no-drop-off-locations-message';
+		noticeWrapper.appendChild(info);
+		let checkoutElement = document.querySelector('[name="checkout"]');
+
+		if (checkoutElement) {
+			checkoutElement.insertAdjacentElement('beforebegin', noticeWrapper);
+		}
+
+		noticeWrapper.style.display = 'none';
+	}
+
+	function handleSelectDropOffLocationAction() {
+		initLocationPicker();
+		let errorMessage = document.getElementById('no-drop-off-locations-message');
+		if (privateData.locations.length > 0) {
+			modal.style.display = 'block';
+		}
+
+		if (errorMessage) {
+			errorMessage.style.display = privateData.locations.length > 0 ? 'none' : 'block';
+		}
 	}
 })();
