@@ -39,7 +39,7 @@ var Packlink = window.Packlink || {};
 				let button     = parent.querySelector( '#packlink-drop-off-picker' );
 				let isDropOff  = parent.querySelector( 'input[name="packlink_is_drop_off"]' );
 
-				if (showImage === 'yes' && imageInput) {
+				if (showImage === 'yes' && imageInput && parent.querySelector('.pl-checkout-carrier-image') === null) {
 					injectImage( imageInput );
 				}
 

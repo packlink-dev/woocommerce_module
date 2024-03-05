@@ -93,8 +93,6 @@ class Checkout_Handler {
 	 * Sets hidden field for drop-off data and initializes script.
 	 */
 	public function after_shipping() {
-		$this->print_hidden_input( static::PACKLINK_DROP_OFF_ID );
-		$this->print_hidden_input( static::PACKLINK_DROP_OFF_EXTRA );
 		echo '<script>
 				if (typeof Packlink !== "undefined") {
 					Packlink.checkout.init();
