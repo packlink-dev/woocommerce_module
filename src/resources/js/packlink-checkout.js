@@ -100,10 +100,8 @@ var Packlink = window.Packlink || {};
 	}
 
 	function setHiddenFields(location) {
-		let dropOffId    = document.querySelector('.shop_table.woocommerce-checkout-review-order-table' +
-			' input[name="packlink_drop_off_id"]');
-		let dropOffExtra = document.querySelector('.shop_table.woocommerce-checkout-review-order-table' +
-			' input[name="packlink_drop_off_extra"]');
+		let dropOffId    = document.querySelector('input[name="packlink_drop_off_id"]');
+		let dropOffExtra = document.querySelector('input[name="packlink_drop_off_extra"]');
 
 		if (dropOffId && dropOffExtra) {
 			dropOffId.value    = location.id;
