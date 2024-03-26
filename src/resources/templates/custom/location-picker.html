@@ -1,4 +1,9 @@
 <button type="button" id="packlink-drop-off-picker" class="button"><?php echo $button_label; ?></button>
+<script> if (typeof Packlink !== "undefined") {
+	Packlink.checkout.init();
+}</script>
+<input type="hidden" name="packlink_drop_off_id"/>
+<input type="hidden" name="packlink_drop_off_extra"/>
 <div id="packlink-js-templates">
 	<div id="pl-picker-modal" style="display: none;">
 		<location-picker>

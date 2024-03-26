@@ -38,9 +38,10 @@ class Block_Checkout_Handler {
 	 */
 	public function initialize( array $payload ) {
 		$response = [
-			'translations'             => $this->get_checkout_translations(),
-			'selected_shipping_method' => $selected_shipping_method = $this->get_selected_shipping_method(),
-			'method_details'           => []
+			'translations'                  => $this->get_checkout_translations(),
+			'selected_shipping_method'      => $selected_shipping_method = $this->get_selected_shipping_method(),
+			'method_details'                => [],
+			'no_drop_off_locations_message' => __( 'There are no drop-off locations available for the entered address', 'packlink-pro-shipping' )
 		];
 
 		if ( ! count( $payload ) ) {

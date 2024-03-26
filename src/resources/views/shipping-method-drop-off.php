@@ -37,6 +37,7 @@ $translations = array(
 );
 
 $locations = $this->get_drop_off_locations( $shipping_method->getId() );
+$no_drop_off_locations_message = $this->get_drop_off_locations_missing_message();
 
 if ( $id_value ) {
 	$location_ids = array_column( $locations, 'id' );
@@ -57,6 +58,7 @@ if ( ! is_cart() ) {
 	Packlink.checkout.setLocations(<?php echo wp_json_encode( $locations ); ?>);
 	Packlink.checkout.setSelectedLocationId('<?php echo $id_value; ?>');
 	Packlink.checkout.setSaveEndpoint('<?php echo Shop_Helper::get_controller_url( 'Checkout', 'save_selected' ); ?>');
+	Packlink.checkout.setNoDropOffLocationsMessage('<?php echo $no_drop_off_locations_message; ?>');
 	<?php if ( ! is_cart() ) : ?>
 	Packlink.checkout.setDropOffAddress();
 	<?php endif; ?>

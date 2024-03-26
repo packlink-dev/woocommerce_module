@@ -4,7 +4,7 @@ Tags: woocommerce, shipment, shipping, packlink
 Requires at least: 4.7
 Requires PHP: 5.5
 Tested up to: 6.4.2
-Stable tag: 3.4.1
+Stable tag: 3.4.4
 License: LICENSE-2.0
 License URI: http://www.apache.org/licenses/LICENSE-2.0
 
@@ -67,6 +67,23 @@ This is how the WooCommerce integration with Packlink PRO works.
 Click <a href="https://support-pro.packlink.com/hc/es-es/articles/210158585" target="_blank" title="support">here</a> to get more information about the installation of the module.
 
 == Changelog ==
+
+#### 3.4.4 - March 26th, 2024
+
+**Updates**
+- Optimize checkout flow for picking drop off location
+
+#### 3.4.3 - March 11th, 2024
+
+**Updates**
+- Add unsupported countries: Estonia, Latvia and Romania
+
+#### 3.4.2 - February 26th, 2024
+
+**Updates**
+- Add unsupported countries (Bulgaria, Finland, Greece, Australia)
+- Add French overseas territories
+- Fix displaying error message on the checkout page
 
 #### 3.4.1 - January 17th, 2024
 
