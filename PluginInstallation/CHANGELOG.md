@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [v3.4.5](https://github.com/logeecom/pl_woocommerce_module/compare/v3.4.4...v3.4.5) - 2024-04-11
+### Changed
+- Add unsupported countries Denmark, Norway, Saudi Arabia, Canada, Cyprus, Slovenia and Slovakia
+- Set minimum height for the location picker popup
+
 ## [v3.4.4](https://github.com/logeecom/pl_woocommerce_module/compare/v3.4.3...v3.4.4) - 2024-03-26
 ### Changed
 - Optimize checkout flow for picking drop off location
