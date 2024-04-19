@@ -26,6 +26,7 @@ use Packlink\WooCommerce\Components\Checkout\Checkout_Handler;
 use Packlink\WooCommerce\Components\Services\Config_Service;
 use Packlink\WooCommerce\Components\Utility\Shop_Helper;
 use WC_Shipping_Zone;
+use WC_Shipping_Zones;
 
 /**
  * Class Shop_Shipping_Method_Service
@@ -182,6 +183,7 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 		$existing_zones = array();
 		$items          = $this->get_woocommerce_shipping_methods( $shipping_method->getId() );
 		$instance_ids   = array();
+		$all_zones      = Shipping_Method_Helper::get_all_shipping_zone_ids();
 		foreach ( $items as $item ) {
 			if ( $item->getWoocommerceShippingMethodId() !== null ) {
 				$instance_ids[] = $item->getWoocommerceShippingMethodId();
@@ -194,7 +196,12 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 			/** @var Shipping_Method_Map[] $map_items */
 			$map_items = $this->repository->select( $filter );
 			foreach ( $map_items as $map_item ) {
-				$zone_id                     = $map_item->getZoneId();
+				$zone_id = $map_item->getZoneId();
+				if ( ! in_array( $zone_id, $all_zones ) ) {
+					$this->repository->delete( $map_item );
+					continue;
+				}
+
 				$instance_id                 = $map_item->getWoocommerceShippingMethodId();
 				$woocommerce_shipping_method = new Packlink_Shipping_Method( $instance_id );
 				$zone                        = new WC_Shipping_Zone( $zone_id );
@@ -270,9 +277,13 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 	 * @param int            $zone_id Zone id.
 	 */
 	protected function add_method_to_zone( ShippingMethod $shipping_method, $zone_id ) {
-		$pricing_policy = $this->get_shipping_method_pricing_policy( $shipping_method );
-		$zone           = new WC_Shipping_Zone( $zone_id );
+		$zone = WC_Shipping_Zones::get_zone( $zone_id );
+		if ( ! $zone ) {
+			return;
+		}
+
 		$instance_id    = $zone->add_shipping_method( 'packlink_shipping_method' );
+		$pricing_policy = $this->get_shipping_method_pricing_policy( $shipping_method );
 
 		if ( 0 !== $instance_id ) {
 			$woocommerce_shipping_method = new Packlink_Shipping_Method( $instance_id );
