@@ -48,13 +48,19 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 	 */
 	protected $repository;
 
-	/**
-	 * Shop_Shipping_Method_Service constructor.
-	 *
-	 * @throws RepositoryNotRegisteredException If bootstrap is not called.
-	 */
-	public function __construct() {
-		parent::__construct();
+    /**
+     * @var array
+     */
+    private static $updatedMethods = array();
+
+    /**
+     * Shop_Shipping_Method_Service constructor.
+     *
+     * @throws RepositoryNotRegisteredException If bootstrap is not called.
+     */
+    public function __construct()
+    {
+        parent::__construct();
 
 		$this->repository = RepositoryRegistry::getRepository( Shipping_Method_Map::CLASS_NAME );
 	}
@@ -179,6 +185,11 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 	 * @throws QueryFilterInvalidParamException
 	 */
 	public function update( ShippingMethod $shipping_method ) {
+	    if (in_array($shipping_method->getId(), self::$updatedMethods)) {
+            return;
+        }
+
+        self::$updatedMethods[] = $shipping_method->getId();
 		$zone_ids       = $this->get_selected_shipping_zones( $shipping_method );
 		$existing_zones = array();
 		$items          = $this->get_woocommerce_shipping_methods( $shipping_method->getId() );
@@ -433,5 +444,4 @@ class Shop_Shipping_Method_Service extends Singleton implements ShopShippingMeth
 			delete_option( $option_key );
 		}
 	}
-
 }
