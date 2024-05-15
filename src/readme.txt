@@ -68,6 +68,12 @@ Click <a href="https://support-pro.packlink.com/hc/es-es/articles/210158585" tar
 
 == Changelog ==
 
+#### 3.4.6 - May 15th, 2024
+
+**Updates**
+- Fix the issue with deleted shipping zones
+- Fix the issue of updating shipping methods that are already updated
+
 #### 3.4.5 - April 11th, 2024
 
 **Updates**

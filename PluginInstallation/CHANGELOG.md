@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [v3.4.6](https://github.com/logeecom/pl_woocommerce_module/compare/v3.4.5...v3.4.6) - 2024-05-15
+### Changed
+- Fix the issue with deleted shipping zones
+- Fix the issue of updating shipping methods that are already updated
+
 ## [v3.4.5](https://github.com/logeecom/pl_woocommerce_module/compare/v3.4.4...v3.4.5) - 2024-04-11
 ### Changed
 - Add unsupported countries Denmark, Norway, Saudi Arabia, Canada, Cyprus, Slovenia and Slovakia
