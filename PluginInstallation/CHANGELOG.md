@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [v3.4.7](https://github.com/logeecom/pl_woocommerce_module/compare/v3.4.6...v3.4.7) - 2024-05-20
+### Changed
+- Important security enhancements and fixes
+
 ## [v3.4.6](https://github.com/logeecom/pl_woocommerce_module/compare/v3.4.5...v3.4.6) - 2024-05-15
 ### Changed
 - Fix the issue with deleted shipping zones
