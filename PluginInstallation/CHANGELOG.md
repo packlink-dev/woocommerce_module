@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [v3.4.8](https://github.com/logeecom/pl_woocommerce_module/compare/v3.4.7...v3.4.8) - 2024-06-05
+### Changed
+- Update compatible version of WooCommerce (8.9.1) and WordPress (6.5.3)
+
 ## [v3.4.7](https://github.com/logeecom/pl_woocommerce_module/compare/v3.4.6...v3.4.7) - 2024-05-20
 ### Changed
 - Important security enhancements and fixes
