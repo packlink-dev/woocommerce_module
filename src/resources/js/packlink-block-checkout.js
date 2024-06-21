@@ -30,7 +30,6 @@ window.onload = () => Packlink.blockCheckout.init();
 		}
 
 		if (!privateData.isObserverSet) {
-			document.getElementById('packlink-drop-off-picker').style.display = 'none';
 			privateData.isObserverSet = true;
 			addMutationObserverToCheckoutBlock(shippingOptions.parentElement);
 		}
