@@ -667,6 +667,11 @@ msgstr "Seleccionar lugar de entrega"
 msgid "Package will be delivered to:"
 msgstr "El paquete será entregado a:"
 
+#: Components/ShippingMethod/class-packlink-shipping-method.php:156
+#: Components/Checkout/class-checkout-handler.php:209
+msgid "shipping cost"
+msgstr "Gastos de envío"
+
 #: resources/views/meta-post-box.php:36
 msgid "Carrier"
 msgstr "Transportista"

@@ -670,6 +670,11 @@ msgstr "Abgabestelle auswählen"
 msgid "Package will be delivered to:"
 msgstr "Das Paket wird geliefert an:"
 
+#: Components/ShippingMethod/class-packlink-shipping-method.php:156
+#: Components/Checkout/class-checkout-handler.php:209
+msgid "shipping cost"
+msgstr "Versandkosten"
+
 #: resources/views/meta-post-box.php:36
 msgid "Carrier"
 msgstr "Versandpartner"

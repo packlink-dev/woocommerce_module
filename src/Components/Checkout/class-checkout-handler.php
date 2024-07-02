@@ -204,7 +204,7 @@ class Checkout_Handler {
 		 */
 		foreach ( $rates as $key => $rate ) {
 			$rate_data = $this->get_rate_data( $rate );
-			if ( Packlink_Shipping_Method::PACKLINK_SHIPPING_METHOD === $rate_data['method_id'] && self::DEFAULT_SHIPPING === $rate_data['label'] ) {
+			if ( Packlink_Shipping_Method::PACKLINK_SHIPPING_METHOD === $rate_data['method_id'] && __( 'shipping cost', 'packlink-pro-shipping' ) === $rate_data['label'] ) {
 				unset( $rates[ $key ] );
 				break;
 			}

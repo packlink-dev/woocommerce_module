@@ -671,6 +671,11 @@ msgstr "Seleziona la località del punto corriere"
 msgid "Package will be delivered to:"
 msgstr "La spedizione verrà consegnata a:"
 
+#: Components/ShippingMethod/class-packlink-shipping-method.php:156
+#: Components/Checkout/class-checkout-handler.php:209
+msgid "shipping cost"
+msgstr "Di spedizione"
+
 #: resources/views/meta-post-box.php:36
 msgid "Carrier"
 msgstr "Corriere"
