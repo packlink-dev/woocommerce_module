@@ -30,9 +30,8 @@ window.onload = () => Packlink.blockCheckout.init();
 		}
 
 		if (!privateData.isObserverSet) {
-			document.getElementById('packlink-drop-off-picker').style.display = 'none';
 			privateData.isObserverSet = true;
-			addMutationObserverToCheckoutBlock(shippingOptions.parentElement);
+			addMutationObserverToCheckoutBlock(shippingOptions?.parentElement?.parentElement?.parentElement?.parentElement);
 		}
 
 		const initializeBlockCheckout = document.getElementById('pl-block-checkout-initialize-endpoint').value;
@@ -146,7 +145,7 @@ window.onload = () => Packlink.blockCheckout.init();
 			for (const mutation of mutationsList) {
 				if (mutation.type === 'childList') {
 					// Check if nodes have been added
-					if (!privateData.isObserverExecuted && mutation.addedNodes.length > 0) {
+					if (!privateData.isObserverExecuted) {
 						// Check if the added node is the target div
 						Packlink.blockCheckout.init();
 						privateData.isObserverExecuted = true;
@@ -317,13 +316,13 @@ window.onload = () => Packlink.blockCheckout.init();
 		image.className = 'pl-checkout-carrier-image';
 		imageDiv.appendChild(image);
 
-		if (privateData.isSingleShippingMethod === true) {
+		if (privateData.isSingleShippingMethod === true && !option.firstChild.classList.contains('pl-image-wrapper')) {
 			option.insertBefore(imageDiv, option.firstChild);
 			return;
 		}
 
-		let label = option.nextSibling.children[0];
-		if (label) {
+		let label = option.nextSibling?.children[0];
+		if (label && !label.children[0].classList.contains('pl-image-wrapper')) {
 			label.insertBefore(imageDiv, label.children[0]);
 		}
 	}
