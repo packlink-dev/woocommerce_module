@@ -75,6 +75,7 @@ Click <a href="https://support-pro.packlink.com/hc/es-es/articles/210158585" tar
 - Fix the issue where the button no longer appeared after making changes on the checkout
 - Add translations for default shipping cost
 - Update compatible version of WooCommerce (9.0.2) and WordPress (6.5.5)
+- Add unsupported country Algeria
 
 #### 3.4.8 - June 5th, 2024
 
