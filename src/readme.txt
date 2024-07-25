@@ -4,7 +4,7 @@ Tags: woocommerce, shipment, shipping, packlink
 Requires at least: 4.7
 Requires PHP: 5.5
 Tested up to: 6.5.5
-Stable tag: 3.4.9
+Stable tag: 3.4.10
 License: LICENSE-2.0
 License URI: http://www.apache.org/licenses/LICENSE-2.0
 
@@ -67,6 +67,11 @@ This is how the WooCommerce integration with Packlink PRO works.
 Click <a href="https://support-pro.packlink.com/hc/es-es/articles/210158585" target="_blank" title="support">here</a> to get more information about the installation of the module.
 
 == Changelog ==
+
+#### 3.4.10 - July 29th, 2024
+
+**Updates**
+- Fix the issue with the drop-off button not displayed on the checkout
 
 #### 3.4.9 - July 3th, 2024
 
