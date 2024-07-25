@@ -45,6 +45,7 @@ var Packlink = window.Packlink || {};
 
 				if (isDropOff && button) {
 					button.addEventListener('click', handleSelectDropOffLocationAction);
+					button.removeAttribute('style');
 				}
 			}
 		);

@@ -82,7 +82,7 @@ class Checkout_Handler {
 	 * Initializes script on cart page.
 	 */
 	public function after_shipping_calculator() {
-		echo '<script>
+		echo '<script style="display: none;">
 				if (typeof Packlink !== "undefined") {
 					Packlink.checkout.init();
 				}
@@ -93,7 +93,7 @@ class Checkout_Handler {
 	 * Sets hidden field for drop-off data and initializes script.
 	 */
 	public function after_shipping() {
-		echo '<script>
+		echo '<script style="display: none;">
 				if (typeof Packlink !== "undefined") {
 					Packlink.checkout.init();
 				}
