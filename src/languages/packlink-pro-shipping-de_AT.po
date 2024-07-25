@@ -6,17 +6,17 @@ msgstr ""
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/packlink-pro-"
 "shipping\n"
 "POT-Creation-Date: 2019-07-16 14:51+0000\n"
-"PO-Revision-Date: 2022-04-08 09:28+0200\n"
-"Last-Translator: Packlink PRO <support@packlink.com>\n"
+"PO-Revision-Date: 2024-07-03 12:21+0000\n"
+"Last-Translator: \n"
 "Language-Team: German (Austria)\n"
-"Language: de_AT\n"
+"Language: de-AT\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 3.0.1\n"
+"X-Generator: Loco https://localise.biz/\n"
 "X-Domain: packlink-pro-shipping\n"
-"X-Loco-Version: 2.3.1; wp-5.3.2\n"
+"X-Loco-Version: 2.6.10; wp-6.5.5"
 
 #: class-plugin.php:103
 msgid ""
@@ -669,6 +669,11 @@ msgstr "Abgabestelle auswählen"
 #: resources/views/shipping-method-drop-off.php:36
 msgid "Package will be delivered to:"
 msgstr "Das Paket wird geliefert an:"
+
+#: Components/ShippingMethod/class-packlink-shipping-method.php:156
+#: Components/Checkout/class-checkout-handler.php:209
+msgid "shipping cost"
+msgstr "Versandkosten"
 
 #: resources/views/meta-post-box.php:36
 msgid "Carrier"

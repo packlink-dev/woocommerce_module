@@ -1,21 +1,27 @@
 <?php
-/** No inspection needed @noinspection PhpUnusedParameterInspection */
+
+/** @noinspection PhpUnusedParameterInspection */
 
 namespace Packlink\WooCommerce;
 
+use Automattic\WooCommerce\Utilities\FeaturesUtil;
 use Logeecom\Infrastructure\Logger\Logger;
+use Logeecom\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
 use Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException;
+use Logeecom\Infrastructure\ORM\RepositoryRegistry;
 use Logeecom\Infrastructure\ServiceRegister;
 use Logeecom\Infrastructure\TaskExecution\Exceptions\TaskRunnerStatusStorageUnavailableException;
 use Packlink\BusinessLogic\ShippingMethod\Interfaces\ShopShippingMethodService;
 use Packlink\BusinessLogic\ShippingMethod\Utility\ShipmentStatus;
 use Packlink\WooCommerce\Components\Bootstrap_Component;
+use Packlink\WooCommerce\Components\Checkout\Block_Checkout_Handler;
 use Packlink\WooCommerce\Components\Checkout\Checkout_Handler;
 use Packlink\WooCommerce\Components\Order\Paid_Order_Handler;
 use Packlink\WooCommerce\Components\Services\Config_Service;
 use Packlink\WooCommerce\Components\Services\Logger_Service;
 use Packlink\WooCommerce\Components\ShippingMethod\Packlink_Shipping_Method;
 use Packlink\WooCommerce\Components\ShippingMethod\Shipping_Method_Helper;
+use Packlink\WooCommerce\Components\ShippingMethod\Shipping_Method_Map;
 use Packlink\WooCommerce\Components\ShippingMethod\Shop_Shipping_Method_Service;
 use Packlink\WooCommerce\Components\Utility\Database;
 use Packlink\WooCommerce\Components\Utility\Shop_Helper;
@@ -26,6 +32,9 @@ use Packlink\WooCommerce\Controllers\Packlink_Frontend_Controller;
 use Packlink\WooCommerce\Controllers\Packlink_Index;
 use Packlink\WooCommerce\Controllers\Packlink_Order_Details_Controller;
 use Packlink\WooCommerce\Controllers\Packlink_Order_Overview_Controller;
+use Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController;
+use WC_Order;
+use WP_Post;
 use wpdb;
 
 /**
@@ -77,7 +86,7 @@ class Plugin {
 	 * @param string $packlink_plugin_file Plugin file.
 	 *
 	 * @return Plugin Plugin instance.
-	 * @throws RepositoryNotRegisteredException Exception.
+	 * @throws RepositoryNotRegisteredException
 	 */
 	public static function instance( $wpdb, $packlink_plugin_file ) {
 		if ( null === self::$instance ) {
@@ -124,9 +133,9 @@ class Plugin {
 		} elseif ( $is_network_wide && is_multisite() ) {
 			foreach ( get_sites() as $site ) {
 				switch_to_blog( $site->blog_id );
-				/** No inspection needed @noinspection DisconnectedForeachInstructionInspection */ // phpcs:ignore
+				/** @noinspection DisconnectedForeachInstructionInspection */ // phpcs:ignore
 				$this->init_database();
-				/** No inspection needed @noinspection DisconnectedForeachInstructionInspection */ // phpcs:ignore
+				/** @noinspection DisconnectedForeachInstructionInspection */ // phpcs:ignore
 				$this->init_config();
 				restore_current_blog();
 			}
@@ -160,7 +169,7 @@ class Plugin {
 	/**
 	 * Injects plugin update options to force update.
 	 *
-	 * @param \stdClass $update_info Update info.
+	 * @param \stdClass $update_info
 	 *
 	 * @return \stdClass Altered $update_info object.
 	 */
@@ -172,9 +181,9 @@ class Plugin {
 		$response = $update_info->no_update['packlink-pro-shipping/packlink-pro-shipping.php'];
 		unset( $update_info->no_update['packlink-pro-shipping/packlink-pro-shipping.php'] );
 
-		// set to the version you want to update.
+		// set to the version you want to update
 		$response->new_version = '2.1.2';
-		// set the URI to the update package.
+		// set the URI to the update package
 		$response->package = '';
 		$response->tested  = get_bloginfo( 'version' );
 
@@ -293,7 +302,7 @@ class Plugin {
 	public function admin_messages() {
 		$messages = get_transient( 'packlink-pro-messages' );
 		if ( $messages ) {
-			/** No inspection needed @noinspection DirectoryConstantCanBeUsedInspection */ // phpcs:ignore
+			/** @noinspection DirectoryConstantCanBeUsedInspection */ // phpcs:ignore
 			include dirname( __FILE__ ) . '/resources/views/notice-message.php';
 		}
 	}
@@ -304,7 +313,7 @@ class Plugin {
 	public function admin_notice_messages_no_dismiss() {
 		$messages = get_transient( 'packlink-pro-success-messages' );
 		if ( $messages ) {
-			/** No inspection needed @noinspection DirectoryConstantCanBeUsedInspection */ // phpcs:ignore
+			/** @noinspection DirectoryConstantCanBeUsedInspection */ // phpcs:ignore
 			include dirname( __FILE__ ) . '/resources/views/success-message.php';
 		}
 	}
@@ -315,7 +324,7 @@ class Plugin {
 	public function admin_error_messages() {
 		$messages = get_transient( 'packlink-pro-error-messages' );
 		if ( $messages ) {
-			/** No inspection needed @noinspection DirectoryConstantCanBeUsedInspection */ // phpcs:ignore
+			/** @noinspection DirectoryConstantCanBeUsedInspection */ // phpcs:ignore
 			include dirname( __FILE__ ) . '/resources/views/error-message.php';
 		}
 	}
@@ -362,26 +371,51 @@ class Plugin {
 		$data_store->create( $zone );
 
 		if ( $zone->get_id() ) {
-			/** Shop_Shipping_Method_Service instance @var Shop_Shipping_Method_Service $service */ // phpcs:ignore
+			/** @var Shop_Shipping_Method_Service $service */ // phpcs:ignore
 			$service = ServiceRegister::getService( ShopShippingMethodService::CLASS_NAME );
 			$service->add_active_methods_to_zone( $zone );
 		}
 	}
 
 	/**
+	 * Removes shipping method maps for deleted shipping zone.
+	 *
+	 * @param int $zone_id Zone identifier.
+	 *
+	 * @throws QueryFilterInvalidParamException|RepositoryNotRegisteredException
+	 */
+	public function on_zone_deleted( $zone_id ) {
+		$repository = RepositoryRegistry::getRepository( Shipping_Method_Map::CLASS_NAME );
+		/** @var Shipping_Method_Map[] $map_items */
+		$map_items = $repository->select();
+		foreach ( $map_items as $map_item ) {
+			if ( $map_item->getZoneId() === $zone_id ) {
+				$repository->delete( $map_item );
+			}
+		}
+	}
+
+	/**
 	 * Adds Packlink PRO Shipping meta post box.
 	 *
-	 * @param string   $page Current page type.
-	 * @param \WP_Post $post WordPress Post.
+	 * @param string             $page Current page type.
+	 * @param WP_Post | WC_Order $data WordPress Post or WooCommerce Order.
 	 */
-	public function add_packlink_shipping_box( $page, $post ) {
-		if ( 'shop_order' === $page && $post && 'auto-draft' !== $post->post_status ) {
+	public function add_packlink_shipping_box( $page, $data ) {
+		if ( ( 'shop_order' === $page && $data && 'auto-draft' !== $data->post_status ) ||
+		     ( 'woocommerce_page_wc-orders' === $page && $data && $data instanceof WC_Order ) ) {
 			$controller = new Packlink_Order_Details_Controller();
+			$screen     = wc_get_container()->get( CustomOrdersTableController::class )->custom_orders_table_usage_is_enabled()
+				? wc_get_page_screen_id( 'shop-order' )
+				: 'shop_order';
 			add_meta_box(
 				'packlink-shipping-modal',
 				__( 'Packlink PRO Shipping', 'packlink-pro-shipping' ),
-				array( $controller, 'render' ),
-				'shop_order',
+				function ( $data ) use ( $controller ) {
+					$data_id = ($data instanceof \WP_Post) ? $data->ID : $data->get_id();
+					$controller->render( $data_id );
+				},
+				$screen,
 				'side',
 				'core'
 			);
@@ -391,11 +425,12 @@ class Plugin {
 	/**
 	 * Initializes the plugin.
 	 *
-	 * @throws RepositoryNotRegisteredException Exception.
+	 * @throws RepositoryNotRegisteredException
 	 */
 	private function initialize() {
 		Bootstrap_Component::init();
 		$this->load_plugin_init_hooks();
+		$this->declare_compatibility_with_hpos();
 		if ( $this->should_update() ) {
 			$this->update();
 		}
@@ -429,16 +464,27 @@ class Plugin {
 
 		if ( defined( '_PL_DEBUG_' ) ) {
 			add_filter( 'site_transient_update_plugins', array( $this, 'packlink_plugin_update_info_debug' ), 20, 3 );
-			add_filter(
-				'set_site_transient_update_plugins',
-				array(
-					$this,
-					'packlink_plugin_update_info_debug',
-				),
-				20,
-				3
-			);
+			add_filter( 'set_site_transient_update_plugins', array(
+				$this,
+				'packlink_plugin_update_info_debug'
+			), 20, 3 );
 		}
+	}
+
+	/**
+	 * Declares extension compatibility.
+	 *
+	 * @return void
+	 */
+	private function declare_compatibility_with_hpos() {
+		add_action(
+			'before_woocommerce_init',
+			function () {
+				if ( class_exists( FeaturesUtil::class ) ) {
+					FeaturesUtil::declare_compatibility( 'custom_order_tables', $this->packlink_plugin_file, true );
+				}
+			}
+		);
 	}
 
 	/**
@@ -463,7 +509,7 @@ class Plugin {
 					ShipmentStatus::STATUS_ACCEPTED  => 'wc-processing',
 					ShipmentStatus::STATUS_DELIVERED => 'wc-completed',
 					ShipmentStatus::STATUS_CANCELLED => 'wc-cancelled',
-					ShipmentStatus::INCIDENT => 'wc-failed',
+					ShipmentStatus::INCIDENT         => 'wc-failed'
 				)
 			);
 		} catch ( TaskRunnerStatusStorageUnavailableException $e ) {
@@ -485,14 +531,14 @@ class Plugin {
 	/**
 	 * Plugin update method.
 	 *
-	 * @throws RepositoryNotRegisteredException Exception.
+	 * @throws RepositoryNotRegisteredException
 	 */
 	private function update() {
 		if ( is_multisite() ) {
 			$site_ids = get_sites();
 			foreach ( $site_ids as $site_id ) {
 				switch_to_blog( $site_id->blog_id );
-				/** No inspection needed @noinspection DisconnectedForeachInstructionInspection */ // phpcs:ignore
+				/** @noinspection DisconnectedForeachInstructionInspection */ // phpcs:ignore
 				$this->update_plugin_on_single_site();
 				restore_current_blog();
 			}
@@ -571,6 +617,7 @@ class Plugin {
 	private function shipping_method_hooks_and_actions() {
 		add_filter( 'woocommerce_shipping_methods', array( $this, 'add_shipping_method' ) );
 		add_action( 'woocommerce_before_shipping_zone_object_save', array( $this, 'on_zone_create' ), 10, 2 );
+		add_action( 'woocommerce_delete_shipping_zone', array( $this, 'on_zone_deleted' ) );
 	}
 
 	/**
@@ -580,8 +627,6 @@ class Plugin {
 		$handler = new Packlink_Order_Overview_Controller();
 
 		add_action( 'add_meta_boxes', array( $this, 'add_packlink_shipping_box' ), 10, 2 );
-		add_filter( 'manage_edit-shop_order_columns', array( $handler, 'add_packlink_order_columns' ) );
-		add_action( 'manage_shop_order_posts_custom_column', array( $handler, 'populate_packlink_column' ) );
 		add_action( 'admin_head', array( $handler, 'add_packlink_hidden_fields' ) );
 		add_filter( 'bulk_actions-edit-shop_order', array( $handler, 'add_packlink_bulk_action' ) );
 		add_filter( 'handle_bulk_actions-edit-shop_order', array( $handler, 'bulk_print_labels' ), 10, 3 );
@@ -603,6 +648,15 @@ class Plugin {
 				}
 			}
 		);
+
+		add_filter( 'manage_woocommerce_page_wc-orders_columns', array( $handler, 'add_packlink_order_columns' ) );
+		add_action( 'manage_woocommerce_page_wc-orders_custom_column', array(
+			$handler,
+			'populate_packlink_column'
+		), 10, 2 );
+
+		add_filter( 'manage_edit-shop_order_columns', array( $handler, 'add_packlink_order_columns' ) );
+		add_action( 'manage_shop_order_posts_custom_column', array( $handler, 'populate_packlink_column' ), 10, 2 );
 	}
 
 	/**
@@ -610,6 +664,7 @@ class Plugin {
 	 */
 	private function checkout_hooks_and_actions() {
 		$handler = new Checkout_Handler();
+		$block_handler = new Block_Checkout_Handler();
 
 		add_filter( 'woocommerce_package_rates', array( $handler, 'check_additional_packlink_rate' ) );
 		add_action( 'woocommerce_after_shipping_rate', array( $handler, 'after_shipping_rate' ), 10, 2 );
@@ -619,6 +674,9 @@ class Plugin {
 		add_action( 'woocommerce_checkout_create_order', array( $handler, 'checkout_update_shipping_address' ), 10, 2 );
 		add_action( 'woocommerce_checkout_update_order_meta', array( $handler, 'checkout_update_drop_off' ), 10, 2 );
 		add_action( 'wp_enqueue_scripts', array( $handler, 'load_scripts' ) );
+
+		add_action('woocommerce_blocks_checkout_enqueue_data', array ($block_handler, 'load_data'));
+		add_action('woocommerce_store_api_checkout_update_order_meta', array ($block_handler, 'checkout_update_drop_off'));
 	}
 
 	/**

@@ -3,9 +3,107 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
-## [v3.2.11](https://github.com/logeecom/pl_woocommerce_module/compare/v3.2.10...v3.2.11) - 2022-10-04
+## [v3.4.9](https://github.com/logeecom/pl_woocommerce_module/compare/v3.4.8...v3.4.9) - 2024-07-03
 ### Changed
-- Added new webhook event.
+- Fix the issue with the drop-off button at the top of the page
+- Fix the issue where the button no longer appeared after making changes on the checkout
+- Add translations for default shipping cost
+- Update compatible version of WooCommerce (9.0.2) and WordPress (6.5.5)
+- Add unsupported country Algeria
+
+## [v3.4.8](https://github.com/logeecom/pl_woocommerce_module/compare/v3.4.7...v3.4.8) - 2024-06-05
+### Changed
+- Update compatible version of WooCommerce (8.9.1) and WordPress (6.5.3)
+
+## [v3.4.7](https://github.com/logeecom/pl_woocommerce_module/compare/v3.4.6...v3.4.7) - 2024-05-20
+### Changed
+- Important security enhancements and fixes
+
+## [v3.4.6](https://github.com/logeecom/pl_woocommerce_module/compare/v3.4.5...v3.4.6) - 2024-05-15
+### Changed
+- Fix the issue with deleted shipping zones
+- Fix the issue of updating shipping methods that are already updated
+
+## [v3.4.5](https://github.com/logeecom/pl_woocommerce_module/compare/v3.4.4...v3.4.5) - 2024-04-11
+### Changed
+- Add unsupported countries Denmark, Norway, Saudi Arabia, Canada, Cyprus, Slovenia and Slovakia
+- Set minimum height for the location picker popup
+
+## [v3.4.4](https://github.com/logeecom/pl_woocommerce_module/compare/v3.4.3...v3.4.4) - 2024-03-26
+### Changed
+- Optimize checkout flow for picking drop off location
+
+## [v3.4.3](https://github.com/logeecom/pl_woocommerce_module/compare/v3.4.2...v3.4.3) - 2024-03-11
+### Changed
+- Add unsupported countries: Estonia, Latvia and Romania
+
+## [v3.4.2](https://github.com/logeecom/pl_woocommerce_module/compare/v3.4.1...v3.4.2) - 2024-02-26
+### Changed
+- Add unsupported countries (Bulgaria, Finland, Greece, Australia)
+- Add French overseas territories
+- Fix displaying error message on the checkout page
+
+## [v3.4.1](https://github.com/logeecom/pl_woocommerce_module/compare/v3.4.0...v3.4.1) - 2024-01-17
+### Changed
+- Fix rendering order page
+- Fix updating 'Send with Packlink' button text
+
+## [v3.4.0](https://github.com/logeecom/pl_woocommerce_module/compare/v3.3.4...v3.4.0) - 2024-01-11
+### Changed
+- Add compatability with WooCommerce block checkout enhancement
+- Update compatible version of WooCommerce (8.5.0) and WordPress (6.4.2)
+
+
+## [v3.3.4](https://github.com/logeecom/pl_woocommerce_module/compare/v3.3.3...v3.3.4) - 2023-11-21
+### Changed
+- Updated to the latest Core changes regarding shipping cost calculations.
+
+## [v3.3.3](https://github.com/logeecom/pl_woocommerce_module/compare/v3.3.2...v3.3.3) - 2023-10-19
+### Changed
+- Fix different logo image size on order page
+- Update compatible version of WooCommerce (8.2.1) and WordPress (6.3.2)
+
+## [v3.3.2](https://github.com/logeecom/pl_woocommerce_module/compare/v3.3.1...v3.3.2) - 2023-10-18
+### Changed
+- Fix the issue with drop off selection
+- Update compatible version of WooCommerce (8.2)
+
+## [v3.3.1](https://github.com/logeecom/pl_woocommerce_module/compare/v3.3.0...v3.3.1) - 2023-10-11
+### Changed
+- Add compatibility with WooCommerce 8.1 and WordPress 6.3
+
+## [v3.3.0](https://github.com/logeecom/pl_woocommerce_module/compare/v3.2.18...v3.3.0) - 2023-07-24
+### Changed
+- Add compatibility with WooCommerce HPOS (High-Performance Order Storage) feature
+
+## [v3.2.18](https://github.com/logeecom/pl_woocommerce_module/compare/v3.2.17...v3.2.18) - 2023-07-19
+### Changed
+- Fix issues with relay points
+- Update phone number validation
+
+## [v3.2.17](https://github.com/logeecom/pl_woocommerce_module/compare/v3.2.16...v3.2.17) - 2023-06-06
+### Changed
+- Update link to order draft on Packlink
+
+## [v3.2.16](https://github.com/logeecom/pl_woocommerce_module/compare/v3.2.15...v3.2.16) - 2023-05-18
+### Changed
+- Fix view on Packlink link
+
+## [v3.2.15](https://github.com/logeecom/pl_woocommerce_module/compare/v3.2.14...v3.2.15) - 2023-05-18
+### Changed
+- Fix layout on orders page
+
+## [v3.2.14](https://github.com/logeecom/pl_woocommerce_module/compare/v3.2.13...v3.2.14) - 2023-03-08
+### Added
+- Add handling of shipment delivered webhook.
+
+## [v3.2.13](https://github.com/logeecom/pl_woocommerce_module/compare/v3.2.11...v3.2.13) - 2022-12-13
+### Changed
+- Fix duplicating shipping methods.
+
+## [v3.2.12](https://github.com/logeecom/pl_woocommerce_module/compare/v3.2.11...v3.2.12) - 2022-10-10
+### Changed
+- Stabilize version.
 
 ## [v3.2.10](https://github.com/logeecom/pl_woocommerce_module/compare/v3.2.8...v3.2.9) - 2022-07-19
 ### Changed

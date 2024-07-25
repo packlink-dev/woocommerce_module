@@ -8,6 +8,7 @@
 namespace Packlink\WooCommerce\Controllers;
 
 use Automattic\WooCommerce\Admin\API\Reports\ParameterException;
+use Automattic\WooCommerce\Utilities\OrderUtil;
 use Exception;
 use iio\libmergepdf\Merger;
 use Logeecom\Infrastructure\Logger\Logger;
@@ -39,14 +40,10 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 	const COLUMN_PACKLINK_ID = 'packlink_column';
 	const BULK_ACTION_ID     = 'packlink_print_labels';
 	/**
-	 * OrderShipmentDetailsService instance
-	 *
-	 * @var OrderShipmentDetailsService $order_shipment_details_service
+	 * @var OrderShipmentDetailsService
 	 */
 	private $order_shipment_details_service;
 	/**
-	 * Configuration Service instance
-	 *
 	 * @var Config_Service
 	 */
 	private $config_service;
@@ -91,17 +88,19 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 	 * and one column with Packlink shipping button.
 	 *
 	 * @param string $column Column.
+	 * @param mixed  $data Data which is sent.
 	 *
 	 * @throws QueryFilterInvalidParamException When invalid filter parameters are set.
 	 */
-	public function populate_packlink_column( $column ) {
-		global $post;
+	public function populate_packlink_column( $column, $data ) {
+		$id = class_exists( OrderUtil::class ) && OrderUtil::custom_orders_table_usage_is_enabled() ?
+			$data->get_id() : $data;
 
-		$shipment_details = $this->get_order_shipment_details_service()->getDetailsByOrderId( (string) $post->ID );
+		$shipment_details = $this->get_order_shipment_details_service()->getDetailsByOrderId( (string) $id );
 
 		if ( null !== $shipment_details ) {
 			if ( static::COLUMN_ID === $column ) {
-				/** Order service instance @var OrderService $order_service */
+				/** @var OrderService $order_service */
 				$order_service = ServiceRegister::getService( OrderService::CLASS_NAME );
 				$labels        = $shipment_details->getShipmentLabels();
 
@@ -112,7 +111,7 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 
 					if ( empty( $labels ) ) {
 						$params = array(
-							'order_id' => $post->ID,
+							'order_id' => $id,
 						);
 
 						$label_url = Shop_Helper::get_controller_url( 'Order_Overview', 'print_single_label', $params );
@@ -129,14 +128,21 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 						? __( 'Printed label', 'packlink-pro-shipping' )
 						: __( 'Print label', 'packlink-pro-shipping' );
 
-					echo '<button data-pl-id="' . esc_attr( $post->ID ) . '" data-pl-label="' . esc_url( $label_url )
-						 . '" type="button" class="' . esc_attr( $class ) . '" >' . esc_html( $label ) . '</button>';
+					echo '<button data-pl-id="' . esc_attr( $id ) . '" data-pl-label="' . esc_url( $label_url )
+					     . '" type="button" class="' . esc_attr( $class ) . '" >' . esc_html( $label ) . '</button>';
 				}
 			}
 		}
 
-		if ( static::COLUMN_PACKLINK_ID === $column && ! empty( $this->get_config_service()->getAuthorizationToken() ) ) {
-			echo wp_kses_post( $this->get_packlink_shipping_button( $post ) );
+		if (
+			static::COLUMN_PACKLINK_ID === $column &&
+			! empty( $this->get_config_service()->getAuthorizationToken() )
+		) {
+			global $post;
+			$post_data = class_exists( OrderUtil::class ) && OrderUtil::custom_orders_table_usage_is_enabled() ?
+				$data : $post;
+
+			echo $this->get_packlink_shipping_button( $post_data );
 		}
 	}
 
@@ -150,20 +156,19 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 	/**
 	 * Returns draft status for the WooCommerce order.
 	 *
-	 * @throws OrderShipmentDetailsNotFound Exception.
-	 * @throws ParameterException Exception.
+	 * @throws OrderShipmentDetailsNotFound
+	 * @throws ParameterException
 	 */
 	public function get_draft_status() {
 		$this->validate( 'no', true );
 
-		if ( empty( $_GET['order_id'] ) ) {
+		$order_id = ! empty( $_GET['order_id'] ) ? $_GET['order_id'] : null;
 
+		if ( ! $order_id ) {
 			throw new ParameterException( 'Order ID missing.' );
 		}
 
-		$order_id = intval( $_GET['order_id'] );
-
-		/** ShipmentDraftService instance  @var ShipmentDraftService $draft_service */
+		/** @var ShipmentDraftService $draft_service */
 		$draft_service = ServiceRegister::getService( ShipmentDraftService::CLASS_NAME );
 		$draft_status  = $draft_service->getDraftStatus( (string) $order_id );
 
@@ -193,17 +198,18 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 	/**
 	 * Prints single label.
 	 *
-	 * @throws RepositoryNotRegisteredException Exception.
-	 * @throws OrderShipmentDetailsNotFound Exception.
+	 * @throws RepositoryNotRegisteredException
+	 * @throws OrderShipmentDetailsNotFound
 	 */
 	public function print_single_label() {
 		$this->validate( 'no', true );
 
-		if ( empty( $_GET['order_id'] ) ) {
+		$order_id = ! empty( $_GET['order_id'] ) ? $_GET['order_id'] : null;
+
+		if ( ! $order_id ) {
 			echo esc_html( __( 'Label is not yet available.', 'packlink-pro-shipping' ) );
 			exit;
 		}
-		$order_id = intval( $_GET['order_id'] );
 
 		$shipment_details = $this->get_order_shipment_details_service()->getDetailsByOrderId( (string) $order_id );
 		if ( null === $shipment_details ) {
@@ -232,8 +238,8 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 	 *
 	 * @return string
 	 *
-	 * @throws RepositoryNotRegisteredException Exception.
-	 * @throws OrderShipmentDetailsNotFound Exception.
+	 * @throws RepositoryNotRegisteredException
+	 * @throws OrderShipmentDetailsNotFound
 	 */
 	public function bulk_print_labels( $redirect_to, $action, $ids ) {
 		if ( self::BULK_ACTION_ID !== $action ) {
@@ -276,7 +282,8 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 	public function load_scripts() {
 		global $post;
 
-		if ( $post && 'shop_order' === $post->post_type && 'raw' === $post->filter ) {
+		if ( ( $post && 'shop_order' === $post->post_type && 'raw' === $post->filter ) ||
+		     ( ! empty( $_GET['page'] ) && $_GET['page'] === 'wc-orders' ) ) {
 			Script_Loader::load_js(
 				array(
 					'packlink/js/StateUUIDService.js',
@@ -294,14 +301,14 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 	 * Returns appropriate button (Send with Packlink or View on Packlink)
 	 * or label (Draft is currently being crated)
 	 *
-	 * @param object $post Post object.
+	 * @param $post
 	 *
 	 * @return string
 	 */
 	protected function get_packlink_shipping_button( $post ) {
-		$order_id         = (string) $post->ID;
+		$orderId = (string) (($post instanceof \WP_Post) ? $post->ID : $post->get_id());
 		$src              = Shop_Helper::get_plugin_base_url() . 'resources/images/logo.png';
-		$shipment_details = $this->get_order_shipment_details_service()->getDetailsByOrderId( $order_id );
+		$shipment_details = $this->get_order_shipment_details_service()->getDetailsByOrderId( $orderId );
 
 		if ( $shipment_details && ! empty( $shipment_details->getReference() ) ) {
 			$deleted = $this->get_order_shipment_details_service()->isShipmentDeleted( $shipment_details->getReference() );
@@ -311,22 +318,22 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 			}
 
 			return '<a ' . ( $deleted ? 'disabled' : 'target="_blank"  href="' . esc_url( $url ) . '"' )
-				   . ' class="button pl-draft-button" ><img class="pl-image" src="' . esc_url( $src ) . '" alt="">'
-				   . '<span>' . __( 'View on Packlink', 'packlink-pro-shipping' ) . '</span></a>';
+			       . ' class="button pl-draft-button" ><img class="pl-image" src="' . esc_url( $src ) . '" alt="">'
+			       . '<span>' . __( 'View on Packlink', 'packlink-pro-shipping' ) . '</span></a>';
 		}
 
 		if ( ! $this->get_config_service()->is_manual_sync_enabled() ) {
-			$draft_status = $this->get_shipment_draft_service()->getDraftStatus( $order_id );
-			if ( in_array( $draft_status->status, array( QueueItem::QUEUED, QueueItem::IN_PROGRESS ), true ) ) {
-				return '<div class="pl-draft-in-progress" data-order-id="' . $order_id . '">'
-					   . __( 'Draft is currently being created.', 'packlink-pro-shipping' )
-					   . '</div>';
+			$draft_status           = $this->get_shipment_draft_service()->getDraftStatus( $orderId );
+			if ( in_array( $draft_status->status, [ QueueItem::QUEUED, QueueItem::IN_PROGRESS ], true ) ) {
+				return '<div class="pl-draft-in-progress" data-order-id="' . $orderId . '">'
+				       . __( 'Draft is currently being created.', 'packlink-pro-shipping' )
+				       . '</div>';
 			}
 		}
 
-		return '<button class="button pl-create-draft-button" data-order-id="' . $order_id . '"><img class="pl-image" src="' . esc_url( $src ) . '" alt="">'
-			   . '<span>' . __( 'Send with Packlink', 'packlink-pro-shipping' ) . '</span>'
-			   . '</button>';
+		return '<button class="button pl-create-draft-button" data-order-id="' . $orderId . '"><img class="pl-image" src="' . esc_url( $src ) . '" alt="">'
+		       . '<span>' . __( 'Send with Packlink', 'packlink-pro-shipping' ) . '</span>'
+		       . '</button>';
 	}
 
 	/**
@@ -338,8 +345,7 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 		try {
 			$paths = array();
 			foreach ( $links as $link ) {
-				$path = $this->download_pdf( $link );
-				if ( $path ) {
+				if ( $path = $this->download_pdf( $link ) ) {
 					$paths[] = $path;
 				}
 			}
@@ -367,14 +373,14 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 	/**
 	 * Returns order labels and marks them as printed.
 	 *
-	 * @param OrderShipmentDetails $shipment_details Shipment details.
+	 * @param OrderShipmentDetails $shipment_details
 	 *
 	 * @return ShipmentLabel[] Label paths.
 	 *
-	 * @throws RepositoryNotRegisteredException Exception.
+	 * @throws RepositoryNotRegisteredException
 	 */
 	private function get_labels_to_print( $shipment_details ) {
-		/** OrderService instance @var OrderService $order_service */
+		/** @var OrderService $order_service */
 		$order_service = ServiceRegister::getService( OrderService::CLASS_NAME );
 		if ( ! $order_service->isReadyToFetchShipmentLabels( $shipment_details->getShippingStatus() ) ) {
 			return array();
@@ -395,12 +401,12 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 	/**
 	 * Marks labels as printed and returns their links.
 	 *
-	 * @param string          $reference Reference.
-	 * @param ShipmentLabel[] $labels Labels.
+	 * @param string          $reference
+	 * @param ShipmentLabel[] $labels
 	 *
 	 * @return array
 	 *
-	 * @throws OrderShipmentDetailsNotFound Exception.
+	 * @throws OrderShipmentDetailsNotFound
 	 */
 	private function print_labels( $reference, $labels ) {
 		$links = array();
@@ -426,7 +432,7 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 	 * @param string $file File path.
 	 */
 	private function return_file( $file ) {
-		$now  = gmdate( 'Y-m-d' );
+		$now  = date( 'Y-m-d' );
 		$name = "Packlink-bulk-shipping-labels_$now.pdf";
 
 		header( 'Content-Type: application/pdf' );
@@ -437,19 +443,18 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 		header( 'Expires: Sat, 26 Jul 1997 05:00:00 GMT' );
 		header( 'Last-Modified: ' . gmdate( 'D, d M Y H:i:s' ) . ' GMT' );
 
-		echo wp_kses_post( $file );
+		echo $file;
 	}
 
 	/**
 	 * Downloads pdf.
 	 *
-	 * @param string $link Link.
+	 * @param string $link
 	 *
 	 * @return bool | string
 	 */
 	protected function download_pdf( $link ) {
-		$data = file_get_contents( $link );
-		if ( false === $data ) {
+		if ( ( $data = file_get_contents( $link ) ) === false ) {
 			return $data;
 		}
 
@@ -491,7 +496,7 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 	 * @return Shipment_Draft_Service
 	 */
 	private function get_shipment_draft_service() {
-		/** Shipment draft service instance @var Shipment_Draft_Service $draft_service */
+		/** @var Shipment_Draft_Service $draft_service */
 		$draft_service = ServiceRegister::getService( ShipmentDraftService::CLASS_NAME );
 
 		return $draft_service;

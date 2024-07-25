@@ -1,7 +1,7 @@
 {
   "name": "packlink/woocommerce",
   "description": "Packlink WooCommerce Integration",
-  "version": "3.2.11",
+  "version": "3.4.9",
   "type": "library",
   "repositories": [
     {
@@ -12,11 +12,11 @@
   ],
   "require": {
     "php": ">=5.6",
-    "packlink/integration-core": "3.3.9",
+    "packlink/integration-core": "3.4.3",
     "ext-json": "*",
     "ext-curl": "*",
     "ext-zip": "*",
-    "iio/libmergepdf": "3.1.0"
+    "iio/libmergepdf": "3.0.0"
   },
   "autoload": {
     "psr-4": {

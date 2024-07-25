@@ -55,7 +55,7 @@ class Packlink_Base_Controller {
 	 */
 	protected function validate_internal_call() {
 		$logged_user_id = get_current_user_id();
-		if ( empty( $logged_user_id ) ) {
+		if ( empty( $logged_user_id ) || ! current_user_can('administrator') ) {
 			status_header( 401 );
 			nocache_headers();
 

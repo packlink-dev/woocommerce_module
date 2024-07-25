@@ -16,6 +16,7 @@ use Packlink\BusinessLogic\Http\DTO\ParcelInfo;
 use Packlink\BusinessLogic\ShippingMethod\Models\ShippingMethod;
 use Packlink\BusinessLogic\ShippingMethod\ShippingCostCalculator;
 use Packlink\BusinessLogic\ShippingMethod\ShippingMethodService;
+use Packlink\WooCommerce\Components\Checkout\Checkout_Handler;
 use Packlink\WooCommerce\Components\Services\Config_Service;
 use Packlink\WooCommerce\Components\Services\System_Info_Service;
 use WC_Eval_Math;
@@ -150,6 +151,9 @@ class Packlink_Shipping_Method extends \WC_Shipping_Method {
 		);
 
 		$this->add_shipping_class_cost( $rate, $package );
+		if ( Checkout_Handler::DEFAULT_SHIPPING === $rate['label'] ) {
+			$rate['label'] = __( 'shipping cost', 'packlink-pro-shipping' );
+		}
 
 		$this->add_rate( $rate );
 	}

@@ -1,9 +1,8 @@
 .button.pl-draft-button,
 .button.pl-create-draft-button {
 	display: flex;
-	padding: 4px 18px;
-	width: max-content;
-	min-width: 180px;
+	padding: 2px 12px;
+	width: 100%;
 	max-width: 185px;
 	min-height: 38px;
 }
@@ -21,6 +20,8 @@
 
 .pl-image {
 	width: 25px;
+	height: 25px;
+	padding-top: 2px;
 	display: block;
 	padding-right: 3px;
 }

@@ -58,7 +58,7 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	 * Loads JS and CSS files for the current page.
 	 */
 	private function load_static_content() {
-		wp_enqueue_style( 'material', 'https://fonts.googleapis.com/icon?family=Material+Icons+Outlined', array(), wp_get_theme()->get( 'Version' ) );
+		wp_enqueue_style( 'material', 'https://fonts.googleapis.com/icon?family=Material+Icons+Outlined' ); // phpcs:ignore
 
 		Script_Loader::load_css(
 			array(
@@ -114,14 +114,14 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	private function get_lang() {
 		$locale = Shop_Helper::get_user_locale();
 
-		/** CountryService instance @var CountryService $country_service */
+		/** @var CountryService $country_service */
 		$country_service = ServiceRegister::getService( CountryService::class );
 		$default         = $country_service->getAllLabels( 'en' );
 		$current_lang    = $country_service->getAllLabels( $locale );
 
 		return array(
-			'default' =>  $default['en'] ,
-			'current' => $current_lang[ $locale ] ,
+			'default' => json_encode($default['en']),
+			'current' => json_encode($current_lang[$locale]),
 		);
 	}
 
@@ -131,33 +131,34 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	 * @return array
 	 */
 	private function get_templates() {
-		$base_dir     = __DIR__ . '/../resources/packlink/templates/';
+		$base_dir = __DIR__ . '/../resources/packlink/templates/';
 		$override_dir = __DIR__ . '/../resources/templates/override/';
-		$custom_dir   = __DIR__ . '/../resources/templates/custom/';
+		$custom_dir = __DIR__ . '/../resources/templates/custom/';
 
 		//@codingStandardsIgnoreStart
 		return array(
-			'configuration'             => file_get_contents( $override_dir . 'configuration.html' ),
-			'countries-selection-modal' => file_get_contents( $base_dir . 'countries-selection-modal.html' ),
-			'default-parcel'            => file_get_contents( $base_dir . 'default-parcel.html' ),
-			'default-warehouse'         => file_get_contents( $base_dir . 'default-warehouse.html' ),
-			'disable-carriers-modal'    => file_get_contents( $base_dir . 'disable-carriers-modal.html' ),
-			'edit-shipping-service'     => file_get_contents( $base_dir . 'edit-shipping-service.html' ),
-			'login'                     => file_get_contents( $base_dir . 'login.html' ),
-			'my-shipping-services'      => file_get_contents( $base_dir . 'my-shipping-services.html' ),
-			'onboarding-overview'       => file_get_contents( $base_dir . 'onboarding-overview.html' ),
-			'onboarding-welcome'        => file_get_contents( $base_dir . 'onboarding-welcome.html' ),
-			'order-status-mapping'      => file_get_contents( $base_dir . 'order-status-mapping.html' ),
-			'pick-shipping-services'    => file_get_contents( $base_dir . 'pick-shipping-services.html' ),
-			'pricing-policies-list'     => file_get_contents( $base_dir . 'pricing-policies-list.html' ),
-			'pricing-policy-modal'      => file_get_contents( $base_dir . 'pricing-policy-modal.html' ),
-			'register'                  => file_get_contents( $base_dir . 'register.html' ),
-			'register-modal'            => file_get_contents( $base_dir . 'register-modal.html' ),
-			'shipping-services-header'  => file_get_contents( $base_dir . 'shipping-services-header.html' ),
-			'shipping-services-list'    => file_get_contents( $base_dir . 'shipping-services-list.html' ),
-			'shipping-services-table'   => file_get_contents( $base_dir . 'shipping-services-table.html' ),
-			'system-info-modal'         => file_get_contents( $base_dir . 'system-info-modal.html' ),
-			'manual-sync'               => file_get_contents( $custom_dir . 'manual-sync.html' ),
+			'configuration'             => json_encode( file_get_contents( $override_dir . 'configuration.html' ) ),
+			'countries-selection-modal' => json_encode( file_get_contents( $base_dir . 'countries-selection-modal.html' ) ),
+			'default-parcel'            => json_encode( file_get_contents( $base_dir . 'default-parcel.html' ) ),
+			'default-warehouse'         => json_encode( file_get_contents( $base_dir . 'default-warehouse.html' ) ),
+			'disable-carriers-modal'    => json_encode( file_get_contents( $base_dir . 'disable-carriers-modal.html' ) ),
+			'edit-shipping-service'     => json_encode( file_get_contents( $base_dir . 'edit-shipping-service.html' ) ),
+			'login'                     => json_encode( file_get_contents( $base_dir . 'login.html' ) ),
+			'my-shipping-services'      => json_encode( file_get_contents( $base_dir . 'my-shipping-services.html' ) ),
+			'onboarding-overview'       => json_encode( file_get_contents( $base_dir . 'onboarding-overview.html' ) ),
+			'onboarding-welcome'        => json_encode( file_get_contents( $base_dir . 'onboarding-welcome.html' ) ),
+			'order-status-mapping'      => json_encode( file_get_contents( $base_dir . 'order-status-mapping.html' ) ),
+			'pick-shipping-services'    => json_encode( file_get_contents( $base_dir . 'pick-shipping-services.html' ) ),
+			'pricing-policies-list'     => json_encode( file_get_contents( $base_dir . 'pricing-policies-list.html' ) ),
+			'pricing-policy-modal'      => json_encode( file_get_contents( $base_dir . 'pricing-policy-modal.html' ) ),
+			'register'                  => json_encode( file_get_contents( $base_dir . 'register.html' ) ),
+			'register-modal'            => json_encode( file_get_contents( $base_dir . 'register-modal.html' ) ),
+			'shipping-services-header'  => json_encode( file_get_contents( $base_dir . 'shipping-services-header.html' ) ),
+			'shipping-services-list'    => json_encode( file_get_contents( $base_dir . 'shipping-services-list.html' ) ),
+			'shipping-services-table'   => json_encode( file_get_contents( $base_dir . 'shipping-services-table.html' ) ),
+			'system-info-modal'         => json_encode( file_get_contents( $base_dir . 'system-info-modal.html' ) ),
+			'manual-sync'               => json_encode( file_get_contents( $custom_dir . 'manual-sync.html' ) ),
+			'location-picker'           => json_encode( file_get_contents( $custom_dir . 'location-picker.html' ) ),
 		);
 		//@codingStandardsIgnoreEnd
 	}
