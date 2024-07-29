@@ -30,21 +30,17 @@ class System_Info_Service implements SystemInfoService {
 	public function getSystemDetails() {
 		$currency = get_woocommerce_currency();
 
-		return array(
-			SystemInfo::fromArray(
-				array(
-					'system_id' => self::SYSTEM_ID,
-					'system_name' => get_bloginfo( 'name' ),
-					'currencies' => array( $currency ),
-				)
-			),
-		);
+		return array(SystemInfo::fromArray(array(
+			'system_id' => self::SYSTEM_ID,
+			'system_name' => get_bloginfo( 'name' ),
+			'currencies' => array($currency),
+		)));
 	}
 
 	/**
 	 * Returns system information for a particular system, identified by the system ID.
 	 *
-	 * @param string $system_id System ID.
+	 * @param string $system_id
 	 *
 	 * @return SystemInfo|null
 	 */

@@ -59,7 +59,7 @@ try {
 				ARRAY_A
 			);
 
-			Task_Queue::enqueue( new Upgrade_Packlink_Order_Details( Php55::arrayColumn( $order_posts, 'ID' ) ) );
+			Task_Queue::enqueue(new Upgrade_Packlink_Order_Details(Php55::arrayColumn($order_posts , 'ID')));
 		} catch ( Exception $e ) {
 			Logger::logError( 'Migration of order shipments failed.', 'Integration' );
 		}

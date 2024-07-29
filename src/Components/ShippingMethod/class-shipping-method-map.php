@@ -26,19 +26,19 @@ class Shipping_Method_Map extends Entity {
 	 *
 	 * @var int
 	 */
-	protected $woocommerce_shipping_method_id;
+	protected $woocommerceShippingMethodId;
 	/**
 	 * Packlink shipping method identifier.
 	 *
 	 * @var int
 	 */
-	protected $packlink_shipping_method_id;
+	protected $packlinkShippingMethodId;
 	/**
 	 * Packlink shipping zone identifier.
 	 *
 	 * @var int
 	 */
-	protected $zone_id;
+	protected $zoneId;
 	/**
 	 * Array of field names.
 	 *
@@ -46,9 +46,9 @@ class Shipping_Method_Map extends Entity {
 	 */
 	protected $fields = array(
 		'id',
-		'woocommerce_shipping_method_id',
-		'packlink_shipping_method_id',
-		'zone_id',
+		'woocommerceShippingMethodId',
+		'packlinkShippingMethodId',
+		'zoneId',
 	);
 
 	/**
@@ -70,7 +70,7 @@ class Shipping_Method_Map extends Entity {
 	 * @return int WooCommerce shipping method identifier.
 	 */
 	public function getWoocommerceShippingMethodId() {
-		return $this->woocommerce_shipping_method_id;
+		return $this->woocommerceShippingMethodId;
 	}
 
 	/**
@@ -79,7 +79,7 @@ class Shipping_Method_Map extends Entity {
 	 * @param int $woocommerce_shipping_method_id WooCommerce shipping method identifier.
 	 */
 	public function setWoocommerceShippingMethodId( $woocommerce_shipping_method_id ) {
-		$this->woocommerce_shipping_method_id = $woocommerce_shipping_method_id;
+		$this->woocommerceShippingMethodId = $woocommerce_shipping_method_id;
 	}
 
 	/**
@@ -88,7 +88,7 @@ class Shipping_Method_Map extends Entity {
 	 * @return int Packlink shipping method identifier.
 	 */
 	public function getPacklinkShippingMethodId() {
-		return $this->packlink_shipping_method_id;
+		return $this->packlinkShippingMethodId;
 	}
 
 	/**
@@ -97,7 +97,7 @@ class Shipping_Method_Map extends Entity {
 	 * @param int $packlink_shipping_method_id Packlink shipping method identifier.
 	 */
 	public function setPacklinkShippingMethodId( $packlink_shipping_method_id ) {
-		$this->packlink_shipping_method_id = $packlink_shipping_method_id;
+		$this->packlinkShippingMethodId = $packlink_shipping_method_id;
 	}
 
 	/**
@@ -106,7 +106,7 @@ class Shipping_Method_Map extends Entity {
 	 * @return int Zone identifier.
 	 */
 	public function getZoneId() {
-		return $this->zone_id;
+		return $this->zoneId;
 	}
 
 	/**
@@ -115,6 +115,6 @@ class Shipping_Method_Map extends Entity {
 	 * @param int $zone_id Zone identifier.
 	 */
 	public function setZoneId( $zone_id ) {
-		$this->zone_id = $zone_id;
+		$this->zoneId = $zone_id;
 	}
 }

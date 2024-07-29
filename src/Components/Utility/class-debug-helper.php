@@ -9,7 +9,6 @@ namespace Packlink\WooCommerce\Components\Utility;
 
 use DateTime;
 use Logeecom\Infrastructure\Exceptions\BaseException;
-use Logeecom\Infrastructure\Logger\Logger;
 use Logeecom\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
 use Logeecom\Infrastructure\ORM\QueryFilter\Operators;
 use Logeecom\Infrastructure\ORM\QueryFilter\QueryFilter;
@@ -188,8 +187,8 @@ class Debug_Helper {
 	protected static function get_parcel_and_warehouse_info() {
 		return wp_json_encode(
 			array(
-				'Default parcel'    => self::get_config_service()->getDefaultParcel() ? self::get_config_service()->getDefaultParcel() : array(),
-				'Default warehouse' => self::get_config_service()->getDefaultWarehouse() ? self::get_config_service()->getDefaultWarehouse() : array(),
+				'Default parcel'    => self::get_config_service()->getDefaultParcel() ?: array(),
+				'Default warehouse' => self::get_config_service()->getDefaultWarehouse() ?: array(),
 			),
 			JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES
 		);
@@ -215,7 +214,6 @@ class Debug_Helper {
 			}
 		} catch ( BaseException $e ) { // phpcs:ignore
 			/* Just continue with empty result. */
-			Logger::logError( $e->getMessage() );
 		}
 
 		return wp_json_encode( $result, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES );
@@ -227,7 +225,7 @@ class Debug_Helper {
 	 * @return Config_Service Configuration service instance.
 	 */
 	protected static function get_config_service() {
-		if ( null === self::$config_service ) { // phpcs:ignore
+		if ( self::$config_service === null ) { // phpcs:ignore
 			self::$config_service = ServiceRegister::getService( Config_Service::CLASS_NAME );
 		}
 

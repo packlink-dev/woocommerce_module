@@ -92,17 +92,15 @@ class Packlink_Debug_Controller extends Packlink_Base_Controller {
 		$this->validate( 'no', true );
 
 		//@codingStandardsIgnoreStart
-		/** Configuration instance @var Configuration $config */
+		/** @var Configuration $config */
 		$config = ServiceRegister::getService( Configuration::CLASS_NAME );
 		$url    = $config->getAsyncProcessUrl( 'test' );
 
-		/** No inspection needed @noinspection PhpComposerExtensionStubsInspection */
-		$curl        = curl_init();
-		$upload_dir  = wp_upload_dir()['path'];
-		$verboseFile = $upload_dir . '/' . wp_generate_uuid4() . '.curl.log';
-		$verbose     = fopen( $verboseFile, 'wb+' );
-		/** No inspection needed @noinspection CurlSslServerSpoofingInspection */
-		/** No inspection needed @noinspection PhpComposerExtensionStubsInspection */
+		/** @noinspection PhpComposerExtensionStubsInspection */
+		$curl    = curl_init();
+		$verbose = fopen( 'php://temp', 'wb+' );
+		/** @noinspection CurlSslServerSpoofingInspection */
+		/** @noinspection PhpComposerExtensionStubsInspection */
 		curl_setopt_array(
 			$curl,
 			array(
@@ -125,16 +123,17 @@ class Packlink_Debug_Controller extends Packlink_Base_Controller {
 			)
 		);
 
-		/** No inspection needed @noinspection PhpComposerExtensionStubsInspection */
+		/** @noinspection PhpComposerExtensionStubsInspection */
 		$response = curl_exec( $curl );
 
 		rewind( $verbose );
-		echo '<pre>', wp_kses_post( stream_get_contents( $verbose ) );
-		unlink( $verboseFile );
-		/** No inspection needed @noinspection PhpComposerExtensionStubsInspection */
+		echo '<pre>', stream_get_contents( $verbose );
+
+		/** @noinspection PhpComposerExtensionStubsInspection */
 		curl_close( $curl );
 
-		echo wp_kses_post( $response );
+		echo $response;
+
 		echo '</pre>';
 		exit;
 		//@codingStandardsIgnoreEnd

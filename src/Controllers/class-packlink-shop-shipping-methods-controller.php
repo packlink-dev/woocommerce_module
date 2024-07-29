@@ -26,7 +26,7 @@ class Packlink_Shop_Shipping_Methods_Controller extends Packlink_Base_Controller
 	 * Disables shop shipping methods.
 	 */
 	public function disable_shop_shipping_methods() {
-		/** ShopShippingMethodService instance @var ShopShippingMethodService $service */ // phpcs:ignore
+		/** @var ShopShippingMethodService $service */ // phpcs:ignore
 		$service = ServiceRegister::getService( ShopShippingMethodService::CLASS_NAME );
 		$status  = $service->disableShopServices();
 

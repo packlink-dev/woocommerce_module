@@ -106,7 +106,7 @@ class Config_Service extends Configuration {
 	 * @return int Max task inactivity period in seconds if set; otherwise, self::MAX_TASK_INACTIVITY_PERIOD.
 	 */
 	public function getMaxTaskInactivityPeriod() {
-		return parent::getMaxTaskInactivityPeriod() ? parent::getMaxTaskInactivityPeriod() : self::MAX_TASK_INACTIVITY_PERIOD;
+		return parent::getMaxTaskInactivityPeriod() ?: self::MAX_TASK_INACTIVITY_PERIOD;
 	}
 
 	/**
@@ -180,13 +180,13 @@ class Config_Service extends Configuration {
 	public function get_footer_height() {
 		$height = $this->getConfigValue( 'Footer_Height' );
 
-		return $height ? $height : self::DEFAULT_FOOTER_HEIGHT;
+		return $height ?: self::DEFAULT_FOOTER_HEIGHT;
 	}
 
 	/**
 	 * Saves footer height.
 	 *
-	 * @param int $height Height to be set.
+	 * @param int $height
 	 */
 	public function set_footer_height( $height ) {
 		$this->saveConfigValue( 'Footer_Height', $height );
@@ -200,16 +200,12 @@ class Config_Service extends Configuration {
 	public function is_manual_sync_enabled() {
 		$is_manual_sync_enabled = $this->getConfigValue( 'Manual_Sync' );
 
-		return $is_manual_sync_enabled ? $is_manual_sync_enabled : false;
+		return $is_manual_sync_enabled ?: false;
 	}
 
-	/**
-	 * Automatic task runner wakeup delay in seconds. Task runner will sleep at the end of its lifecycle for this value
-	 * seconds before it sends wakeup signal for a new lifecycle. Return null to use default system value (10).
-	 *
-	 * @return int|null Task runner wakeup delay in seconds if set; otherwise, null.
-	 */
-	public function getTaskRunnerWakeupDelay() {
+	/** @inheritdoc  */
+	public function getTaskRunnerWakeupDelay()
+	{
 		if ( $this->is_manual_sync_enabled() ) {
 			return self::DEFAULT_TASK_RUNNER_WAKEUP_DELAY_WITH_MANUAL_SYNC;
 		}
@@ -220,7 +216,7 @@ class Config_Service extends Configuration {
 	/**
 	 * Saves whether manual synchronization is enabled.
 	 *
-	 * @param bool $manual_sync_enabled Value to be set.
+	 * @param bool $manual_sync_enabled
 	 */
 	public function set_manual_sync_enabled( $manual_sync_enabled ) {
 		$this->saveConfigValue( 'Manual_Sync', $manual_sync_enabled );

@@ -5,15 +5,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [v3.4.10](https://github.com/logeecom/pl_woocommerce_module/compare/v3.4.9...v3.4.10) - 2024-07-03
 ### Changed
+- Fix the issue with the drop-off button not displayed on the checkout
+
+## [v3.4.9](https://github.com/logeecom/pl_woocommerce_module/compare/v3.4.8...v3.4.9) - 2024-07-29
+### Changed
 - Fix the issue with the drop-off button at the top of the page
 - Fix the issue where the button no longer appeared after making changes on the checkout
 - Add translations for default shipping cost
 - Update compatible version of WooCommerce (9.0.2) and WordPress (6.5.5)
 - Add unsupported country Algeria
-
-## [v3.4.9](https://github.com/logeecom/pl_woocommerce_module/compare/v3.4.8...v3.4.9) - 2024-07-29
-### Changed
-- Fix the issue with the drop-off button not displayed on the checkout
 
 ## [v3.4.8](https://github.com/logeecom/pl_woocommerce_module/compare/v3.4.7...v3.4.8) - 2024-06-05
 ### Changed

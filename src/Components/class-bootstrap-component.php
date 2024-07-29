@@ -123,13 +123,11 @@ class Bootstrap_Component extends BootstrapComponent {
 		ServiceRegister::registerService(
 			FileResolverService::CLASS_NAME,
 			function () {
-				return new FileResolverService(
-					array(
-						__DIR__ . '/../resources/packlink/brand/countries',
-						__DIR__ . '/../resources/packlink/countries',
-						__DIR__ . '/../resources/countries',
-					)
-				);
+				return new FileResolverService(array(
+					__DIR__ . '/../resources/packlink/brand/countries',
+					__DIR__ . '/../resources/packlink/countries',
+					__DIR__ . '/../resources/countries',
+				));
 			}
 		);
 

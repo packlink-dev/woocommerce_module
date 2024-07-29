@@ -46,8 +46,8 @@ class Checkout_Handler {
 	 * @param WC_Shipping_Rate $rate Shipping rate.
 	 * @param int              $index Shipping method index.
 	 *
-	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException Exception.
-	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException Exception.
+	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException
+	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException
 	 */
 	public function after_shipping_rate( WC_Shipping_Rate $rate, $index ) {
 		$rate_data       = $this->get_rate_data( $rate );
@@ -58,7 +58,7 @@ class Checkout_Handler {
 		}
 
 		$fields = array(
-			'packlink_image_url'   => $shipping_method->getLogoUrl() ? $shipping_method->getLogoUrl() : Shop_Helper::get_plugin_base_url() . 'resources/images/box.svg',
+			'packlink_image_url'   => $shipping_method->getLogoUrl() ?: Shop_Helper::get_plugin_base_url() . 'resources/images/box.svg',
 			'packlink_show_image'  => $shipping_method->isDisplayLogo() ? 'yes' : 'no',
 			'packlink_is_drop_off' => $shipping_method->isDestinationDropOff() ? 'yes' : 'no',
 		);
@@ -130,8 +130,8 @@ class Checkout_Handler {
 	 * @param \WC_Order $order WooCommerce order.
 	 * @param array     $data Order data.
 	 *
-	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException Exception.
-	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException Exception.
+	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException
+	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException
 	 */
 	public function checkout_update_shipping_address( \WC_Order $order, array $data ) {
 		$shipping_method = $this->get_shipping_method( $data );
@@ -179,7 +179,7 @@ class Checkout_Handler {
 		}
 
 		$wc_order = \WC_Order_Factory::get_order( $order_id );
-		if ( false !== $wc_order ) {
+		if ( $wc_order !== false ) {
 			Paid_Order_Handler::handle( $order_id, $wc_order );
 		}
 	}
@@ -271,8 +271,8 @@ class Checkout_Handler {
 	 *
 	 * @return ShippingMethod|null Shipping method.
 	 *
-	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException Exception.
-	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException Exception.
+	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException
+	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException
 	 */
 	private function get_shipping_method( array $data = array() ) {
 		if ( empty( $data ) || ! isset( $data['shipping_method'][0] ) ) {
@@ -317,7 +317,7 @@ class Checkout_Handler {
 	 * @return mixed
 	 */
 	private function get_param( $key, $is_text = true ) {
-		if ( isset( $_REQUEST[ $key ], $_REQUEST[ $key ][0] ) ) {
+		if ( isset( $_REQUEST[ $key ] ) ) {
 			return sanitize_text_field( wp_unslash( $is_text ? $_REQUEST[ $key ] : $_REQUEST[ $key ][0] ) );
 		}
 

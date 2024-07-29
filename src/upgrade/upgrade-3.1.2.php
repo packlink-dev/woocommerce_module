@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Packlink PRO Shipping WooCommerce Integration.
  *
@@ -9,10 +10,8 @@ use Packlink\WooCommerce\Components\Utility\Database;
 
 //@codingStandardsIgnoreStart
 /**
- * Update saved parcel.
- *
- * @param wpdb   $db Database.
- * @param string $table_name Table name.
+ * @param wpdb   $db
+ * @param string $table_name
  */
 function update_saved_parcel( $db, $table_name ) {
 	$query   = "SELECT * FROM {$table_name} WHERE index_1 = 'defaultParcel' ";
@@ -46,4 +45,5 @@ $db = $wpdb;
 
 $table_name = $db->prefix . Database::BASE_TABLE;
 update_saved_parcel( $db, $table_name );
+
 //@codingStandardsIgnoreEnd
