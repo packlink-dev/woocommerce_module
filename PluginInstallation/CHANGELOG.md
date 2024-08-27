@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [v3.4.11](https://github.com/logeecom/pl_woocommerce_module/compare/v3.4.10...v3.4.11) - 2024-08-27
+### Changed
+- Fix setting async request timeout using support controller
+- Mark compatibility with WooCommerce 9.1.4 and WordPress 6.6.1
+
 ## [v3.4.10](https://github.com/logeecom/pl_woocommerce_module/compare/v3.4.9...v3.4.10) - 2024-07-03
 ### Changed
 - Fix the issue with the drop-off button not displayed on the checkout

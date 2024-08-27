@@ -68,6 +68,12 @@ Click <a href="https://support-pro.packlink.com/hc/es-es/articles/210158585" tar
 
 == Changelog ==
 
+#### 3.4.11 - August 27th, 2024
+
+**Updates**
+- Fix setting async request timeout using support controller
+- Mark compatibility with WooCommerce 9.1.4 and WordPress 6.6.1
+
 #### 3.4.10 - July 29th, 2024
 
 **Updates**
