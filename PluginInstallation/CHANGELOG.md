@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [v3.4.12](https://github.com/logeecom/pl_woocommerce_module/compare/v3.4.11...v3.4.12) - 2024-09-30
+### Changed
+- Mark compatibility with WooCommerce 9.3.1 and WordPress 6.6.2
+
 ## [v3.4.11](https://github.com/logeecom/pl_woocommerce_module/compare/v3.4.10...v3.4.11) - 2024-08-27
 ### Changed
 - Fix setting async request timeout using support controller
