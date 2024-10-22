@@ -67,6 +67,8 @@ document.addEventListener(
 			});
 
 			Packlink.ajaxService.get(checkDraftStatusEndpoint.value + '&order_id=' + orderId, function (response) {
+				noShippableItemsMessage = document.querySelector('#pl-no-shippable-items').value;
+
 				if (response.status === 'created') {
 					let viewDraftButton = draftButtonTemplate.cloneNode(true);
 
@@ -75,7 +77,13 @@ document.addEventListener(
 					viewDraftButton.classList.remove('hidden');
 					parent.innerHTML = '';
 					parent.appendChild(viewDraftButton);
-				} else if (['failed', 'aborted'].includes(response.status)) {
+				}else if (response.status === 'aborted') {
+					parent.innerText = noShippableItemsMessage;
+					setTimeout(function () {
+						displayCreateDraftButton(parent, orderId)
+					}, 5000);
+				}
+				else if (response.status === 'failed') {
 					parent.innerText = draftFailedMessage.value;
 					setTimeout(function () {
 						displayCreateDraftButton(parent, orderId)
