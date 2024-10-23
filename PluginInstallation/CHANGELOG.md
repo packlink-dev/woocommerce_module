@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [v3.4.13](https://github.com/logeecom/pl_woocommerce_module/compare/v3.4.12...v3.4.13) - 2024-10-23
+### Changed
+- Add validation to prevent shipping of orders with only virtual or/and downloadable products and display an error message
+
 ## [v3.4.12](https://github.com/logeecom/pl_woocommerce_module/compare/v3.4.11...v3.4.12) - 2024-09-30
 ### Changed
 - Mark compatibility with WooCommerce 9.3.1 and WordPress 6.6.2
