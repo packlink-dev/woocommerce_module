@@ -405,9 +405,13 @@ class Plugin {
 		if ( ( 'shop_order' === $page && $data && 'auto-draft' !== $data->post_status ) ||
 		     ( 'woocommerce_page_wc-orders' === $page && $data && $data instanceof WC_Order ) ) {
 			$controller = new Packlink_Order_Details_Controller();
-			$screen     = wc_get_container()->get( CustomOrdersTableController::class )->custom_orders_table_usage_is_enabled()
-				? wc_get_page_screen_id( 'shop-order' )
-				: 'shop_order';
+			if ( class_exists( 'Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController' ) ) {
+				$screen     = wc_get_container()->get( CustomOrdersTableController::class )->custom_orders_table_usage_is_enabled()
+					? wc_get_page_screen_id( 'shop-order' )
+					: 'shop_order';
+			} else {
+				$screen = 'shop_order';
+			}
 			add_meta_box(
 				'packlink-shipping-modal',
 				__( 'Packlink PRO Shipping', 'packlink-pro-shipping' ),
