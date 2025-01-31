@@ -130,7 +130,9 @@ $data = $this->resolve_view_arguments();
 					startAutoConfigureUrl: "<?php echo Shop_Helper::get_controller_url( 'Auto_Configure', 'start' ); //phpcs:ignore ?>",
 					disableCarriersUrl: "<?php echo Shop_Helper::get_controller_url( 'Shop_Shipping_Methods', 'disable_shop_shipping_methods' ); //phpcs:ignore ?>",
 					getCurrencyDetailsUrl: "<?php echo Shop_Helper::get_controller_url( 'System_Info', 'get' ); //phpcs:ignore ?>",
-					systemId: "<?php echo System_Info_Service::SYSTEM_ID; ?>"
+					systemId: "<?php echo System_Info_Service::SYSTEM_ID; ?>",
+					enqueue: "<?php echo Shop_Helper::get_controller_url('Manual_Refresh_Service', 'refresh'); //phpcs:ignore ?>",
+					getTaskStatus: "<?php echo Shop_Helper::get_controller_url('Manual_Refresh_Service', 'get_task_status'); //phpcs:ignore ?>"
 				},
 				'edit-service': {
 					getServiceUrl: "<?php echo Shop_Helper::get_controller_url( 'Edit_Service', 'get_service' ); //phpcs:ignore ?>",
