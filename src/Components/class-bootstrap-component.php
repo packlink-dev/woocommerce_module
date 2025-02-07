@@ -23,6 +23,7 @@ use Logeecom\Infrastructure\TaskExecution\QueueItem;
 use Packlink\Brands\Packlink\PacklinkConfigurationService;
 use Packlink\BusinessLogic\BootstrapComponent;
 use Packlink\BusinessLogic\Brand\BrandConfigurationService;
+use Packlink\BusinessLogic\Country\WarehouseCountryService;
 use Packlink\BusinessLogic\FileResolver\FileResolverService;
 use Packlink\BusinessLogic\Order\Interfaces\ShopOrderService;
 use Packlink\BusinessLogic\OrderShipmentDetails\Models\OrderShipmentDetails;
@@ -42,6 +43,7 @@ use Packlink\WooCommerce\Components\Services\Config_Service;
 use Packlink\WooCommerce\Components\Services\Logger_Service;
 use Packlink\WooCommerce\Components\Services\Registration_Info_Service;
 use Packlink\WooCommerce\Components\Services\System_Info_Service;
+use Packlink\WooCommerce\Components\Services\Warehouse_Country_Service;
 use Packlink\WooCommerce\Components\ShippingMethod\Shipping_Method_Map;
 use Packlink\WooCommerce\Components\ShippingMethod\Shop_Shipping_Method_Service;
 
@@ -135,6 +137,13 @@ class Bootstrap_Component extends BootstrapComponent {
 			ShipmentDraftService::CLASS_NAME,
 			static function () {
 				return Shipment_Draft_Service::getInstance();
+			}
+		);
+
+		ServiceRegister::registerService(
+			WarehouseCountryService::CLASS_NAME,
+			static function () {
+				return Warehouse_Country_Service::getInstance();
 			}
 		);
 	}

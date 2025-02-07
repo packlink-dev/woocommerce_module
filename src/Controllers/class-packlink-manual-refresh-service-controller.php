@@ -21,7 +21,7 @@ class Packlink_Manual_Refresh_Service_Controller extends Packlink_Base_Controlle
 	public function refresh() {
 		$controller = new ManualRefreshServiceController();
 
-		$this->return_json(json_decode($controller->enqueueUpdateTask(), true));
+		$this->return_json($controller->enqueueUpdateTask());
 	}
 
 	/**
@@ -33,6 +33,6 @@ class Packlink_Manual_Refresh_Service_Controller extends Packlink_Base_Controlle
 	public function get_task_status() {
 		$controller = new ManualRefreshServiceController();
 
-		$this->return_json(json_decode($controller->getTaskStatus(), true));
+		$this->return_json($controller->getTaskStatus());
 	}
 }
