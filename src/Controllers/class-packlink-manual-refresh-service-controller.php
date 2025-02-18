@@ -11,7 +11,7 @@ use Logeecom\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
 use Logeecom\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException;
 use Logeecom\Infrastructure\TaskExecution\Exceptions\QueueItemDeserializationException;
-use Packlink\BusinessLogic\Controllers\ManualRefreshServiceController;
+use Packlink\BusinessLogic\Controllers\ManualRefreshController;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
@@ -19,9 +19,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Packlink_Manual_Refresh_Service_Controller extends Packlink_Base_Controller {
 
 	public function refresh() {
-		$controller = new ManualRefreshServiceController();
+		$controller = new ManualRefreshController();
 
-		$this->return_json($controller->enqueueUpdateTask());
+		$this->return_json($controller->enqueueUpdateTask()->toArray());
 	}
 
 	/**
@@ -31,8 +31,8 @@ class Packlink_Manual_Refresh_Service_Controller extends Packlink_Base_Controlle
 	 * @throws QueryFilterInvalidParamException
 	 */
 	public function get_task_status() {
-		$controller = new ManualRefreshServiceController();
+		$controller = new ManualRefreshController();
 
-		$this->return_json($controller->getTaskStatus());
+		$this->return_json($controller->getTaskStatus()->toArray());
 	}
 }

@@ -66,12 +66,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:logeecom/pl_module_core.git",
-                "reference": "8f4eb68c90ae13089fc8b62660e1a04a4dea9190"
+                "reference": "7d8cf49e1090a09e2b053d19b02a885f312c9baf"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/logeecom/pl_module_core/zipball/8f4eb68c90ae13089fc8b62660e1a04a4dea9190",
-                "reference": "8f4eb68c90ae13089fc8b62660e1a04a4dea9190",
+                "url": "https://api.github.com/repos/logeecom/pl_module_core/zipball/7d8cf49e1090a09e2b053d19b02a885f312c9baf",
+                "reference": "7d8cf49e1090a09e2b053d19b02a885f312c9baf",
                 "shasum": ""
             },
             "require": {
@@ -110,7 +110,7 @@
                 "proprietary"
             ],
             "description": "Packlink integrations core library",
-            "time": "2025-02-05T12:24:00+00:00"
+            "time": "2025-02-18T09:11:34+00:00"
         },
         {
             "name": "setasign/fpdf",
@@ -1791,16 +1791,16 @@
         },
         {
             "name": "yoast/phpunit-polyfills",
-            "version": "1.1.3",
+            "version": "1.1.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Yoast/PHPUnit-Polyfills.git",
-                "reference": "0b31ce834facf03b8b44b6587e65b3cf1d7cfb94"
+                "reference": "e6faedf5e34cea4438e341f660e2f719760c531d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Yoast/PHPUnit-Polyfills/zipball/0b31ce834facf03b8b44b6587e65b3cf1d7cfb94",
-                "reference": "0b31ce834facf03b8b44b6587e65b3cf1d7cfb94",
+                "url": "https://api.github.com/repos/Yoast/PHPUnit-Polyfills/zipball/e6faedf5e34cea4438e341f660e2f719760c531d",
+                "reference": "e6faedf5e34cea4438e341f660e2f719760c531d",
                 "shasum": ""
             },
             "require": {
@@ -1815,7 +1815,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-main": "3.x-dev"
+                    "dev-main": "4.x-dev"
                 }
             },
             "autoload": {
@@ -1850,7 +1850,7 @@
                 "security": "https://github.com/Yoast/PHPUnit-Polyfills/security/policy",
                 "source": "https://github.com/Yoast/PHPUnit-Polyfills"
             },
-            "time": "2025-01-08T16:58:34+00:00"
+            "time": "2025-02-09T18:13:44+00:00"
         }
     ],
     "aliases": [],
