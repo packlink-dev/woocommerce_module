@@ -19,7 +19,7 @@ class Warehouse_Country_Service extends WarehouseCountryService {
 	 */
 	public function getSupportedCountries( $associative = true ) {
 		$countries             = $this->getBrandConfigurationService()->get()->warehouseCountries;
-		$allowed_countries     = WC()->countries->get_allowed_countries();
+		$allowed_countries     = WC()->countries->get_shipping_countries();
 		$intersected_countries = array();
 
 		foreach ( $allowed_countries as $key => $allowed_country ) {
