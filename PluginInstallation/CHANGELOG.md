@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [v3.4.16](https://github.com/logeecom/pl_woocommerce_module/compare/v3.4.15...v3.4.16) - 2025-03-12
+### Changed
+- Add unsupported countries Morocco, United Arab Emirates and Monaco
+
 ## [v3.4.15](https://github.com/logeecom/pl_woocommerce_module/compare/v3.4.14...v3.4.15) - 2025-02-21
 ### Changed
 - Fix problem with state

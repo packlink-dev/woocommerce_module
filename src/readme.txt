@@ -68,6 +68,11 @@ Click <a href="https://support-pro.packlink.com/hc/es-es/articles/210158585" tar
 
 == Changelog ==
 
+#### 3.4.16 - March 12th, 2025
+
+**Updates**
+- Add unsupported countries Morocco, United Arab Emirates and Monaco
+
 #### 3.4.15 - February 21st, 2025
 
 **Updates**
