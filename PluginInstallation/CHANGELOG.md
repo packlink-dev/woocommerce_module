@@ -3,6 +3,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [v3.5.0](https://github.com/logeecom/pl_woocommerce_module/compare/v3.4.16...v3.5.0) - 2025-03-27
+### Added
+- Support for the special services
+- Manual refresh for shipping services
+### Changed
+- Updated to the latest Core version 3.5.0
+- 
 ## [v3.4.16](https://github.com/logeecom/pl_woocommerce_module/compare/v3.4.15...v3.4.16) - 2025-03-12
 ### Changed
 - Add unsupported countries Morocco, United Arab Emirates and Monaco
