@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "23f774430ee46fa8ab9280f8ec4343b8",
+    "content-hash": "5ba751b7c9263ee45633a5debb5dabe8",
     "packages": [
         {
             "name": "iio/libmergepdf",
@@ -62,16 +62,16 @@
         },
         {
             "name": "packlink/integration-core",
-            "version": "dev-CR-SET-52",
+            "version": "v3.4.12",
             "source": {
                 "type": "git",
-                "url": "git@github.com:logeecom/pl_module_core.git",
-                "reference": "da6f79254d152dcf8614a1943e5a649f7ed352ce"
+                "url": "git@github.com:packlink-dev/ecommerce_module_core.git",
+                "reference": "af5269c11c5182b503167aa6e700b59c77418af5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/logeecom/pl_module_core/zipball/da6f79254d152dcf8614a1943e5a649f7ed352ce",
-                "reference": "da6f79254d152dcf8614a1943e5a649f7ed352ce",
+                "url": "https://api.github.com/repos/packlink-dev/ecommerce_module_core/zipball/af5269c11c5182b503167aa6e700b59c77418af5",
+                "reference": "af5269c11c5182b503167aa6e700b59c77418af5",
                 "shasum": ""
             },
             "require": {
@@ -110,7 +110,7 @@
                 "proprietary"
             ],
             "description": "Packlink integrations core library",
-            "time": "2025-03-06T16:38:20+00:00"
+            "time": "2025-03-11T11:34:19+00:00"
         },
         {
             "name": "setasign/fpdf",
@@ -312,22 +312,8 @@
             ],
             "support": {
                 "issues": "https://github.com/doctrine/instantiator/issues",
-                "source": "https://github.com/doctrine/instantiator/tree/1.0.5"
+                "source": "https://github.com/doctrine/instantiator/tree/master"
             },
-            "funding": [
-                {
-                    "url": "https://www.doctrine-project.org/sponsorship.html",
-                    "type": "custom"
-                },
-                {
-                    "url": "https://www.patreon.com/phpdoctrine",
-                    "type": "patreon"
-                },
-                {
-                    "url": "https://tidelift.com/funding/github/packagist/doctrine%2Finstantiator",
-                    "type": "tidelift"
-                }
-            ],
             "time": "2015-06-14T21:17:01+00:00"
         },
         {
@@ -1029,16 +1015,16 @@
         },
         {
             "name": "sebastian/code-unit-reverse-lookup",
-            "version": "1.0.3",
+            "version": "1.0.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/code-unit-reverse-lookup.git",
-                "reference": "92a1a52e86d34cde6caa54f1b5ffa9fda18e5d54"
+                "reference": "1de8cd5c010cb153fcd68b8d0f64606f523f7619"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/code-unit-reverse-lookup/zipball/92a1a52e86d34cde6caa54f1b5ffa9fda18e5d54",
-                "reference": "92a1a52e86d34cde6caa54f1b5ffa9fda18e5d54",
+                "url": "https://api.github.com/repos/sebastianbergmann/code-unit-reverse-lookup/zipball/1de8cd5c010cb153fcd68b8d0f64606f523f7619",
+                "reference": "1de8cd5c010cb153fcd68b8d0f64606f523f7619",
                 "shasum": ""
             },
             "require": {
@@ -1072,7 +1058,7 @@
             "homepage": "https://github.com/sebastianbergmann/code-unit-reverse-lookup/",
             "support": {
                 "issues": "https://github.com/sebastianbergmann/code-unit-reverse-lookup/issues",
-                "source": "https://github.com/sebastianbergmann/code-unit-reverse-lookup/tree/1.0.3"
+                "source": "https://github.com/sebastianbergmann/code-unit-reverse-lookup/tree/1.0.2"
             },
             "funding": [
                 {
@@ -1080,7 +1066,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2024-03-01T13:45:45+00:00"
+            "time": "2020-11-30T08:15:22+00:00"
         },
         {
             "name": "sebastian/comparator",
@@ -1608,12 +1594,12 @@
             },
             "type": "library",
             "extra": {
-                "thanks": {
-                    "url": "https://github.com/symfony/polyfill",
-                    "name": "symfony/polyfill"
-                },
                 "branch-alias": {
                     "dev-main": "1.19-dev"
+                },
+                "thanks": {
+                    "name": "symfony/polyfill",
+                    "url": "https://github.com/symfony/polyfill"
                 }
             },
             "autoload": {
@@ -1791,16 +1777,16 @@
         },
         {
             "name": "yoast/phpunit-polyfills",
-            "version": "1.1.4",
+            "version": "1.0.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Yoast/PHPUnit-Polyfills.git",
-                "reference": "e6faedf5e34cea4438e341f660e2f719760c531d"
+                "reference": "3c621ff5429d2b1ff96dc5808ad6cde99d31ea4c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Yoast/PHPUnit-Polyfills/zipball/e6faedf5e34cea4438e341f660e2f719760c531d",
-                "reference": "e6faedf5e34cea4438e341f660e2f719760c531d",
+                "url": "https://api.github.com/repos/Yoast/PHPUnit-Polyfills/zipball/3c621ff5429d2b1ff96dc5808ad6cde99d31ea4c",
+                "reference": "3c621ff5429d2b1ff96dc5808ad6cde99d31ea4c",
                 "shasum": ""
             },
             "require": {
@@ -1808,14 +1794,13 @@
                 "phpunit/phpunit": "^4.8.36 || ^5.7.21 || ^6.0 || ^7.0 || ^8.0 || ^9.0"
             },
             "require-dev": {
-                "php-parallel-lint/php-console-highlighter": "^1.0.0",
-                "php-parallel-lint/php-parallel-lint": "^1.4.0",
-                "yoast/yoastcs": "^3.1.0"
+                "yoast/yoastcs": "^2.2.1"
             },
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-main": "4.x-dev"
+                    "dev-main": "1.x-dev",
+                    "dev-develop": "1.x-dev"
                 }
             },
             "autoload": {
@@ -1847,17 +1832,14 @@
             ],
             "support": {
                 "issues": "https://github.com/Yoast/PHPUnit-Polyfills/issues",
-                "security": "https://github.com/Yoast/PHPUnit-Polyfills/security/policy",
                 "source": "https://github.com/Yoast/PHPUnit-Polyfills"
             },
-            "time": "2025-02-09T18:13:44+00:00"
+            "time": "2022-11-16T09:07:52+00:00"
         }
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "packlink/integration-core": 20
-    },
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
