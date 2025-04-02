@@ -68,6 +68,10 @@ Click <a href="https://support-pro.packlink.com/hc/es-es/articles/210158585" tar
 
 == Changelog ==
 
+#### 3.5.0 - March 27th, 2025
+**Updates**
+Add support for special services and manual refresh of shipping services
+
 #### 3.4.16 - March 12th, 2025
 
 **Updates**
