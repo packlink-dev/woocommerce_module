@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [v3.5.1](https://github.com/logeecom/pl_woocommerce_module/compare/v3.5.0...v3.5.1) - 2025-04-10
+### Changed
+- Add security improvements
+
 ## [v3.4.14](https://github.com/logeecom/pl_woocommerce_module/compare/v3.4.13...v3.4.14) - 2025-01-22
 ### Changed
 - Fix problem with CustomOrdersTableController existence check
