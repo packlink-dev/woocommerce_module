@@ -30,7 +30,7 @@ Connect your WooCommerce account with Packlink PRO.
 
 No download costs, installation or monthly fees - you pay purely for the shipments you book!
 
-**<a href="https://pro.packlink.es" target="_blank" title="Subscription">Register free</a> in Packlink PRO and get started!**
+**<a href="https://auth.packlink.com/en-GB/woocommerce/register" target="_blank" title="Subscription">Register free</a> in Packlink PRO and get started!**
 
 == Installation ==
 
