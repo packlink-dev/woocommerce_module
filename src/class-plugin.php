@@ -6,7 +6,9 @@ namespace Packlink\WooCommerce;
 
 use Automattic\WooCommerce\Utilities\FeaturesUtil;
 use Logeecom\Infrastructure\Logger\Logger;
+use Logeecom\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
 use Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException;
+use Logeecom\Infrastructure\ORM\RepositoryRegistry;
 use Logeecom\Infrastructure\ServiceRegister;
 use Logeecom\Infrastructure\TaskExecution\Exceptions\TaskRunnerStatusStorageUnavailableException;
 use Packlink\BusinessLogic\ShippingMethod\Interfaces\ShopShippingMethodService;
@@ -19,6 +21,7 @@ use Packlink\WooCommerce\Components\Services\Config_Service;
 use Packlink\WooCommerce\Components\Services\Logger_Service;
 use Packlink\WooCommerce\Components\ShippingMethod\Packlink_Shipping_Method;
 use Packlink\WooCommerce\Components\ShippingMethod\Shipping_Method_Helper;
+use Packlink\WooCommerce\Components\ShippingMethod\Shipping_Method_Map;
 use Packlink\WooCommerce\Components\ShippingMethod\Shop_Shipping_Method_Service;
 use Packlink\WooCommerce\Components\Utility\Database;
 use Packlink\WooCommerce\Components\Utility\Shop_Helper;
@@ -375,6 +378,24 @@ class Plugin {
 	}
 
 	/**
+	 * Removes shipping method maps for deleted shipping zone.
+	 *
+	 * @param int $zone_id Zone identifier.
+	 *
+	 * @throws QueryFilterInvalidParamException|RepositoryNotRegisteredException
+	 */
+	public function on_zone_deleted( $zone_id ) {
+		$repository = RepositoryRegistry::getRepository( Shipping_Method_Map::CLASS_NAME );
+		/** @var Shipping_Method_Map[] $map_items */
+		$map_items = $repository->select();
+		foreach ( $map_items as $map_item ) {
+			if ( $map_item->getZoneId() === $zone_id ) {
+				$repository->delete( $map_item );
+			}
+		}
+	}
+
+	/**
 	 * Adds Packlink PRO Shipping meta post box.
 	 *
 	 * @param string             $page Current page type.
@@ -384,9 +405,13 @@ class Plugin {
 		if ( ( 'shop_order' === $page && $data && 'auto-draft' !== $data->post_status ) ||
 		     ( 'woocommerce_page_wc-orders' === $page && $data && $data instanceof WC_Order ) ) {
 			$controller = new Packlink_Order_Details_Controller();
-			$screen     = wc_get_container()->get( CustomOrdersTableController::class )->custom_orders_table_usage_is_enabled()
-				? wc_get_page_screen_id( 'shop-order' )
-				: 'shop_order';
+			if ( class_exists( 'Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController' ) ) {
+				$screen     = wc_get_container()->get( CustomOrdersTableController::class )->custom_orders_table_usage_is_enabled()
+					? wc_get_page_screen_id( 'shop-order' )
+					: 'shop_order';
+			} else {
+				$screen = 'shop_order';
+			}
 			add_meta_box(
 				'packlink-shipping-modal',
 				__( 'Packlink PRO Shipping', 'packlink-pro-shipping' ),
@@ -596,6 +621,7 @@ class Plugin {
 	private function shipping_method_hooks_and_actions() {
 		add_filter( 'woocommerce_shipping_methods', array( $this, 'add_shipping_method' ) );
 		add_action( 'woocommerce_before_shipping_zone_object_save', array( $this, 'on_zone_create' ), 10, 2 );
+		add_action( 'woocommerce_delete_shipping_zone', array( $this, 'on_zone_deleted' ) );
 	}
 
 	/**
@@ -652,7 +678,6 @@ class Plugin {
 		add_action( 'woocommerce_checkout_create_order', array( $handler, 'checkout_update_shipping_address' ), 10, 2 );
 		add_action( 'woocommerce_checkout_update_order_meta', array( $handler, 'checkout_update_drop_off' ), 10, 2 );
 		add_action( 'wp_enqueue_scripts', array( $handler, 'load_scripts' ) );
-		add_action( 'woocommerce_before_checkout_form', array( $handler, 'display_drop_off_message' ) );
 
 		add_action('woocommerce_blocks_checkout_enqueue_data', array ($block_handler, 'load_data'));
 		add_action('woocommerce_store_api_checkout_update_order_meta', array ($block_handler, 'checkout_update_drop_off'));

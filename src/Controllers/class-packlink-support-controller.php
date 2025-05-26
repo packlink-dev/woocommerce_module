@@ -22,7 +22,7 @@ class Packlink_Support_Controller extends Packlink_Base_Controller {
 	 */
 	public function get() {
 		$this->return_json( [
-			'ASYNC_PROCESS_TIMEOUT' => $this->get_config_service()->getAsyncRequestTimeout(),
+			'TASK_RUNNER_WAKEUP_DELAY' => $this->get_config_service()->getTaskRunnerWakeupDelay(),
 			'FOOTER_HEIGHT'         => $this->get_config_service()->get_footer_height(),
 		] );
 	}
@@ -33,8 +33,8 @@ class Packlink_Support_Controller extends Packlink_Base_Controller {
 	public function set() {
 		$body = json_decode( $this->get_raw_input(), true );
 
-		if ( isset( $body['asyncProcessTimeout'] ) ) {
-			$this->set_timeout( $body['asyncProcessTimeout'] );
+		if ( isset( $body['taskRunnerWakeupDelay'] ) ) {
+			$this->set_timeout( $body['taskRunnerWakeupDelay'] );
 		}
 
 		if ( isset( $body['footerHeight'] ) ) {
@@ -57,7 +57,7 @@ class Packlink_Support_Controller extends Packlink_Base_Controller {
 			return;
 		}
 
-		$this->get_config_service()->setAsyncRequestTimeout( $timeout );
+		$this->get_config_service()->setTaskRunnerWakeupDelay( $timeout );
 	}
 
 	/**

@@ -38,9 +38,10 @@ class Block_Checkout_Handler {
 	 */
 	public function initialize( array $payload ) {
 		$response = [
-			'translations'             => $this->get_checkout_translations(),
-			'selected_shipping_method' => $selected_shipping_method = $this->get_selected_shipping_method(),
-			'method_details'           => []
+			'translations'                  => $this->get_checkout_translations(),
+			'selected_shipping_method'      => $selected_shipping_method = $this->get_selected_shipping_method(),
+			'method_details'                => [],
+			'no_drop_off_locations_message' => __( 'There are no drop-off locations available for the entered address', 'packlink-pro-shipping' )
 		];
 
 		if ( ! count( $payload ) ) {
@@ -193,8 +194,10 @@ class Block_Checkout_Handler {
 			$order->set_shipping_company( $drop_off_address['name'] );
 			$order->set_shipping_city( $drop_off_address['city'] );
 			$order->set_shipping_postcode( $drop_off_address['zip'] );
-			$order->set_shipping_state( $drop_off_address['state'] );
 			$order->set_shipping_address_1( $drop_off_address['address'] );
+			if (!empty($drop_off_address['state'])) {
+				$order->set_shipping_state($drop_off_address['state']);
+			}
 		} catch ( \WC_Data_Exception $e ) {
 			Logger::logError(
 				'Unable to substitute delivery address with drop-off location.',

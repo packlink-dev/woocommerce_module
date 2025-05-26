@@ -3,6 +3,7 @@ window.onload = () => Packlink.blockCheckout.init();
 (function () {
 	let modal;
 	let closeButton;
+	let methodDetails;
 	let privateData = {
 		locations: [],
 		endpoint: null,
@@ -29,9 +30,8 @@ window.onload = () => Packlink.blockCheckout.init();
 		}
 
 		if (!privateData.isObserverSet) {
-			document.getElementById('packlink-drop-off-picker').style.display = 'none';
 			privateData.isObserverSet = true;
-			addMutationObserverToCheckoutBlock(shippingOptions.parentElement);
+			addMutationObserverToCheckoutBlock(shippingOptions?.parentElement?.parentElement?.parentElement?.parentElement);
 		}
 
 		const initializeBlockCheckout = document.getElementById('pl-block-checkout-initialize-endpoint').value;
@@ -43,6 +43,7 @@ window.onload = () => Packlink.blockCheckout.init();
 			function (response) {
 				setSelectedLocationId(response['selected_shipping_method']);
 				setTranslations({...response['translations']});
+				setNoDropOffLocationsMessage(response['no_drop_off_locations_message']);
 				privateData.methodDetails = Object.entries(response['method_details']);
 				Array.from(privateData.methodDetails).forEach(details => {
 					let option, dataDiv;
@@ -117,7 +118,7 @@ window.onload = () => Packlink.blockCheckout.init();
 
 	}
 
-	function addDropOffButton(dataDiv, methodDetails) {
+	function addDropOffButton(dataDiv, details) {
 		let dropOffButton = document.getElementById('packlink-drop-off-picker');
 		if (dropOffButton === null) {
 			dropOffButton = document.createElement('button');
@@ -132,14 +133,8 @@ window.onload = () => Packlink.blockCheckout.init();
 		buttonDiv.appendChild(dropOffButton);
 		dataDiv.lastChild.before(buttonDiv);
 		dropOffButton.removeAttribute('style');
-		dropOffButton.addEventListener(
-			'click',
-			function () {
-				privateData.locations = methodDetails['packlink_drop_off_locations'];
-				initLocationPicker();
-				modal.style.display = 'block';
-			}
-		);
+		methodDetails = details;
+		dropOffButton.addEventListener('click', handleSelectDropOffLocationAction);
 
 		return buttonDiv;
 	}
@@ -150,7 +145,7 @@ window.onload = () => Packlink.blockCheckout.init();
 			for (const mutation of mutationsList) {
 				if (mutation.type === 'childList') {
 					// Check if nodes have been added
-					if (!privateData.isObserverExecuted && mutation.addedNodes.length > 0) {
+					if (!privateData.isObserverExecuted) {
 						// Check if the added node is the target div
 						Packlink.blockCheckout.init();
 						privateData.isObserverExecuted = true;
@@ -321,13 +316,13 @@ window.onload = () => Packlink.blockCheckout.init();
 		image.className = 'pl-checkout-carrier-image';
 		imageDiv.appendChild(image);
 
-		if (privateData.isSingleShippingMethod === true) {
+		if (privateData.isSingleShippingMethod === true && !option.firstChild.classList.contains('pl-image-wrapper')) {
 			option.insertBefore(imageDiv, option.firstChild);
 			return;
 		}
 
-		let label = option.nextSibling.children[0];
-		if (label) {
+		let label = option.nextSibling?.children[0];
+		if (label && !label.children[0].classList.contains('pl-image-wrapper')) {
 			label.insertBefore(imageDiv, label.children[0]);
 		}
 	}
@@ -364,5 +359,38 @@ window.onload = () => Packlink.blockCheckout.init();
 			privateData.selectedLocation,
 			privateData.locale
 		);
+	}
+
+	function setNoDropOffLocationsMessage(message) {
+		if (document.getElementById('no-drop-off-locations-message')) {
+			return;
+		}
+
+		let messageDiv = document.createElement('div');
+		messageDiv.className = 'woocommerce-info';
+		messageDiv.innerHTML = message;
+		let noticeWrapper = document.createElement('div');
+		noticeWrapper.id = 'no-drop-off-locations-message';
+		noticeWrapper.appendChild(messageDiv);
+		let checkoutBlockElement = document.querySelector('[data-block-name="woocommerce/checkout"]');
+
+		if (checkoutBlockElement) {
+			checkoutBlockElement.insertAdjacentElement('beforebegin', noticeWrapper);
+		}
+
+		noticeWrapper.style.display = 'none';
+	}
+
+	function handleSelectDropOffLocationAction() {
+		privateData.locations = methodDetails['packlink_drop_off_locations'];
+		initLocationPicker();
+		let messageElement = document.getElementById('no-drop-off-locations-message');
+		if (privateData.locations.length > 0) {
+			modal.style.display = 'block';
+		}
+
+		if (messageElement) {
+			messageElement.style.display = privateData.locations.length > 0 ? 'none' : 'block';
+		}
 	}
 })();

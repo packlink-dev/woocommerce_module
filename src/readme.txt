@@ -3,8 +3,8 @@ Contributors: packlink
 Tags: woocommerce, shipment, shipping, packlink
 Requires at least: 4.7
 Requires PHP: 5.5
-Tested up to: 6.4.2
-Stable tag: 3.4.1
+Tested up to: 6.7.2
+Stable tag: 3.5.1
 License: LICENSE-2.0
 License URI: http://www.apache.org/licenses/LICENSE-2.0
 
@@ -30,7 +30,7 @@ Connect your WooCommerce account with Packlink PRO.
 
 No download costs, installation or monthly fees - you pay purely for the shipments you book!
 
-**<a href="https://pro.packlink.es/cmslp/woocommerce" target="_blank" title="Subscription">Register free</a> in Packlink PRO and get started!**
+**<a href="https://auth.packlink.com/en-GB/woocommerce/register" target="_blank" title="Subscription">Register free</a> in Packlink PRO and get started!**
 
 == Installation ==
 
@@ -67,6 +67,99 @@ This is how the WooCommerce integration with Packlink PRO works.
 Click <a href="https://support-pro.packlink.com/hc/es-es/articles/210158585" target="_blank" title="support">here</a> to get more information about the installation of the module.
 
 == Changelog ==
+
+#### 3.5.1 - April 10th, 2025
+
+**Updates**
+- Add security improvements
+
+#### 3.5.0 - March 27th, 2025
+**Updates**
+Add support for special services and manual refresh of shipping services
+
+#### 3.4.16 - March 12th, 2025
+
+**Updates**
+- Add unsupported countries Morocco, United Arab Emirates and Monaco
+
+#### 3.4.15 - February 21st, 2025
+
+**Updates**
+- Fix problem with state
+
+#### 3.4.14 - January 22nd, 2025
+
+**Updates**
+- Fix problem with CustomOrdersTableController existence check
+
+#### 3.4.13 - October 23rd, 2024
+
+**Updates**
+- Add validation to prevent shipping of orders with only virtual or/and downloadable products and display an error message
+
+#### 3.4.12 - September 30th, 2024
+
+**Updates**
+- Mark compatibility with WooCommerce 9.3.1 and WordPress 6.6.2
+
+#### 3.4.11 - August 27th, 2024
+
+**Updates**
+- Fix setting async request timeout using support controller
+- Mark compatibility with WooCommerce 9.1.4 and WordPress 6.6.1
+
+#### 3.4.10 - July 29th, 2024
+
+**Updates**
+- Fix the issue with the drop-off button not displayed on the checkout
+
+#### 3.4.9 - July 3th, 2024
+
+**Updates**
+- Fix the issue with the drop-off button at the top of the page
+- Fix the issue where the button no longer appeared after making changes on the checkout
+- Add translations for default shipping cost
+- Update compatible version of WooCommerce (9.0.2) and WordPress (6.5.5)
+- Add unsupported country Algeria
+
+#### 3.4.8 - June 5th, 2024
+
+**Updates**
+- Update compatible version of WooCommerce (8.9.1) and WordPress (6.5.3)
+
+#### 3.4.7 - May 20th, 2024
+
+**Updates**
+- Important security enhancements and fixes
+
+#### 3.4.6 - May 15th, 2024
+
+**Updates**
+- Fix the issue with deleted shipping zones
+- Fix the issue of updating shipping methods that are already updated
+
+#### 3.4.5 - April 11th, 2024
+
+**Updates**
+- Add unsupported countries Denmark, Norway, Saudi Arabia, Canada, Cyprus, Slovenia and Slovakia
+- Set minimum height for the location picker popup
+
+#### 3.4.4 - March 26th, 2024
+
+**Updates**
+- Optimize checkout flow for picking drop off location
+
+#### 3.4.3 - March 11th, 2024
+
+**Updates**
+- Add unsupported countries: Estonia, Latvia and Romania
+
+#### 3.4.2 - February 26th, 2024
+
+**Updates**
+- Add unsupported countries (Bulgaria, Finland, Greece, Australia)
+- Add French overseas territories
+- Fix displaying error message on the checkout page
 
 #### 3.4.1 - January 17th, 2024
 

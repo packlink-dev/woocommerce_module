@@ -1,4 +1,7 @@
 *** Packlink PRO Changelog ***
+2025-03-27 - version 3.5.0
+* Add - Manual refresh button for updating shipping services.
+* Add - Support for special services
 
 2023-10-11 - version 3.3.1
 * Update - Added compatibility with WooCommerce 8.1 and WordPress 6.3

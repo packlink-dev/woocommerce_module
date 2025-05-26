@@ -3,6 +3,86 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [v3.5.1](https://github.com/logeecom/pl_woocommerce_module/compare/v3.5.0...v3.5.1) - 2025-04-10
+### Changed
+- Add security improvements
+
+## [v3.5.0](https://github.com/logeecom/pl_woocommerce_module/compare/v3.4.16...v3.5.0) - 2025-03-27
+### Added
+- Support for the special services
+- Manual refresh for shipping services
+### Changed
+- Updated to the latest Core version 3.5.0
+- 
+## [v3.4.16](https://github.com/logeecom/pl_woocommerce_module/compare/v3.4.15...v3.4.16) - 2025-03-12
+### Changed
+- Add unsupported countries Morocco, United Arab Emirates and Monaco
+
+## [v3.4.15](https://github.com/logeecom/pl_woocommerce_module/compare/v3.4.14...v3.4.15) - 2025-02-21
+### Changed
+- Fix problem with state
+
+## [v3.4.14](https://github.com/logeecom/pl_woocommerce_module/compare/v3.4.13...v3.4.14) - 2025-01-22
+### Changed
+- Fix problem with CustomOrdersTableController existence check
+
+## [v3.4.13](https://github.com/logeecom/pl_woocommerce_module/compare/v3.4.12...v3.4.13) - 2024-10-23
+### Changed
+- Add validation to prevent shipping of orders with only virtual or/and downloadable products and display an error message
+
+## [v3.4.12](https://github.com/logeecom/pl_woocommerce_module/compare/v3.4.11...v3.4.12) - 2024-09-30
+### Changed
+- Mark compatibility with WooCommerce 9.3.1 and WordPress 6.6.2
+
+## [v3.4.11](https://github.com/logeecom/pl_woocommerce_module/compare/v3.4.10...v3.4.11) - 2024-08-27
+### Changed
+- Fix setting async request timeout using support controller
+- Mark compatibility with WooCommerce 9.1.4 and WordPress 6.6.1
+
+## [v3.4.10](https://github.com/logeecom/pl_woocommerce_module/compare/v3.4.9...v3.4.10) - 2024-07-03
+### Changed
+- Fix the issue with the drop-off button not displayed on the checkout
+
+## [v3.4.9](https://github.com/logeecom/pl_woocommerce_module/compare/v3.4.8...v3.4.9) - 2024-07-29
+### Changed
+- Fix the issue with the drop-off button at the top of the page
+- Fix the issue where the button no longer appeared after making changes on the checkout
+- Add translations for default shipping cost
+- Update compatible version of WooCommerce (9.0.2) and WordPress (6.5.5)
+- Add unsupported country Algeria
+
+## [v3.4.8](https://github.com/logeecom/pl_woocommerce_module/compare/v3.4.7...v3.4.8) - 2024-06-05
+### Changed
+- Update compatible version of WooCommerce (8.9.1) and WordPress (6.5.3)
+
+## [v3.4.7](https://github.com/logeecom/pl_woocommerce_module/compare/v3.4.6...v3.4.7) - 2024-05-20
+### Changed
+- Important security enhancements and fixes
+
+## [v3.4.6](https://github.com/logeecom/pl_woocommerce_module/compare/v3.4.5...v3.4.6) - 2024-05-15
+### Changed
+- Fix the issue with deleted shipping zones
+- Fix the issue of updating shipping methods that are already updated
+
+## [v3.4.5](https://github.com/logeecom/pl_woocommerce_module/compare/v3.4.4...v3.4.5) - 2024-04-11
+### Changed
+- Add unsupported countries Denmark, Norway, Saudi Arabia, Canada, Cyprus, Slovenia and Slovakia
+- Set minimum height for the location picker popup
+
+## [v3.4.4](https://github.com/logeecom/pl_woocommerce_module/compare/v3.4.3...v3.4.4) - 2024-03-26
+### Changed
+- Optimize checkout flow for picking drop off location
+
+## [v3.4.3](https://github.com/logeecom/pl_woocommerce_module/compare/v3.4.2...v3.4.3) - 2024-03-11
+### Changed
+- Add unsupported countries: Estonia, Latvia and Romania
+
+## [v3.4.2](https://github.com/logeecom/pl_woocommerce_module/compare/v3.4.1...v3.4.2) - 2024-02-26
+### Changed
+- Add unsupported countries (Bulgaria, Finland, Greece, Australia)
+- Add French overseas territories
+- Fix displaying error message on the checkout page
+
 ## [v3.4.1](https://github.com/logeecom/pl_woocommerce_module/compare/v3.4.0...v3.4.1) - 2024-01-17
 ### Changed
 - Fix rendering order page
