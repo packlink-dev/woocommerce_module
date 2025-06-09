@@ -7,6 +7,7 @@
 
 namespace Packlink\WooCommerce\Components\ShippingMethod;
 
+use Automattic\WooCommerce\Enums\ProductTaxStatus;
 use Logeecom\Infrastructure\ORM\Interfaces\RepositoryInterface;
 use Logeecom\Infrastructure\ORM\QueryFilter\QueryFilter;
 use Logeecom\Infrastructure\ORM\RepositoryRegistry;
@@ -117,7 +118,7 @@ class Packlink_Shipping_Method extends \WC_Shipping_Method {
 		$this->title                       = $this->get_option( 'title', __( 'Packlink Shipping', 'packlink_pro_shipping' ) );
 		$this->price_policy                = $this->get_option( 'price_policy', __( 'Packlink prices', 'packlink_pro_shipping' ) );
 		$this->class_cost_calculation_type = $this->get_option( 'class_cost_calculation_type', 'class' );
-
+		$this->tax_status                  = $this->get_option( 'tax_status', ProductTaxStatus::TAXABLE );
 		// Save settings in admin if you have any defined.
 		add_action( 'woocommerce_update_options_shipping_' . $this->id, array( $this, 'process_admin_options' ) );
 	}
