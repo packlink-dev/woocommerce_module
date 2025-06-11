@@ -1,5 +1,7 @@
 <?php
 
+use Automattic\WooCommerce\Enums\ProductTaxStatus;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -26,6 +28,16 @@ $settings = array(
 		'description' => __( 'Pricing policy selected in Packlink PRO Shipping settings.', 'packlink_pro_shipping' ),
 		'default'     => isset( $this->settings['price_policy'] ) ? $this->settings['price_policy'] : __( 'Packlink prices', 'packlink_pro_shipping' ),
 		'desc_tip'    => true,
+	),
+	'tax_status'   => array(
+		'title'   => __( 'Tax status', 'woocommerce' ),
+		'type'    => 'select',
+		'class'   => 'wc-enhanced-select',
+		'default' => ProductTaxStatus::TAXABLE,
+		'options' => array(
+			ProductTaxStatus::TAXABLE => __( 'Taxable', 'woocommerce' ),
+			ProductTaxStatus::NONE    => _x( 'None', 'Tax status', 'woocommerce' ),
+		),
 	),
 );
 

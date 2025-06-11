@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [v3.5.3](https://github.com/packlink-dev/woocommerce_module/compare/v3.5.2...v3.5.3) - 2025-06-11
+### Changed
+- Fix the issue with taxes during order creation when Block Checkout is enabled
+
 ## [v3.5.2](https://github.com/packlink-dev/woocommerce_module/compare/v3.5.1...v3.5.2) - 2025-05-26
 ### Changed
 - Fix incorrect mapping of tags in inflate method
