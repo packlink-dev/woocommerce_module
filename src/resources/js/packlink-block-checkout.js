@@ -1,5 +1,20 @@
 var Packlink = window.Packlink || {};
-window.onload = () => Packlink.blockCheckout.init();
+window.onload = () => {
+	const maxAttempts = 20;
+	let attempts = 0;
+
+	const waitForShippingOptions = setInterval(() => {
+		const container = document.querySelector('.wc-block-components-shipping-rates-control');
+		if (container) {
+			clearInterval(waitForShippingOptions);
+			Packlink.blockCheckout.init();
+		}
+
+		if (++attempts > maxAttempts) {
+			clearInterval(waitForShippingOptions);
+		}
+	}, 500);
+};
 (function () {
 	let modal;
 	let closeButton;

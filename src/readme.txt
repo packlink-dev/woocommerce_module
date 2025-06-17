@@ -68,6 +68,8 @@ Click <a href="https://support-pro.packlink.com/hc/es-es/articles/210158585" tar
 
 == Changelog ==
 
+#### 3.5.4 - June 17th, 2025
+
 #### 3.5.3 - June 11th, 2025
 
 **Updates**
