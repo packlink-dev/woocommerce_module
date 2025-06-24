@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [v3.5.4](https://github.com/packlink-dev/woocommerce_module/compare/v3.5.3...v3.5.4) - 2025-06-24
+### Changed
+- Fix drop-off on checkout
+
 ## [v3.5.3](https://github.com/packlink-dev/woocommerce_module/compare/v3.5.2...v3.5.3) - 2025-06-11
 ### Changed
 - Fix the issue with taxes during order creation when Block Checkout is enabled
