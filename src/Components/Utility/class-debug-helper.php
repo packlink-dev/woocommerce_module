@@ -123,6 +123,11 @@ class Debug_Helper {
 	 */
 	protected static function get_logs( $dir ) {
 		$ignore      = array( '.', '..', 'index.html', '.htaccess' );
+
+		if ( ! is_dir( $dir ) || ! is_readable( $dir ) ) {
+			return "Log directory does not exist or is not readable: $dir";
+		}
+
 		$dir_content = scandir( $dir, SCANDIR_SORT_NONE );
 
 		$dir   = rtrim( $dir, '/' ) . '/';
@@ -134,8 +139,13 @@ class Debug_Helper {
 				continue;
 			}
 
+			$full_path = $dir . $file;
+			if ( !is_file( $full_path ) || !is_readable( $full_path ) ) {
+				continue;
+			}
+
 			// only logs from past 7 days.
-			$file_time = filemtime( $dir . '/' . $file );
+			$file_time = filemtime( $full_path );
 			if ( $file_time >= $start->getTimestamp() ) {
 				$files[ $file ] = $file_time;
 			}

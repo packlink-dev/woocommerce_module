@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [v3.5.5](https://github.com/packlink-dev/woocommerce_module/compare/v3.5.3...v3.5.4) - 2025-07-16
+### Changed
+- Fix postal code for Saudi Arabia
+- Fix the issue with the invalid system information ZIP file
+
 ## [v3.5.4](https://github.com/packlink-dev/woocommerce_module/compare/v3.5.3...v3.5.4) - 2025-06-24
 ### Changed
 - Fix drop-off on checkout
