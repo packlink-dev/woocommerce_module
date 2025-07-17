@@ -1,7 +1,5 @@
 <?php
 
-use Automattic\WooCommerce\Enums\ProductTaxStatus;
-
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -33,10 +31,10 @@ $settings = array(
 		'title'   => __( 'Tax status', 'woocommerce' ),
 		'type'    => 'select',
 		'class'   => 'wc-enhanced-select',
-		'default' => ProductTaxStatus::TAXABLE,
+		'default' => 'taxable',
 		'options' => array(
-			ProductTaxStatus::TAXABLE => __( 'Taxable', 'woocommerce' ),
-			ProductTaxStatus::NONE    => _x( 'None', 'Tax status', 'woocommerce' ),
+			'taxable' => __( 'Taxable', 'woocommerce' ),
+			'none'    => _x( 'None', 'Tax status', 'woocommerce' ),
 		),
 	),
 );
