@@ -1,4 +1,9 @@
 *** Packlink PRO Changelog ***
+
+2025-07-23 - version 3.5.5
+* Fix fatal error on older WooCommerce versions due to incompatible ProductTaxStatus usage
+* Updated to the core version 3.6.4
+
 2025-03-27 - version 3.5.0
 * Add - Manual refresh button for updating shipping services.
 * Add - Support for special services
