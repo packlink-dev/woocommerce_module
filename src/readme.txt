@@ -90,9 +90,10 @@ Click <a href="https://support-pro.packlink.com/hc/es-es/articles/210158585" tar
 
 == Changelog ==
 
-#### 3.5.5 - July 17th, 2025
+#### 3.5.5 - July 13th, 2025
 
 **Updates**
+- Fix issue with empty shipping services list
 - Fix fatal error on older WooCommerce versions due to incompatible ProductTaxStatus usage
 
 #### 3.5.4 - June 17th, 2025
