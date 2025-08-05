@@ -68,6 +68,11 @@ Click <a href="https://support-pro.packlink.com/hc/es-es/articles/210158585" tar
 
 == Changelog ==
 
+#### 3.5.6 - August 5th, 2025
+
+**Updates**
+- Modify shipping services availability at checkout
+
 #### 3.5.5 - July 17th, 2025
 
 **Updates**
