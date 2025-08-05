@@ -3,7 +3,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
-## [v3.5.5](https://github.com/packlink-dev/woocommerce_module/compare/v3.5.3...v3.5.4) - 2025-07-17
+## [v3.5.6](https://github.com/packlink-dev/woocommerce_module/compare/v3.5.5...v3.5.6) - 2025-08-05
+### Changed
+- Modify shipping services availability at checkout
+
+## [v3.5.5](https://github.com/packlink-dev/woocommerce_module/compare/v3.5.4...v3.5.5) - 2025-07-17
 ### Changed
 - Fix fatal error on older WooCommerce versions due to incompatible ProductTaxStatus usage
 - Updated to the core version 3.6.4
