@@ -23,6 +23,7 @@ use Logeecom\Infrastructure\TaskExecution\QueueItem;
 use Packlink\Brands\Packlink\PacklinkConfigurationService;
 use Packlink\BusinessLogic\BootstrapComponent;
 use Packlink\BusinessLogic\Brand\BrandConfigurationService;
+use Packlink\BusinessLogic\CashOnDelivery\Model\CashOnDelivery;
 use Packlink\BusinessLogic\Country\WarehouseCountryService;
 use Packlink\BusinessLogic\FileResolver\FileResolverService;
 use Packlink\BusinessLogic\Order\Interfaces\ShopOrderService;
@@ -166,5 +167,6 @@ class Bootstrap_Component extends BootstrapComponent {
 		RepositoryRegistry::registerRepository( LogData::CLASS_NAME, Base_Repository::getClassName() );
 		RepositoryRegistry::registerRepository( OrderSendDraftTaskMap::CLASS_NAME, Base_Repository::getClassName() );
 		RepositoryRegistry::registerRepository( Order_Drop_Off_Map::CLASS_NAME, Base_Repository::getClassName() );
+        RepositoryRegistry::registerRepository(CashOnDelivery::getClassName(), Base_Repository::getClassName());
 	}
 }
