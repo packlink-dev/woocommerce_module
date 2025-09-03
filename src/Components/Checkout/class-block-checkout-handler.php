@@ -68,6 +68,7 @@ class Block_Checkout_Handler {
 			Script_Loader::load_js(
 				array(
 					'js/packlink-block-checkout.js',
+                    'js/offline-payment.js',
 				), true
 			);
 			Script_Loader::load_css(

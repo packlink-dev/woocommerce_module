@@ -1,0 +1,81 @@
+<?php
+/**
+ * Packlink PRO Shipping WooCommerce Integration.
+ *
+ * @package Packlink
+ */
+
+namespace Packlink\WooCommerce\Components\Checkout;
+
+
+use Logeecom\Infrastructure\ServiceRegister;
+use Packlink\BusinessLogic\CashOnDelivery\Services\OfflinePaymentsServices;
+use Packlink\WooCommerce\Components\Services\Offline_Payments_Service;
+use Packlink\WooCommerce\Components\ShippingMethod\Packlink_Shipping_Method;
+use Packlink\WooCommerce\Components\ShippingMethod\Shipping_Method_Helper;
+
+/**
+ * Class Checkout_Handler
+ *
+ * @package Packlink\WooCommerce\Components\Checkout
+ */
+class Surcharge_Handler {
+
+	/**
+	 * @var Offline_Payments_Service
+	 */
+	private $offline_payments_service;
+
+	public function __construct()
+	{
+		$this->offline_payments_service = ServiceRegister::getService(
+			OfflinePaymentsServices::CLASS_NAME);
+	}
+
+	public function add_surcharge($cart) {
+
+		if($this->offline_payments_service->shouldSurchargeApply(WC()->session->chosen_payment_method)) {
+			$totals = $cart->get_totals();
+
+			$subtotal   = isset($totals['cart_contents_total']) ? (float) $totals['cart_contents_total'] : 0;
+			$shipping   = isset($totals['shipping_total']) ? (float) $totals['shipping_total'] : 0;
+			$discount   = isset($totals['discount_total']) ? (float) $totals['discount_total'] : 0;
+
+			$current_total = $subtotal + $shipping - $discount;
+
+			$surcharge = $this->offline_payments_service->calculateFee($this->get_shipping_method_id(), $current_total);
+
+			$cart->add_fee(__('Surcharge'), $surcharge, true, '');
+		}
+	}
+
+	private function get_shipping_method_id()
+	{
+		$chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods' );
+
+		if(!$chosen_shipping_methods) {
+			return null;
+		}
+
+		$chosen_shipping = $chosen_shipping_methods[0];
+
+		if(!$chosen_shipping) {
+			return null;
+		}
+
+		$parts = explode( ':', $chosen_shipping );
+		$instance_id = isset( $parts[1] ) ? (int) $parts[1] : 0;
+
+		if (  $parts[0] !== Packlink_Shipping_Method::PACKLINK_SHIPPING_METHOD || $instance_id <= 0 ) {
+			return null;
+		}
+
+		$packlink_method = Shipping_Method_Helper::get_packlink_shipping_method( $instance_id );
+
+		if (!$packlink_method) {
+			return null;
+		}
+
+		return $packlink_method->getId();
+	}
+}

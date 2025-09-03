@@ -24,6 +24,7 @@ use Packlink\Brands\Packlink\PacklinkConfigurationService;
 use Packlink\BusinessLogic\BootstrapComponent;
 use Packlink\BusinessLogic\Brand\BrandConfigurationService;
 use Packlink\BusinessLogic\CashOnDelivery\Model\CashOnDelivery;
+use Packlink\BusinessLogic\CashOnDelivery\Services\OfflinePaymentsServices;
 use Packlink\BusinessLogic\Country\WarehouseCountryService;
 use Packlink\BusinessLogic\FileResolver\FileResolverService;
 use Packlink\BusinessLogic\Order\Interfaces\ShopOrderService;
@@ -32,6 +33,7 @@ use Packlink\BusinessLogic\Registration\RegistrationInfoService;
 use Packlink\BusinessLogic\Scheduler\Models\Schedule;
 use Packlink\BusinessLogic\ShipmentDraft\Models\OrderSendDraftTaskMap;
 use Packlink\BusinessLogic\ShipmentDraft\ShipmentDraftService;
+use Packlink\WooCommerce\Components\Services\Offline_Payments_Service;
 use Packlink\WooCommerce\Components\Services\Shipment_Draft_Service;
 use Packlink\BusinessLogic\ShippingMethod\Interfaces\ShopShippingMethodService;
 use Packlink\BusinessLogic\ShippingMethod\Models\ShippingMethod;
@@ -87,6 +89,13 @@ class Bootstrap_Component extends BootstrapComponent {
 				return Logger_Service::getInstance();
 			}
 		);
+
+        ServiceRegister::registerService(
+            OfflinePaymentsServices::CLASS_NAME,
+            static function () {
+                return new Offline_Payments_Service;
+            }
+        );
 
 		ServiceRegister::registerService(
 			ShopShippingMethodService::CLASS_NAME,

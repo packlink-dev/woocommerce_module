@@ -84,6 +84,9 @@ class Shop_Order_Service extends Singleton implements BaseShopOrderService {
 
 		$order->setBillingAddress( $this->get_billing_address( $wc_order ) );
 		$order->setShippingAddress( $this->get_shipping_address( $wc_order ) );
+
+        $order->setPaymentId($wc_order->get_payment_method());
+
 		$shipping_method = Shipping_Method_Helper::get_packlink_shipping_method_from_order( $wc_order );
 		if ( null !== $shipping_method ) {
 			$order->setShippingMethodId( $shipping_method->getId() );
@@ -110,7 +113,7 @@ class Shop_Order_Service extends Singleton implements BaseShopOrderService {
 		$order      = $this->get_order_by_id( $order_id );
 		$status_map = $this->configuration->getOrderStatusMappings();
 		$old_status = $order->get_status();
-		if ($old_status === 'cancelled') {
+		if ( $old_status === 'cancelled' ) {
 			// We don't want to update order status of cancelled order.
 			return;
 		}

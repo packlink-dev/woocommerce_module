@@ -16,6 +16,7 @@ use Packlink\BusinessLogic\ShippingMethod\Utility\ShipmentStatus;
 use Packlink\WooCommerce\Components\Bootstrap_Component;
 use Packlink\WooCommerce\Components\Checkout\Block_Checkout_Handler;
 use Packlink\WooCommerce\Components\Checkout\Checkout_Handler;
+use Packlink\WooCommerce\Components\Checkout\Surcharge_Handler;
 use Packlink\WooCommerce\Components\Order\Paid_Order_Handler;
 use Packlink\WooCommerce\Components\Services\Config_Service;
 use Packlink\WooCommerce\Components\Services\Logger_Service;
@@ -426,6 +427,48 @@ class Plugin {
 		}
 	}
 
+    /**
+     * Hides payment methods based on chosen shipping method.
+     *
+     * @param array $available_gateways
+     *
+     * @return array
+     * @throws QueryFilterInvalidParamException
+     * @throws RepositoryNotRegisteredException
+     */
+    public function filter_payment_gateways( $available_gateways ) {
+
+        if ( is_admin()) {
+            return $available_gateways;
+        }
+
+        $chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods' );
+
+        if ( empty( $chosen_shipping_methods ) ) {
+            return $available_gateways;
+        }
+
+        $chosen_shipping = $chosen_shipping_methods[0];
+
+
+        $parts = explode( ':', $chosen_shipping );
+        $instance_id = isset( $parts[1] ) ? (int) $parts[1] : 0;
+
+        if (  $parts[0] !== Packlink_Shipping_Method::PACKLINK_SHIPPING_METHOD || $instance_id <= 0 ) {
+            return $available_gateways;
+        }
+
+        $packlink_method = Shipping_Method_Helper::get_packlink_shipping_method( $instance_id );
+
+        if ( $packlink_method ) {
+            $cod_controller = new \Packlink\WooCommerce\Controllers\Packlink_Cash_On_Delivery_Controller();
+
+            return $cod_controller->get_available_payments($packlink_method->getId(), $available_gateways);
+        }
+
+        return $available_gateways;
+    }
+
 	/**
 	 * Initializes the plugin.
 	 *
@@ -670,14 +713,19 @@ class Plugin {
 		$handler = new Checkout_Handler();
 		$block_handler = new Block_Checkout_Handler();
 
+        $surcharge_handle = new Surcharge_Handler();
+
 		add_filter( 'woocommerce_package_rates', array( $handler, 'check_additional_packlink_rate' ) );
-		add_action( 'woocommerce_after_shipping_rate', array( $handler, 'after_shipping_rate' ), 10, 2 );
+        add_filter( 'woocommerce_available_payment_gateways', array( $this, 'filter_payment_gateways' ));
+        add_action( 'woocommerce_after_shipping_rate', array( $handler, 'after_shipping_rate' ), 10, 2 );
 		add_action( 'woocommerce_after_shipping_calculator', array( $handler, 'after_shipping_calculator' ) );
 		add_action( 'woocommerce_review_order_after_shipping', array( $handler, 'after_shipping' ) );
 		add_action( 'woocommerce_checkout_process', array( $handler, 'checkout_process' ) );
 		add_action( 'woocommerce_checkout_create_order', array( $handler, 'checkout_update_shipping_address' ), 10, 2 );
 		add_action( 'woocommerce_checkout_update_order_meta', array( $handler, 'checkout_update_drop_off' ), 10, 2 );
 		add_action( 'wp_enqueue_scripts', array( $handler, 'load_scripts' ) );
+
+        add_action('woocommerce_cart_calculate_fees',  array ($surcharge_handle, 'add_surcharge'));
 
 		add_action('woocommerce_blocks_checkout_enqueue_data', array ($block_handler, 'load_data'));
 		add_action('woocommerce_store_api_checkout_update_order_meta', array ($block_handler, 'checkout_update_drop_off'));
