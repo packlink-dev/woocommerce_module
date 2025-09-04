@@ -8,14 +8,17 @@
 namespace Packlink\WooCommerce\Components\Checkout;
 
 
+use Logeecom\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
+use Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException;
 use Logeecom\Infrastructure\ServiceRegister;
 use Packlink\BusinessLogic\CashOnDelivery\Services\OfflinePaymentsServices;
+use Packlink\BusinessLogic\Language\Translator;
 use Packlink\WooCommerce\Components\Services\Offline_Payments_Service;
 use Packlink\WooCommerce\Components\ShippingMethod\Packlink_Shipping_Method;
 use Packlink\WooCommerce\Components\ShippingMethod\Shipping_Method_Helper;
 
 /**
- * Class Checkout_Handler
+ * Class Surcharge_Handler
  *
  * @package Packlink\WooCommerce\Components\Checkout
  */
@@ -32,6 +35,14 @@ class Surcharge_Handler {
 			OfflinePaymentsServices::CLASS_NAME);
 	}
 
+	/**
+	 * @param $cart
+	 *
+	 * @return void
+	 * @throws QueryFilterInvalidParamException
+	 *
+	 * @throws RepositoryNotRegisteredException
+	 */
 	public function add_surcharge($cart) {
 
 		if($this->offline_payments_service->shouldSurchargeApply(WC()->session->chosen_payment_method)) {
@@ -45,10 +56,21 @@ class Surcharge_Handler {
 
 			$surcharge = $this->offline_payments_service->calculateFee($this->get_shipping_method_id(), $current_total);
 
-			$cart->add_fee(__('Surcharge'), $surcharge, true, '');
+			$cart->add_fee(
+				Translator::translate('cashOnDelivery.surcharge'),
+				$surcharge,
+				true,
+				''
+			);
 		}
 	}
 
+	/**
+	 * @return int|null
+	 *
+	 * @throws QueryFilterInvalidParamException
+	 * @throws RepositoryNotRegisteredException
+	 */
 	private function get_shipping_method_id()
 	{
 		$chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods' );

@@ -19,6 +19,11 @@ if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly.
 }
 
+/**
+ * Class Packlink_Cash_On_Delivery_Controller
+ *
+ * @package Packlink\WooCommerce\Controllers
+ */
 class Packlink_Cash_On_Delivery_Controller extends Packlink_Base_Controller
 {
 
@@ -47,6 +52,11 @@ class Packlink_Cash_On_Delivery_Controller extends Packlink_Base_Controller
         $this->shippingMethodController = new ShippingMethodController();
     }
 
+	/**
+	 * Saving configuration data
+	 *
+	 * @return void
+	 */
     public function save_data()
     {
         $this->validate('yes', true);
@@ -68,6 +78,8 @@ class Packlink_Cash_On_Delivery_Controller extends Packlink_Base_Controller
     }
 
     /**
+     * Getting Cash on Delivery configuration data
+     *
      * @throws QueryFilterInvalidParamException
      */
     public function get_data()

@@ -11,6 +11,11 @@ use Packlink\BusinessLogic\Controllers\ShippingMethodController;
 use Packlink\BusinessLogic\Http\DTO\CashOnDelivery;
 use Packlink\BusinessLogic\ShippingMethod\Models\ShippingService;
 
+/**
+ * Class Offline_Payments_Service
+ *
+ * @package Packlink\WooCommerce\Components\Services
+ */
 class Offline_Payments_Service extends OfflinePaymentsServices {
 	/**
 	 * @var CoreController $controller
@@ -85,6 +90,7 @@ class Offline_Payments_Service extends OfflinePaymentsServices {
 	 * @return ShippingService|null
 	 */
 	public function getMatchingService( array $services ) {
+
 		$warehouse = $this->configuration->getDefaultWarehouse();
 
 		$from_country = $warehouse ? $warehouse->country : null;
@@ -106,7 +112,6 @@ class Offline_Payments_Service extends OfflinePaymentsServices {
 	 *
 	 * @return array List of payment method IDs/names to hide
 	 *
-	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException
 	 */
 	public function getAvailablePayments( $chosenShippingMethod, $availableGateways, $accountConfig ) {
 		$services = $this->shippingMethodController->getShippingServicesForMethod( $chosenShippingMethod );
@@ -134,10 +139,13 @@ class Offline_Payments_Service extends OfflinePaymentsServices {
 	 * @param $paymentMethod
 	 *
 	 * @return bool
-	 * @throws QueryFilterInvalidParamException
 	 */
 	public function shouldSurchargeApply( $paymentMethod ) {
-		$acc = $this->getAccountConfiguration();
+		try {
+			$acc = $this->controller->getCashOnDeliveryConfiguration();
+		} catch ( QueryFilterInvalidParamException $e ) {
+			return false;
+		}
 
 		return $this->surchargeCondition( $acc, $paymentMethod );
 	}
@@ -152,7 +160,11 @@ class Offline_Payments_Service extends OfflinePaymentsServices {
 	 * @throws QueryFilterInvalidParamException
 	 */
 	public function calculateFee( $shippingMethodId, $amount ) {
-		$cod = $this->getAccountConfiguration();
+		try {
+			$cod = $this->controller->getCashOnDeliveryConfiguration();
+		} catch ( QueryFilterInvalidParamException $e ) {
+			$cod = null;
+		}
 
 		if ( $cod && $cod->account && $cod->account->getCashOnDeliveryFee() ) {
 			return $cod->account->getCashOnDeliveryFee();
@@ -167,16 +179,5 @@ class Offline_Payments_Service extends OfflinePaymentsServices {
 		}
 
 		return null;
-	}
-
-	/**
-	 * Retrieves Packlink account configuration and checks if an account exists.
-	 *
-	 * @return CashOnDelivery|null
-	 *
-	 * @throws QueryFilterInvalidParamException
-	 */
-	private function getAccountConfiguration() {
-		return $this->controller->getCashOnDeliveryConfiguration();
 	}
 }
