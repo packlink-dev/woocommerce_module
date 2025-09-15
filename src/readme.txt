@@ -12,6 +12,10 @@ Free professional shipping platform that will simplify and automate your logisti
 
 == Description ==
 
+**Installation and Configuration Video**
+
+<a href="https://youtu.be/uwI-zArAKxo" target="_blank" title="How to connect your WooCommerce shop">Full installation & configuration guide on YouTube</a>
+
 === Lower Your Shipping Costs & Automate Orders with Packlink PRO ===
 
 Boost Your WooCommerce Shipping with Packlink PRO
@@ -85,8 +89,8 @@ This is how the WooCommerce integration with Packlink PRO works.
 
 - You only need to access Packlink PRO for payment. Sender and recipient details are synchronized with WooCommerce data.
 
-
 Click <a href="https://support-pro.packlink.com/hc/es-es/articles/210158585" target="_blank" title="support">here</a> to get more information about the installation.
+
 
 == Changelog ==
 
