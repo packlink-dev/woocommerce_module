@@ -170,7 +170,8 @@ class Offline_Payments_Service extends OfflinePaymentsServices {
 			return $cod->account->getCashOnDeliveryFee();
 		}
 
-		$service = $this->getMatchingService( $shippingMethodId );
+		$services = $this->shippingMethodController->getShippingServicesForMethod( $shippingMethodId );
+		$service  = $this->getMatchingService( $services );
 
 		if ( $service && $service->cashOnDeliveryConfig ) {
 			return $this->cashOnDeliveryService->calculateFee( $amount,
