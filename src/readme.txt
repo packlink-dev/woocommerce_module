@@ -1,4 +1,4 @@
-=== Packlink PRO shipping module ===
+=== Packlink PRO for WooCommerce ===
 Contributors: packlink
 Tags: woocommerce, shipment, shipping, packlink
 Requires at least: 4.7
