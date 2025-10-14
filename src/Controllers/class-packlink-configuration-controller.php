@@ -9,7 +9,6 @@ namespace Packlink\WooCommerce\Controllers;
 
 use Logeecom\Infrastructure\Configuration\Configuration;
 use Logeecom\Infrastructure\ServiceRegister;
-use Packlink\BusinessLogic\Controllers\CashOnDeliveryController;
 use Packlink\BusinessLogic\Controllers\ConfigurationController;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -28,13 +27,11 @@ class Packlink_Configuration_Controller extends Packlink_Base_Controller {
 	 */
 	public function get() {
 		$controller = new ConfigurationController();
-        $cashOnDeliveryController = new CashOnDeliveryController();
 
 		$service    = ServiceRegister::getService( Configuration::CLASS_NAME );
 		$data       = array(
 			'helpUrl' => $controller->getHelpLink(),
 			'version' => $service->getModuleVersion(),
-            'hasSubscription' => $cashOnDeliveryController->getAndUpdateSubscription(),
 		);
 
 		$this->return_json( $data );
