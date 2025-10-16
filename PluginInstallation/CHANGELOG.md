@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [v3.6.0](https://github.com/packlink-dev/woocommerce_module/compare/v3.5.6...v3.6.0) - 2025-10-16
+### Added
+- Support for cash on delivery configuration 
+
 ## [v3.5.6](https://github.com/packlink-dev/woocommerce_module/compare/v3.5.5...v3.5.6) - 2025-08-05
 ### Changed
 - Modify shipping services availability at checkout

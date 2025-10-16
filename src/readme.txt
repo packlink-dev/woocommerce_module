@@ -94,6 +94,11 @@ Click <a href="https://support-pro.packlink.com/hc/es-es/articles/210158585" tar
 
 == Changelog ==
 
+#### 3.6.0 - October 16th, 2025
+
+**Updates**
+- Added support for cash on delivery
+
 #### 3.5.6 - August 5th, 2025
 
 **Updates**

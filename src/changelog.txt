@@ -1,5 +1,8 @@
 *** Packlink PRO Changelog ***
 
+2025-10-16 - version 3.6.0
+* Added support for cash on delivery
+
 2025-08-05 - version 3.5.6
 * Modify shipping services availability at checkout
 
