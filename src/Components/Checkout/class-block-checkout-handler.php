@@ -13,8 +13,11 @@ use Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException;
 use Logeecom\Infrastructure\ORM\RepositoryRegistry;
 use Logeecom\Infrastructure\ORM\Utility\IndexHelper;
 use Logeecom\Infrastructure\ServiceRegister;
+use Packlink\BusinessLogic\CashOnDelivery\Services\OfflinePaymentsServices;
 use Packlink\BusinessLogic\Location\LocationService;
+use Packlink\BusinessLogic\ShippingMethod\Models\ShippingMethod;
 use Packlink\WooCommerce\Components\Order\Order_Drop_Off_Map;
+use Packlink\WooCommerce\Components\Services\Offline_Payments_Service;
 use Packlink\WooCommerce\Components\ShippingMethod\Shipping_Method_Helper;
 use Packlink\WooCommerce\Components\Utility\Script_Loader;
 use Packlink\WooCommerce\Components\Utility\Shop_Helper;
@@ -26,7 +29,19 @@ use WC_Order;
  * @package Packlink\WooCommerce\Components\Checkout
  */
 class Block_Checkout_Handler {
-	/**
+
+    /**
+     * @var Offline_Payments_Service
+     */
+    private $offline_payments_service;
+
+    public function __construct()
+    {
+        $this->offline_payments_service = ServiceRegister::getService(
+            OfflinePaymentsServices::CLASS_NAME);
+    }
+
+    /**
 	 * Returns method details for all shipping methods rendered on checkout.
 	 *
 	 * @param array $payload - Shipping method IDs.
@@ -44,14 +59,45 @@ class Block_Checkout_Handler {
 			'no_drop_off_locations_message' => __( 'There are no drop-off locations available for the entered address', 'packlink-pro-shipping' )
 		];
 
-		if ( ! count( $payload ) ) {
-			$response['method_details'][ $selected_shipping_method ] = $this->get_shipping_method_details( (int) $selected_shipping_method );
+        try{
+            $offlinePayments = $this->offline_payments_service->getOfflinePayments();
+            $accountConfig = $this->offline_payments_service->getAccountConfiguration();
+            $offlinePaymentName = null;
+
+            if($accountConfig && $accountConfig->account) {
+                $id = $accountConfig->account->getOfflinePaymentMethod();
+
+                foreach ($offlinePayments as $payment) {
+                    if ($payment['name'] === $id) {
+                        $offlinePaymentName = $payment['displayName'];
+                        break;
+                    }
+                }
+            }
+            if ($offlinePaymentName !== null) {
+                $response['offline_payment_name'] = $offlinePaymentName;
+            }
+        } catch (\Exception $e) {
+        }
+
+        $cart = WC()->cart;
+        $totals = $cart->get_totals();
+
+        $subtotal   = isset($totals['cart_contents_total']) ? (float) $totals['cart_contents_total'] : 0;
+        $shipping   = isset($totals['shipping_total']) ? (float) $totals['shipping_total'] : 0;
+        $discount   = isset($totals['discount_total']) ? (float) $totals['discount_total'] : 0;
+
+        $current_total = $subtotal + $shipping - $discount;
+
+
+        if ( ! count( $payload ) ) {
+			$response['method_details'][ $selected_shipping_method ] = $this->get_shipping_method_details( (int) $selected_shipping_method, $current_total );
 
 			return $response;
 		}
 
 		foreach ( $payload as $id ) {
-			$response['method_details'][ $id ] = $this->get_shipping_method_details( $id );
+			$response['method_details'][ $id ] = $this->get_shipping_method_details( $id, $current_total );
 		}
 
 		return $response;
@@ -128,7 +174,7 @@ class Block_Checkout_Handler {
 	 * @throws QueryFilterInvalidParamException
 	 * @throws RepositoryNotRegisteredException
 	 */
-	private function get_shipping_method_details( $shipping_id ) {
+	private function get_shipping_method_details( $shipping_id, $current_total ) {
 		$shipping_method = Shipping_Method_Helper::get_packlink_shipping_method(
 			IndexHelper::castFieldValue( $shipping_id, gettype( $shipping_id ) )
 		);
@@ -143,9 +189,26 @@ class Block_Checkout_Handler {
 			'packlink_show_image'         => $shipping_method->isDisplayLogo(),
 			'packlink_is_drop_off'        => $shipping_method->isDestinationDropOff(),
 			'packlink_drop_off_locations' => $shipping_method->isDestinationDropOff() ?
-				$this->get_drop_off_locations( $shipping_method->getId() ) : []
+				$this->get_drop_off_locations( $shipping_method->getId() ) : [],
+            'packlink_cash_on_delivery'   => $this->is_cash_on_delivery_enabled($shipping_method),
+            'packlink_cash_on_delivery_fee' => $this->offline_payments_service->calculateFee($shipping_method->getId(), $current_total),
 		);
 	}
+
+    /**
+     * @param ShippingMethod $shippingMethod
+     *
+     * @return bool
+     */
+    private function is_cash_on_delivery_enabled($shippingMethod) {
+        foreach ($shippingMethod->getShippingServices() as $service) {
+            if ($service->cashOnDeliveryConfig && $service->cashOnDeliveryConfig->offered) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
 	/**
 	 * Get available locations for drop-off shipping method.

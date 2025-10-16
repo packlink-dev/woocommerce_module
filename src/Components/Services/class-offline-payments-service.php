@@ -181,4 +181,16 @@ class Offline_Payments_Service extends OfflinePaymentsServices {
 
 		return null;
 	}
+
+    /**
+     * Retrieves Packlink account configuration and checks if an account exists.
+     *
+     * @return CashOnDelivery|null
+     *
+     * @throws QueryFilterInvalidParamException
+     */
+    public function getAccountConfiguration()
+    {
+        return $this->controller->getCashOnDeliveryConfiguration();
+    }
 }

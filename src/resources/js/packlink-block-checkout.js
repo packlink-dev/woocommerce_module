@@ -59,6 +59,7 @@ window.onload = () => {
 				setSelectedLocationId(response['selected_shipping_method']);
 				setTranslations({...response['translations']});
 				setNoDropOffLocationsMessage(response['no_drop_off_locations_message']);
+				privateData.offlinePaymentName = response['offline_payment_name'] || null;
 				privateData.methodDetails = Object.entries(response['method_details']);
 				Array.from(privateData.methodDetails).forEach(details => {
 					let option, dataDiv;
@@ -81,12 +82,18 @@ window.onload = () => {
 						injectImage(option, details[1]['packlink_image_url']);
 					}
 
+					if (option.checked || privateData.isSingleShippingMethod) {
+						addCODMessage(dataDiv, details[1]);
+					}
+
 					if ((option.checked || privateData.isSingleShippingMethod) && details[1]['packlink_is_drop_off']) {
 						addDropOffButton(dataDiv, details[1]);
 					}
 
 					if (!privateData.isSingleShippingMethod) {
 						option.addEventListener('click', () => {
+							document.querySelectorAll('.packlink-cod-message').forEach(el => el.remove());
+
 							privateData.selectedLocation = null;
 							const dropOff = addDropOffButton(dataDiv, details[1]);
 							const dropOffButton = document.getElementById('packlink-drop-off-picker');
@@ -102,6 +109,8 @@ window.onload = () => {
 							} else {
 								dropOffButton.setAttribute('style', 'display: none;');
 							}
+
+							addCODMessage(dataDiv, details[1]);
 
 							//unset old drop off location
 							Packlink.ajaxService.post(
@@ -131,6 +140,30 @@ window.onload = () => {
 			);
 		}
 
+	}
+
+	function addCODMessage(dataDiv, details) {
+		const codName = privateData.offlinePaymentName;
+		const codPrice = details['packlink_cash_on_delivery_fee'];
+
+		if (!codName || !codPrice || codPrice <= 0) {
+			return;
+		}
+
+		if (dataDiv && details['packlink_cash_on_delivery'] &&
+			!dataDiv.querySelector('.packlink-cod-message')) {
+
+			const messageDiv = document.createElement('div');
+			messageDiv.className = 'packlink-cod-message';
+
+			messageDiv.innerHTML = `This service supports <strong>${codName}</strong>. If you choose the <strong>${codName}</strong> payment method, an additional fee of <strong>${codPrice}</strong> will be applied.`;
+
+			messageDiv.style.marginTop = '8px';
+			messageDiv.style.fontSize = '12px';
+			messageDiv.style.color = '#555';
+
+			dataDiv.lastChild.before(messageDiv);
+		}
 	}
 
 	function addDropOffButton(dataDiv, details) {

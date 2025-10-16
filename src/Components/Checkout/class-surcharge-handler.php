@@ -35,35 +35,101 @@ class Surcharge_Handler {
 			OfflinePaymentsServices::CLASS_NAME);
 	}
 
+    /**
+     * @param $order
+     * @param $request
+     *
+     * @return void
+     */
+	public function add_surcharge_block($order, $request) {
+        try {
+            $pm = (string) $request->get_param('payment_method');
+
+            if (!$this->offline_payments_service->shouldSurchargeApply($pm)) {
+                return;
+            }
+
+            foreach ($order->get_items('fee') as $item) {
+                if ($item->get_name() === Translator::translate('cashOnDelivery.surcharge')) {
+                    return;
+                }
+            }
+
+            $totals = WC()->cart->get_totals();
+
+            $subtotal = isset($totals['cart_contents_total']) ? (float) $totals['cart_contents_total'] : 0;
+            $shipping = isset($totals['shipping_total']) ? (float) $totals['shipping_total'] : 0;
+            $discount = isset($totals['discount_total']) ? (float) $totals['discount_total'] : 0;
+
+            $current_total = $subtotal + $shipping - $discount;
+
+            $surcharge = $this->offline_payments_service->calculateFee(
+                $this->get_shipping_method_id(),
+                $current_total
+            );
+
+            if ($surcharge > 0) {
+                $fee = new \WC_Order_Item_Fee();
+                $fee->set_name(Translator::translate('cashOnDelivery.surcharge'));
+                $fee->set_amount($surcharge);
+                $fee->set_total($surcharge);
+                $order->add_item($fee);
+
+                $order->calculate_totals(false);
+                $order->save();
+            }
+
+        } catch (\Exception $e) {
+        }
+	}
+
 	/**
-	 * @param $cart
+	 * Adds surcharge for the classic checkout
+	 *
+	 * @param $order
 	 *
 	 * @return void
-	 * @throws QueryFilterInvalidParamException
-	 *
-	 * @throws RepositoryNotRegisteredException
 	 */
-	public function add_surcharge($cart) {
 
-		if($this->offline_payments_service->shouldSurchargeApply(WC()->session->chosen_payment_method)) {
-			$totals = $cart->get_totals();
+    public function add_surcharge_to_order( $order) {
+        try {
+            $chosen_gateway = WC()->session->get('chosen_payment_method');
 
-			$subtotal   = isset($totals['cart_contents_total']) ? (float) $totals['cart_contents_total'] : 0;
-			$shipping   = isset($totals['shipping_total']) ? (float) $totals['shipping_total'] : 0;
-			$discount   = isset($totals['discount_total']) ? (float) $totals['discount_total'] : 0;
+            if ($this->offline_payments_service->shouldSurchargeApply($chosen_gateway)) {
+                foreach ($order->get_items('fee') as $item) {
+                    if ($item->get_name() === Translator::translate('cashOnDelivery.surcharge')) {
+                        return;
+                    }
+                }
 
-			$current_total = $subtotal + $shipping - $discount;
+                $totals = WC()->cart->get_totals();
 
-			$surcharge = $this->offline_payments_service->calculateFee($this->get_shipping_method_id(), $current_total);
+                $subtotal = isset($totals['cart_contents_total']) ? (float) $totals['cart_contents_total'] : 0;
+                $shipping = isset($totals['shipping_total']) ? (float) $totals['shipping_total'] : 0;
+                $discount = isset($totals['discount_total']) ? (float) $totals['discount_total'] : 0;
 
-			$cart->add_fee(
-				Translator::translate('cashOnDelivery.surcharge'),
-				$surcharge,
-				true,
-				''
-			);
-		}
-	}
+                $current_total = $subtotal + $shipping - $discount;
+
+                $surcharge = $this->offline_payments_service->calculateFee(
+                    $this->get_shipping_method_id(),
+                    $current_total
+                );
+
+                if ($surcharge > 0) {
+                    $fee = new \WC_Order_Item_Fee();
+                    $fee->set_name(Translator::translate('cashOnDelivery.surcharge'));
+                    $fee->set_amount($surcharge);
+                    $fee->set_total($surcharge);
+                    $order->add_item($fee);
+
+                    $order->calculate_totals( false );
+                    $order->save();
+                }
+            }
+        } catch (\Exception $e) {
+        }
+    }
+
 
 	/**
 	 * @return int|null
