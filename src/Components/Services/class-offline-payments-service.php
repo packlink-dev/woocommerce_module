@@ -166,7 +166,7 @@ class Offline_Payments_Service extends OfflinePaymentsServices {
 			$cod = null;
 		}
 
-		if ( $cod && $cod->account && $cod->account->getCashOnDeliveryFee() ) {
+		if ( $cod && $cod->account && $cod->account->getCashOnDeliveryFee() !== null) {
 			return $cod->account->getCashOnDeliveryFee();
 		}
 

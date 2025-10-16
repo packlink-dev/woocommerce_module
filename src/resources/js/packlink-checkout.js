@@ -39,6 +39,21 @@ var Packlink = window.Packlink || {};
 				let button     = parent.querySelector( '#packlink-drop-off-picker' );
 				let isDropOff  = parent.querySelector( 'input[name="packlink_is_drop_off"]' );
 
+				let isCOD  = parent.querySelector('input[name="packlink_cash_on_delivery"]');
+
+				if (isCOD && isCOD.value === 'yes') {
+					const codFeeInput = parent.querySelector('input[name="packlink_cash_on_delivery_fee"]');
+					let codNameInput = parent.querySelector('input[name="packlink_cash_on_delivery_name"]');
+					const codName = codNameInput ? codNameInput.value : '';
+
+					const codFee = codFeeInput ? parseFloat(codFeeInput.value) : 0;
+
+					const shippingInput = parent.querySelector('input[name^="shipping_method"]');
+					if (shippingInput && shippingInput.checked) {
+						addCODMessage(parent, codName, codFee);
+					}
+				}
+
 				if (showImage === 'yes' && imageInput && parent.querySelector('.pl-checkout-carrier-image') === null) {
 					injectImage( imageInput );
 				}
@@ -108,6 +123,22 @@ var Packlink = window.Packlink || {};
 			dropOffId.value    = location.id;
 			dropOffExtra.value = JSON.stringify( location );
 		}
+	}
+
+	function addCODMessage(dataDiv, codName, codFee) {
+		if (!dataDiv) return;
+		if (!codName || !codFee || codFee <= 0) return;
+
+		if (dataDiv.querySelector('.packlink-cod-message')) return;
+
+		const messageDiv = document.createElement('div');
+		messageDiv.className = 'packlink-cod-message';
+		messageDiv.innerHTML = `This service supports <strong>${codName}</strong>. If you choose the <strong>${codName}</strong> payment method, an additional fee of <strong>${codFee}</strong> will be applied.`;
+		messageDiv.style.marginTop = '8px';
+		messageDiv.style.fontSize = '12px';
+		messageDiv.style.color = '#555';
+
+		dataDiv.lastChild.before(messageDiv);
 	}
 
 	/**

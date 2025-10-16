@@ -725,7 +725,7 @@ class Plugin {
 		add_action( 'woocommerce_checkout_update_order_meta', array( $handler, 'checkout_update_drop_off' ), 10, 2 );
 		add_action( 'wp_enqueue_scripts', array( $handler, 'load_scripts' ) );
 
-        add_action('woocommerce_checkout_create_order', array($surcharge_handle, 'add_surcharge_to_order'), 20, 1); // Classic checkout
+        add_action('woocommerce_checkout_create_order', array($surcharge_handle, 'add_surcharge_to_order'), 20, 1);
 
         add_action( 'woocommerce_store_api_checkout_update_order_from_request', [ $surcharge_handle, 'add_surcharge_block' ], 10, 2 );
 

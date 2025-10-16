@@ -10,10 +10,12 @@ namespace Packlink\WooCommerce\Components\Checkout;
 use Logeecom\Infrastructure\Logger\Logger;
 use Logeecom\Infrastructure\ORM\RepositoryRegistry;
 use Logeecom\Infrastructure\ServiceRegister;
+use Packlink\BusinessLogic\CashOnDelivery\Services\OfflinePaymentsServices;
 use Packlink\BusinessLogic\Location\LocationService;
 use Packlink\BusinessLogic\ShippingMethod\Models\ShippingMethod;
 use Packlink\WooCommerce\Components\Order\Order_Drop_Off_Map;
 use Packlink\WooCommerce\Components\Order\Paid_Order_Handler;
+use Packlink\WooCommerce\Components\Services\Offline_Payments_Service;
 use Packlink\WooCommerce\Components\ShippingMethod\Packlink_Shipping_Method;
 use Packlink\WooCommerce\Components\ShippingMethod\Shipping_Method_Helper;
 use Packlink\WooCommerce\Components\Utility\Script_Loader;
@@ -40,6 +42,17 @@ class Checkout_Handler {
 	 */
 	const DEFAULT_SHIPPING = 'shipping cost';
 
+    /**
+     * @var Offline_Payments_Service
+     */
+    private $offline_payments_service;
+
+    public function __construct()
+    {
+        $this->offline_payments_service = ServiceRegister::getService(
+            OfflinePaymentsServices::CLASS_NAME);
+    }
+
 	/**
 	 * This hook is triggered after shipping method label, and it will insert hidden input values.
 	 *
@@ -57,11 +70,27 @@ class Checkout_Handler {
 			return;
 		}
 
-		$fields = array(
+        $cart = WC()->cart;
+        $totals = $cart->get_totals();
+
+        $subtotal   = isset($totals['cart_contents_total']) ? (float) $totals['cart_contents_total'] : 0;
+        $shipping   = isset($totals['shipping_total']) ? (float) $totals['shipping_total'] : 0;
+        $discount   = isset($totals['discount_total']) ? (float) $totals['discount_total'] : 0;
+
+        $current_total = $subtotal + $shipping - $discount;
+
+        $offlinePaymentName = $this->getOfflinePaymentName();
+
+
+        $fields = array(
 			'packlink_image_url'   => $shipping_method->getLogoUrl() ?: Shop_Helper::get_plugin_base_url() . 'resources/images/box.svg',
 			'packlink_show_image'  => $shipping_method->isDisplayLogo() ? 'yes' : 'no',
 			'packlink_is_drop_off' => $shipping_method->isDestinationDropOff() ? 'yes' : 'no',
-		);
+            'packlink_cash_on_delivery' => $this->is_cash_on_delivery_enabled($shipping_method) ? 'yes' : 'no',
+            'packlink_cash_on_delivery_fee' => $this->offline_payments_service->calculateFee($shipping_method->getId(), $current_total),
+            'packlink_cash_on_delivery_name' => $offlinePaymentName ?: '',
+
+        );
 
 		foreach ( $fields as $field => $value ) {
 			$this->print_hidden_input( $field, $value );
@@ -263,6 +292,49 @@ class Checkout_Handler {
 	public function get_drop_off_locations_missing_message() {
 		return __( 'There are no drop-off locations available for the entered address', 'packlink-pro-shipping' );
 	}
+
+    /**
+     * Returns the display name of the current offline payment method or null.
+     *
+     * @return string|null
+     */
+    private function getOfflinePaymentName()
+    {
+        try {
+            $offlinePayments = $this->offline_payments_service->getOfflinePayments();
+            $accountConfig   = $this->offline_payments_service->getAccountConfiguration();
+            $offlinePaymentName = null;
+
+            if ($accountConfig && $accountConfig->account) {
+                $id = $accountConfig->account->getOfflinePaymentMethod();
+
+                foreach ($offlinePayments as $payment) {
+                    if ($payment['name'] === $id) {
+                        $offlinePaymentName = $payment['displayName'];
+                        break;
+                    }
+                }
+            }
+
+            return $offlinePaymentName;
+        } catch (\Exception $e) {
+            return null;
+        }
+    }
+    /**
+     * @param ShippingMethod $shippingMethod
+     *
+     * @return bool
+     */
+    private function is_cash_on_delivery_enabled($shippingMethod) {
+        foreach ($shippingMethod->getShippingServices() as $service) {
+            if ($service->cashOnDeliveryConfig && $service->cashOnDeliveryConfig->offered) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
 	/**
 	 * Returns Packlink shipping method.
