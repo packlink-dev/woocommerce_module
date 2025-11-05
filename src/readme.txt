@@ -1,6 +1,6 @@
 === Packlink PRO for WooCommerce ===
 Contributors: packlink
-Tags: woocommerce, shipment, shipping, packlink
+Tags: shipping, delivery, carrier, order, package
 Requires at least: 4.7
 Requires PHP: 5.5
 Tested up to: 6.7.2
@@ -8,7 +8,7 @@ Stable tag: 3.6.0
 License: LICENSE-2.0
 License URI: http://www.apache.org/licenses/LICENSE-2.0
 
-Free professional shipping platform that will simplify and automate your logistics.
+Elevate your store with Packlink PRO —the ultimate free shipping solution offering discounted rates from 350+ carriers instantly.
 
 == Description ==
 
