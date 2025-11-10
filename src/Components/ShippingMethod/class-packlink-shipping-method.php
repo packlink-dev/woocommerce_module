@@ -367,6 +367,8 @@ class Packlink_Shipping_Method extends \WC_Shipping_Method {
 			return null;
 		}
 
+        $cart_subtotal = $this->get_cart_subtotal($package);
+
 		$id         = $shipping_method->getId();
 		$to_country = ! empty( $package['destination']['country'] ) ? $package['destination']['country'] : $warehouse->country;
 		$to_zip     = ! empty( $package['destination']['postcode'] ) ? $package['destination']['postcode'] : $warehouse->postalCode;
@@ -378,7 +380,7 @@ class Packlink_Shipping_Method extends \WC_Shipping_Method {
 				$to_country,
 				$to_zip,
 				$this->build_parcels( $package, $default_parcel ),
-				$package['cart_subtotal'],
+                $cart_subtotal,
 				System_Info_Service::SYSTEM_ID
 			);
 
@@ -387,4 +389,30 @@ class Packlink_Shipping_Method extends \WC_Shipping_Method {
 
 		return array_key_exists( $id, static::$shipping_services ) || ( - 1 === $id && ! empty( static::$shipping_services ) );
 	}
+
+    /**
+     * Retrieves the cart subtotal to be used for shipping cost calculation.
+     *
+     * @param array $package Package data passed from WooCommerce.
+     *
+     * @return float Cart subtotal value.
+     */
+    private function get_cart_subtotal(array $package)
+    {
+        $cart_subtotal = null;
+
+        if (isset($package['cart_subtotal'])) {
+            $cart_subtotal = (float) $package['cart_subtotal'];
+        }
+
+        if ($cart_subtotal === null && isset(WC()->cart) && method_exists(WC()->cart, 'get_subtotal')) {
+            $cart_subtotal = (float) WC()->cart->get_subtotal();
+        }
+
+        if ($cart_subtotal === null) {
+            $cart_subtotal = 0.0;
+        }
+
+        return $cart_subtotal;
+    }
 }
