@@ -46,7 +46,7 @@ window.onload = () => {
 
 		if (!privateData.isObserverSet) {
 			privateData.isObserverSet = true;
-			addMutationObserverToCheckoutBlock(shippingOptions?.parentElement?.parentElement?.parentElement?.parentElement);
+			addMutationObserverToCheckoutBlock(shippingOptions?.parentElement?.parentElement?.parentElement?.parentElement?.parentElement);
 		}
 
 		const initializeBlockCheckout = document.getElementById('pl-block-checkout-initialize-endpoint').value;
