@@ -1,5 +1,9 @@
 *** Packlink PRO Changelog ***
 
+2025-11-12 - version 3.6.1
+* Fix drop-off button rendering on the checkout
+* Add fallback mehnism for fetching cart subtotal
+
 2025-10-16 - version 3.6.0
 * Added support for cash on delivery
 

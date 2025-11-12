@@ -4,7 +4,7 @@ Tags: shipping, delivery, carrier, order, package
 Requires at least: 4.7
 Requires PHP: 5.5
 Tested up to: 6.7.2
-Stable tag: 3.6.0
+Stable tag: 3.6.1
 License: LICENSE-2.0
 License URI: http://www.apache.org/licenses/LICENSE-2.0
 
@@ -93,6 +93,12 @@ Click <a href="https://support-pro.packlink.com/hc/es-es/articles/210158585" tar
 
 
 == Changelog ==
+
+#### 3.6.1 - November 12th, 2025
+
+**Updates**
+- Fix drop-off button rendering on the checkout
+- Add fallback mehnism for fetching cart subtotal
 
 #### 3.6.0 - October 16th, 2025
 
