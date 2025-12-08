@@ -3,7 +3,7 @@ Contributors: packlink
 Tags: shipping, delivery, carrier, order, package
 Requires at least: 4.7
 Requires PHP: 5.5
-Tested up to: 6.7.2
+Tested up to: 6.9
 Stable tag: 3.6.1
 License: LICENSE-2.0
 License URI: http://www.apache.org/licenses/LICENSE-2.0
