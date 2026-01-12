@@ -442,9 +442,13 @@ class Plugin {
             return $available_gateways;
         }
 
-        $chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods' );
+	    if (!function_exists('WC') || !WC()->session) {
+		    return $available_gateways;
+	    }
 
-        if ( empty( $chosen_shipping_methods ) ) {
+	    $chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods' );
+
+	    if (empty($chosen_shipping_methods) || !isset($chosen_shipping_methods[0])) {
             return $available_gateways;
         }
 
