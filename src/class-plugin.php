@@ -447,9 +447,23 @@ class Plugin {
 			return $available_gateways;
 		}
 
+		$uri = $_SERVER['REQUEST_URI'] ?? '';
+
+		if (defined('REST_REQUEST') && REST_REQUEST && strpos($uri, '/wp-json/wc/') === false) {
+			return $available_gateways;
+		}
+
+		$is_wc_ajax =
+			(defined('WC_DOING_AJAX') && WC_DOING_AJAX)
+			|| (strpos($uri, 'wc-ajax=') !== false)
+			|| isset($_REQUEST['wc-ajax'])
+			|| (defined('DOING_AJAX') && DOING_AJAX);
+
+		$is_store_api = (defined('REST_REQUEST') && REST_REQUEST && strpos($uri, '/wp-json/wc/store/') !== false);
+
 		// Optional but recommended: only run where shipping choice exists.
 		// PayPal smart buttons can call this on product pages; we must ignore that.
-		if ( ! ( is_checkout() || is_cart() || wp_doing_ajax() ) ) {
+		if (!(is_checkout() || $is_wc_ajax || $is_store_api)) {
 			return $available_gateways;
 		}
 
