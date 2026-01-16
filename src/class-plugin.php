@@ -436,42 +436,61 @@ class Plugin {
      * @throws QueryFilterInvalidParamException
      * @throws RepositoryNotRegisteredException
      */
-    public function filter_payment_gateways( $available_gateways ) {
+	public function filter_payment_gateways( $available_gateways ) {
+		// Backend never
+		if ( is_admin() ) {
+			return $available_gateways;
+		}
 
-        if ( is_admin()) {
-            return $available_gateways;
-        }
+		// If WC or session isn't ready, we are NOT in a context where chosen shipping is reliable.
+		if ( ! function_exists( 'WC' ) || ! WC() || ! WC()->session ) {
+			return $available_gateways;
+		}
 
-	    if (!function_exists('WC') || !WC()->session) {
-		    return $available_gateways;
-	    }
+		$uri = $_SERVER['REQUEST_URI'] ?? '';
 
-	    $chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods' );
+		if (defined('REST_REQUEST') && REST_REQUEST && strpos($uri, '/wp-json/wc/') === false) {
+			return $available_gateways;
+		}
 
-	    if (empty($chosen_shipping_methods) || !isset($chosen_shipping_methods[0])) {
-            return $available_gateways;
-        }
+		$is_wc_ajax =
+			(defined('WC_DOING_AJAX') && WC_DOING_AJAX)
+			|| (strpos($uri, 'wc-ajax=') !== false)
+			|| isset($_REQUEST['wc-ajax'])
+			|| (defined('DOING_AJAX') && DOING_AJAX);
 
-        $chosen_shipping = $chosen_shipping_methods[0];
+		$is_store_api = (defined('REST_REQUEST') && REST_REQUEST && strpos($uri, '/wp-json/wc/store/') !== false);
 
+		// Optional but recommended: only run where shipping choice exists.
+		// PayPal smart buttons can call this on product pages; we must ignore that.
+		if (!(is_checkout() || $is_wc_ajax || $is_store_api)) {
+			return $available_gateways;
+		}
 
-        $parts = explode( ':', $chosen_shipping );
-        $instance_id = isset( $parts[1] ) ? (int) $parts[1] : 0;
+		$chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods' );
+		if ( empty( $chosen_shipping_methods ) || empty( $chosen_shipping_methods[0] ) ) {
+			return $available_gateways;
+		}
 
-        if (  $parts[0] !== Packlink_Shipping_Method::PACKLINK_SHIPPING_METHOD || $instance_id <= 0 ) {
-            return $available_gateways;
-        }
+		$chosen_shipping = $chosen_shipping_methods[0];
 
-        $packlink_method = Shipping_Method_Helper::get_packlink_shipping_method( $instance_id );
+		$parts = explode( ':', $chosen_shipping );
+		$method_id   = isset($parts[0]) ? $parts[0] : '';
+		$instance_id = isset($parts[1]) ? (int) $parts[1] : 0;
 
-        if ( $packlink_method ) {
-            $cod_controller = new \Packlink\WooCommerce\Controllers\Packlink_Cash_On_Delivery_Controller();
+		if ( $method_id !== Packlink_Shipping_Method::PACKLINK_SHIPPING_METHOD || $instance_id <= 0 ) {
+			return $available_gateways;
+		}
 
-            return $cod_controller->get_available_payments($packlink_method->getId(), $available_gateways);
-        }
+		$packlink_method = Shipping_Method_Helper::get_packlink_shipping_method( $instance_id );
+		if ( ! $packlink_method ) {
+			return $available_gateways;
+		}
 
-        return $available_gateways;
-    }
+		$cod_controller = new \Packlink\WooCommerce\Controllers\Packlink_Cash_On_Delivery_Controller();
+		return $cod_controller->get_available_payments( $packlink_method->getId(), $available_gateways );
+	}
+
 
 	/**
 	 * Initializes the plugin.

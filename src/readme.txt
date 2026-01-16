@@ -4,7 +4,7 @@ Tags: shipping, delivery, carrier, order, package
 Requires at least: 4.7
 Requires PHP: 5.5
 Tested up to: 6.9
-Stable tag: 3.6.1
+Stable tag: 3.6.2
 License: LICENSE-2.0
 License URI: http://www.apache.org/licenses/LICENSE-2.0
 
@@ -93,6 +93,11 @@ Click <a href="https://support-pro.packlink.com/hc/es-es/articles/210158585" tar
 
 
 == Changelog ==
+
+#### 3.6.2 - January 15th, 2026
+
+**Updates**
+- Fix error on filtering payment gateways
 
 #### 3.6.1 - November 12th, 2025
 
