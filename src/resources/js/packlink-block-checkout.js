@@ -56,6 +56,7 @@ window.onload = () => {
 			initializeBlockCheckout,
 			shippingMethodsIds,
 			function (response) {
+				setLocale(response['locale'] || 'en');
 				setSelectedLocationId(response['selected_shipping_method']);
 				setTranslations({...response['translations']});
 				setNoDropOffLocationsMessage(response['no_drop_off_locations_message']);

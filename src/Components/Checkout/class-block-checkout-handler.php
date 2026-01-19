@@ -59,6 +59,11 @@ class Block_Checkout_Handler {
 			'no_drop_off_locations_message' => __( 'There are no drop-off locations available for the entered address', 'packlink-pro-shipping' )
 		];
 
+        $parts = explode('_', determine_locale());
+        $locale       = $parts[0];
+
+        $response['locale'] = $locale;
+
         try{
             $offlinePayments = $this->offline_payments_service->getOfflinePayments();
             $accountConfig = $this->offline_payments_service->getAccountConfiguration();

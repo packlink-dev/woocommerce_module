@@ -215,6 +215,12 @@ class Plugin {
 		delete_transient( 'packlink-pro-success-messages' );
 	}
 
+	public function dismiss_admin_notices() {
+		$this->dismiss_notices();
+		$this->dismiss_success_notices();
+		$this->dismiss_error_notices();
+	}
+
 	/**
 	 * Initializes base Packlink PRO Shipping tables and values if plugin is accessed from a new site.
 	 */
@@ -230,16 +236,11 @@ class Plugin {
 	 * Loads plugin translations.
 	 */
 	public function load_plugin_text_domain() {
-		unload_textdomain( 'packlink-pro-shipping' );
 		load_plugin_textdomain(
 			'packlink-pro-shipping',
 			false,
-			plugin_basename( dirname( $this->packlink_plugin_file ) ) . '/languages'
+			dirname( plugin_basename( $this->packlink_plugin_file ) ) . '/languages'
 		);
-
-		$this->dismiss_notices();
-		$this->dismiss_success_notices();
-		$this->dismiss_error_notices();
 	}
 
 	/**
@@ -522,9 +523,11 @@ class Plugin {
 		register_activation_hook( $this->packlink_plugin_file, array( $this, 'activate' ) );
 		register_deactivation_hook( $this->packlink_plugin_file, array( $this, 'deactivate' ) );
 		add_action( 'admin_init', array( $this, 'initialize_new_site' ) );
+		add_action( 'admin_init', [ $this, 'dismiss_admin_notices' ] );
+
 		add_filter( 'query_vars', array( $this, 'plugin_add_trigger' ) );
 		add_action( 'template_redirect', array( $this, 'plugin_trigger_check' ) );
-		add_action( 'plugins_loaded', array( $this, 'load_plugin_text_domain' ) );
+		add_action( 'init', array( $this, 'load_plugin_text_domain' ) );
 		add_action( 'admin_notices', array( $this, 'admin_messages' ) );
 		add_action( 'admin_notices', array( $this, 'admin_notice_messages_no_dismiss' ) );
 		add_action( 'admin_notices', array( $this, 'admin_error_messages' ) );
