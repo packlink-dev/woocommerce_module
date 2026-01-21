@@ -73,7 +73,7 @@ class Paid_Order_Handler {
 		/** @var \WC_Order_Item_Product $item */
 		foreach ( $order->get_items() as $item ) {
 			$product = $item->get_product();
-			if ( ! $product->is_downloadable() && ! $product->is_virtual() ) {
+			if ( ! $product->is_virtual() ) {
 				return true;
 			}
 		}
