@@ -18,7 +18,7 @@ use Logeecom\Infrastructure\TaskExecution\Exceptions\QueueStorageUnavailableExce
 use Packlink\BusinessLogic\OrderShipmentDetails\OrderShipmentDetailsService;
 use Packlink\BusinessLogic\ShipmentDraft\Exceptions\DraftTaskMapExists;
 use Packlink\BusinessLogic\ShipmentDraft\Exceptions\DraftTaskMapNotFound;
-use Packlink\BusinessLogic\ShipmentDraft\ShipmentDraftService;
+use Packlink\BusinessLogic\ShipmentDraft\Interfaces\ShipmentDraftServiceInterface;
 use Packlink\WooCommerce\Components\ShippingMethod\Shipping_Method_Helper;
 use Packlink\WooCommerce\Components\Utility\Script_Loader;
 use WC_Order_Factory;
@@ -57,8 +57,8 @@ class Packlink_Order_Details_Controller extends Packlink_Base_Controller {
 
 		/** @var OrderShipmentDetailsService $shipment_details_service */ // phpcs:ignore
 		$shipment_details_service = ServiceRegister::getService( OrderShipmentDetailsService::CLASS_NAME );
-		/** @var ShipmentDraftService $draft_service */ // phpcs:ignore
-		$draft_service      = ServiceRegister::getService( ShipmentDraftService::CLASS_NAME );
+		/** @var ShipmentDraftServiceInterface $draft_service */ // phpcs:ignore
+		$draft_service      = ServiceRegister::getService( ShipmentDraftServiceInterface::CLASS_NAME );
 		$order_details      = $shipment_details_service->getDetailsByOrderId( (string) $id );
 		$last_status_update = '';
 		if ( $order_details && $order_details->getLastStatusUpdateTime() ) {
@@ -94,8 +94,8 @@ class Packlink_Order_Details_Controller extends Packlink_Base_Controller {
 			$this->return_json( array( 'success' => false ), 400 );
 		}
 
-		/** @var ShipmentDraftService $draft_service */ // phpcs:ignore
-		$draft_service = ServiceRegister::getService( ShipmentDraftService::CLASS_NAME );
+		/** @var ShipmentDraftServiceInterface $draft_service */ // phpcs:ignore
+		$draft_service = ServiceRegister::getService( ShipmentDraftServiceInterface::CLASS_NAME );
 		$draft_service->enqueueCreateShipmentDraftTask( (string) $payload['id'] );
 
 		$this->return_json( array( 'success' => true ) );

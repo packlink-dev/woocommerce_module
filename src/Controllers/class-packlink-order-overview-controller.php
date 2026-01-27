@@ -23,7 +23,7 @@ use Packlink\BusinessLogic\Order\OrderService;
 use Packlink\BusinessLogic\OrderShipmentDetails\Exceptions\OrderShipmentDetailsNotFound;
 use Packlink\BusinessLogic\OrderShipmentDetails\Models\OrderShipmentDetails;
 use Packlink\BusinessLogic\OrderShipmentDetails\OrderShipmentDetailsService;
-use Packlink\BusinessLogic\ShipmentDraft\ShipmentDraftService;
+use Packlink\BusinessLogic\ShipmentDraft\Interfaces\ShipmentDraftServiceInterface;
 use Packlink\WooCommerce\Components\Services\Config_Service;
 use Packlink\WooCommerce\Components\Services\Shipment_Draft_Service;
 use Packlink\WooCommerce\Components\Utility\Script_Loader;
@@ -168,8 +168,8 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 			throw new ParameterException( 'Order ID missing.' );
 		}
 
-		/** @var ShipmentDraftService $draft_service */
-		$draft_service = ServiceRegister::getService( ShipmentDraftService::CLASS_NAME );
+		/** @var ShipmentDraftServiceInterface $draft_service */
+		$draft_service = ServiceRegister::getService( ShipmentDraftServiceInterface::CLASS_NAME );
 		$draft_status  = $draft_service->getDraftStatus( (string) $order_id );
 
 		if ( QueueItem::COMPLETED === $draft_status->status ) {
@@ -497,7 +497,7 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 	 */
 	private function get_shipment_draft_service() {
 		/** @var Shipment_Draft_Service $draft_service */
-		$draft_service = ServiceRegister::getService( ShipmentDraftService::CLASS_NAME );
+		$draft_service = ServiceRegister::getService( ShipmentDraftServiceInterface::CLASS_NAME );
 
 		return $draft_service;
 	}

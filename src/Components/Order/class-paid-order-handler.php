@@ -10,7 +10,7 @@ namespace Packlink\WooCommerce\Components\Order;
 use Logeecom\Infrastructure\ServiceRegister;
 use Logeecom\Infrastructure\TaskExecution\Interfaces\TaskRunnerWakeup;
 use Logeecom\Infrastructure\TaskExecution\TaskRunnerWakeupService;
-use Packlink\BusinessLogic\ShipmentDraft\ShipmentDraftService;
+use Packlink\BusinessLogic\ShipmentDraft\Interfaces\ShipmentDraftServiceInterface;
 use Packlink\WooCommerce\Components\Services\Config_Service;
 use Packlink\WooCommerce\Components\ShippingMethod\Shipping_Method_Helper;
 use WC_Order;
@@ -38,8 +38,8 @@ class Paid_Order_Handler {
 
 		if ( ! self::get_config_service()->is_manual_sync_enabled()
 		     && $order->is_paid() && static::is_packlink_order( $order ) && static::has_shippable_product( $order ) ) {
-			/** @var ShipmentDraftService $draft_service */
-			$draft_service = ServiceRegister::getService( ShipmentDraftService::CLASS_NAME );
+			/** @var ShipmentDraftServiceInterface $draft_service */
+			$draft_service = ServiceRegister::getService( ShipmentDraftServiceInterface::CLASS_NAME );
 			$draft_service->enqueueCreateShipmentDraftTask( (string) $order_id );
 		}
 

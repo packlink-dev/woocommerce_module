@@ -18,8 +18,14 @@ use Logeecom\Infrastructure\ORM\RepositoryRegistry;
 use Logeecom\Infrastructure\Serializer\Concrete\NativeSerializer;
 use Logeecom\Infrastructure\Serializer\Serializer;
 use Logeecom\Infrastructure\ServiceRegister;
+use Logeecom\Infrastructure\TaskExecution\HttpTaskExecutor;
+use Logeecom\Infrastructure\TaskExecution\Interfaces\QueueServiceInterface;
+use Logeecom\Infrastructure\TaskExecution\Interfaces\TaskExecutorInterface;
+use Logeecom\Infrastructure\TaskExecution\Interfaces\TaskStatusProviderInterface;
 use Logeecom\Infrastructure\TaskExecution\Process;
 use Logeecom\Infrastructure\TaskExecution\QueueItem;
+use Logeecom\Infrastructure\TaskExecution\QueueTaskStatusProvider;
+use Logeecom\Infrastructure\Utility\Events\EventBus;
 use Packlink\Brands\Packlink\PacklinkConfigurationService;
 use Packlink\BusinessLogic\BootstrapComponent;
 use Packlink\BusinessLogic\Brand\BrandConfigurationService;
@@ -32,7 +38,8 @@ use Packlink\BusinessLogic\OrderShipmentDetails\Models\OrderShipmentDetails;
 use Packlink\BusinessLogic\Registration\RegistrationInfoService;
 use Packlink\BusinessLogic\Scheduler\Models\Schedule;
 use Packlink\BusinessLogic\ShipmentDraft\Models\OrderSendDraftTaskMap;
-use Packlink\BusinessLogic\ShipmentDraft\ShipmentDraftService;
+use Packlink\BusinessLogic\ShipmentDraft\Interfaces\ShipmentDraftServiceInterface;
+use Packlink\BusinessLogic\Tasks\Interfaces\TaskMetadataProviderInterface;
 use Packlink\WooCommerce\Components\Services\Offline_Payments_Service;
 use Packlink\WooCommerce\Components\Services\Shipment_Draft_Service;
 use Packlink\BusinessLogic\ShippingMethod\Interfaces\ShopShippingMethodService;
@@ -47,6 +54,7 @@ use Packlink\WooCommerce\Components\Services\Logger_Service;
 use Packlink\WooCommerce\Components\Services\Registration_Info_Service;
 use Packlink\WooCommerce\Components\Services\System_Info_Service;
 use Packlink\WooCommerce\Components\Services\Warehouse_Country_Service;
+use Packlink\WooCommerce\Components\Services\WordPress_Task_Metadata_Provider;
 use Packlink\WooCommerce\Components\ShippingMethod\Shipping_Method_Map;
 use Packlink\WooCommerce\Components\ShippingMethod\Shop_Shipping_Method_Service;
 
@@ -144,9 +152,12 @@ class Bootstrap_Component extends BootstrapComponent {
 		);
 
 		ServiceRegister::registerService(
-			ShipmentDraftService::CLASS_NAME,
+			ShipmentDraftServiceInterface::CLASS_NAME,
 			static function () {
-				return Shipment_Draft_Service::getInstance();
+				/** @var TaskExecutorInterface $taskExecutor */
+				$taskExecutor = ServiceRegister::getService( TaskExecutorInterface::CLASS_NAME );
+
+				return new Shipment_Draft_Service( $taskExecutor );
 			}
 		);
 
@@ -154,6 +165,46 @@ class Bootstrap_Component extends BootstrapComponent {
 			WarehouseCountryService::CLASS_NAME,
 			static function () {
 				return Warehouse_Country_Service::getInstance();
+			}
+		);
+
+		ServiceRegister::registerService(
+			TaskMetadataProviderInterface::CLASS_NAME,
+			function () {
+				/** @var \Packlink\BusinessLogic\Configuration $config */
+				$config = ServiceRegister::getService(Configuration::CLASS_NAME);
+
+				return new WordPress_Task_Metadata_Provider();
+			}
+		);
+
+
+		ServiceRegister::registerService(
+			TaskStatusProviderInterface::CLASS_NAME,
+			function () {
+				/** @var QueueServiceInterface $queueService */
+				$queueService = ServiceRegister::getService(QueueServiceInterface::CLASS_NAME);
+
+				return new QueueTaskStatusProvider($queueService);
+			}
+		);
+
+		ServiceRegister::registerService(
+			TaskExecutorInterface::CLASS_NAME,
+			function () {
+				/** @var QueueServiceInterface $queueService */
+				$queueService = ServiceRegister::getService(QueueServiceInterface::CLASS_NAME);
+
+				/** @var TaskMetadataProviderInterface $metadataProvider */
+				$metadataProvider = ServiceRegister::getService(TaskMetadataProviderInterface::CLASS_NAME);
+
+				/** @var Configuration $config */
+				$config = ServiceRegister::getService(Configuration::CLASS_NAME);
+
+				/** @var EventBus $eventBus */
+				$eventBus = ServiceRegister::getService(EventBus::CLASS_NAME);
+
+				return new HttpTaskExecutor($queueService, $metadataProvider, $config, $eventBus);
 			}
 		);
 	}

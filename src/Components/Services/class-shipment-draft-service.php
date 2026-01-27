@@ -7,10 +7,8 @@
 
 namespace Packlink\WooCommerce\Components\Services;
 
-use Logeecom\Infrastructure\ORM\RepositoryRegistry;
 use Logeecom\Infrastructure\ServiceRegister;
 use MailPoetVendor\Doctrine\DBAL\Driver\PDO\Exception;
-use Packlink\BusinessLogic\OrderShipmentDetails\Models\OrderShipmentDetails;
 use Packlink\BusinessLogic\OrderShipmentDetails\OrderShipmentDetailsService;
 use Packlink\BusinessLogic\ShipmentDraft\ShipmentDraftService;
 use Packlink\BusinessLogic\Tasks\SendDraftTask;

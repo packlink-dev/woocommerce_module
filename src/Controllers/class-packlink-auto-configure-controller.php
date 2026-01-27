@@ -7,6 +7,8 @@
 
 namespace Packlink\WooCommerce\Controllers;
 
+use Logeecom\Infrastructure\ServiceRegister;
+use Logeecom\Infrastructure\TaskExecution\Interfaces\TaskExecutorInterface;
 use Packlink\BusinessLogic\Controllers\AutoConfigurationController;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -23,7 +25,9 @@ class Packlink_Auto_Configure_Controller extends Packlink_Base_Controller {
 	 * Starts the auto-configuration.
 	 */
 	protected function start() {
-		$controller = new AutoConfigurationController();
+		$controller = new AutoConfigurationController(
+			ServiceRegister::getService( TaskExecutorInterface::CLASS_NAME )
+		);
 
 		$this->return_json( array( 'success' => $controller->start( true ) ) );
 	}

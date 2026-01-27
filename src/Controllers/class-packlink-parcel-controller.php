@@ -7,6 +7,8 @@
 
 namespace Packlink\WooCommerce\Controllers;
 
+use Logeecom\Infrastructure\ServiceRegister;
+use Logeecom\Infrastructure\TaskExecution\Interfaces\TaskExecutorInterface;
 use Logeecom\Infrastructure\TaskExecution\Exceptions\QueueStorageUnavailableException;
 use Packlink\BusinessLogic\Controllers\DefaultParcelController;
 use Packlink\BusinessLogic\DTO\Exceptions\FrontDtoValidationException;
@@ -33,7 +35,9 @@ class Packlink_Parcel_Controller extends Packlink_Base_Controller {
 	 * Packlink_Parcel_Controller constructor.
 	 */
 	public function __construct() {
-		$this->controller = new DefaultParcelController();
+		$this->controller = new DefaultParcelController(
+			ServiceRegister::getService( TaskExecutorInterface::CLASS_NAME )
+		);
 	}
 
 	/**
