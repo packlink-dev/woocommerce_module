@@ -160,7 +160,7 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 	 * @throws ParameterException
 	 */
 	public function get_draft_status() {
-		$this->validate( 'no', true );
+		$this->validate_admin_or_manager('no');
 
 		$order_id = ! empty( $_GET['order_id'] ) ? $_GET['order_id'] : null;
 
@@ -500,6 +500,29 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 		$draft_service = ServiceRegister::getService( ShipmentDraftService::CLASS_NAME );
 
 		return $draft_service;
+	}
+
+	/**
+	 * Validates if plugin is enabled and if it is post request for calls permitted only for admins and shop managers
+	 *
+	 * @return void
+	 */
+	protected function validate_admin_or_manager( $post = 'no' ) {
+		if ( ! Shop_Helper::is_plugin_enabled() ) {
+			exit();
+		}
+
+		if ( 'yes' === $post && ! $this->is_post() ) {
+			$this->redirect404();
+		}
+
+		if (!is_user_logged_in()) {
+			$this->redirect404();
+		}
+
+		if (!current_user_can('administrator') && !current_user_can('manage_woocommerce')) {
+			$this->redirect404();
+		}
 	}
 }
 
