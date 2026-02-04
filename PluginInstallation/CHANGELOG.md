@@ -3,6 +3,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [v3.6.4](https://github.com/packlink-dev/woocommerce_module/compare/v3.6.3...v3.6.4) - 2026-02-04
+### Changed
+- Rates for AU, CA, and US fixed
+- Shop manager enabled to create draft
+- Weight unit mismatch fixed
+- Duplicate SQL queries fixed
+
 ## [v3.6.3](https://github.com/packlink-dev/woocommerce_module/compare/v3.6.2...v3.6.3) - 2026-01-21
 ### Changed
 - Fix downloadable products no longer blocked for shipping
