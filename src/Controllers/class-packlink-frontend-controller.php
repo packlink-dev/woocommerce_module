@@ -15,7 +15,6 @@ use Logeecom\Infrastructure\ServiceRegister;
 use Packlink\BusinessLogic\CountryLabels\Interfaces\CountryService;
 use Packlink\WooCommerce\Components\Utility\Script_Loader;
 use Packlink\WooCommerce\Components\Utility\Shop_Helper;
-use Packlink\WooCommerce\Components\Utility\Task_Queue;
 
 /**
  * Class Packlink_Frontend_Controller
@@ -27,7 +26,6 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	 * Packlink_Frontend_Controller constructor.
 	 */
 	public function __construct() {
-		Task_Queue::wakeup();
 	}
 
 	/**

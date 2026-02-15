@@ -5,6 +5,7 @@ namespace Packlink\WooCommerce\Components\Services;
 use Logeecom\Infrastructure\Configuration\Configuration;
 use Logeecom\Infrastructure\ServiceRegister;
 use Logeecom\Infrastructure\TaskExecution\Interfaces\Priority;
+use Logeecom\Infrastructure\TaskExecution\Interfaces\TaskRunnerConfigInterface;
 use Packlink\BusinessLogic\Tasks\Interfaces\BusinessTask;
 use Packlink\BusinessLogic\Tasks\Interfaces\TaskMetadataProviderInterface;
 use Packlink\BusinessLogic\Tasks\TaskExecutionConfig;
@@ -56,8 +57,13 @@ class WordPress_Task_Metadata_Provider implements TaskMetadataProviderInterface
      */
     private function getQueueName(BusinessTask $task)
     {
-        /** @var Configuration $config */
-        $config = ServiceRegister::getService(Configuration::CLASS_NAME);
+        if($task->getExecutionConfig() && $task->getExecutionConfig()->getQueueName()) {
+            return $task->getExecutionConfig()->getQueueName();
+        }
+
+        /** @var TaskRunnerConfigInterface $config */
+        $config = ServiceRegister::getService(TaskRunnerConfigInterface::CLASS_NAME);
+
         return $config->getDefaultQueueName();
     }
 
@@ -72,12 +78,6 @@ class WordPress_Task_Metadata_Provider implements TaskMetadataProviderInterface
      */
     private function getPriority(BusinessTask $task)
     {
-        // SendDraftBusinessTask is HIGH priority (time-sensitive)
-//        if ($task instanceof SendDraftBusinessTask) {
-//            return Priority::HIGH;
-//        }
-
-        // Check if task has custom priority method
         if (method_exists($task, 'getPriority')) {
             return $task->getPriority();
         }

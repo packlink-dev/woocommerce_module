@@ -26,7 +26,8 @@ class Packlink_Auto_Configure_Controller extends Packlink_Base_Controller {
 	 */
 	protected function start() {
 		$controller = new AutoConfigurationController(
-			ServiceRegister::getService( TaskExecutorInterface::CLASS_NAME )
+			ServiceRegister::getService( TaskExecutorInterface::CLASS_NAME ),
+            ServiceRegister::getService( UpdateShippingServiceTaskStatusServiceInterface::CLASS_NAME)
 		);
 
 		$this->return_json( array( 'success' => $controller->start( true ) ) );

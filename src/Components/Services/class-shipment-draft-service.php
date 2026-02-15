@@ -38,7 +38,7 @@ class Shipment_Draft_Service extends ShipmentDraftService
 	 * @throws \Packlink\BusinessLogic\ShipmentDraft\Exceptions\DraftTaskMapExists
 	 * @throws \Packlink\BusinessLogic\ShipmentDraft\Exceptions\DraftTaskMapNotFound
 	 */
-	public function enqueueCreateShipmentDraftTask( $orderId, $isDelayed = false, $delayInterval = 5 )
+	public function enqueueCreateShipmentDraftTask( $orderId, $isDelayed = true, $delayInterval = 5 )
 	{
 		delete_transient( 'packlink-pro-success-messages' );
 		delete_transient( 'packlink-pro-error-messages' );
@@ -51,7 +51,7 @@ class Shipment_Draft_Service extends ShipmentDraftService
 					throw new \RuntimeException( 'Draft already exists' );
 				}
 
-				( new SendDraftTask( $orderId ) )->execute();
+				( new SendDraftBusinessTask( $orderId ) )->execute();
 
 				$translation = __(
 					'Shipment draft for order %s created successfully',

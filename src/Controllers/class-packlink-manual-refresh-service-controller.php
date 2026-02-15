@@ -15,6 +15,8 @@ use Logeecom\Infrastructure\TaskExecution\Exceptions\QueueItemDeserializationExc
 use Logeecom\Infrastructure\TaskExecution\Interfaces\TaskExecutorInterface;
 use Logeecom\Infrastructure\TaskExecution\Interfaces\TaskStatusProviderInterface;
 use Packlink\BusinessLogic\Controllers\ManualRefreshController;
+use Packlink\BusinessLogic\UpdateShippingServices\Interfaces\UpdateShippingServicesOrchestratorInterface;
+use Packlink\BusinessLogic\UpdateShippingServices\Interfaces\UpdateShippingServiceTaskStatusServiceInterface;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
@@ -29,15 +31,16 @@ class Packlink_Manual_Refresh_Service_Controller extends Packlink_Base_Controlle
     public function __construct(
 
     ) {
-		/**@var TaskExecutorInterface $executor */
-        $executor = ServiceRegister::getService(TaskExecutorInterface::CLASS_NAME);
+	    /** @var TaskExecutorInterface $executor */
+	    $executor = ServiceRegister::getService(TaskExecutorInterface::CLASS_NAME);
 
-	    /**
-	     * @var TaskStatusProviderInterface $statusProvider
-	     */
-        $statusProvider = ServiceRegister::getService(TaskStatusProviderInterface::CLASS_NAME);
+	    /** @var UpdateShippingServiceTaskStatusServiceInterface $statusService */
+	    $statusService = ServiceRegister::getService(UpdateShippingServiceTaskStatusServiceInterface::class);
 
-        $this->manual_refresh_controller = new ManualRefreshController($executor, $statusProvider);
+	    $this->manual_refresh_controller = new ManualRefreshController(
+		    $executor,
+		    $statusService
+	    );
     }
 
 	public function refresh() {

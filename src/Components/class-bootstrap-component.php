@@ -14,18 +14,14 @@ use Logeecom\Infrastructure\Http\HttpClient;
 use Logeecom\Infrastructure\Logger\Interfaces\ShopLoggerAdapter;
 use Logeecom\Infrastructure\Logger\LogData;
 use Logeecom\Infrastructure\ORM\Exceptions\RepositoryClassException;
+use Logeecom\Infrastructure\ORM\Interfaces\RepositoryInterface;
 use Logeecom\Infrastructure\ORM\RepositoryRegistry;
+use Logeecom\Infrastructure\Scheduler\Models\Schedule;
 use Logeecom\Infrastructure\Serializer\Concrete\NativeSerializer;
 use Logeecom\Infrastructure\Serializer\Serializer;
 use Logeecom\Infrastructure\ServiceRegister;
-use Logeecom\Infrastructure\TaskExecution\HttpTaskExecutor;
-use Logeecom\Infrastructure\TaskExecution\Interfaces\QueueServiceInterface;
 use Logeecom\Infrastructure\TaskExecution\Interfaces\TaskExecutorInterface;
 use Logeecom\Infrastructure\TaskExecution\Interfaces\TaskStatusProviderInterface;
-use Logeecom\Infrastructure\TaskExecution\Process;
-use Logeecom\Infrastructure\TaskExecution\QueueItem;
-use Logeecom\Infrastructure\TaskExecution\QueueTaskStatusProvider;
-use Logeecom\Infrastructure\Utility\Events\EventBus;
 use Packlink\Brands\Packlink\PacklinkConfigurationService;
 use Packlink\BusinessLogic\BootstrapComponent;
 use Packlink\BusinessLogic\Brand\BrandConfigurationService;
@@ -36,10 +32,12 @@ use Packlink\BusinessLogic\FileResolver\FileResolverService;
 use Packlink\BusinessLogic\Order\Interfaces\ShopOrderService;
 use Packlink\BusinessLogic\OrderShipmentDetails\Models\OrderShipmentDetails;
 use Packlink\BusinessLogic\Registration\RegistrationInfoService;
-use Packlink\BusinessLogic\Scheduler\Models\Schedule;
-use Packlink\BusinessLogic\ShipmentDraft\Models\OrderSendDraftTaskMap;
 use Packlink\BusinessLogic\ShipmentDraft\Interfaces\ShipmentDraftServiceInterface;
 use Packlink\BusinessLogic\Tasks\Interfaces\TaskMetadataProviderInterface;
+use Packlink\BusinessLogic\UpdateShippingServices\Interfaces\UpdateShippingServiceTaskStatusServiceInterface;
+use Packlink\BusinessLogic\UpdateShippingServices\Models\UpdateShippingServiceTaskStatus;
+use Packlink\BusinessLogic\UpdateShippingServices\UpdateShippingServiceTaskStatusService;
+use Packlink\WooCommerce\Components\Scheduler\Action_Scheduler_Task_Status_Provider;
 use Packlink\WooCommerce\Components\Services\Offline_Payments_Service;
 use Packlink\WooCommerce\Components\Services\Shipment_Draft_Service;
 use Packlink\BusinessLogic\ShippingMethod\Interfaces\ShopShippingMethodService;
@@ -48,12 +46,12 @@ use Packlink\BusinessLogic\SystemInformation\SystemInfoService;
 use Packlink\WooCommerce\Components\Order\Order_Drop_Off_Map;
 use Packlink\WooCommerce\Components\Order\Shop_Order_Service;
 use Packlink\WooCommerce\Components\Repositories\Base_Repository;
-use Packlink\WooCommerce\Components\Repositories\Queue_Item_Repository;
 use Packlink\WooCommerce\Components\Services\Config_Service;
 use Packlink\WooCommerce\Components\Services\Logger_Service;
 use Packlink\WooCommerce\Components\Services\Registration_Info_Service;
 use Packlink\WooCommerce\Components\Services\System_Info_Service;
 use Packlink\WooCommerce\Components\Services\Warehouse_Country_Service;
+use Packlink\WooCommerce\Components\Services\WordPress_Task_Executor;
 use Packlink\WooCommerce\Components\Services\WordPress_Task_Metadata_Provider;
 use Packlink\WooCommerce\Components\ShippingMethod\Shipping_Method_Map;
 use Packlink\WooCommerce\Components\ShippingMethod\Shop_Shipping_Method_Service;
@@ -182,29 +180,24 @@ class Bootstrap_Component extends BootstrapComponent {
 		ServiceRegister::registerService(
 			TaskStatusProviderInterface::CLASS_NAME,
 			function () {
-				/** @var QueueServiceInterface $queueService */
-				$queueService = ServiceRegister::getService(QueueServiceInterface::CLASS_NAME);
+				return new Action_Scheduler_Task_Status_Provider();
+			}
+		);
 
-				return new QueueTaskStatusProvider($queueService);
+		ServiceRegister::registerService(
+			UpdateShippingServiceTaskStatusServiceInterface::class,
+			function () {
+				/** @var RepositoryInterface $repository */
+				$repository = RepositoryRegistry::getRepository(UpdateShippingServiceTaskStatus::CLASS_NAME);
+
+				return new UpdateShippingServiceTaskStatusService($repository);
 			}
 		);
 
 		ServiceRegister::registerService(
 			TaskExecutorInterface::CLASS_NAME,
 			function () {
-				/** @var QueueServiceInterface $queueService */
-				$queueService = ServiceRegister::getService(QueueServiceInterface::CLASS_NAME);
-
-				/** @var TaskMetadataProviderInterface $metadataProvider */
-				$metadataProvider = ServiceRegister::getService(TaskMetadataProviderInterface::CLASS_NAME);
-
-				/** @var Configuration $config */
-				$config = ServiceRegister::getService(Configuration::CLASS_NAME);
-
-				/** @var EventBus $eventBus */
-				$eventBus = ServiceRegister::getService(EventBus::CLASS_NAME);
-
-				return new HttpTaskExecutor($queueService, $metadataProvider, $config, $eventBus);
+				return new WordPress_Task_Executor();
 			}
 		);
 	}
@@ -218,15 +211,15 @@ class Bootstrap_Component extends BootstrapComponent {
 		parent::initRepositories();
 
 		RepositoryRegistry::registerRepository( ConfigEntity::CLASS_NAME, Base_Repository::getClassName() );
-		RepositoryRegistry::registerRepository( Process::CLASS_NAME, Base_Repository::getClassName() );
 		RepositoryRegistry::registerRepository( ShippingMethod::CLASS_NAME, Base_Repository::getClassName() );
 		RepositoryRegistry::registerRepository( Shipping_Method_Map::CLASS_NAME, Base_Repository::getClassName() );
 		RepositoryRegistry::registerRepository( OrderShipmentDetails::CLASS_NAME, Base_Repository::getClassName() );
 		RepositoryRegistry::registerRepository( Schedule::CLASS_NAME, Base_Repository::getClassName() );
-		RepositoryRegistry::registerRepository( QueueItem::CLASS_NAME, Queue_Item_Repository::getClassName() );
 		RepositoryRegistry::registerRepository( LogData::CLASS_NAME, Base_Repository::getClassName() );
-		RepositoryRegistry::registerRepository( OrderSendDraftTaskMap::CLASS_NAME, Base_Repository::getClassName() );
 		RepositoryRegistry::registerRepository( Order_Drop_Off_Map::CLASS_NAME, Base_Repository::getClassName() );
         RepositoryRegistry::registerRepository(CashOnDelivery::getClassName(), Base_Repository::getClassName());
+		RepositoryRegistry::registerRepository( UpdateShippingServiceTaskStatus::CLASS_NAME,
+			Base_Repository::getClassName()
+		);
 	}
 }
