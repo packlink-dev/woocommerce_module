@@ -10,8 +10,8 @@ namespace Packlink\WooCommerce\Controllers;
 use Exception;
 use Logeecom\Infrastructure\ServiceRegister;
 use Logeecom\Infrastructure\TaskExecutor\Model\TaskStatus;
+use Packlink\BusinessLogic\Configuration;
 use Packlink\BusinessLogic\Controllers\ShippingMethodController;
-use Packlink\BusinessLogic\Controllers\UpdateShippingServicesTaskStatusController;
 use Packlink\BusinessLogic\UpdateShippingServices\Interfaces\UpdateShippingServiceTaskStatusServiceInterface;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -71,7 +71,14 @@ class Packlink_Shipping_Service_Controller extends Packlink_Base_Controller {
 		}
 
 		try {
-			$status = $this->updateShippingServiceStatus->getLastTaskStatus();
+
+			/**
+			 * @var Configuration $configuration
+			 */
+			$configuration = ServiceRegister::getService(\Logeecom\Infrastructure\Configuration\Configuration::CLASS_NAME);
+
+			$status = $this->updateShippingServiceStatus->getLatestStatus($configuration->getContext());
+
 		} catch ( Exception $e ) {
 			$status = TaskStatus::FAILED;
 		}
