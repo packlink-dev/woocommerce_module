@@ -7,8 +7,6 @@
 
 namespace Packlink\WooCommerce\Controllers;
 
-use Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException;
-use Logeecom\Infrastructure\TaskExecution\Exceptions\QueueStorageUnavailableException;
 use Packlink\BusinessLogic\Controllers\LoginController;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -25,8 +23,6 @@ class Packlink_Login_Controller extends Packlink_Base_Controller {
 	/**
 	 * Performs user login.
 	 *
-	 * @throws RepositoryNotRegisteredException When repo is not registered.
-	 * @throws QueueStorageUnavailableException When storage is unavailable.
 	 */
 	public function login() {
 		$this->validate( 'yes', true );

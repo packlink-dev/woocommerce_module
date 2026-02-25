@@ -8,7 +8,6 @@
 namespace Packlink\WooCommerce\Controllers;
 
 use Logeecom\Infrastructure\ServiceRegister;
-use Logeecom\Infrastructure\TaskExecution\Exceptions\QueueStorageUnavailableException;
 use Packlink\BusinessLogic\Controllers\LocationsController;
 use Packlink\BusinessLogic\Controllers\WarehouseController;
 use Packlink\BusinessLogic\DTO\Exceptions\FrontDtoNotRegisteredException;
@@ -65,7 +64,6 @@ class Packlink_Warehouse_Controller extends Packlink_Base_Controller {
 	/**
 	 * Updates warehouse data.
 	 *
-	 * @throws QueueStorageUnavailableException When queue storage is unavailable.
 	 * @throws FrontDtoNotRegisteredException When front dto is not registered.
 	 * @throws FrontDtoValidationException When warehouse data is not valid.
 	 */

@@ -22,8 +22,7 @@ class Packlink_Support_Controller extends Packlink_Base_Controller {
 	 */
 	public function get() {
 		$this->return_json( [
-			'TASK_RUNNER_WAKEUP_DELAY' => $this->get_config_service()->getTaskRunnerWakeupDelay(),
-			'FOOTER_HEIGHT'         => $this->get_config_service()->get_footer_height(),
+			'FOOTER_HEIGHT' => $this->get_config_service()->get_footer_height(),
 		] );
 	}
 
@@ -32,10 +31,6 @@ class Packlink_Support_Controller extends Packlink_Base_Controller {
 	 */
 	public function set() {
 		$body = json_decode( $this->get_raw_input(), true );
-
-		if ( isset( $body['taskRunnerWakeupDelay'] ) ) {
-			$this->set_timeout( $body['taskRunnerWakeupDelay'] );
-		}
 
 		if ( isset( $body['footerHeight'] ) ) {
 			$this->set_footer_height( $body['footerHeight'] );
@@ -50,14 +45,6 @@ class Packlink_Support_Controller extends Packlink_Base_Controller {
 		}
 
 		$this->get_config_service()->set_footer_height( $height );
-	}
-
-	private function set_timeout( $timeout ) {
-		if ( ! is_int( $timeout ) ) {
-			return;
-		}
-
-		$this->get_config_service()->setTaskRunnerWakeupDelay( $timeout );
 	}
 
 	/**

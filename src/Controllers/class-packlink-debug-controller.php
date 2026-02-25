@@ -11,9 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-use Logeecom\Infrastructure\Configuration\Configuration;
 use Logeecom\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
-use Logeecom\Infrastructure\ServiceRegister;
 use Packlink\BusinessLogic\Controllers\DebugController;
 use Packlink\WooCommerce\Components\Utility\Debug_Helper;
 use Packlink\WooCommerce\Components\Utility\Shop_Helper;
@@ -83,60 +81,6 @@ class Packlink_Debug_Controller extends Packlink_Base_Controller {
 		$data = wp_remote_get( 'https://www.howsmyssl.com/a/check' );
 
 		$this->return_json( $data );
-	}
-
-	/**
-	 * Tests cURL request to the async process controller.
-	 */
-	public function testCurl() {
-		$this->validate( 'no', true );
-
-		//@codingStandardsIgnoreStart
-		/** @var Configuration $config */
-		$config = ServiceRegister::getService( Configuration::CLASS_NAME );
-		$url    = $config->getAsyncProcessUrl( 'test' );
-
-		/** @noinspection PhpComposerExtensionStubsInspection */
-		$curl    = curl_init();
-		$verbose = fopen( 'php://temp', 'wb+' );
-		/** @noinspection CurlSslServerSpoofingInspection */
-		/** @noinspection PhpComposerExtensionStubsInspection */
-		curl_setopt_array(
-			$curl,
-			array(
-				CURLOPT_URL            => $url,
-				CURLOPT_RETURNTRANSFER => true,
-				CURLOPT_SSL_VERIFYHOST => false,
-				CURLOPT_SSL_VERIFYPEER => false,
-				CURLOPT_HEADER         => true,
-				// CURLOPT_SSLVERSION      => CURL_SSLVERSION_TLSv1_0,
-				// CURLOPT_HTTP_VERSION    => CURL_HTTP_VERSION_1_1,
-				CURLOPT_FOLLOWLOCATION => true,
-				CURLOPT_TIMEOUT        => 2,
-				CURLOPT_CUSTOMREQUEST  => 'POST',
-				CURLOPT_VERBOSE        => true,
-				CURLOPT_STDERR         => $verbose,
-				// CURLOPT_SSL_CIPHER_LIST => 'TLSv1.2',
-				CURLOPT_HTTPHEADER     => array(
-					'Cache-Control: no-cache',
-				),
-			)
-		);
-
-		/** @noinspection PhpComposerExtensionStubsInspection */
-		$response = curl_exec( $curl );
-
-		rewind( $verbose );
-		echo '<pre>', stream_get_contents( $verbose );
-
-		/** @noinspection PhpComposerExtensionStubsInspection */
-		curl_close( $curl );
-
-		echo $response;
-
-		echo '</pre>';
-		exit;
-		//@codingStandardsIgnoreEnd
 	}
 
 	/**

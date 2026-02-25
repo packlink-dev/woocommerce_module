@@ -16,12 +16,12 @@ use Logeecom\Infrastructure\Logger\LogData;
 use Logeecom\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use Logeecom\Infrastructure\ORM\Interfaces\RepositoryInterface;
 use Logeecom\Infrastructure\ORM\RepositoryRegistry;
-use Logeecom\Infrastructure\Scheduler\Models\Schedule;
 use Logeecom\Infrastructure\Serializer\Concrete\NativeSerializer;
 use Logeecom\Infrastructure\Serializer\Serializer;
 use Logeecom\Infrastructure\ServiceRegister;
-use Logeecom\Infrastructure\TaskExecution\Interfaces\TaskExecutorInterface;
-use Logeecom\Infrastructure\TaskExecution\Interfaces\TaskStatusProviderInterface;
+use Logeecom\Infrastructure\TaskExecution\Scheduler\Models\Schedule;
+use Logeecom\Infrastructure\TaskExecutor\Interfaces\TaskExecutorInterface;
+use Logeecom\Infrastructure\TaskExecutor\Interfaces\TaskStatusProviderInterface;
 use Packlink\Brands\Packlink\PacklinkConfigurationService;
 use Packlink\BusinessLogic\BootstrapComponent;
 use Packlink\BusinessLogic\Brand\BrandConfigurationService;
@@ -37,8 +37,9 @@ use Packlink\BusinessLogic\Tasks\Interfaces\TaskMetadataProviderInterface;
 use Packlink\BusinessLogic\UpdateShippingServices\Interfaces\UpdateShippingServiceTaskStatusServiceInterface;
 use Packlink\BusinessLogic\UpdateShippingServices\Models\UpdateShippingServiceTaskStatus;
 use Packlink\BusinessLogic\UpdateShippingServices\UpdateShippingServiceTaskStatusService;
-use Packlink\WooCommerce\Components\Scheduler\Action_Scheduler_Task_Status_Provider;
+use Packlink\BusinessLogic\Scheduler\Interfaces\SchedulerInterface;
 use Packlink\WooCommerce\Components\Services\Offline_Payments_Service;
+use Packlink\WooCommerce\Components\Services\Packlink_WordPress_Scheduler;
 use Packlink\WooCommerce\Components\Services\Shipment_Draft_Service;
 use Packlink\BusinessLogic\ShippingMethod\Interfaces\ShopShippingMethodService;
 use Packlink\BusinessLogic\ShippingMethod\Models\ShippingMethod;
@@ -53,6 +54,7 @@ use Packlink\WooCommerce\Components\Services\System_Info_Service;
 use Packlink\WooCommerce\Components\Services\Warehouse_Country_Service;
 use Packlink\WooCommerce\Components\Services\WordPress_Task_Executor;
 use Packlink\WooCommerce\Components\Services\WordPress_Task_Metadata_Provider;
+use Packlink\WooCommerce\Components\Services\WordPress_Task_Status_Provider;
 use Packlink\WooCommerce\Components\ShippingMethod\Shipping_Method_Map;
 use Packlink\WooCommerce\Components\ShippingMethod\Shop_Shipping_Method_Service;
 
@@ -66,6 +68,7 @@ class Bootstrap_Component extends BootstrapComponent {
 	 * Initializes services and utilities.
 	 */
 	protected static function initServices() {
+
 		parent::initServices();
 
 		ServiceRegister::registerService(
@@ -79,6 +82,13 @@ class Bootstrap_Component extends BootstrapComponent {
 			Configuration::CLASS_NAME,
 			static function () {
 				return Config_Service::getInstance();
+			}
+		);
+
+		ServiceRegister::registerService(
+			TaskMetadataProviderInterface::CLASS_NAME,
+			static function () {
+				return new WordPress_Task_Metadata_Provider();
 			}
 		);
 
@@ -167,24 +177,6 @@ class Bootstrap_Component extends BootstrapComponent {
 		);
 
 		ServiceRegister::registerService(
-			TaskMetadataProviderInterface::CLASS_NAME,
-			function () {
-				/** @var \Packlink\BusinessLogic\Configuration $config */
-				$config = ServiceRegister::getService(Configuration::CLASS_NAME);
-
-				return new WordPress_Task_Metadata_Provider();
-			}
-		);
-
-
-		ServiceRegister::registerService(
-			TaskStatusProviderInterface::CLASS_NAME,
-			function () {
-				return new Action_Scheduler_Task_Status_Provider();
-			}
-		);
-
-		ServiceRegister::registerService(
 			UpdateShippingServiceTaskStatusServiceInterface::class,
 			function () {
 				/** @var RepositoryInterface $repository */
@@ -198,6 +190,20 @@ class Bootstrap_Component extends BootstrapComponent {
 			TaskExecutorInterface::CLASS_NAME,
 			function () {
 				return new WordPress_Task_Executor();
+			}
+		);
+
+		ServiceRegister::registerService(
+			TaskStatusProviderInterface::CLASS_NAME,
+			function () {
+				return new WordPress_Task_Status_Provider();
+			}
+		);
+
+		ServiceRegister::registerService(
+			SchedulerInterface::CLASS_NAME,
+			function () {
+				return new Packlink_WordPress_Scheduler();
 			}
 		);
 	}

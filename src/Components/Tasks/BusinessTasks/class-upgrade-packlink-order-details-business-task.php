@@ -5,24 +5,22 @@
  * @package Packlink
  */
 
-namespace Packlink\WooCommerce\Components\Tasks;
+namespace Packlink\WooCommerce\Components\Tasks\BusinessTasks;
 
-use Logeecom\Infrastructure\Http\Exceptions\HttpUnhandledException;
 use Logeecom\Infrastructure\Logger\Logger;
 use Logeecom\Infrastructure\ServiceRegister;
-use Logeecom\Infrastructure\TaskExecution\Task;
 use Logeecom\Infrastructure\Utility\TimeProvider;
 use Packlink\BusinessLogic\Http\DTO\Shipment;
 use Packlink\BusinessLogic\Http\Proxy;
 use Packlink\BusinessLogic\OrderShipmentDetails\OrderShipmentDetailsService;
 use Packlink\BusinessLogic\ShippingMethod\Utility\ShipmentStatus;
+use Packlink\BusinessLogic\Tasks\Interfaces\BusinessTask;
+use Packlink\BusinessLogic\Tasks\TaskExecutionConfig;
 
 /**
- * Class UpgradePacklinkOrderDetails
- *
- * @package Packlink\WooCommerce\Components\Tasks
+ * Business task for upgrading Packlink order details.
  */
-class Upgrade_Packlink_Order_Details extends Task {
+class Upgrade_Packlink_Order_Details_Business_Task implements BusinessTask {
 
 	const INITIAL_PROGRESS_PERCENT = 5;
 	const DEFAULT_BATCH_SIZE       = 200;
@@ -33,36 +31,35 @@ class Upgrade_Packlink_Order_Details extends Task {
 	 * @var OrderShipmentDetailsService
 	 */
 	private $order_shipment_details_service;
+
 	/**
 	 * Proxy instance.
 	 *
 	 * @var Proxy
 	 */
 	private $proxy;
+
 	/**
 	 * Batch size.
 	 *
 	 * @var int
 	 */
 	private $batch_size = self::DEFAULT_BATCH_SIZE;
-	/**
-	 * Current progress.
-	 *
-	 * @var int
-	 */
-	private $current_progress = self::INITIAL_PROGRESS_PERCENT;
+
 	/**
 	 * Total orders count.
 	 *
 	 * @var int
 	 */
 	private $total_orders_count;
+
 	/**
 	 * Start date timestamp.
 	 *
 	 * @var int
 	 */
 	private $start_date;
+
 	/**
 	 * Order ids.
 	 *
@@ -71,82 +68,44 @@ class Upgrade_Packlink_Order_Details extends Task {
 	private $order_ids;
 
 	/**
-	 * UpgradePacklinkOrderDetails constructor.
+	 * Optional execution config override.
+	 *
+	 * @var TaskExecutionConfig|null
+	 */
+	private $execution_config;
+
+	/**
+	 * Upgrade_Packlink_Order_Details_Business_Task constructor.
 	 *
 	 * @param array $order_ids Order ids.
+	 * @param int|null $start_date Start date timestamp.
+	 * @param TaskExecutionConfig|null $execution_config Optional execution config override.
 	 */
-	public function __construct( array $order_ids ) {
-		/**
-		 * Time provider.
-		 *
-		 * @var TimeProvider $time_provider
-		 */
+	public function __construct( array $order_ids, $start_date = null, TaskExecutionConfig $execution_config = null ) {
+		/** @var TimeProvider $time_provider */
 		$time_provider            = ServiceRegister::getService( TimeProvider::CLASS_NAME );
 		$this->order_ids          = $order_ids;
 		$this->total_orders_count = count( $order_ids );
-		$this->start_date         = $time_provider->getDateTime( strtotime( '-60 days' ) )->getTimestamp();
+		$this->start_date         = $start_date ?: $time_provider->getDateTime( strtotime( '-60 days' ) )->getTimestamp();
+		$this->execution_config   = $execution_config;
 	}
 
 	/**
 	 * @inheritDoc
-	 */
-	public static function fromArray( array $array ) {
-		return new static( $array['order_ids'] );
-	}
-
-	/**
-	 * @inheritDoc
-	 */
-	public function toArray() {
-		return array( 'order_ids' => $this->order_ids );
-	}
-
-	/**
-	 * String representation of object.
-	 *
-	 * @link https://php.net/manual/en/serializable.serialize.php
-	 *
-	 * @return string the string representation of the object or null.
-	 * @since 5.1.0
-	 */
-	public function serialize() {
-		return serialize(
-			array(
-				$this->batch_size,
-				$this->order_ids,
-				$this->total_orders_count,
-				$this->current_progress,
-				$this->start_date,
-			)
-		);
-	}
-
-	/**
-	 * Constructs the object.
-	 *
-	 * @param string $serialized Serialized object string.
-	 */
-	public function unserialize( $serialized ) {
-		list(
-			$this->batch_size,
-			$this->order_ids,
-			$this->total_orders_count,
-			$this->current_progress,
-			$this->start_date,
-		) = unserialize( $serialized );
-	}
-
-	/**
-	 * Runs task logic.
 	 */
 	public function execute() {
-		$this->reportProgress( $this->current_progress );
-		$this->report_progress_when_no_order_ids();
+
+		if ( $this->total_orders_count === 0 ) {
+			yield 100;
+			return;
+		}
+
+		yield self::INITIAL_PROGRESS_PERCENT;
 
 		$count = count( $this->order_ids );
 		while ( $count > 0 ) {
 			$order_ids = $this->get_batch_order_ids();
-			$this->reportAlive();
+			yield null;
 
 			foreach ( $order_ids as $order_id ) {
 				$order     = \WC_Order_Factory::get_order( $order_id );
@@ -158,7 +117,6 @@ class Upgrade_Packlink_Order_Details extends Task {
 				$inactive    = $order->has_status( array( 'completed', 'failed', 'cancelled', 'refunded' ) );
 				$modified_at = $order->get_date_modified();
 
-				// Check if older than 60 days, if not fetch shipment details.
 				$in_time_limit = $modified_at && $modified_at->getTimestamp() >= $this->start_date;
 				if ( $in_time_limit && ! $inactive ) {
 					try {
@@ -177,53 +135,52 @@ class Upgrade_Packlink_Order_Details extends Task {
 				delete_post_meta( $order_id, '_packlink_draft_reference' );
 			}
 
-			// If batch is successful orders in batch should be removed.
 			$this->remove_finished_batch();
-
-			// If upload is successful progress should be reported for that batch.
-			$this->report_progress_for_batch();
+			yield $this->get_batch_progress();
 
 			$count = count( $this->order_ids );
 		}
 
-		$this->reportProgress( 100 );
+		yield 100;
 	}
 
 	/**
-	 * Determines whether task can be reconfigured.
-	 *
-	 * @return bool TRUE if task can be reconfigured; otherwise, FALSE.
+	 * @inheritDoc
 	 */
-	public function canBeReconfigured() {
-		return $this->batch_size > 1;
-	}
+	public function toArray(): array {
+		$data = array(
+			'order_ids'  => $this->order_ids,
+			'start_date' => $this->start_date,
+		);
 
-	/**
-	 * Reduces batch size.
-	 *
-	 * @throws HttpUnhandledException Thrown when batch size can't be reduced.
-	 */
-	public function reconfigure() {
-		$batch_size = $this->batch_size;
-		if ( $batch_size >= 100 ) {
-			$this->batch_size -= 50;
-		} elseif ( $batch_size > 10 && $batch_size < 100 ) {
-			$this->batch_size -= 10;
-		} elseif ( $batch_size > 1 && $batch_size <= 10 ) {
-			-- $this->batch_size;
-		} else {
-			throw new HttpUnhandledException( 'Batch size can not be smaller than 1' );
+		if ( $this->execution_config ) {
+			$data['execution_config'] = $this->execution_config->toArray();
 		}
+
+		return $data;
 	}
 
 	/**
-	 * Report progress when there are no orders for sync
+	 * @inheritDoc
 	 */
-	private function report_progress_when_no_order_ids() {
-		if ( count( $this->order_ids ) === 0 ) {
-			$this->current_progress = 100;
-			$this->reportProgress( $this->current_progress );
+	public static function fromArray( array $data ): BusinessTask {
+		$execution_config = null;
+		if ( ! empty( $data['execution_config'] ) && is_array( $data['execution_config'] ) ) {
+			$execution_config = TaskExecutionConfig::fromArray( $data['execution_config'] );
 		}
+
+		return new static(
+			$data['order_ids'] ?? array(),
+			$data['start_date'] ?? null,
+			$execution_config
+		);
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public function getExecutionConfig() {
+		return $this->execution_config;
 	}
 
 	/**
@@ -246,16 +203,15 @@ class Upgrade_Packlink_Order_Details extends Task {
 	}
 
 	/**
-	 * Report progress for batch
+	 * Calculates batch progress for logging.
+	 *
+	 * @return float
 	 */
-	private function report_progress_for_batch() {
+	private function get_batch_progress() {
 		$synced = $this->total_orders_count - count( $this->order_ids );
-
 		$progress_step = $synced * ( 100 - self::INITIAL_PROGRESS_PERCENT ) / $this->total_orders_count;
 
-		$this->current_progress = self::INITIAL_PROGRESS_PERCENT + $progress_step;
-
-		$this->reportProgress( $this->current_progress );
+		return self::INITIAL_PROGRESS_PERCENT + $progress_step;
 	}
 
 	/**
@@ -263,8 +219,6 @@ class Upgrade_Packlink_Order_Details extends Task {
 	 *
 	 * @param \WC_Order $order Order object.
 	 * @param Shipment  $shipment Shipment details.
-	 *
-	 * @throws \Packlink\BusinessLogic\OrderShipmentDetails\Exceptions\OrderShipmentDetailsNotFound
 	 */
 	private function set_shipment_details( \WC_Order $order, Shipment $shipment ) {
 		if ( $this->set_reference( $order, $shipment->reference ) ) {
@@ -285,7 +239,7 @@ class Upgrade_Packlink_Order_Details extends Task {
 		$order->update_meta_data( '_is_packlink_shipment', 'yes' );
 		$order->save();
 
-		$this->get_order_shipment_details_service()->setReference( (string)$order->get_id(), $reference );
+		$this->get_order_shipment_details_service()->setReference( (string) $order->get_id(), $reference );
 
 		return true;
 	}
@@ -294,8 +248,6 @@ class Upgrade_Packlink_Order_Details extends Task {
 	 * Sets order shipment status.
 	 *
 	 * @param Shipment $shipment Shipment details.
-	 *
-	 * @throws \Packlink\BusinessLogic\OrderShipmentDetails\Exceptions\OrderShipmentDetailsNotFound
 	 */
 	private function set_shipping_status( Shipment $shipment ) {
 		$shipping_status = ShipmentStatus::getStatus( $shipment->status );

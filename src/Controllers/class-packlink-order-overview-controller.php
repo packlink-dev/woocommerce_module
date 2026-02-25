@@ -16,7 +16,7 @@ use Logeecom\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
 use Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException;
 use Logeecom\Infrastructure\ORM\RepositoryRegistry;
 use Logeecom\Infrastructure\ServiceRegister;
-use Logeecom\Infrastructure\TaskExecution\QueueItem;
+use Logeecom\Infrastructure\TaskExecutor\Model\TaskStatus;
 use Packlink\BusinessLogic\Configuration;
 use Packlink\BusinessLogic\Http\DTO\ShipmentLabel;
 use Packlink\BusinessLogic\Order\OrderService;
@@ -172,7 +172,7 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 		$draft_service = ServiceRegister::getService( ShipmentDraftServiceInterface::CLASS_NAME );
 		$draft_status  = $draft_service->getDraftStatus( (string) $order_id );
 
-		if ( QueueItem::COMPLETED === $draft_status->status ) {
+		if ( TaskStatus::COMPLETED === $draft_status->status ) {
 			$shipment_details = $this->get_order_shipment_details_service()->getDetailsByOrderId( (string) $order_id );
 
 			if ( null === $shipment_details ) {
@@ -324,7 +324,7 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 
 		if ( ! $this->get_config_service()->is_manual_sync_enabled() ) {
 			$draft_status           = $this->get_shipment_draft_service()->getDraftStatus( $orderId );
-			if ( in_array( $draft_status->status, [ QueueItem::QUEUED, QueueItem::IN_PROGRESS ], true ) ) {
+			if ( in_array( $draft_status->status, [ TaskStatus::PENDING, TaskStatus::IN_PROGRESS ], true ) ) {
 				return '<div class="pl-draft-in-progress" data-order-id="' . $orderId . '">'
 				       . __( 'Draft is currently being created.', 'packlink-pro-shipping' )
 				       . '</div>';

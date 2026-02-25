@@ -4,15 +4,10 @@ namespace Packlink\WooCommerce\Components\Services;
 
 use Logeecom\Infrastructure\Configuration\Configuration;
 use Logeecom\Infrastructure\ServiceRegister;
-use Logeecom\Infrastructure\TaskExecution\Interfaces\Priority;
-use Logeecom\Infrastructure\TaskExecution\Interfaces\TaskRunnerConfigInterface;
+use Logeecom\Infrastructure\TaskExecutor\Interfaces\Priority;
 use Packlink\BusinessLogic\Tasks\Interfaces\BusinessTask;
 use Packlink\BusinessLogic\Tasks\Interfaces\TaskMetadataProviderInterface;
 use Packlink\BusinessLogic\Tasks\TaskExecutionConfig;
-
-if (!defined('ABSPATH')) {
-    exit; // Exit if accessed directly
-}
 
 /**
  * WordPress-specific task metadata provider.
@@ -25,6 +20,8 @@ if (!defined('ABSPATH')) {
  */
 class WordPress_Task_Metadata_Provider implements TaskMetadataProviderInterface
 {
+	const DEFAULT_QUEUE_NAME = 'default';
+
     /**
      * Get execution configuration for business task.
      *
@@ -61,10 +58,7 @@ class WordPress_Task_Metadata_Provider implements TaskMetadataProviderInterface
             return $task->getExecutionConfig()->getQueueName();
         }
 
-        /** @var TaskRunnerConfigInterface $config */
-        $config = ServiceRegister::getService(TaskRunnerConfigInterface::CLASS_NAME);
-
-        return $config->getDefaultQueueName();
+        return self::DEFAULT_QUEUE_NAME;
     }
 
     /**

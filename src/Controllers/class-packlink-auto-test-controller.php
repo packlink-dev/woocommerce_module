@@ -15,10 +15,6 @@ use Packlink\WooCommerce\Components\Services\Logger_Service;
 use Packlink\WooCommerce\Components\Utility\Script_Loader;
 use Packlink\WooCommerce\Components\Utility\Shop_Helper;
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit; // Exit if accessed directly.
-}
-
 /**
  * Class Packlink_Auto_Test_Controller
  *
@@ -69,6 +65,13 @@ class Packlink_Auto_Test_Controller extends Packlink_Base_Controller {
 	 */
 	protected function start() {
 		$status = $this->controller->start();
+		if ( ! empty( $status['success'] ) ) {
+			$action_id = $this->get_latest_auto_test_action_id();
+			if ( $action_id !== null ) {
+				$status['queueItemId'] = $action_id;
+				$status['itemId']      = $action_id;
+			}
+		}
 
 		$this->return_json( $status );
 	}
@@ -81,7 +84,11 @@ class Packlink_Auto_Test_Controller extends Packlink_Base_Controller {
 	 * @throws RepositoryNotRegisteredException When repository is not registered in bootstrap.
 	 */
 	protected function checkStatus() {
-		$status = $this->controller->checkStatus( $this->get_param( 'queueItemId' ) );
+		$queue_item_id = (int) $this->get_param( 'queueItemId' );
+		$status        = $queue_item_id > 0 ? $this->get_action_scheduler_status( $queue_item_id ) : null;
+		if ( $status === null ) {
+			$status = $this->controller->checkStatus( $queue_item_id );
+		}
 
 		if ( $status['finished'] ) {
 			$this->controller->stop(
@@ -92,6 +99,105 @@ class Packlink_Auto_Test_Controller extends Packlink_Base_Controller {
 		}
 
 		$this->return_json( $status );
+	}
+
+	/**
+	 * Retrieves Action Scheduler status for provided action ID.
+	 *
+	 * @param int $action_id Action id.
+	 *
+	 * @return array|null
+	 * @throws RepositoryNotRegisteredException
+	 */
+	private function get_action_scheduler_status( $action_id ) {
+		if ( ! class_exists( '\ActionScheduler' ) ) {
+			return null;
+		}
+
+		$status = (string) \ActionScheduler::store()->get_status( $action_id );
+		if ( $status === '' ) {
+			return null;
+		}
+
+		$finished_statuses = array( 'complete', 'completed', 'failed', 'canceled', 'cancelled' );
+		$failed_statuses   = array( 'failed', 'canceled', 'cancelled' );
+
+		return array(
+			'finished'     => in_array( $status, $finished_statuses, true ),
+			'error'        => in_array( $status, $failed_statuses, true ) ? 'Scheduled action failed.' : '',
+			'logs'         => $this->controller->getLogs(),
+			'actionStatus' => $status,
+			'queueItemId'  => $action_id,
+		);
+	}
+
+	/**
+	 * Finds latest scheduled auto-test action id.
+	 *
+	 * @return int|null
+	 */
+	private function get_latest_auto_test_action_id() {
+		if ( ! function_exists( 'as_get_scheduled_actions' ) || ! class_exists( '\ActionScheduler_Store' ) ) {
+			return null;
+		}
+
+		$ids = as_get_scheduled_actions(
+			array(
+				'hook'     => 'packlink_execute_task',
+				'status'   => \ActionScheduler_Store::STATUS_PENDING,
+				'orderby'  => 'date',
+				'order'    => 'DESC',
+				'per_page' => 20,
+			),
+			'ids'
+		);
+
+		if ( empty( $ids ) ) {
+			return null;
+		}
+
+		foreach ( $ids as $id ) {
+			$id = (int) $id;
+			if ( $id <= 0 ) {
+				continue;
+			}
+
+			if ( $this->is_auto_test_action( $id ) ) {
+				return $id;
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Checks whether action belongs to auto-test task.
+	 *
+	 * @param int $action_id Action id.
+	 *
+	 * @return bool
+	 */
+	private function is_auto_test_action( $action_id ) {
+		if ( ! class_exists( '\ActionScheduler' ) ) {
+			return false;
+		}
+
+		$store = \ActionScheduler::store();
+		if ( ! method_exists( $store, 'fetch_action' ) ) {
+			return false;
+		}
+
+		$action = $store->fetch_action( $action_id );
+		if ( ! $action || ! method_exists( $action, 'get_args' ) ) {
+			return false;
+		}
+
+		$args = $action->get_args();
+		if ( isset( $args[0] ) && is_array( $args[0] ) ) {
+			$args = $args[0];
+		}
+
+		return ! empty( $args['task_class'] ) && strpos( (string) $args['task_class'], 'AutoTestBusinessTask' ) !== false;
 	}
 
 	/**

@@ -8,8 +8,6 @@
 namespace Packlink\WooCommerce\Components\Order;
 
 use Logeecom\Infrastructure\ServiceRegister;
-use Logeecom\Infrastructure\TaskExecution\Interfaces\TaskRunnerWakeup;
-use Logeecom\Infrastructure\TaskExecution\TaskRunnerWakeupService;
 use Packlink\BusinessLogic\ShipmentDraft\Interfaces\ShipmentDraftServiceInterface;
 use Packlink\WooCommerce\Components\Services\Config_Service;
 use Packlink\WooCommerce\Components\ShippingMethod\Shipping_Method_Helper;
@@ -43,7 +41,6 @@ class Paid_Order_Handler {
 			$draft_service->enqueueCreateShipmentDraftTask( (string) $order_id );
 		}
 
-		self::get_task_runner_wakeup_service()->wakeup();
 	}
 
 	/**
@@ -93,15 +90,4 @@ class Paid_Order_Handler {
 		return $config_service;
 	}
 
-	/**
-	 * Retrieves task runner wakeup service.
-	 *
-	 * @return TaskRunnerWakeupService Configuration service.
-	 */
-	protected static function get_task_runner_wakeup_service() {
-		/** @var TaskRunnerWakeupService $task_runner_wakeup_service */
-		$task_runner_wakeup_service = ServiceRegister::getService( TaskRunnerWakeup::CLASS_NAME );
-
-		return $task_runner_wakeup_service;
-	}
 }

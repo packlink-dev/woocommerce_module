@@ -9,7 +9,7 @@ use Logeecom\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
 use Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException;
 use Logeecom\Infrastructure\ORM\RepositoryRegistry;
 use Logeecom\Infrastructure\ServiceRegister;
-use Logeecom\Infrastructure\TaskExecution\Interfaces\TaskExecutorInterface;
+use Logeecom\Infrastructure\TaskExecutor\Interfaces\TaskExecutorInterface;
 use Packlink\BusinessLogic\ShippingMethod\Interfaces\ShopShippingMethodService;
 use Packlink\BusinessLogic\ShippingMethod\Utility\ShipmentStatus;
 use Packlink\WooCommerce\Components\Bootstrap_Component;
@@ -575,7 +575,6 @@ class Plugin {
 	/**
 	 * Plugin update method.
 	 *
-	 * @throws RepositoryNotRegisteredException
 	 */
 	private function update() {
 		if ( is_multisite() ) {

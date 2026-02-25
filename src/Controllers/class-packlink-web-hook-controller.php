@@ -23,7 +23,7 @@ use Packlink\WooCommerce\Components\Utility\Shop_Helper;
  */
 class Packlink_Web_Hook_Controller extends Packlink_Base_Controller {
 	/**
-	 * Packlink_Async_Process_Controller constructor.
+	 * Packlink_Web_Hook_Controller constructor.
 	 */
 	public function __construct() {
 		$this->is_internal = false;

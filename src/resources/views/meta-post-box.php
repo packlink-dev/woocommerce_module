@@ -5,9 +5,9 @@
  * @package Packlink
  */
 
-use Logeecom\Infrastructure\TaskExecution\QueueItem;
 use Packlink\BusinessLogic\OrderShipmentDetails\Models\OrderShipmentDetails;
 use Packlink\BusinessLogic\ShipmentDraft\Objects\ShipmentDraftStatus;
+use Packlink\BusinessLogic\ShipmentDraft\Utility\DraftStatus;
 use Packlink\BusinessLogic\ShippingMethod\Models\ShippingMethod;
 use Packlink\WooCommerce\Components\Utility\Shop_Helper;
 
@@ -25,6 +25,11 @@ use Packlink\WooCommerce\Components\Utility\Shop_Helper;
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
+
+$draft_in_progress_statuses = array(
+	DraftStatus::PROCESSING,
+	DraftStatus::DELAYED,
+);
 ?>
 
 <ul class="order_actions submitbox" xmlns="http://www.w3.org/1999/html">
@@ -104,11 +109,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 				<?php endif; ?>
 			</li>
 		<?php endif; ?>
-	<?php elseif ( ! in_array( $draft_status->status, array( QueueItem::QUEUED, QueueItem::IN_PROGRESS ) ) ) : ?>
+	<?php elseif ( ! in_array( $draft_status->status, $draft_in_progress_statuses, true ) ) : ?>
 		<li class="wide">
 			<div class="pl-order-detail-section pl-create-draft">
 
-				<?php if ( QueueItem::FAILED === $draft_status->status ) : ?>
+				<?php if ( DraftStatus::FAILED === $draft_status->status ) : ?>
 					<span><?php echo sprintf( __( 'Previous attempt to create a draft failed. Error: %s', 'packlink-pro-shipping' ), $draft_status->message ); ?></span>
 					<br/>
 				<?php endif; ?>

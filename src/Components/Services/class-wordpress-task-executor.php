@@ -2,24 +2,59 @@
 
 namespace Packlink\WooCommerce\Components\Services;
 
-use Logeecom\Infrastructure\Configuration\Configuration;
+use Logeecom\Infrastructure\Logger\Logger;
 use Logeecom\Infrastructure\ServiceRegister;
-use Logeecom\Infrastructure\TaskExecution\Interfaces\TaskExecutorInterface;
-use Packlink\BusinessLogic\Tasks\DefaultTaskMetadataProvider;
+use Logeecom\Infrastructure\TaskExecutor\Interfaces\TaskExecutorInterface;
+use Packlink\BusinessLogic\Scheduler\DTO\ScheduleConfig;
+use Packlink\BusinessLogic\Scheduler\Interfaces\SchedulerInterface;
 use Packlink\BusinessLogic\Tasks\Interfaces\BusinessTask;
 use Packlink\BusinessLogic\Tasks\Interfaces\TaskMetadataProviderInterface;
 use Packlink\BusinessLogic\Tasks\TaskExecutionConfig;
 
-class WordPress_Task_Executor implements TaskExecutorInterface
-{
+class WordPress_Task_Executor implements TaskExecutorInterface {
 	/**
-	 * WordPress_Task_Executor constructor.
+	 * Action Scheduler hook name for Packlink tasks.
 	 */
-	public function __construct()
-	{
-		// Initialization happens via registerExecutionCallback()
-		// called from plugin initialization
+	const HOOK_NAME = 'packlink_execute_task';
+	/**
+	 * Internal scheduler hook (debug/compat).
+	 */
+	const SCHEDULER_HOOK_NAME = 'packlink_scheduler';
+	/**
+	 * Task payload keys.
+	 */
+	const ARG_TASK_DATA  = 'task_data';
+	const ARG_TASK_CLASS = 'task_class';
+	const ARG_CONTEXT    = 'context';
+	/**
+	 * Priority bounds for Action Scheduler (0..10).
+	 */
+	const PRIORITY_MIN = 0;
+	const PRIORITY_MAX = 10;
+	/**
+	 * Delay bounds (seconds).
+	 */
+	const MAX_DELAY_SECONDS = 604800; // 7 days.
+	/**
+	 * Error messages.
+	 */
+	const ERR_AS_NOT_AVAILABLE         = 'Action Scheduler not available. Please install WooCommerce.';
+	const ERR_INVALID_TASK_PAYLOAD     = 'Invalid task payload.';
+	const ERR_INVALID_TASK_CLASS       = 'Invalid task class.';
+	const ERR_MISSING_EXECUTION_CONFIG = 'Execution configuration not available.';
+	const ERR_SCHEDULE_FAILED          = 'Task scheduling failed.';
+
+	private $metadata_provider;
+	private $scheduler;
+
+	public function __construct() {
+
+		$this->metadata_provider = ServiceRegister::getService( TaskMetadataProviderInterface::CLASS_NAME );
+
+		$this->scheduler = ServiceRegister::getService( SchedulerInterface::CLASS_NAME );
+
 	}
+
 	/**
 	 * Enqueue business task via Action Scheduler.
 	 *
@@ -31,30 +66,29 @@ class WordPress_Task_Executor implements TaskExecutorInterface
 	 *
 	 * @return void
 	 */
-	public function enqueue(BusinessTask $businessTask)
-	{
+	public function enqueue( BusinessTask $businessTask ) {
 		// Check if Action Scheduler is available
-		if (!function_exists('as_enqueue_async_action')) {
-			throw new \RuntimeException('Action Scheduler not available. Please install WooCommerce.');
+		if ( ! function_exists( 'as_enqueue_async_action' ) ) {
+			$this->logAndThrow( self::ERR_AS_NOT_AVAILABLE );
 		}
 
 		// Get execution configuration from metadata provider (BusinessLogic layer)
-		$executionConfig = $this->getExecutionConfig($businessTask);
+		$executionConfig = $this->getExecutionConfig( $businessTask );
+
+		$payload = $this->buildPayload( $businessTask, $executionConfig );
 
 		// Enqueue action with configuration
-		as_enqueue_async_action(
-			'packlink_execute_task',
-			[
-				[
-					'task_data' => $businessTask->toArray(),
-					'task_class' => get_class($businessTask),
-					'context' => $executionConfig->getContext()
-				]
-			],
-			$executionConfig->getQueueName(),
+		$action_id = as_enqueue_async_action(
+			self::HOOK_NAME,
+			[ $payload ],
+			(string) $executionConfig->getQueueName(),
 			false,
-			$this->convertPriority($executionConfig->getPriority())
+			$this->convertPriority( $executionConfig->getPriority() )
 		);
+
+		if ( empty( $action_id ) ) {
+			$this->logAndThrow( self::ERR_SCHEDULE_FAILED );
+		}
 	}
 
 	/**
@@ -65,61 +99,76 @@ class WordPress_Task_Executor implements TaskExecutorInterface
 	 * Uses TaskMetadataProvider to get execution configuration.
 	 *
 	 * @param BusinessTask $businessTask Business task.
-	 * @param int $delaySeconds Delay in seconds before execution.
+	 * @param int          $delaySeconds Delay in seconds before execution.
 	 *
 	 * @return void
 	 */
-	public function scheduleDelayed(BusinessTask $businessTask, int $delaySeconds)
-	{
-		// Check if Action Scheduler is available
-		if (!function_exists('as_schedule_single_action')) {
-			throw new \RuntimeException('Action Scheduler not available. Please install WooCommerce.');
+	public function scheduleDelayed( BusinessTask $businessTask, int $delaySeconds ) {
+		$delaySeconds = max( 0, (int) $delaySeconds );
+		if ( $delaySeconds > self::MAX_DELAY_SECONDS ) {
+			$delaySeconds = self::MAX_DELAY_SECONDS;
 		}
 
-		$delaySeconds = max(0, (int)$delaySeconds);
+		// Prefer SchedulerInterface when available so scheduling is centralized.
+		if ( $this->scheduler instanceof SchedulerInterface ) {
+			$timestamp = time() + $delaySeconds;
+
+			$this->scheduler->scheduleHourly(
+				$businessTask,
+				new ScheduleConfig(
+					(int) date( 'N', $timestamp ),
+					(int) date( 'H', $timestamp ),
+					(int) date( 'i', $timestamp ),
+					false
+				)
+			);
+
+			return;
+		}
+
+		// Check if Action Scheduler is available
+		if ( ! function_exists( 'as_schedule_single_action' ) ) {
+			$this->logAndThrow( self::ERR_AS_NOT_AVAILABLE );
+		}
+
 		// Get execution configuration from metadata provider (BusinessLogic layer)
-		$executionConfig = $this->getExecutionConfig($businessTask);
+		$executionConfig = $this->getExecutionConfig( $businessTask );
+		if ( ! $executionConfig instanceof TaskExecutionConfig ) {
+			$this->logAndThrow( self::ERR_MISSING_EXECUTION_CONFIG );
+		}
+
+		$payload = $this->buildPayload( $businessTask, $executionConfig );
 
 		// Schedule action with configuration
-		as_schedule_single_action(
+		$action_id = as_schedule_single_action(
 			time() + $delaySeconds,
-			'packlink_execute_task',
-			[
-				'task_data' => $businessTask->toArray(),
-				'task_class' => get_class($businessTask),
-				'context' => $executionConfig->getContext()
-			],
-			$executionConfig->getQueueName(), // Group from metadata provider
+			self::HOOK_NAME,
+			[ $payload ],
+			(string) $executionConfig->getQueueName(),
 			false,
-			$this->convertPriority($executionConfig->getPriority()) // Priority from metadata provider
+			$this->convertPriority( $executionConfig->getPriority() )
 		);
+
+		if ( empty( $action_id ) ) {
+			$this->logAndThrow( self::ERR_SCHEDULE_FAILED );
+		}
 	}
 
 	/**
 	 * Get execution configuration for business task.
 	 *
 	 * Uses TaskMetadataProvider service (BusinessLogic layer) to get configuration.
-	 * Falls back to DefaultTaskMetadataProvider if not registered.
 	 *
 	 * @param BusinessTask $businessTask Business task.
 	 *
 	 * @return TaskExecutionConfig Execution configuration.
 	 */
-	private function getExecutionConfig(BusinessTask $businessTask)
-	{
-		// Try to get registered metadata provider
-		if (ServiceRegister::getService(TaskMetadataProviderInterface::CLASS_NAME)) {
-			/** @var TaskMetadataProviderInterface $metadataProvider */
-			$metadataProvider = ServiceRegister::getService(TaskMetadataProviderInterface::CLASS_NAME);
-		} else {
-			// Fallback to default provider (BusinessLogic layer)
-			$metadataProvider = new DefaultTaskMetadataProvider(
-				ServiceRegister::getService(Configuration::CLASS_NAME),
-				ServiceRegister::getService(TaskRunnerConfigInterface::CLASS_NAME)
-			);
+	private function getExecutionConfig( BusinessTask $businessTask ) {
+		if ( ! $this->metadata_provider instanceof TaskMetadataProviderInterface ) {
+			$this->logAndThrow( self::ERR_MISSING_EXECUTION_CONFIG );
 		}
 
-		return $metadataProvider->getExecutionConfig($businessTask);
+		return $this->metadata_provider->getExecutionConfig( $businessTask );
 	}
 
 	/**
@@ -138,15 +187,17 @@ class WordPress_Task_Executor implements TaskExecutorInterface
 	 *
 	 * @return int Priority for Action Scheduler (0-10).
 	 */
-	private function convertPriority($priority)
-	{
-		$priority = (int)$priority;
-		$p = (int) round($priority / 10);
+	private function convertPriority( $priority ) {
+		$priority = (int) $priority;
+		$p        = (int) round( $priority / 10 );
 
 		// Clamp to Action Scheduler allowed range
-		return max(0, min(10, $p));
+		return max( self::PRIORITY_MIN, min( self::PRIORITY_MAX, $p ) );
 	}
 
+	/**
+	 * @return SchedulerInterface|null
+	 */
 	/**
 	 * Register Action Scheduler callback for task execution.
 	 *
@@ -154,18 +205,17 @@ class WordPress_Task_Executor implements TaskExecutorInterface
 	 *
 	 * @return void
 	 */
-	public function registerExecutionCallback()
-	{
-		add_action('init', function () {
-			$executor = ServiceRegister::getService(TaskExecutorInterface::CLASS_NAME);
+	public function registerExecutionCallback() {
+		add_action( 'init', function () {
+			$executor = ServiceRegister::getService( TaskExecutorInterface::CLASS_NAME );
 			$executor->registerExecutionCallback();
-		});
-		add_action('packlink_execute_task', [$this, 'executeTaskCallback'], 10, 1);
-		add_action('packlink_scheduler', [$this, 'runSc'], 10, 1);
+		} );
+		add_action( self::HOOK_NAME, [ $this, 'executeTaskCallback' ], 10, 1 );
+		add_action( self::SCHEDULER_HOOK_NAME, [ $this, 'runSc' ], 10, 1 );
 
 	}
 
-	public function runSc ($args) {
+	public function runSc( $args ) {
 		return $args['task_class'];
 	}
 
@@ -181,22 +231,43 @@ class WordPress_Task_Executor implements TaskExecutorInterface
 	 *
 	 * @throws \Exception If task execution fails.
 	 */
-	public function executeTaskCallback($args)
-	{
-		$taskClass = $args['task_class'];
-		$taskData = $args['task_data'];
-		$context = $args['context'] ?? '';
+	public function executeTaskCallback( $args ) {
+		if ( isset( $args[0] ) && is_array( $args[0] ) ) {
+			$args = $args[0];
+		}
+
+		if ( ! is_array( $args ) || ! isset( $args[ self::ARG_TASK_CLASS ], $args[ self::ARG_TASK_DATA ] ) ) {
+			$this->logAndThrow( self::ERR_INVALID_TASK_PAYLOAD );
+		}
+
+		$taskClass = $args[ self::ARG_TASK_CLASS ];
+		$taskData  = $args[ self::ARG_TASK_DATA ];
+		$context   = $args[ self::ARG_CONTEXT ] ?? '';
+
+		if ( ! is_string( $taskClass ) || ! class_exists( $taskClass ) || ! is_callable( [
+				$taskClass,
+				'fromArray'
+			] ) ) {
+			$this->logAndThrow( self::ERR_INVALID_TASK_CLASS );
+		}
 
 		// Reconstruct business task
 		/** @var BusinessTask $businessTask */
-		$businessTask = call_user_func([$taskClass, 'fromArray'], $taskData);
+		$businessTask = call_user_func( [ $taskClass, 'fromArray' ], $taskData );
 
 		// Execute task
-		$result = $businessTask->execute();
+		try {
+			$result = $businessTask->execute();
+		} catch ( \Throwable $e ) {
+			Logger::logError( $e->getMessage(), 'Integration', array(
+				'task_class' => $taskClass,
+				'context'    => $context,
+			) );
+			throw $e;
+		}
 
-		// Check if task returned a Generator (yield-based progress)
-		if ($result instanceof \Generator) {
-			$this->executeWithProgressTracking($result);
+		if ( $result instanceof \Generator ) {
+			$this->executeWithProgressTracking( $result );
 		}
 
 		// If not generator, task executed normally
@@ -217,19 +288,46 @@ class WordPress_Task_Executor implements TaskExecutorInterface
 	 *
 	 * @return void
 	 */
-	private function executeWithProgressTracking(\Generator $generator)
-	{
-		foreach ($generator as $value) {
-			if ($value === null) {
+	private function executeWithProgressTracking( \Generator $generator ) {
+		foreach ( $generator as $value ) {
+			if ( $value === null ) {
 				// yield; (no value) → keep-alive signal
-				error_log('[Packlink] Task keep-alive signal');
-			} elseif (is_int($value) || is_float($value)) {
+				Logger::logDebug( 'Task keep-alive signal', 'Integration' );
+			} elseif ( is_int( $value ) || is_float( $value ) ) {
 				// yield 50; → report progress 50%
-				error_log(sprintf('[Packlink] Task progress: %s%%', $value));
-			} elseif (is_string($value)) {
+				Logger::logDebug( sprintf( 'Task progress: %s%%', $value ), 'Integration' );
+			} elseif ( is_string( $value ) ) {
 				// yield 'Processing...'; → log message
-				error_log(sprintf('[Packlink] Task message: %s', $value));
+				Logger::logDebug( sprintf( 'Task message: %s', $value ), 'Integration' );
 			}
 		}
+	}
+
+	/**
+	 * Build Action Scheduler payload with constraints.
+	 *
+	 * @param BusinessTask        $businessTask
+	 * @param TaskExecutionConfig $executionConfig
+	 *
+	 * @return array
+	 */
+	private function buildPayload( BusinessTask $businessTask, TaskExecutionConfig $executionConfig ) {
+		return array(
+			self::ARG_TASK_DATA  => $businessTask->toArray(),
+			self::ARG_TASK_CLASS => get_class( $businessTask ),
+			self::ARG_CONTEXT    => (string) $executionConfig->getContext(),
+		);
+	}
+
+	/**
+	 * Log error and throw exception.
+	 *
+	 * @param string $message
+	 *
+	 * @return void
+	 */
+	private function logAndThrow( $message ) {
+		Logger::logError( $message, 'Integration' );
+		throw new \RuntimeException( $message );
 	}
 }

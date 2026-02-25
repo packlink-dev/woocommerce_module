@@ -8,11 +8,10 @@
 
 use Logeecom\Infrastructure\ORM\RepositoryRegistry;
 use Logeecom\Infrastructure\ServiceRegister;
-use Logeecom\Infrastructure\TaskExecution\QueueService;
+use Logeecom\Infrastructure\TaskExecutor\Interfaces\TaskExecutorInterface;
 use Packlink\BusinessLogic\Configuration;
 use Packlink\BusinessLogic\ShippingMethod\Models\ShippingMethod;
-use Packlink\BusinessLogic\Tasks\UpdateShippingServicesTask;
-use Packlink\WooCommerce\Components\Services\Config_Service;
+use Packlink\BusinessLogic\Tasks\BusinessTasks\UpdateShippingServicesBusinessTask;
 use Packlink\WooCommerce\Components\Services\System_Info_Service;
 use Packlink\WooCommerce\Components\Utility\Database;
 
@@ -124,14 +123,8 @@ foreach ( $shipping_methods as $method ) {
 // Enqueue task for updating shipping services.                                      *
 // ***********************************************************************************
 
-/** @var Config_Service $config_service */
-$config_service = ServiceRegister::getService( Configuration::CLASS_NAME );
-/** @var QueueService $queue_service */
-$queue_service = ServiceRegister::getService( QueueService::CLASS_NAME );
-
-if ( null !== $queue_service->findLatestByType( 'UpdateShippingServicesTask' ) ) {
-	/** @noinspection PhpUnhandledExceptionInspection */
-	$queue_service->enqueue( $config_service->getDefaultQueueName(), new UpdateShippingServicesTask() );
-}
+/** @var TaskExecutorInterface $task_executor */
+$task_executor = ServiceRegister::getService( TaskExecutorInterface::CLASS_NAME );
+$task_executor->enqueue( new UpdateShippingServicesBusinessTask() );
 
 //@codingStandardsIgnoreEnd

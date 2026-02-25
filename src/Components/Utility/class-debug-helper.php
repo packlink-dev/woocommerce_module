@@ -14,7 +14,7 @@ use Logeecom\Infrastructure\ORM\QueryFilter\Operators;
 use Logeecom\Infrastructure\ORM\QueryFilter\QueryFilter;
 use Logeecom\Infrastructure\ORM\RepositoryRegistry;
 use Logeecom\Infrastructure\ServiceRegister;
-use Logeecom\Infrastructure\TaskExecution\QueueItem;
+use Logeecom\Infrastructure\TaskExecutor\QueueItem;
 use Packlink\BusinessLogic\ShippingMethod\Models\ShippingMethod;
 use Packlink\WooCommerce\Components\Services\Config_Service;
 use Packlink\WooCommerce\Components\Services\Logger_Service;
@@ -106,7 +106,6 @@ class Debug_Helper {
 		$result['Database']            = static::DATABASE;
 		$result['Database version']    = $wpdb->db_version();
 		$result['Plugin version']      = Shop_Helper::get_plugin_version();
-		$result['Async process URL']   = self::get_config_service()->getAsyncProcessUrl( 'test' );
 		$result['Auto-test URL']       = admin_url( 'admin.php?page=packlink-pro-auto-test' );
 
 		return wp_json_encode( $result, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES );

@@ -47,7 +47,6 @@ class Packlink_Index extends Packlink_Base_Controller {
 	 */
 	private function validate_controller_name( $controller_name ) {
 		$allowed_controllers = array(
-			'Async_Process',
 			'Web_Hook',
 			'Frontend',
 			'Order_Overview',
