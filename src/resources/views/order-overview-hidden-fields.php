@@ -23,7 +23,7 @@ $src = Shop_Helper::get_plugin_base_url() . 'resources/images/logo.png';
 	<input type="hidden" id="pl-draft-failed"
 		   value="<?php echo __( 'Previous attempt to create a draft failed.', 'packlink-pro-shipping' ) ?>"/>
 	<input type="hidden" id="pl-no-shippable-items"
-		   value="<?php echo __( 'This order contains only virtual and/or downloadable products and cannot be shipped.', 'packlink-pro-shipping' ); ?>"/>
+		   value="<?php echo __( 'This order contains only virtual products and cannot be shipped.', 'packlink-pro-shipping' ); ?>"/>
 
 	<a target="_blank" id="pl-draft-button-template" class="button pl-draft-button hidden">
 		<img class="pl-image" src="<?php echo esc_url( $src ) ?>" alt="">

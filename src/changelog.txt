@@ -1,5 +1,13 @@
 *** Packlink PRO Changelog ***
 
+2026-01-21 - version 3.6.3
+* Fix downloadable products no longer blocked for shipping
+* Fix translations (DE, IT, ES, FR) when drop-off selected
+
+2026-01-15 - version 3.6.2
+* Update core version to 3.7.2
+* Fix error on filtering payment gateways
+
 2025-11-12 - version 3.6.1
 * Fix drop-off button rendering on the checkout
 * Add fallback mehnism for fetching cart subtotal

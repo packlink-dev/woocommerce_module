@@ -177,7 +177,7 @@ class Shop_Order_Service extends Singleton implements BaseShopOrderService {
 		 */
 		foreach ( $wc_order->get_items() as $wc_item ) {
 			$product = $wc_item->get_product();
-			if ( $product->is_downloadable() || $product->is_virtual() ) {
+			if ( $product->is_virtual() ) {
 				continue;
 			}
 

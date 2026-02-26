@@ -3,6 +3,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [v3.6.3](https://github.com/packlink-dev/woocommerce_module/compare/v3.6.2...v3.6.3) - 2026-01-21
+### Changed
+- Fix downloadable products no longer blocked for shipping
+- Fix translations (DE, IT, ES, FR) when drop-off selected
+
+## [v3.6.2](https://github.com/packlink-dev/woocommerce_module/compare/v3.6.1...v3.6.2) - 2026-01-15
+### Changed
+- Update core version to 3.7.2
+- Fix error on filtering payment gateways
+
 ## [v3.6.1](https://github.com/packlink-dev/woocommerce_module/compare/v3.6.0...v3.6.1) - 2025-11-12
 ### Changed
 - Fix drop-off button rendering on the checkout
