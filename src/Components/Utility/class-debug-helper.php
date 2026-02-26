@@ -229,7 +229,7 @@ class Debug_Helper {
 					$retries             = count( $logs );
 				}
 
-				$times = self::get_action_scheduler_times( $store, $action, $id, $status );
+				$times = self::get_action_scheduler_times( $action, $status );
 
 				$result[] = array(
 					'class_name'                     => 'ActionScheduler_Action',
@@ -385,14 +385,12 @@ class Debug_Helper {
 	/**
 	 * Extract times in ISO-8601 (best-effort across AS versions).
 	 *
-	 * @param \ActionScheduler_Store $store
-	 * @param mixed                 $action
-	 * @param int                   $action_id
-	 * @param string                $status
+	 * @param mixed  $action
+	 * @param string $status
 	 *
 	 * @return array
 	 */
-	private static function get_action_scheduler_times( $store, $action, $action_id, $status ) {
+	private static function get_action_scheduler_times( $action, $status ) {
 		$nulls = array(
 			'createTime'        => null,
 			'startTime'         => null,

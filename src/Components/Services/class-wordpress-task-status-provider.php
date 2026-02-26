@@ -28,22 +28,25 @@ class WordPress_Task_Status_Provider implements TaskStatusProviderInterface
 	 * @return TaskStatus
 	 */
 	public function getLatestStatus( string $type, $context = '' ) {
-		$action = $this->findLatestAction( $type, $context );
-		if ( ! $action ) {
+		$found  = $this->findLatestAction( $type, $context );
+		if ( ! $found  ) {
 			return new TaskStatus( TaskStatus::NOT_FOUND );
 		}
 
-		return new TaskStatus( $this->mapActionStatus( $action ), null );
+		return new TaskStatus(
+			$this->mapActionStatus( $found['action'], $found['id'], $found['store'] ),
+			null
+		);
 	}
 
 	public function getLatestStatusWithExpiration( string $type, $context = '' ) {
-		$action = $this->findLatestAction( $type, $context );
-		if ( ! $action ) {
+		$found = $this->findLatestAction( $type, $context );
+		if ( ! $found ) {
 			return new TaskStatus( TaskStatus::NOT_FOUND );
 		}
 
-		$status = $this->mapActionStatus( $action );
-		if ( $status === TaskStatus::RUNNING && $this->isExpired( $action ) ) {
+		$status = $this->mapActionStatus( $found['action'], $found['id'], $found['store'] );
+		if ( $status === TaskStatus::RUNNING && $this->isExpired( $found['action'] ) ) {
 			return new TaskStatus( TaskStatus::EXPIRED, 'Task expired due to inactivity.' );
 		}
 
@@ -56,7 +59,7 @@ class WordPress_Task_Status_Provider implements TaskStatusProviderInterface
 	 * @param string      $type
 	 * @param string|null $context
 	 *
-	 * @return object|null
+	 * @return array|null
 	 */
 	private function findLatestAction( string $type, $context = '' ) {
 		if ( ! function_exists( 'as_get_scheduled_actions' ) || ! class_exists( 'ActionScheduler_Store' ) ) {
@@ -100,37 +103,40 @@ class WordPress_Task_Status_Provider implements TaskStatusProviderInterface
 				continue;
 			}
 
-			return $action;
+			return array(
+				'id'     => $id,
+				'action' => $action,
+				'store'  => $store,
+			);
 		}
 
 		return null;
 	}
 
-    private function matchesType(array $payload, string $type): bool
-    {
-        $taskClass = (string)($payload['task_class'] ?? '');
-        if ($taskClass === '') {
-            return false;
-        }
+	private function matchesType(array $payload, string $type): bool
+	{
+		$taskClass = (string)($payload['task_class'] ?? '');
+		if ($taskClass === '') {
+			return false;
+		}
 
-        // 1) Exact match (FQCN)
-        if ($taskClass === $type) {
-            return true;
-        }
+		// 1) Exact match (FQCN)
+		if ($taskClass === $type) {
+			return true;
+		}
 
-        // 2) Short class name match (e.g. AutoTestBusinessTask)
-        $short = $taskClass;
-        if (strpos($short, '\\') !== false) {
-            $parts = explode('\\', $short);
-            $short = end($parts);
-        }
-        if ($short === $type) {
-            return true;
-        }
+		// 2) Short class name match (e.g. AutoTestBusinessTask)
+		$short = $taskClass;
+		if (strpos($short, '\\') !== false) {
+			$parts = explode('\\', $short);
+			$short = end($parts);
+		}
+		if ($short === $type) {
+			return true;
+		}
 
-        // 3) Backward compatible "contains" (kao u AutoTest controller-u)
-        return strpos($taskClass, $type) !== false;
-    }
+		return strpos($taskClass, $type) !== false;
+	}
 
 	/**
 	 * Extracts task payload from Action Scheduler args.
@@ -158,8 +164,31 @@ class WordPress_Task_Status_Provider implements TaskStatusProviderInterface
 	 *
 	 * @return string
 	 */
-	private function mapActionStatus( $action ) {
-		$status = method_exists( $action, 'get_status' ) ? $action->get_status() : null;
+	private function mapActionStatus( $action, $actionId, $store ) {
+		$status = null;
+
+		if ( is_object( $store ) && method_exists( $store, 'get_status' ) ) {
+			try {
+				$status = $store->get_status( $actionId );
+			} catch ( \Exception $e ) {
+				$status = null;
+			}
+		}
+
+		// Fallback: some action objects have get_status()
+		if ( ! is_string( $status ) || $status === '' ) {
+			if (is_object($action) && method_exists($action, 'get_status')) {
+				try {
+					$status = $action->get_status();
+				} catch (\Exception $e) {
+					$status = null;
+				}
+			}
+		}
+
+		if ( $status === \ActionScheduler_Store::STATUS_RUNNING || $status === 'running' ) {
+			$status = 'in-progress';
+		}
 
 		switch ( $status ) {
 			case 'complete':
