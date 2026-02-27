@@ -8,10 +8,11 @@
 
 use Logeecom\Infrastructure\ORM\RepositoryRegistry;
 use Logeecom\Infrastructure\ServiceRegister;
-use Logeecom\Infrastructure\TaskExecutor\Interfaces\TaskExecutorInterface;
+use Packlink\BusinessLogic\Controllers\ManualRefreshController;
 use Packlink\BusinessLogic\Configuration;
 use Packlink\BusinessLogic\ShippingMethod\Models\ShippingMethod;
-use Packlink\BusinessLogic\Tasks\BusinessTasks\UpdateShippingServicesBusinessTask;
+use Packlink\BusinessLogic\UpdateShippingServices\Interfaces\UpdateShippingServicesOrchestratorInterface;
+use Packlink\BusinessLogic\UpdateShippingServices\Interfaces\UpdateShippingServiceTaskStatusServiceInterface;
 use Packlink\WooCommerce\Components\Services\System_Info_Service;
 use Packlink\WooCommerce\Components\Utility\Database;
 
@@ -123,8 +124,11 @@ foreach ( $shipping_methods as $method ) {
 // Enqueue task for updating shipping services.                                      *
 // ***********************************************************************************
 
-/** @var TaskExecutorInterface $task_executor */
-$task_executor = ServiceRegister::getService( TaskExecutorInterface::CLASS_NAME );
-$task_executor->enqueue( new UpdateShippingServicesBusinessTask() );
+/** @var UpdateShippingServiceTaskStatusServiceInterface $status_service */
+$status_service = ServiceRegister::getService( UpdateShippingServiceTaskStatusServiceInterface::class );
+/** @var UpdateShippingServicesOrchestratorInterface $orchestrator */
+$orchestrator = ServiceRegister::getService( UpdateShippingServicesOrchestratorInterface::class );
+$manual_refresh_controller = new ManualRefreshController( $status_service, $orchestrator );
+$manual_refresh_controller->enqueueUpdateTask();
 
 //@codingStandardsIgnoreEnd

@@ -10,10 +10,11 @@ namespace Packlink\WooCommerce\Controllers;
 use Logeecom\Infrastructure\ServiceRegister;
 use Packlink\BusinessLogic\Controllers\LocationsController;
 use Packlink\BusinessLogic\Controllers\WarehouseController;
+use Packlink\BusinessLogic\Country\Interfaces\CountryServiceInterface;
+use Packlink\BusinessLogic\Country\WarehouseCountryService;
 use Packlink\BusinessLogic\DTO\Exceptions\FrontDtoNotRegisteredException;
 use Packlink\BusinessLogic\DTO\Exceptions\FrontDtoValidationException;
 use Packlink\BusinessLogic\Warehouse\Interfaces\WarehouseServiceInterface;
-use Packlink\BusinessLogic\Warehouse\WarehouseService;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
@@ -48,7 +49,12 @@ class Packlink_Warehouse_Controller extends Packlink_Base_Controller {
 		/**@var WarehouseServiceInterface $warehouse_service */
 		$warehouse_service = ServiceRegister::getService(WarehouseServiceInterface::CLASS_NAME);
 
-		$this->warehouse_controller = new WarehouseController($warehouse_service);
+		/**
+		 * @var CountryServiceInterface $county_service
+		 */
+		$county_service = ServiceRegister::getService(WarehouseCountryService::CLASS_NAME);
+
+		$this->warehouse_controller = new WarehouseController($warehouse_service, $county_service);
 		$this->locations_controller = new LocationsController();
 	}
 

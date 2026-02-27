@@ -4,12 +4,13 @@
 
 use Logeecom\Infrastructure\ORM\RepositoryRegistry;
 use Logeecom\Infrastructure\ServiceRegister;
-use Logeecom\Infrastructure\TaskExecutor\Interfaces\TaskExecutorInterface;
+use Packlink\BusinessLogic\Controllers\ManualRefreshController;
 use Packlink\BusinessLogic\Configuration;
 use Packlink\BusinessLogic\Http\DTO\ShipmentLabel;
 use Packlink\BusinessLogic\OrderShipmentDetails\Models\OrderShipmentDetails;
-use Packlink\BusinessLogic\ShipmentDraft\OrderSendDraftTaskMapService;
-use Packlink\BusinessLogic\Tasks\BusinessTasks\UpdateShippingServicesBusinessTask;
+use Packlink\BusinessLogic\ShipmentDraft\Models\OrderSendDraftTaskMap;
+use Packlink\BusinessLogic\UpdateShippingServices\Interfaces\UpdateShippingServicesOrchestratorInterface;
+use Packlink\BusinessLogic\UpdateShippingServices\Interfaces\UpdateShippingServiceTaskStatusServiceInterface;
 use Packlink\WooCommerce\Components\Order\Order_Drop_Off_Map;
 use Packlink\WooCommerce\Components\Repositories\Base_Repository;
 use Packlink\WooCommerce\Components\Services\Config_Service;
@@ -34,8 +35,7 @@ if ( ! empty( $order_ids ) ) {
 	$order_shipment_details_repository = RepositoryRegistry::getRepository( OrderShipmentDetails::CLASS_NAME );
 	/** @var Base_Repository $order_drop_off_map_repository */
 	$order_drop_off_map_repository = RepositoryRegistry::getRepository( Order_Drop_Off_Map::CLASS_NAME );
-	/** @var OrderSendDraftTaskMapService $order_draft_task_map_service */
-	$order_draft_task_map_service = ServiceRegister::getService( OrderSendDraftTaskMapService::CLASS_NAME );
+	$draft_task_map_table = $wpdb->prefix . Database::BASE_TABLE;
 
 	$user_info       = $config_service->getUserInfo();
 	$user_domain     = 'com';
@@ -94,10 +94,39 @@ if ( ! empty( $order_ids ) ) {
 			$order_shipment_details_repository->save( $order_shipment_details );
 
 			if ( metadata_exists( 'post', $order_id, '_packlink_send_draft_task_id' ) ) {
-				$order_draft_task_map_service->createOrderTaskMap(
-					(string) $order_id,
-					get_post_meta( $order_id, '_packlink_send_draft_task_id', true )
+				$order_id_str = (string) $order_id;
+				$execution_id = get_post_meta( $order_id, '_packlink_send_draft_task_id', true );
+
+				$order_draft_task_map = new OrderSendDraftTaskMap();
+				$order_draft_task_map->setOrderId( $order_id_str );
+				$order_draft_task_map->setExecutionId( $execution_id );
+
+				$map_type    = $order_draft_task_map->getConfig()->getType();
+				$existing_id = $wpdb->get_var(
+					$wpdb->prepare(
+						"SELECT id FROM {$draft_task_map_table} WHERE type = %s AND index_1 = %s LIMIT 1",
+						$map_type,
+						$order_id_str
+					)
 				);
+
+				if ( ! $existing_id ) {
+					$wpdb->insert(
+						$draft_task_map_table,
+						array(
+							'type'    => $map_type,
+							'index_1' => $order_id_str,
+							'index_2' => $execution_id,
+							'index_3' => null,
+							'index_4' => null,
+							'index_5' => null,
+							'index_6' => null,
+							'index_7' => null,
+							'index_8' => null,
+							'data'    => wp_json_encode( $order_draft_task_map->toArray() ),
+						)
+					);
+				}
 			}
 		}
 	}
@@ -114,6 +143,9 @@ $database->remove_packlink_meta_data();
 // Enqueue task for updating shipping services. *
 // **********************************************
 
-/** @var TaskExecutorInterface $task_executor */
-$task_executor = ServiceRegister::getService( TaskExecutorInterface::CLASS_NAME );
-$task_executor->enqueue( new UpdateShippingServicesBusinessTask() );
+/** @var UpdateShippingServiceTaskStatusServiceInterface $status_service */
+$status_service = ServiceRegister::getService( UpdateShippingServiceTaskStatusServiceInterface::class );
+/** @var UpdateShippingServicesOrchestratorInterface $orchestrator */
+$orchestrator = ServiceRegister::getService( UpdateShippingServicesOrchestratorInterface::class );
+$manual_refresh_controller = new ManualRefreshController( $status_service, $orchestrator );
+$manual_refresh_controller->enqueueUpdateTask();

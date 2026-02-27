@@ -2,8 +2,7 @@
 
 use Logeecom\Infrastructure\Logger\Logger;
 use Logeecom\Infrastructure\ServiceRegister;
-use Logeecom\Infrastructure\TaskExecutor\Exceptions\QueueStorageUnavailableException;
-use Logeecom\Infrastructure\TaskExecutor\Exceptions\TaskRunnerStatusStorageUnavailableException;
+use Logeecom\Infrastructure\TaskExecution\Exceptions\QueueStorageUnavailableException;
 use Logeecom\Infrastructure\TaskExecutor\Interfaces\TaskExecutorInterface;
 use Packlink\BusinessLogic\User\UserAccountService;
 use Packlink\WooCommerce\Components\Services\Config_Service;
@@ -26,17 +25,12 @@ if ( ! $database->plugin_already_initialized() ) {
 	 */
 	$config_service = ServiceRegister::getService( Config_Service::CLASS_NAME );
 
-	try {
-		$config_service->setTaskRunnerStatus( '', null );
 		$statuses = array(
 			'processing' => 'wc-processing',
 			'delivered'  => 'wc-completed',
 		);
 
 		$config_service->setOrderStatusMappings( $statuses );
-	} catch ( TaskRunnerStatusStorageUnavailableException $e ) {
-		Logger::logError( $e->getMessage(), 'Integration' );
-	}
 }
 
 try {
