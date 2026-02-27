@@ -14,9 +14,24 @@ use Packlink\WooCommerce\Components\Utility\Database;
 
 class Queued_Tasks_Migrator {
 	/**
-	 * Schedules weekly UpdateShippingServicesBusinessTask if Action Scheduler is available.
+	 * Runs all Action Scheduler migration steps.
 	 */
-	public function scheduleWeeklyUpdateShippingServices() {
+	public function migrate() {
+		if ( ! function_exists( 'as_enqueue_async_action' ) ) {
+			add_action( 'init', [ $this, 'migrate' ] );
+			return;
+		}
+
+		$this->migrateDraftStatuses();
+		$this->scheduleWeeklyUpdateShippingServices();
+		$this->migrateQueuedItems();
+		$this->cleanupLegacyQueueData();
+	}
+
+	/**
+	 * Schedules weekly UpdateShippingServicesBusinessTask.
+	 */
+	private function scheduleWeeklyUpdateShippingServices() {
 		if ( ! function_exists( 'as_schedule_recurring_action' ) ) {
 			return;
 		}
@@ -36,12 +51,7 @@ class Queued_Tasks_Migrator {
 		$scheduler->scheduleWeekly( new UpdateShippingServicesBusinessTask(), $schedule_config );
 	}
 
-	public function migrateQueuedItems() {
-		if ( ! function_exists( 'as_enqueue_async_action' ) ) {
-			add_action( 'init', [ $this, 'migrateQueuedItems' ] );
-			return;
-		}
-
+	private function migrateQueuedItems() {
 		global $wpdb;
 
 		/** @var TaskExecutorInterface $taskExecutor */
@@ -86,7 +96,7 @@ class Queued_Tasks_Migrator {
 	/**
 	 * Migrates draft status to OrderShipmentDetails based on existing queued items.
 	 */
-	public function migrateDraftStatuses() {
+	private function migrateDraftStatuses() {
 		global $wpdb;
 
 		$table_name = $wpdb->prefix . Database::BASE_TABLE;
@@ -182,7 +192,7 @@ class Queued_Tasks_Migrator {
 	/**
 	 * Cleans up obsolete TaskRunner/Queue-related entities and configuration entries.
 	 */
-	public function cleanupLegacyQueueData() {
+	private function cleanupLegacyQueueData() {
 		global $wpdb;
 
 		$table_name = $wpdb->prefix . Database::BASE_TABLE;
