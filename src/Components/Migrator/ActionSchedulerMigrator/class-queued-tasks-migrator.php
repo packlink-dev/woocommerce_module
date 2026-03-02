@@ -8,6 +8,7 @@ use Logeecom\Infrastructure\TaskExecutor\Interfaces\TaskExecutorInterface;
 use Packlink\BusinessLogic\Scheduler\DTO\ScheduleConfig;
 use Packlink\BusinessLogic\Scheduler\Interfaces\SchedulerInterface;
 use Packlink\BusinessLogic\ShipmentDraft\Objects\ShipmentDraftStatus;
+use Packlink\BusinessLogic\ShipmentDraft\Utility\DraftStatus;
 use Packlink\BusinessLogic\Tasks\BusinessTasks\SendDraftBusinessTask;
 use Packlink\BusinessLogic\Tasks\BusinessTasks\UpdateShippingServicesBusinessTask;
 use Packlink\WooCommerce\Components\Utility\Database;
@@ -143,13 +144,13 @@ class Queued_Tasks_Migrator {
 				);
 
 				if ( empty( $map_row ) || empty( $map_row['data'] ) ) {
-					$draft_status = ShipmentDraftStatus::NOT_QUEUED;
+					$draft_status = DraftStatus::NOT_QUEUED;
 				} else {
 					$map_data = json_decode( $map_row['data'], true );
 					$execution_id = is_array( $map_data ) ? ( $map_data['executionId'] ?? null ) : null;
 
 					if ( empty( $execution_id ) ) {
-						$draft_status = ShipmentDraftStatus::DELAYED;
+						$draft_status = DraftStatus::DELAYED;
 					} else {
 						$queue_row = $wpdb->get_row(
 							$wpdb->prepare(
@@ -164,15 +165,15 @@ class Queued_Tasks_Migrator {
 							$queue_data = json_decode( $queue_row['data'], true );
 							$draft_status = is_array( $queue_data ) && ! empty( $queue_data['status'] )
 								? $queue_data['status']
-								: QueueItem::FAILED;
+								: DraftStatus::FAILED;
 						} else {
-							$draft_status = QueueItem::FAILED;
+							$draft_status = DraftStatus::FAILED;
 						}
 					}
 				}
 			} else {
 				// No reference and no status assigned; do not enqueue, mark as not queued.
-				$draft_status = ShipmentDraftStatus::NOT_QUEUED;
+				$draft_status = DraftStatus::NOT_QUEUED;
 			}
 
 			if ( $draft_status === null ) {
