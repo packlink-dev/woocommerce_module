@@ -4,7 +4,7 @@ Tags: shipping, delivery, carrier, order, package
 Requires at least: 4.7
 Requires PHP: 5.5
 Tested up to: 6.9
-Stable tag: 3.6.4
+Stable tag: 3.6.5
 License: LICENSE-2.0
 License URI: http://www.apache.org/licenses/LICENSE-2.0
 
@@ -93,6 +93,11 @@ Click <a href="https://support-pro.packlink.com/hc/es-es/articles/210158585" tar
 
 
 == Changelog ==
+
+#### 3.6.5 - March 9th, 2026
+
+**Updates**
+- Transformations applied to GR and LV postal codes
 
 #### 3.6.4 - February 4th, 2026
 

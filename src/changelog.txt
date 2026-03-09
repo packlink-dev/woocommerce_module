@@ -1,5 +1,8 @@
 *** Packlink PRO Changelog ***
 
+2026-03-09 - version 3.6.5
+* Transformations applied to GR and LV postal codes
+
 2026-02-04 - version 3.6.4
 * Rates for AU, CA, and US fixed
 * Shop manager enabled to create draft
