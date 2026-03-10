@@ -18,24 +18,13 @@ use Packlink\WooCommerce\Components\Utility\Shop_Helper;
  * @package Packlink\WooCommerce\Components\Services
  */
 class Config_Service extends Configuration {
-	/**
-	 * Threshold between two runs of scheduler.
-	 */
-	const SCHEDULER_TIME_THRESHOLD = 1800;
+
 	/**
 	 * Minimal log level.
 	 */
 	const MIN_LOG_LEVEL = Logger::ERROR;
-	/**
-	 * Max inactivity period for a task in seconds
-	 */
-	const MAX_TASK_INACTIVITY_PERIOD = 60;
-	const DEFAULT_FOOTER_HEIGHT      = 40;
 
-	/**
-	 * Automatic task runner wakeup delay in seconds when manual sync enabled
-	 */
-	const DEFAULT_TASK_RUNNER_WAKEUP_DELAY_WITH_MANUAL_SYNC = 300;
+	const DEFAULT_FOOTER_HEIGHT      = 40;
 
 	/**
 	 * Singleton instance of this class.
@@ -97,32 +86,6 @@ class Config_Service extends Configuration {
 	 */
 	public function getCurrentSystemId() {
 		return (string) get_current_blog_id();
-	}
-
-	/**
-	 * Gets max inactivity period for a task in seconds.
-	 * After inactivity period is passed, system will fail such task as expired.
-	 *
-	 * @return int Max task inactivity period in seconds if set; otherwise, self::MAX_TASK_INACTIVITY_PERIOD.
-	 */
-	public function getMaxTaskInactivityPeriod() {
-		return parent::getMaxTaskInactivityPeriod() ?: self::MAX_TASK_INACTIVITY_PERIOD;
-	}
-
-	/**
-	 * Returns async process starter url, always in http.
-	 *
-	 * @param string $guid Process identifier.
-	 *
-	 * @return string Formatted URL of async process starter endpoint.
-	 */
-	public function getAsyncProcessUrl( $guid ) {
-		$params = array( 'guid' => $guid );
-		if ( $this->isAutoTestMode() ) {
-			$params['auto-test'] = 1;
-		}
-
-		return Shop_Helper::get_controller_url( 'Async_Process', 'run', $params );
 	}
 
 	/**
@@ -203,15 +166,6 @@ class Config_Service extends Configuration {
 		return $is_manual_sync_enabled ?: false;
 	}
 
-	/** @inheritdoc  */
-	public function getTaskRunnerWakeupDelay()
-	{
-		if ( $this->is_manual_sync_enabled() ) {
-			return self::DEFAULT_TASK_RUNNER_WAKEUP_DELAY_WITH_MANUAL_SYNC;
-		}
-
-		return parent::getTaskRunnerWakeupDelay();
-	}
 
 	/**
 	 * Saves whether manual synchronization is enabled.

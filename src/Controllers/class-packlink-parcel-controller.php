@@ -7,9 +7,10 @@
 
 namespace Packlink\WooCommerce\Controllers;
 
-use Logeecom\Infrastructure\TaskExecution\Exceptions\QueueStorageUnavailableException;
+use Logeecom\Infrastructure\ServiceRegister;
 use Packlink\BusinessLogic\Controllers\DefaultParcelController;
 use Packlink\BusinessLogic\DTO\Exceptions\FrontDtoValidationException;
+use Packlink\BusinessLogic\UpdateShippingServices\Interfaces\UpdateShippingServicesOrchestratorInterface;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
@@ -33,7 +34,14 @@ class Packlink_Parcel_Controller extends Packlink_Base_Controller {
 	 * Packlink_Parcel_Controller constructor.
 	 */
 	public function __construct() {
-		$this->controller = new DefaultParcelController();
+		/**
+		 * @var UpdateShippingServicesOrchestratorInterface $orchestrator
+		 */
+		$orchestrator = ServiceRegister::getService( UpdateShippingServicesOrchestratorInterface::class );
+
+		$this->controller = new DefaultParcelController(
+			$orchestrator
+		);
 	}
 
 	/**
@@ -48,7 +56,6 @@ class Packlink_Parcel_Controller extends Packlink_Base_Controller {
 	/**
 	 * Updates default parcel data.
 	 *
-	 * @throws QueueStorageUnavailableException When queue storage is not available.
 	 * @throws FrontDtoValidationException When default parcel data is not valid.
 	 */
 	public function submit() {

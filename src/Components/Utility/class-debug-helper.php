@@ -10,11 +10,9 @@ namespace Packlink\WooCommerce\Components\Utility;
 use DateTime;
 use Logeecom\Infrastructure\Exceptions\BaseException;
 use Logeecom\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
-use Logeecom\Infrastructure\ORM\QueryFilter\Operators;
 use Logeecom\Infrastructure\ORM\QueryFilter\QueryFilter;
 use Logeecom\Infrastructure\ORM\RepositoryRegistry;
 use Logeecom\Infrastructure\ServiceRegister;
-use Logeecom\Infrastructure\TaskExecution\QueueItem;
 use Packlink\BusinessLogic\ShippingMethod\Models\ShippingMethod;
 use Packlink\WooCommerce\Components\Services\Config_Service;
 use Packlink\WooCommerce\Components\Services\Logger_Service;
@@ -106,7 +104,6 @@ class Debug_Helper {
 		$result['Database']            = static::DATABASE;
 		$result['Database version']    = $wpdb->db_version();
 		$result['Plugin version']      = Shop_Helper::get_plugin_version();
-		$result['Async process URL']   = self::get_config_service()->getAsyncProcessUrl( 'test' );
 		$result['Auto-test URL']       = admin_url( 'admin.php?page=packlink-pro-auto-test' );
 
 		return wp_json_encode( $result, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES );
@@ -170,13 +167,94 @@ class Debug_Helper {
 	 *
 	 * @return string Queue status.
 	 *
-	 * @throws QueryFilterInvalidParamException If filter params are invalid.
 	 */
 	protected static function get_queue_status() {
-		$filter = new QueryFilter();
-		$filter->where( 'status', Operators::NOT_EQUALS, QueueItem::COMPLETED );
+		if ( ! function_exists( 'as_get_scheduled_actions' ) || ! class_exists( 'ActionScheduler_Store' ) ) {
+			return wp_json_encode( array() );
+		}
 
-		return self::get_entities( QueueItem::CLASS_NAME, $filter );
+		$hooks = array( 'packlink_execute_task', 'packlink_scheduler' );
+
+		$statuses = array(
+			\ActionScheduler_Store::STATUS_PENDING,
+			\ActionScheduler_Store::STATUS_RUNNING,
+			\ActionScheduler_Store::STATUS_FAILED,
+			\ActionScheduler_Store::STATUS_CANCELED,
+		);
+
+		$result = array();
+		$store  = \ActionScheduler_Store::instance();
+
+		foreach ( $hooks as $hook ) {
+			$ids = as_get_scheduled_actions(
+				array(
+					'hook'     => $hook,
+					'status'   => $statuses,
+					'orderby'  => 'date',
+					'order'    => 'DESC',
+					'per_page' => 100,
+				),
+				'ids'
+			);
+
+			foreach ( $ids as $id ) {
+				$action = $store->fetch_action( $id );
+				if ( ! $action ) {
+					continue;
+				}
+
+				$status = self::get_action_scheduler_status( $store, $action, $id );
+
+				$args  = method_exists( $action, 'get_args' ) ? $action->get_args() : array();
+				$group = method_exists( $action, 'get_group' ) ? $action->get_group() : null;
+
+				$serialized_task = wp_json_encode(
+					array(
+						'hook'  => $hook,
+						'args'  => $args,
+						'group' => $group,
+					)
+				);
+
+				$failure_description = null;
+				$retries             = null;
+				$logs = [];
+
+				if ( $status === \ActionScheduler_Store::STATUS_FAILED || $status === 'failed' ) {
+					$logs = self::get_action_scheduler_logs( $id );
+				}
+
+				if ( ! empty( $logs ) ) {
+					$failure_description = implode( "\n", $logs );
+					$retries             = count( $logs );
+				}
+
+				$times = self::get_action_scheduler_times( $action, $status );
+
+				$result[] = array(
+					'class_name'                     => 'ActionScheduler_Action',
+					'id'                             => (string) $id,
+					'status'                         => $status,
+
+					'serializedTask'                 => is_string( $serialized_task ) ? $serialized_task : null,
+					'group'                          => $group,
+					'retries'                        => $retries,
+					'failureDescription'             => $failure_description,
+
+					'createTime'                     => $times['createTime'],
+					'startTime'                      => $times['startTime'],
+					'finishTime'                     => $times['finishTime'],
+					'failTime'                       => $times['failTime'],
+					'earliestStartTime'              => $times['earliestStartTime'],
+					'queueTime'                      => $times['queueTime'],
+					'lastUpdateTime'                 => $times['lastUpdateTime'],
+
+					'priority'                       => self::get_action_scheduler_priority( $action ),
+				);
+			}
+		}
+
+		return wp_json_encode( $result, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES );
 	}
 
 	/**
@@ -213,10 +291,178 @@ class Debug_Helper {
 				$result[] = $item->toArray();
 			}
 		} catch ( BaseException $e ) { // phpcs:ignore
-			/* Just continue with empty result. */
 		}
 
 		return wp_json_encode( $result, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES );
+	}
+
+
+	/**
+	 * Safely resolves Action Scheduler action status across versions.
+	 *
+	 * @param \ActionScheduler_Store $store
+	 * @param mixed                 $action
+	 * @param int                   $action_id
+	 *
+	 * @return string
+	 */
+	private static function get_action_scheduler_status( $store, $action, $action_id ) {
+
+		if ( is_object( $store ) && method_exists( $store, 'get_status' ) ) {
+			try {
+				$s = $store->get_status( $action_id );
+				if ( is_string( $s ) && $s !== '' ) {
+					return $s;
+				}
+			} catch ( \Exception $e ) {
+				// ignore
+			}
+		}
+
+		// Fallback: action method if exists (some versions have it)
+		if ( is_object( $action ) && method_exists( $action, 'get_status' ) ) {
+			try {
+				$s = $action->get_status();
+				if ( is_string( $s ) && $s !== '' ) {
+					return $s;
+				}
+			} catch ( \Exception $e ) {
+				// ignore
+			}
+		}
+
+		return '';
+	}
+
+	/**
+	 * Gets Action Scheduler logs for an action id (best-effort).
+	 * Returns lines like "Attempt N: <message>" (closest to your failureDescription format).
+	 *
+	 * @param int $action_id
+	 *
+	 * @return array
+	 */
+	private static function get_action_scheduler_logs( $action_id ) {
+		$lines = array();
+
+		// Action Scheduler logger exists in most Woo installs.
+		if ( ! class_exists( 'ActionScheduler_Logger' ) ) {
+			return $lines;
+		}
+
+		try {
+			$logger = \ActionScheduler_Logger::instance();
+
+			// Newer versions: get_logs( $action_id )
+			if ( method_exists( $logger, 'get_logs' ) ) {
+				$logs = $logger->get_logs( $action_id );
+
+				$attempt = 1;
+				foreach ( (array) $logs as $log ) {
+					$msg = null;
+
+					if ( is_object( $log ) && method_exists( $log, 'get_message' ) ) {
+						$msg = $log->get_message();
+					} elseif ( is_array( $log ) && isset( $log['message'] ) ) {
+						$msg = $log['message'];
+					} elseif ( is_object( $log ) && isset( $log->message ) ) {
+						$msg = $log->message;
+					}
+
+					if ( is_string( $msg ) && $msg !== '' ) {
+						$lines[] = 'Attempt ' . $attempt . ': ' . $msg;
+						$attempt++;
+					}
+				}
+			}
+		} catch ( \Exception $e ) {
+			// ignore
+		}
+
+		return $lines;
+	}
+
+	/**
+	 * Extract times in ISO-8601 (best-effort across AS versions).
+	 *
+	 * @param mixed  $action
+	 * @param string $status
+	 *
+	 * @return array
+	 */
+	private static function get_action_scheduler_times( $action, $status ) {
+		$nulls = array(
+			'createTime'        => null,
+			'startTime'         => null,
+			'finishTime'        => null,
+			'failTime'          => null,
+			'earliestStartTime' => null,
+			'queueTime'         => null,
+			'lastUpdateTime'    => null,
+		);
+
+		// Scheduled/earliest run time is the most reliably available piece.
+		$scheduled = null;
+
+		try {
+			if ( is_object( $action ) && method_exists( $action, 'get_schedule' ) ) {
+				$schedule = $action->get_schedule();
+				if ( $schedule && method_exists( $schedule, 'get_date' ) ) {
+					// get_date() usually returns DateTime.
+					$dt = $schedule->get_date();
+					if ( $dt instanceof \DateTimeInterface ) {
+						$scheduled = $dt;
+					}
+				}
+			}
+		} catch ( \Exception $e ) {
+			// ignore
+		}
+
+		if ( $scheduled instanceof \DateTimeInterface ) {
+			$iso = $scheduled->format( \DateTime::ATOM );
+			$nulls['earliestStartTime'] = $iso;
+			$nulls['queueTime']         = $iso;
+			$nulls['createTime']        = $iso;
+			$nulls['lastUpdateTime']    = $iso;
+		}
+
+		// For running/failed/complete we can best-effort set start/fail/finish to scheduled time if nothing else.
+		if ( $scheduled instanceof \DateTimeInterface ) {
+			if ( $status === \ActionScheduler_Store::STATUS_RUNNING || $status === 'running' ) {
+				$nulls['startTime'] = $scheduled->format( \DateTime::ATOM );
+			}
+			if ( $status === \ActionScheduler_Store::STATUS_FAILED || $status === 'failed' ) {
+				$nulls['startTime'] = $scheduled->format( \DateTime::ATOM );
+				$nulls['failTime']  = $scheduled->format( \DateTime::ATOM );
+			}
+			if ( $status === 'complete' || ( defined( '\ActionScheduler_Store::STATUS_COMPLETE' ) && $status === \ActionScheduler_Store::STATUS_COMPLETE ) ) {
+				$nulls['startTime']  = $scheduled->format( \DateTime::ATOM );
+				$nulls['finishTime'] = $scheduled->format( \DateTime::ATOM );
+			}
+		}
+
+		return $nulls;
+	}
+
+	/**
+	 * Priority best-effort (not always present in AS action object).
+	 *
+	 * @param mixed $action
+	 *
+	 * @return int|null
+	 */
+	private static function get_action_scheduler_priority( $action ) {
+		// Some AS versions/actions might expose priority.
+		if ( is_object( $action ) && method_exists( $action, 'get_priority' ) ) {
+			try {
+				return (int) $action->get_priority();
+			} catch ( \Exception $e ) {
+				return null;
+			}
+		}
+
+		return null;
 	}
 
 	/**

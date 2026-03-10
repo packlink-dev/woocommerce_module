@@ -2,9 +2,9 @@
 Contributors: packlink
 Tags: shipping, delivery, carrier, order, package
 Requires at least: 4.7
-Requires PHP: 5.5
+Requires PHP: 7.0
 Tested up to: 6.9
-Stable tag: 3.6.5
+Stable tag: 4.0.0
 License: LICENSE-2.0
 License URI: http://www.apache.org/licenses/LICENSE-2.0
 
@@ -93,6 +93,13 @@ Click <a href="https://support-pro.packlink.com/hc/es-es/articles/210158585" tar
 
 
 == Changelog ==
+
+#### 4.0.0 - March 10th, 2026
+
+**Updates**
+* Dropped support for PHP 5.6. Minimum supported PHP version is now PHP 7.0
+* Migrated Packlink task execution to WooCommerce Action Scheduler
+* Replaced legacy TaskRunner/Queue implementation with the new TaskExecutor infrastructure from Core
 
 #### 3.6.5 - March 9th, 2026
 

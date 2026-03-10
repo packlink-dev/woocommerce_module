@@ -14,11 +14,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 use Logeecom\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
 use Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException;
 use Logeecom\Infrastructure\ServiceRegister;
-use Logeecom\Infrastructure\TaskExecution\Exceptions\QueueStorageUnavailableException;
 use Packlink\BusinessLogic\OrderShipmentDetails\OrderShipmentDetailsService;
-use Packlink\BusinessLogic\ShipmentDraft\Exceptions\DraftTaskMapExists;
-use Packlink\BusinessLogic\ShipmentDraft\Exceptions\DraftTaskMapNotFound;
-use Packlink\BusinessLogic\ShipmentDraft\ShipmentDraftService;
+use Packlink\BusinessLogic\ShipmentDraft\Interfaces\ShipmentDraftServiceInterface;
 use Packlink\WooCommerce\Components\ShippingMethod\Shipping_Method_Helper;
 use Packlink\WooCommerce\Components\Utility\Script_Loader;
 use WC_Order_Factory;
@@ -57,8 +54,8 @@ class Packlink_Order_Details_Controller extends Packlink_Base_Controller {
 
 		/** @var OrderShipmentDetailsService $shipment_details_service */ // phpcs:ignore
 		$shipment_details_service = ServiceRegister::getService( OrderShipmentDetailsService::CLASS_NAME );
-		/** @var ShipmentDraftService $draft_service */ // phpcs:ignore
-		$draft_service      = ServiceRegister::getService( ShipmentDraftService::CLASS_NAME );
+		/** @var ShipmentDraftServiceInterface $draft_service */ // phpcs:ignore
+		$draft_service      = ServiceRegister::getService( ShipmentDraftServiceInterface::CLASS_NAME );
 		$order_details      = $shipment_details_service->getDetailsByOrderId( (string) $id );
 		$last_status_update = '';
 		if ( $order_details && $order_details->getLastStatusUpdateTime() ) {
@@ -66,7 +63,8 @@ class Packlink_Order_Details_Controller extends Packlink_Base_Controller {
 			$last_status_update = date( get_option( 'links_updated_date_format' ), $update_timestamp ); // phpcs:ignore
 		}
 
-		$shipment_deleted = $order_details ? $shipment_details_service->isShipmentDeleted( $order_details->getReference() ) : true;
+		$shipment_deleted = $order_details ? $shipment_details_service->isShipmentDeleted(
+			$order_details->getReference() ? $order_details->getReference() : '') : true;
 		$draft_status     = $draft_service->getDraftStatus( (string) $id );
 		$shipping_method  = Shipping_Method_Helper::get_packlink_shipping_method_from_order( $wc_order );
 
@@ -80,11 +78,6 @@ class Packlink_Order_Details_Controller extends Packlink_Base_Controller {
 	/**
 	 * Forces create of shipment draft for order.
 	 *
-	 * @throws RepositoryNotRegisteredException When repository is not registered.
-	 * @throws QueueStorageUnavailableException When queue storage is not available.
-	 * @throws DraftTaskMapExists When draft task map exists.
-	 * @throws DraftTaskMapNotFound When draft task map not found.
-	 * @throws QueryFilterInvalidParamException When query filter is invalid.
 	 */
 	public function create_draft() {
 		$this->validate( 'yes' );
@@ -94,8 +87,8 @@ class Packlink_Order_Details_Controller extends Packlink_Base_Controller {
 			$this->return_json( array( 'success' => false ), 400 );
 		}
 
-		/** @var ShipmentDraftService $draft_service */ // phpcs:ignore
-		$draft_service = ServiceRegister::getService( ShipmentDraftService::CLASS_NAME );
+		/** @var ShipmentDraftServiceInterface $draft_service */ // phpcs:ignore
+		$draft_service = ServiceRegister::getService( ShipmentDraftServiceInterface::CLASS_NAME );
 		$draft_service->enqueueCreateShipmentDraftTask( (string) $payload['id'] );
 
 		$this->return_json( array( 'success' => true ) );

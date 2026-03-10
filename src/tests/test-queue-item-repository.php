@@ -2,7 +2,7 @@
 
 use Logeecom\Infrastructure\Logger\LoggerConfiguration;
 use Logeecom\Infrastructure\ORM\RepositoryRegistry;
-use Logeecom\Infrastructure\TaskExecution\Interfaces\Priority;
+use Logeecom\Infrastructure\TaskExecutor\Interfaces\Priority;
 use Logeecom\Tests\Infrastructure\ORM\AbstractGenericQueueItemRepositoryTest;
 use Packlink\WooCommerce\Components\Repositories\Queue_Item_Repository;
 use Packlink\WooCommerce\Components\Utility\Database;

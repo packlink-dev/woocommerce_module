@@ -3,14 +3,12 @@
 use Logeecom\Infrastructure\Logger\Logger;
 use Logeecom\Infrastructure\ServiceRegister;
 use Logeecom\Infrastructure\TaskExecution\Exceptions\QueueStorageUnavailableException;
-use Logeecom\Infrastructure\TaskExecution\Exceptions\TaskRunnerStatusStorageUnavailableException;
+use Logeecom\Infrastructure\TaskExecutor\Interfaces\TaskExecutorInterface;
 use Packlink\BusinessLogic\User\UserAccountService;
-use Packlink\BusinessLogic\Utility\Php\Php55;
 use Packlink\WooCommerce\Components\Services\Config_Service;
-use Packlink\WooCommerce\Components\Tasks\Upgrade_Packlink_Order_Details;
+use Packlink\WooCommerce\Components\Tasks\BusinessTasks\Upgrade_Packlink_Order_Details_Business_Task;
 use Packlink\WooCommerce\Components\Utility\Database;
 use Packlink\WooCommerce\Components\Utility\Shop_Helper;
-use Packlink\WooCommerce\Components\Utility\Task_Queue;
 
 global $wpdb;
 
@@ -27,17 +25,12 @@ if ( ! $database->plugin_already_initialized() ) {
 	 */
 	$config_service = ServiceRegister::getService( Config_Service::CLASS_NAME );
 
-	try {
-		$config_service->setTaskRunnerStatus( '', null );
 		$statuses = array(
 			'processing' => 'wc-processing',
 			'delivered'  => 'wc-completed',
 		);
 
 		$config_service->setOrderStatusMappings( $statuses );
-	} catch ( TaskRunnerStatusStorageUnavailableException $e ) {
-		Logger::logError( $e->getMessage(), 'Integration' );
-	}
 }
 
 try {
@@ -59,7 +52,11 @@ try {
 				ARRAY_A
 			);
 
-			Task_Queue::enqueue(new Upgrade_Packlink_Order_Details(Php55::arrayColumn($order_posts , 'ID')));
+			/** @var TaskExecutorInterface $task_executor */
+			$task_executor = ServiceRegister::getService( TaskExecutorInterface::CLASS_NAME );
+			$task_executor->enqueue(
+				new Upgrade_Packlink_Order_Details_Business_Task( array_column( $order_posts, 'ID' ) )
+			);
 		} catch ( Exception $e ) {
 			Logger::logError( 'Migration of order shipments failed.', 'Integration' );
 		}

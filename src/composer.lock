@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d6a0d518feb1966ba8cd46db94f22ba6",
+    "content-hash": "4a12f202b19908744660f9b44e4e33b3",
     "packages": [
         {
             "name": "iio/libmergepdf",
@@ -62,21 +62,21 @@
         },
         {
             "name": "packlink/integration-core",
-            "version": "v3.7.5",
+            "version": "v4.0.0",
             "source": {
                 "type": "git",
                 "url": "git@github.com:packlink-dev/ecommerce_module_core.git",
-                "reference": "a7555db04f646af3c02c1c33ed7533838dad4d51"
+                "reference": "9397c1ef3bf150f8511cf01e33e0dddc97d0c187"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/packlink-dev/ecommerce_module_core/zipball/a7555db04f646af3c02c1c33ed7533838dad4d51",
-                "reference": "a7555db04f646af3c02c1c33ed7533838dad4d51",
+                "url": "https://api.github.com/repos/packlink-dev/ecommerce_module_core/zipball/9397c1ef3bf150f8511cf01e33e0dddc97d0c187",
+                "reference": "9397c1ef3bf150f8511cf01e33e0dddc97d0c187",
                 "shasum": ""
             },
             "require": {
                 "ext-json": "*",
-                "php": ">=5.3.29"
+                "php": ">=7.0"
             },
             "require-dev": {
                 "codacy/coverage": "dev-master",
@@ -110,7 +110,7 @@
                 "proprietary"
             ],
             "description": "Packlink integrations core library",
-            "time": "2026-03-09T11:30:00+00:00"
+            "time": "2026-03-10T13:27:19+00:00"
         },
         {
             "name": "setasign/fpdf",
@@ -1859,14 +1859,14 @@
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
-        "php": ">=5.6",
+        "php": ">=7.0",
         "ext-json": "*",
         "ext-curl": "*",
         "ext-zip": "*"
     },
     "platform-dev": [],
     "platform-overrides": {
-        "php": "5.6.0"
+        "php": "7.0.8"
     },
     "plugin-api-version": "2.2.0"
 }

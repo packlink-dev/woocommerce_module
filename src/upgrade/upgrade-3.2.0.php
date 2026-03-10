@@ -8,11 +8,11 @@
 
 use Logeecom\Infrastructure\ORM\RepositoryRegistry;
 use Logeecom\Infrastructure\ServiceRegister;
-use Logeecom\Infrastructure\TaskExecution\QueueService;
+use Packlink\BusinessLogic\Controllers\ManualRefreshController;
 use Packlink\BusinessLogic\Configuration;
 use Packlink\BusinessLogic\ShippingMethod\Models\ShippingMethod;
-use Packlink\BusinessLogic\Tasks\UpdateShippingServicesTask;
-use Packlink\WooCommerce\Components\Services\Config_Service;
+use Packlink\BusinessLogic\UpdateShippingServices\Interfaces\UpdateShippingServicesOrchestratorInterface;
+use Packlink\BusinessLogic\UpdateShippingServices\Interfaces\UpdateShippingServiceTaskStatusServiceInterface;
 use Packlink\WooCommerce\Components\Services\System_Info_Service;
 use Packlink\WooCommerce\Components\Utility\Database;
 
@@ -124,14 +124,11 @@ foreach ( $shipping_methods as $method ) {
 // Enqueue task for updating shipping services.                                      *
 // ***********************************************************************************
 
-/** @var Config_Service $config_service */
-$config_service = ServiceRegister::getService( Configuration::CLASS_NAME );
-/** @var QueueService $queue_service */
-$queue_service = ServiceRegister::getService( QueueService::CLASS_NAME );
-
-if ( null !== $queue_service->findLatestByType( 'UpdateShippingServicesTask' ) ) {
-	/** @noinspection PhpUnhandledExceptionInspection */
-	$queue_service->enqueue( $config_service->getDefaultQueueName(), new UpdateShippingServicesTask() );
-}
+/** @var UpdateShippingServiceTaskStatusServiceInterface $status_service */
+$status_service = ServiceRegister::getService( UpdateShippingServiceTaskStatusServiceInterface::class );
+/** @var UpdateShippingServicesOrchestratorInterface $orchestrator */
+$orchestrator = ServiceRegister::getService( UpdateShippingServicesOrchestratorInterface::class );
+$manual_refresh_controller = new ManualRefreshController( $status_service, $orchestrator );
+$manual_refresh_controller->enqueueUpdateTask();
 
 //@codingStandardsIgnoreEnd

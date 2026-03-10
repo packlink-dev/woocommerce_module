@@ -16,7 +16,6 @@ use Logeecom\Infrastructure\ORM\RepositoryRegistry;
 use Logeecom\Infrastructure\ServiceRegister;
 use Packlink\BusinessLogic\ShippingMethod\Models\ShippingMethod;
 use Packlink\BusinessLogic\ShippingMethod\ShippingMethodService;
-use Packlink\BusinessLogic\Utility\Php\Php55;
 use Packlink\WooCommerce\Components\Order\Order_Drop_Off_Map;
 use Packlink\WooCommerce\Components\Services\Config_Service;
 use WC_Order;
@@ -209,7 +208,7 @@ class Shipping_Method_Helper {
 	 */
 	public static function get_all_shipping_zone_ids() {
 		$all_zones = WC_Shipping_Zones::get_zones();
-		$zone_ids  = Php55::arrayColumn( $all_zones, 'zone_id' );
+		$zone_ids  = array_column( $all_zones, 'zone_id' );
 		// Locations not covered by other zones.
 		if ( ! in_array( 0, $zone_ids, true ) ) {
 			$zone_ids[] = 0;

@@ -7,13 +7,11 @@
 
 namespace Packlink\WooCommerce\Components\Services;
 
-use Logeecom\Infrastructure\ORM\RepositoryRegistry;
 use Logeecom\Infrastructure\ServiceRegister;
 use MailPoetVendor\Doctrine\DBAL\Driver\PDO\Exception;
-use Packlink\BusinessLogic\OrderShipmentDetails\Models\OrderShipmentDetails;
 use Packlink\BusinessLogic\OrderShipmentDetails\OrderShipmentDetailsService;
 use Packlink\BusinessLogic\ShipmentDraft\ShipmentDraftService;
-use Packlink\BusinessLogic\Tasks\SendDraftTask;
+use Packlink\BusinessLogic\Tasks\BusinessTasks\SendDraftBusinessTask;
 
 /**
  * Class Shipment_Draft_Service
@@ -34,11 +32,6 @@ class Shipment_Draft_Service extends ShipmentDraftService
 	 * @param $delayInterval
 	 *
 	 * @return void
-	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException
-	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException
-	 * @throws \Logeecom\Infrastructure\TaskExecution\Exceptions\QueueStorageUnavailableException
-	 * @throws \Packlink\BusinessLogic\ShipmentDraft\Exceptions\DraftTaskMapExists
-	 * @throws \Packlink\BusinessLogic\ShipmentDraft\Exceptions\DraftTaskMapNotFound
 	 */
 	public function enqueueCreateShipmentDraftTask( $orderId, $isDelayed = false, $delayInterval = 5 )
 	{
@@ -53,7 +46,7 @@ class Shipment_Draft_Service extends ShipmentDraftService
 					throw new \RuntimeException( 'Draft already exists' );
 				}
 
-				( new SendDraftTask( $orderId ) )->execute();
+				( new SendDraftBusinessTask( $orderId ) )->execute();
 
 				$translation = __(
 					'Shipment draft for order %s created successfully',

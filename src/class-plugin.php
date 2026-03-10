@@ -5,12 +5,11 @@
 namespace Packlink\WooCommerce;
 
 use Automattic\WooCommerce\Utilities\FeaturesUtil;
-use Logeecom\Infrastructure\Logger\Logger;
 use Logeecom\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
 use Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException;
 use Logeecom\Infrastructure\ORM\RepositoryRegistry;
 use Logeecom\Infrastructure\ServiceRegister;
-use Logeecom\Infrastructure\TaskExecution\Exceptions\TaskRunnerStatusStorageUnavailableException;
+use Logeecom\Infrastructure\TaskExecutor\Interfaces\TaskExecutorInterface;
 use Packlink\BusinessLogic\ShippingMethod\Interfaces\ShopShippingMethodService;
 use Packlink\BusinessLogic\ShippingMethod\Utility\ShipmentStatus;
 use Packlink\WooCommerce\Components\Bootstrap_Component;
@@ -24,9 +23,9 @@ use Packlink\WooCommerce\Components\ShippingMethod\Packlink_Shipping_Method;
 use Packlink\WooCommerce\Components\ShippingMethod\Shipping_Method_Helper;
 use Packlink\WooCommerce\Components\ShippingMethod\Shipping_Method_Map;
 use Packlink\WooCommerce\Components\ShippingMethod\Shop_Shipping_Method_Service;
+use Packlink\WooCommerce\Components\Utility\Actions_Delete;
 use Packlink\WooCommerce\Components\Utility\Database;
 use Packlink\WooCommerce\Components\Utility\Shop_Helper;
-use Packlink\WooCommerce\Components\Utility\Task_Queue;
 use Packlink\WooCommerce\Components\Utility\Version_File_Reader;
 use Packlink\WooCommerce\Controllers\Packlink_Auto_Test_Controller;
 use Packlink\WooCommerce\Controllers\Packlink_Frontend_Controller;
@@ -129,7 +128,6 @@ class Plugin {
 		}
 
 		if ( $this->plugin_already_initialized() ) {
-			Task_Queue::wakeup();
 			Shipping_Method_Helper::enable_packlink_shipping_methods();
 		} elseif ( $is_network_wide && is_multisite() ) {
 			foreach ( get_sites() as $site ) {
@@ -205,6 +203,7 @@ class Plugin {
 			}
 		} else {
 			Shipping_Method_Helper::remove_packlink_shipping_methods();
+			Actions_Delete::delete_packlink_scheduled_actions( $this->db );
 			$this->uninstall_plugin_from_site();
 		}
 
@@ -408,7 +407,7 @@ class Plugin {
 		     ( 'woocommerce_page_wc-orders' === $page && $data && $data instanceof WC_Order ) ) {
 			$controller = new Packlink_Order_Details_Controller();
 			if ( class_exists( 'Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController' ) ) {
-				$screen     = wc_get_container()->get( CustomOrdersTableController::class )->custom_orders_table_usage_is_enabled()
+				$screen = wc_get_container()->get( CustomOrdersTableController::class )->custom_orders_table_usage_is_enabled()
 					? wc_get_page_screen_id( 'shop-order' )
 					: 'shop_order';
 			} else {
@@ -418,7 +417,7 @@ class Plugin {
 				'packlink-shipping-modal',
 				__( 'Packlink PRO Shipping', 'packlink-pro-shipping' ),
 				function ( $data ) use ( $controller ) {
-					$data_id = ($data instanceof \WP_Post) ? $data->ID : $data->get_id();
+					$data_id = ( $data instanceof \WP_Post ) ? $data->ID : $data->get_id();
 					$controller->render( $data_id );
 				},
 				$screen,
@@ -514,6 +513,11 @@ class Plugin {
 			$this->order_hooks_and_actions();
 			$this->checkout_hooks_and_actions();
 		}
+		// Register WordPress_Task_Executor callbacks for Action Scheduler
+		$executor = ServiceRegister::getService( TaskExecutorInterface::CLASS_NAME );
+
+		// Register task execution callback
+		$executor->registerExecutionCallback();
 	}
 
 	/**
@@ -575,19 +579,14 @@ class Plugin {
 		Shop_Helper::create_log_directory();
 		$config_service = $this->get_config_service();
 
-		try {
-			$config_service->setTaskRunnerStatus( '', null );
-			$config_service->setOrderStatusMappings(
-				array(
-					ShipmentStatus::STATUS_ACCEPTED  => 'wc-processing',
-					ShipmentStatus::STATUS_DELIVERED => 'wc-completed',
-					ShipmentStatus::STATUS_CANCELLED => 'wc-cancelled',
-					ShipmentStatus::INCIDENT         => 'wc-failed'
-				)
-			);
-		} catch ( TaskRunnerStatusStorageUnavailableException $e ) {
-			Logger::logError( $e->getMessage(), 'Integration' );
-		}
+		$config_service->setOrderStatusMappings(
+			array(
+				ShipmentStatus::STATUS_ACCEPTED  => 'wc-processing',
+				ShipmentStatus::STATUS_DELIVERED => 'wc-completed',
+				ShipmentStatus::STATUS_CANCELLED => 'wc-cancelled',
+				ShipmentStatus::INCIDENT         => 'wc-failed'
+			)
+		);
 	}
 
 	/**
@@ -604,7 +603,6 @@ class Plugin {
 	/**
 	 * Plugin update method.
 	 *
-	 * @throws RepositoryNotRegisteredException
 	 */
 	private function update() {
 		if ( is_multisite() ) {
@@ -658,6 +656,8 @@ class Plugin {
 	 * Removes plugin tables and configuration from the current site.
 	 */
 	private function uninstall_plugin_from_site() {
+		Actions_Delete::delete_packlink_scheduled_actions( $this->db );
+
 		$installer = new Database( $this->db );
 		$installer->uninstall();
 	}
