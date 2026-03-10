@@ -23,6 +23,7 @@ use Packlink\WooCommerce\Components\ShippingMethod\Packlink_Shipping_Method;
 use Packlink\WooCommerce\Components\ShippingMethod\Shipping_Method_Helper;
 use Packlink\WooCommerce\Components\ShippingMethod\Shipping_Method_Map;
 use Packlink\WooCommerce\Components\ShippingMethod\Shop_Shipping_Method_Service;
+use Packlink\WooCommerce\Components\Utility\Actions_Delete;
 use Packlink\WooCommerce\Components\Utility\Database;
 use Packlink\WooCommerce\Components\Utility\Shop_Helper;
 use Packlink\WooCommerce\Components\Utility\Version_File_Reader;
@@ -202,6 +203,7 @@ class Plugin {
 			}
 		} else {
 			Shipping_Method_Helper::remove_packlink_shipping_methods();
+			Actions_Delete::delete_packlink_scheduled_actions( $this->db );
 			$this->uninstall_plugin_from_site();
 		}
 
@@ -654,6 +656,8 @@ class Plugin {
 	 * Removes plugin tables and configuration from the current site.
 	 */
 	private function uninstall_plugin_from_site() {
+		Actions_Delete::delete_packlink_scheduled_actions( $this->db );
+
 		$installer = new Database( $this->db );
 		$installer->uninstall();
 	}

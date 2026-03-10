@@ -2,12 +2,11 @@
 
 namespace Packlink\WooCommerce\Components\Migrator\ActionSchedulerMigrator;
 
+use Logeecom\Infrastructure\Logger\Logger;
 use Logeecom\Infrastructure\ServiceRegister;
-use Logeecom\Infrastructure\TaskExecution\QueueItem;
 use Logeecom\Infrastructure\TaskExecutor\Interfaces\TaskExecutorInterface;
 use Packlink\BusinessLogic\Scheduler\DTO\ScheduleConfig;
 use Packlink\BusinessLogic\Scheduler\Interfaces\SchedulerInterface;
-use Packlink\BusinessLogic\ShipmentDraft\Objects\ShipmentDraftStatus;
 use Packlink\BusinessLogic\ShipmentDraft\Utility\DraftStatus;
 use Packlink\BusinessLogic\Tasks\BusinessTasks\SendDraftBusinessTask;
 use Packlink\BusinessLogic\Tasks\BusinessTasks\UpdateShippingServicesBusinessTask;
@@ -18,6 +17,8 @@ class Queued_Tasks_Migrator {
 	 * Runs all Action Scheduler migration steps.
 	 */
 	public function migrate() {
+		Logger::logInfo('Migration started.');
+
 		if ( ! function_exists( 'as_enqueue_async_action' ) ) {
 			add_action( 'init', [ $this, 'migrate' ] );
 			return;
@@ -27,12 +28,16 @@ class Queued_Tasks_Migrator {
 		$this->scheduleWeeklyUpdateShippingServices();
 		$this->migrateQueuedItems();
 		$this->cleanupLegacyQueueData();
+
+		Logger::logInfo('Migration finished successfully.');
 	}
 
 	/**
 	 * Schedules weekly UpdateShippingServicesBusinessTask.
 	 */
 	private function scheduleWeeklyUpdateShippingServices() {
+		Logger::logInfo('Scheduling weekly UpdateShippingServicesBusinessTask.');
+
 		if ( ! function_exists( 'as_schedule_recurring_action' ) ) {
 			return;
 		}
@@ -53,6 +58,8 @@ class Queued_Tasks_Migrator {
 	}
 
 	private function migrateQueuedItems() {
+		Logger::logInfo('Migrating queued items.');
+
 		global $wpdb;
 
 		/** @var TaskExecutorInterface $taskExecutor */
@@ -98,6 +105,8 @@ class Queued_Tasks_Migrator {
 	 * Migrates draft status to OrderShipmentDetails based on existing queued items.
 	 */
 	private function migrateDraftStatuses() {
+		Logger::logInfo('Migration draft statuses started.');
+
 		global $wpdb;
 
 		$table_name = $wpdb->prefix . Database::BASE_TABLE;
@@ -194,6 +203,7 @@ class Queued_Tasks_Migrator {
 	 * Cleans up obsolete TaskRunner/Queue-related entities and configuration entries.
 	 */
 	private function cleanupLegacyQueueData() {
+		Logger::logInfo('Cleaning up legacy queue data.');
 		global $wpdb;
 
 		$table_name = $wpdb->prefix . Database::BASE_TABLE;
@@ -202,6 +212,7 @@ class Queued_Tasks_Migrator {
 			'OrderSendDraftTaskMap',
 			'Process',
 			'QueueItem',
+			'Schedule'
 		);
 		$type_placeholders = implode( ',', array_fill( 0, count( $types_to_delete ), '%s' ) );
 		$wpdb->query(
