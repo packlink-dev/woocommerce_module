@@ -3,6 +3,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [v4.0.0](https://github.com/packlink-dev/woocommerce_module/compare/v3.6.5...v4.0.0) - 2026-03-10
+### Changed
+**BREAKING CHANGES**
+- Dropped support for PHP 5.6. Minimum supported PHP version is now PHP 7.0
+- Migrated Packlink task execution to WooCommerce Action Scheduler
+- Replaced legacy TaskRunner/Queue implementation with the new TaskExecutor infrastructure from Core
+
 ## [v3.6.5](https://github.com/packlink-dev/woocommerce_module/compare/v3.6.4...v3.6.5) - 2026-03-09
 ### Changed
 - Transformations applied to GR and LV postal codes
