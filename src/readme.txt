@@ -94,6 +94,19 @@ Click <a href="https://support-pro.packlink.com/hc/es-es/articles/210158585" tar
 
 == Changelog ==
 
+#### 3.6.5 - March 9th, 2026
+
+**Updates**
+- Transformations applied to GR and LV postal codes
+
+#### 3.6.4 - February 4th, 2026
+
+**Updates**
+- Rates for AU, CA, and US fixed
+- Shop manager enabled to create draft
+- Weight unit mismatch fixed
+- Duplicate SQL queries fixed
+
 #### 3.6.3 - January 21st, 2026
 
 **Updates**

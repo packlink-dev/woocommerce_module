@@ -49,6 +49,13 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 	private $config_service;
 
 	/**
+	 * Request-level cache for shipment details by order id.
+	 *
+	 * @var array
+	 */
+	private $order_shipment_details_cache = array();
+
+	/**
 	 * Adds Packlink column for printing label.
 	 *
 	 * @param array $columns Columns.
@@ -93,57 +100,116 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 	 * @throws QueryFilterInvalidParamException When invalid filter parameters are set.
 	 */
 	public function populate_packlink_column( $column, $data ) {
-		$id = class_exists( OrderUtil::class ) && OrderUtil::custom_orders_table_usage_is_enabled() ?
-			$data->get_id() : $data;
 
-		$shipment_details = $this->get_order_shipment_details_service()->getDetailsByOrderId( (string) $id );
-
-		if ( null !== $shipment_details ) {
-			if ( static::COLUMN_ID === $column ) {
-				/** @var OrderService $order_service */
-				$order_service = ServiceRegister::getService( OrderService::CLASS_NAME );
-				$labels        = $shipment_details->getShipmentLabels();
-
-				if ( ! $order_service->isReadyToFetchShipmentLabels( $shipment_details->getShippingStatus() ) ) {
-					echo esc_html( __( 'Label is not yet available.', 'packlink-pro-shipping' ) );
-				} else {
-					$is_printed = false;
-
-					if ( empty( $labels ) ) {
-						$params = array(
-							'order_id' => $id,
-						);
-
-						$label_url = Shop_Helper::get_controller_url( 'Order_Overview', 'print_single_label', $params );
-					} else {
-						if ( $labels[0]->isPrinted() ) {
-							$is_printed = true;
-						}
-
-						$label_url = $labels[0]->getLink();
-					}
-
-					$class = 'pl-print-label button ' . ( $is_printed ? '' : 'button-primary' );
-					$label = $is_printed
-						? __( 'Printed label', 'packlink-pro-shipping' )
-						: __( 'Print label', 'packlink-pro-shipping' );
-
-					echo '<button data-pl-id="' . esc_attr( $id ) . '" data-pl-label="' . esc_url( $label_url )
-					     . '" type="button" class="' . esc_attr( $class ) . '" >' . esc_html( $label ) . '</button>';
-				}
-			}
+		if ( static::COLUMN_ID !== $column && static::COLUMN_PACKLINK_ID !== $column ) {
+			return;
 		}
 
-		if (
-			static::COLUMN_PACKLINK_ID === $column &&
-			! empty( $this->get_config_service()->getAuthorizationToken() )
-		) {
-			global $post;
-			$post_data = class_exists( OrderUtil::class ) && OrderUtil::custom_orders_table_usage_is_enabled() ?
-				$data : $post;
+		$order_id = $this->resolve_order_id( $data );
 
-			echo $this->get_packlink_shipping_button( $post_data );
+		if ( static::COLUMN_ID === $column ) {
+			echo $this->render_label_column( $order_id );
+
+			return;
 		}
+
+		echo $this->render_packlink_column( $data );
+	}
+
+	/**
+	 * Resolves the order ID for both HPOS and legacy storage.
+	 *
+	 * @param mixed $data Order data.
+	 *
+	 * @return mixed
+	 */
+	private function resolve_order_id( $data ) {
+		if ( class_exists( OrderUtil::class ) && OrderUtil::custom_orders_table_usage_is_enabled() ) {
+			return $data->get_id();
+		}
+
+		return $data;
+	}
+
+	/**
+	 * Resolves the order object for both HPOS and legacy storage.
+	 *
+	 * @param mixed $data Order data.
+	 *
+	 * @return mixed
+	 */
+	private function resolve_order_object( $data ) {
+		if ( class_exists( OrderUtil::class ) && OrderUtil::custom_orders_table_usage_is_enabled() ) {
+			return $data;
+		}
+
+		global $post;
+
+		return $post;
+	}
+
+	/**
+	 * Renders Packlink label column contents for a single order.
+	 *
+	 * @param mixed $order_id Order ID.
+	 *
+	 * @return string
+	 *
+	 * @throws QueryFilterInvalidParamException When invalid filter parameters are set.
+	 */
+	private function render_label_column( $order_id ) {
+		$shipment_details = $this->get_order_shipment_details( (string) $order_id );
+
+		if ( null === $shipment_details ) {
+			return '';
+		}
+
+		/** @var OrderService $order_service */
+		$order_service = ServiceRegister::getService( OrderService::CLASS_NAME );
+		$labels        = $shipment_details->getShipmentLabels();
+
+		if ( ! $order_service->isReadyToFetchShipmentLabels( $shipment_details->getShippingStatus() ) ) {
+			return esc_html( __( 'Label is not yet available.', 'packlink-pro-shipping' ) );
+		}
+
+		$is_printed = false;
+
+		$params    = array( 'order_id' => $order_id );
+		$label_url = Shop_Helper::get_controller_url( 'Order_Overview', 'print_single_label', $params );
+
+		if ( ! empty( $labels ) ) {
+			$is_printed = $labels[0]->isPrinted();
+			$label_url  = $labels[0]->getLink();
+		}
+
+		$class = 'pl-print-label button ' . ( $is_printed ? '' : 'button-primary' );
+		$label = $is_printed
+			? __( 'Printed label', 'packlink-pro-shipping' )
+			: __( 'Print label', 'packlink-pro-shipping' );
+
+		return '<button data-pl-id="' . esc_attr( $order_id ) . '" data-pl-label="' . esc_url( $label_url )
+		       . '" type="button" class="' . esc_attr( $class ) . '" >' . esc_html( $label ) . '</button>';
+	}
+
+	/**
+	 * Renders Packlink shipping column contents for a single order.
+	 *
+	 * @param mixed $data Order data.
+	 *
+	 * @return string
+	 */
+	private function render_packlink_column( $data ) {
+		if ( empty( $this->get_config_service()->getAuthorizationToken() ) ) {
+			return '';
+		}
+
+		$order_data = $this->resolve_order_object( $data );
+
+		if ( empty( $order_data ) ) {
+			return '';
+		}
+
+		return $this->get_packlink_shipping_button( $order_data );
 	}
 
 	/**
@@ -160,7 +226,7 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 	 * @throws ParameterException
 	 */
 	public function get_draft_status() {
-		$this->validate( 'no', true );
+		$this->validate_admin_or_manager('no');
 
 		$order_id = ! empty( $_GET['order_id'] ) ? $_GET['order_id'] : null;
 
@@ -306,9 +372,9 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 	 * @return string
 	 */
 	protected function get_packlink_shipping_button( $post ) {
-		$orderId = (string) (($post instanceof \WP_Post) ? $post->ID : $post->get_id());
+		$orderId          = (string) ( ( $post instanceof \WP_Post ) ? $post->ID : $post->get_id() );
 		$src              = Shop_Helper::get_plugin_base_url() . 'resources/images/logo.png';
-		$shipment_details = $this->get_order_shipment_details_service()->getDetailsByOrderId( $orderId );
+		$shipment_details = $this->get_order_shipment_details( $orderId );
 
 		if ( $shipment_details && ! empty( $shipment_details->getReference() ) ) {
 			$deleted = $this->get_order_shipment_details_service()->isShipmentDeleted( $shipment_details->getReference() );
@@ -334,6 +400,24 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 		return '<button class="button pl-create-draft-button" data-order-id="' . $orderId . '"><img class="pl-image" src="' . esc_url( $src ) . '" alt="">'
 		       . '<span>' . __( 'Send with Packlink', 'packlink-pro-shipping' ) . '</span>'
 		       . '</button>';
+	}
+
+	/**
+	 * Returns cached shipment details for an order id.
+	 *
+	 * @param string $order_id
+	 *
+	 * @return OrderShipmentDetails|null
+	 */
+	private function get_order_shipment_details( $order_id ) {
+		if ( array_key_exists( $order_id, $this->order_shipment_details_cache ) ) {
+			return $this->order_shipment_details_cache[ $order_id ];
+		}
+
+		$this->order_shipment_details_cache[ $order_id ] =
+			$this->get_order_shipment_details_service()->getDetailsByOrderId( $order_id );
+
+		return $this->order_shipment_details_cache[ $order_id ];
 	}
 
 	/**
@@ -500,6 +584,29 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 		$draft_service = ServiceRegister::getService( ShipmentDraftServiceInterface::CLASS_NAME );
 
 		return $draft_service;
+	}
+
+	/**
+	 * Validates if plugin is enabled and if it is post request for calls permitted only for admins and shop managers
+	 *
+	 * @return void
+	 */
+	protected function validate_admin_or_manager( $post = 'no' ) {
+		if ( ! Shop_Helper::is_plugin_enabled() ) {
+			exit();
+		}
+
+		if ( 'yes' === $post && ! $this->is_post() ) {
+			$this->redirect404();
+		}
+
+		if (!is_user_logged_in()) {
+			$this->redirect404();
+		}
+
+		if (!current_user_can('administrator') && !current_user_can('manage_woocommerce')) {
+			$this->redirect404();
+		}
 	}
 }
 

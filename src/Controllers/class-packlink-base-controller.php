@@ -26,6 +26,15 @@ class Packlink_Base_Controller {
 	protected $is_internal = true;
 
 	/**
+	 * Defines actions that shop manager is allowed to do
+	 */
+	protected static $SHOP_MANAGER_ALLOWED_ACTIONS = array(
+		'create_draft',
+		'is_manual_sync_enabled',
+		'get_draft_status'
+	);
+
+	/**
 	 * Processes request. Reads 'action' parameter and calls action method if provided.
 	 *
 	 * @param string|null $action Request action.
@@ -55,7 +64,13 @@ class Packlink_Base_Controller {
 	 */
 	protected function validate_internal_call() {
 		$logged_user_id = get_current_user_id();
-		if ( empty( $logged_user_id ) || ! current_user_can('administrator') ) {
+		$current_action = $this->get_param('action') ? $this->get_param('action') : '';
+
+		if ( empty( $logged_user_id ) ||
+		     ! current_user_can('administrator') &&
+		     ! (current_user_can('manage_woocommerce') &&
+		        in_array($current_action, self::$SHOP_MANAGER_ALLOWED_ACTIONS))) {
+
 			status_header( 401 );
 			nocache_headers();
 
