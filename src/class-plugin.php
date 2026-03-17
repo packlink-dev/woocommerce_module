@@ -10,6 +10,7 @@ use Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException;
 use Logeecom\Infrastructure\ORM\RepositoryRegistry;
 use Logeecom\Infrastructure\ServiceRegister;
 use Logeecom\Infrastructure\TaskExecutor\Interfaces\TaskExecutorInterface;
+use Packlink\BusinessLogic\IntegrationRegistration\Interfaces\IntegrationRegistrationServiceInterface;
 use Packlink\BusinessLogic\ShippingMethod\Interfaces\ShopShippingMethodService;
 use Packlink\BusinessLogic\ShippingMethod\Utility\ShipmentStatus;
 use Packlink\WooCommerce\Components\Bootstrap_Component;
@@ -195,6 +196,11 @@ class Plugin {
 	 * Plugin uninstall method.
 	 */
 	public function uninstall() {
+
+		/** @var IntegrationRegistrationServiceInterface $integrationService */
+		$integrationService = ServiceRegister::getService(IntegrationRegistrationServiceInterface::CLASS_NAME);
+		$integrationService->disconnectIntegration();
+
 		if ( is_multisite() ) {
 			$sites = get_sites();
 			foreach ( $sites as $site ) {

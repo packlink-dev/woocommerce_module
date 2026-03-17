@@ -29,6 +29,8 @@ use Packlink\BusinessLogic\CashOnDelivery\Model\CashOnDelivery;
 use Packlink\BusinessLogic\CashOnDelivery\Services\OfflinePaymentsServices;
 use Packlink\BusinessLogic\Country\WarehouseCountryService;
 use Packlink\BusinessLogic\FileResolver\FileResolverService;
+use Packlink\BusinessLogic\IntegrationRegistration\Interfaces\IntegrationRegistrationDataProviderInterface;
+use Packlink\BusinessLogic\IntegrationRegistration\Interfaces\ModuleResetServiceInterface;
 use Packlink\BusinessLogic\Order\Interfaces\ShopOrderService;
 use Packlink\BusinessLogic\Order\OrderService;
 use Packlink\BusinessLogic\OrderShipmentDetails\Models\OrderShipmentDetails;
@@ -39,6 +41,8 @@ use Packlink\BusinessLogic\UpdateShippingServices\Interfaces\UpdateShippingServi
 use Packlink\BusinessLogic\UpdateShippingServices\Models\UpdateShippingServiceTaskStatus;
 use Packlink\BusinessLogic\UpdateShippingServices\UpdateShippingServiceTaskStatusService;
 use Packlink\BusinessLogic\Scheduler\Interfaces\SchedulerInterface;
+use Packlink\WooCommerce\Components\IntegrationRegistration\Integration_Registration_Data_Provider;
+use Packlink\WooCommerce\Components\IntegrationRegistration\Integration_Reset_Service;
 use Packlink\WooCommerce\Components\Services\Offline_Payments_Service;
 use Packlink\WooCommerce\Components\Services\Packlink_WordPress_Scheduler;
 use Packlink\WooCommerce\Components\Services\Order_Service;
@@ -71,6 +75,27 @@ class Bootstrap_Component extends BootstrapComponent {
 	 */
 	protected static function initServices() {
 
+		ServiceRegister::registerService(
+			Configuration::CLASS_NAME,
+			static function () {
+				return Config_Service::getInstance();
+			}
+		);
+
+		ServiceRegister::registerService(
+			IntegrationRegistrationDataProviderInterface::CLASS_NAME,
+			static function () {
+				return new Integration_Registration_Data_Provider();
+			}
+		);
+
+		ServiceRegister::registerService(
+			ModuleResetServiceInterface::CLASS_NAME,
+			function () {
+				return new Integration_Reset_Service();
+			}
+		);
+
 		parent::initServices();
 
 		ServiceRegister::registerService(
@@ -84,13 +109,6 @@ class Bootstrap_Component extends BootstrapComponent {
 			Serializer::CLASS_NAME,
 			function () {
 				return new NativeSerializer();
-			}
-		);
-
-		ServiceRegister::registerService(
-			Configuration::CLASS_NAME,
-			static function () {
-				return Config_Service::getInstance();
 			}
 		);
 

@@ -175,4 +175,18 @@ class Config_Service extends Configuration {
 	public function set_manual_sync_enabled( $manual_sync_enabled ) {
 		$this->saveConfigValue( 'Manual_Sync', $manual_sync_enabled );
 	}
+
+	/**
+	 * Removes integration registration data from the database
+	 * by annulling all integration-related configuration values.
+	 *
+	 * @return void
+	 */
+	public function deleteIntegrationData()
+	{
+		$this->saveConfigValue('integrationId', null);
+		$this->saveConfigValue('integrationGuid', null);
+		$this->saveConfigValue('webhookSecret', null);
+		$this->saveConfigValue('integrationStatus', null);
+	}
 }

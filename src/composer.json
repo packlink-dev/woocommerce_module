@@ -12,7 +12,7 @@
   ],
   "require": {
     "php": ">=7.0",
-    "packlink/integration-core": "v4.0.0",
+    "packlink/integration-core": "dev-CORE-V2-CR-SET-64",
     "ext-json": "*",
     "ext-curl": "*",
     "ext-zip": "*",

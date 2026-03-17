@@ -6,6 +6,7 @@
   "require": {
     "php": ">=7.0",
     "wp-coding-standards/wpcs": "2.3.*",
-    "ext-json": "*"
+    "ext-json": "*",
+    "ext-openssl": "*"
   }
 }
