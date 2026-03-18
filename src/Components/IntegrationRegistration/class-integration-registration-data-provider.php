@@ -27,7 +27,14 @@ class Integration_Registration_Data_Provider implements IntegrationRegistrationD
 	/**
 	 * @var Configuration $configService
 	 */
-	private $configService = null;
+	private $configService;
+
+	/**
+	 * Integration_Registration_Data_Provider constructor.
+	 */
+	public function __construct($configService) {
+		$this->configService = $configService;
+	}
 
 	/**
 	 * @return array Payload.
@@ -53,12 +60,11 @@ class Integration_Registration_Data_Provider implements IntegrationRegistrationD
 	 * @return string Integration GUID.
 	 */
 	public function getIntegrationGuid() {
-		$config = $this->getConfigService();
 
-		$guid = $config->getIntegrationGuid();
+		$guid = $this->configService->getIntegrationGuid();
 		if (!$guid) {
 			$guid = \Logeecom\Infrastructure\Utility\GuidProvider::getInstance()->generateGuid();
-			$config->setIntegrationGuid($guid);
+			$this->configService->setIntegrationGuid($guid);
 		}
 
 		return $guid;
@@ -70,13 +76,12 @@ class Integration_Registration_Data_Provider implements IntegrationRegistrationD
 	 * @return string Webhook secret used for authentication.
 	 */
 	public function getWebhookSecret() {
-		$config = $this->getConfigService();
 
-		$secret = $config->getWebhookSecret();
+		$secret = $this->configService->getWebhookSecret();
 		if (!$secret) {
 			$bytes32 = openssl_random_pseudo_bytes(32);
 			$secret = rtrim(strtr(base64_encode($bytes32), '+/', '-_'), '=');
-			$config->setWebhookSecret($secret);
+			$this->configService->setWebhookSecret($secret);
 		}
 
 		return $secret;
@@ -93,7 +98,7 @@ class Integration_Registration_Data_Provider implements IntegrationRegistrationD
 			return $this->integrationId;
 		}
 
-		$result = $this->getConfigService()->getIntegrationId();
+		$result = $this->configService->getIntegrationId();
 
 		if ($result) {
 			$this->integrationId = $result;
@@ -112,7 +117,7 @@ class Integration_Registration_Data_Provider implements IntegrationRegistrationD
 	 */
 	public function setIntegrationId( $integrationId ) {
 		$this->integrationId = $integrationId;
-		$this->getConfigService()->setIntegrationId($integrationId);
+		$this->configService->setIntegrationId($integrationId);
 	}
 
 	/**
@@ -139,8 +144,7 @@ class Integration_Registration_Data_Provider implements IntegrationRegistrationD
 	 * @return string webhook URL.
 	 */
 	public function getIntegrationWebhookStatusUpdateUrl() {
-		//return $this->getConfigService()->getStatusUpdateUrl(); //TODO: not valid-> fix when u start working on webhooks
-		return 'https://packlink.io/integration-status-update';
+		return $this->configService->getStatusUpdateUrl();
 	}
 
 	/**
@@ -150,17 +154,6 @@ class Integration_Registration_Data_Provider implements IntegrationRegistrationD
 	 */
 	public function deleteIntegrationData() {
 		$this->integrationId = null;
-		$this->getConfigService()->deleteIntegrationData();
-	}
-
-	/**
-	 * @return object|Configuration
-	 */
-	private function getConfigService() {
-		if (null === $this->configService) {
-			$this->configService = ServiceRegister::getService(Configuration::CLASS_NAME);
-		}
-
-		return $this->configService;
+		$this->configService->deleteIntegrationData();
 	}
 }

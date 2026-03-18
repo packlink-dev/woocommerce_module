@@ -12,6 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use Logeecom\Infrastructure\ServiceRegister;
+use Packlink\BusinessLogic\Configuration;
 use Packlink\BusinessLogic\CountryLabels\Interfaces\CountryService;
 use Packlink\WooCommerce\Components\Utility\Script_Loader;
 use Packlink\WooCommerce\Components\Utility\Shop_Helper;
@@ -22,10 +23,15 @@ use Packlink\WooCommerce\Components\Utility\Shop_Helper;
  * @package Packlink\WooCommerce\Controllers
  */
 class Packlink_Frontend_Controller extends Packlink_Base_Controller {
+
+	/** @var Configuration */
+	private $configService;
+
 	/**
 	 * Packlink_Frontend_Controller constructor.
 	 */
-	public function __construct() {
+	public function __construct($configService) {
+		$this->configService = $configService;
 	}
 
 	/**
@@ -44,10 +50,12 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	 * @return array Dashboard view arguments.
 	 */
 	protected function resolve_view_arguments() {
+		$userInfo = $this->configService->getUserInfo();
 		return array(
 			'lang'      => $this->get_lang(),
 			'templates' => $this->get_templates(),
 			'urls'      => $this->get_urls(),
+			'platformDomain' => $userInfo ? strtolower( $userInfo->country ) : 'com',
 		);
 	}
 

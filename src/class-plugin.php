@@ -5,11 +5,13 @@
 namespace Packlink\WooCommerce;
 
 use Automattic\WooCommerce\Utilities\FeaturesUtil;
+use Logeecom\Infrastructure\Logger\Logger;
 use Logeecom\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
 use Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException;
 use Logeecom\Infrastructure\ORM\RepositoryRegistry;
 use Logeecom\Infrastructure\ServiceRegister;
 use Logeecom\Infrastructure\TaskExecutor\Interfaces\TaskExecutorInterface;
+use Packlink\BusinessLogic\Configuration;
 use Packlink\BusinessLogic\IntegrationRegistration\Interfaces\IntegrationRegistrationServiceInterface;
 use Packlink\BusinessLogic\ShippingMethod\Interfaces\ShopShippingMethodService;
 use Packlink\BusinessLogic\ShippingMethod\Utility\ShipmentStatus;
@@ -249,6 +251,58 @@ class Plugin {
 	}
 
 	/**
+	 * Handles shop URL changes.
+	 * Re-registers the integration with Packlink if the home or site URL has changed
+	 * so the webhook status_update_url stays current.
+	 *
+	 * @param string $option   Name of the option that was updated.
+	 * @param string $oldValue Previous value.
+	 * @param string $newValue New value.
+	 */
+	public function update_home_url( $option, $oldValue, $newValue )
+	{
+		if ( ! in_array( $option, array( 'home', 'siteurl' ), true ) ) {
+			return;
+		}
+
+		if ( $oldValue === $newValue ) {
+			return;
+		}
+
+		try {
+			/** @var IntegrationRegistrationServiceInterface $registrationService */
+			$registrationService = ServiceRegister::getService(
+				IntegrationRegistrationServiceInterface::CLASS_NAME
+			);
+
+			$integrationId = $registrationService->updateIntegrationUrl();
+
+			if ( $integrationId === null ) {
+				/** @noinspection PhpParamsInspection */
+				Logger::logError(
+					'Failed to re-register integration after shop URL change.',
+					'Core',
+					array( 'oldUrl' => $oldValue, 'newUrl' => $newValue )
+				);
+
+				return;
+			}
+
+			Logger::logInfo(
+				'Integration re-registered after shop URL change.',
+				'Core',
+				array( 'newUrl' => $newValue, 'integrationId' => $integrationId )
+			);
+		} catch ( \Exception $e ) {
+			Logger::logError(
+				'Exception during integration re-registration after shop URL change: ' . $e->getMessage(),
+				'Core',
+				array( 'newUrl' => $newValue, 'trace' => $e->getTraceAsString() )
+			);
+		}
+	}
+
+	/**
 	 * Adds Packlink PRO query variable.
 	 *
 	 * @param array $vars Filter variables.
@@ -291,7 +345,9 @@ class Plugin {
 			'Packlink PRO',
 			'manage_options',
 			'packlink-pro-shipping',
-			array( new Packlink_Frontend_Controller(), 'render' )
+			array( new Packlink_Frontend_Controller(
+				ServiceRegister::getService(Configuration::CLASS_NAME)
+			), 'render' )
 		);
 		add_submenu_page(
 			'',
@@ -538,6 +594,7 @@ class Plugin {
 		add_filter( 'query_vars', array( $this, 'plugin_add_trigger' ) );
 		add_action( 'template_redirect', array( $this, 'plugin_trigger_check' ) );
 		add_action( 'init', array( $this, 'load_plugin_text_domain' ) );
+		add_action( 'updated_option', array( $this, 'update_home_url' ), 10, 3 );
 		add_action( 'admin_notices', array( $this, 'admin_messages' ) );
 		add_action( 'admin_notices', array( $this, 'admin_notice_messages_no_dismiss' ) );
 		add_action( 'admin_notices', array( $this, 'admin_error_messages' ) );

@@ -154,6 +154,8 @@ $data = $this->resolve_view_arguments();
 				{
 					baseResourcesUrl: "<?php echo Shop_Helper::get_plugin_base_url() . '/resources/packlink/'; //phpcs:ignore ?>",
 					stateUrl: "<?php echo Shop_Helper::get_controller_url( 'Module_State', 'get_state' ); //phpcs:ignore ?>",
+					integrationStatusUrl: "<?php echo Shop_Helper::get_controller_url( 'Integration_Status', 'get_status' ); //phpcs:ignore ?>",
+					platformDomain: "<?php echo $data['platformDomain']; //phpcs:ignore ?>",
 					pageConfiguration: pageConfiguration,
 					templates: {
 						'pl-login-page': {

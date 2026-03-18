@@ -14,6 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 use Logeecom\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
 use Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException;
 use Logeecom\Infrastructure\ServiceRegister;
+use Packlink\BusinessLogic\Configuration;
 use Packlink\BusinessLogic\OrderShipmentDetails\OrderShipmentDetailsService;
 use Packlink\BusinessLogic\ShipmentDraft\Interfaces\ShipmentDraftServiceInterface;
 use Packlink\WooCommerce\Components\ShippingMethod\Shipping_Method_Helper;
@@ -71,6 +72,8 @@ class Packlink_Order_Details_Controller extends Packlink_Base_Controller {
 		if ( $shipping_method && empty( $shipping_method->getLogoUrl() ) ) {
 			$shipping_method->setLogoUrl( Shop_Helper::get_plugin_base_url() . 'resources/images/box.svg' );
 		}
+
+		$integration_active = ServiceRegister::getService(Configuration::CLASS_NAME)->isIntegrationActive();
 
 		include dirname( __DIR__ ) . '/resources/views/meta-post-box.php';
 	}

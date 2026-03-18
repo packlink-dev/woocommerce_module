@@ -63,7 +63,11 @@ class Packlink_Register_Controller extends Packlink_Base_Controller {
 		$payload               = json_decode( $raw, true );
 		$payload['ecommerces'] = static::$ecommerce_identifiers;
 		try {
-			$status = $this->base_controller->register( $payload );
+			$result = $this->base_controller->register( $payload );
+			$response = array('success' => $result['success']);
+			if (!$result['success'] && !empty($result['errorCode'])) {
+				$response['error'] = $result['errorCode'];
+			}
 		} catch ( FrontDtoValidationException $e ) {
 			$this->return_dto_entities_response( $e->getValidationErrors() );
 
@@ -79,6 +83,6 @@ class Packlink_Register_Controller extends Packlink_Base_Controller {
 			return;
 		}
 
-		$this->return_json( array( 'success' => $status ) );
+		$this->return_json( $response );
 	}
 }

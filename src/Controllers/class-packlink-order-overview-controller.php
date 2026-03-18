@@ -397,6 +397,16 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 			}
 		}
 
+		if ( ! $this->get_config_service()->isIntegrationActive() ) {
+			return '<button class="button pl-create-draft-button" '
+			       . 'disabled '
+			       . 'style="opacity:0.5;cursor:not-allowed;pointer-events:none;" '
+			       . 'title="' . __( 'Integration is disabled', 'packlink-pro-shipping' ) . '">'
+			       . '<img class="pl-image" src="' . esc_url( $src ) . '" alt="">'
+			       . '<span>' . __( 'Send with Packlink', 'packlink-pro-shipping' ) . '</span>'
+			       . '</button>';
+		}
+
 		return '<button class="button pl-create-draft-button" data-order-id="' . $orderId . '"><img class="pl-image" src="' . esc_url( $src ) . '" alt="">'
 		       . '<span>' . __( 'Send with Packlink', 'packlink-pro-shipping' ) . '</span>'
 		       . '</button>';

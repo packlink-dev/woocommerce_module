@@ -85,14 +85,18 @@ class Bootstrap_Component extends BootstrapComponent {
 		ServiceRegister::registerService(
 			IntegrationRegistrationDataProviderInterface::CLASS_NAME,
 			static function () {
-				return new Integration_Registration_Data_Provider();
+				return new Integration_Registration_Data_Provider(
+					ServiceRegister::getService( \Packlink\BusinessLogic\Configuration::CLASS_NAME)
+				);
 			}
 		);
 
 		ServiceRegister::registerService(
 			ModuleResetServiceInterface::CLASS_NAME,
 			function () {
-				return new Integration_Reset_Service();
+				return new Integration_Reset_Service(
+					ServiceRegister::getService(IntegrationRegistrationDataProviderInterface::CLASS_NAME)
+				);
 			}
 		);
 

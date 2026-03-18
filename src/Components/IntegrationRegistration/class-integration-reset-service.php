@@ -8,7 +8,6 @@
 namespace Packlink\WooCommerce\Components\IntegrationRegistration;
 
 use Logeecom\Infrastructure\Logger\Logger;
-use Logeecom\Infrastructure\ServiceRegister;
 use Packlink\BusinessLogic\IntegrationRegistration\Interfaces\IntegrationRegistrationDataProviderInterface;
 use Packlink\BusinessLogic\IntegrationRegistration\Interfaces\ModuleResetServiceInterface;
 
@@ -19,13 +18,20 @@ use Packlink\BusinessLogic\IntegrationRegistration\Interfaces\ModuleResetService
  */
 class Integration_Reset_Service implements ModuleResetServiceInterface {
 
+	/** @var IntegrationRegistrationDataProviderInterface */
+	private $dataProvider;
+
+	/**
+	 * Integration_Reset_Service constructor.
+	 */
+	public function __construct($dataProvider) {
+		$this->dataProvider = $dataProvider;
+	}
+
 	public function resetModule() {
 
-		/** @var IntegrationRegistrationDataProviderInterface $dataProvider */
-		$dataProvider = ServiceRegister::getService(IntegrationRegistrationDataProviderInterface::CLASS_NAME);
-
 		try {
-			$dataProvider->deleteIntegrationData();
+			$this->dataProvider->deleteIntegrationData();
 
 			return true;
 		} catch (\Exception $e) {

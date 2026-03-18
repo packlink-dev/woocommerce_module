@@ -48,6 +48,8 @@ class Packlink_Index extends Packlink_Base_Controller {
 	private function validate_controller_name( $controller_name ) {
 		$allowed_controllers = array(
 			'Web_Hook',
+			'Integration_Registration_Webhook',
+			'Integration_Status',
 			'Frontend',
 			'Order_Overview',
 			'Checkout',

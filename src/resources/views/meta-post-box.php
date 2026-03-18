@@ -20,6 +20,7 @@ use Packlink\WooCommerce\Components\Utility\Shop_Helper;
  * @var ShipmentDraftStatus  $draft_status
  * @var ShippingMethod       $shipping_method
  * @var string               $last_status_update
+ * @var bool 				 $integration_active
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -120,10 +121,19 @@ $draft_in_progress_statuses = array(
 
 				<input type="hidden" id="pl-create-endpoint"
 					   value="<?php echo Shop_Helper::get_controller_url( 'Order_Details', 'create_draft' ); ?>"/>
-				<button type="button" class="button button-primary" id="pl-create-draft"
-						value="<?php echo $wc_order->get_id(); ?>">
-					<?php echo __( 'Create draft', 'packlink-pro-shipping' ); ?>
-				</button>
+				<?php if ( $integration_active ) : ?>
+					<button type="button" class="button button-primary" id="pl-create-draft"
+							value="<?php echo $wc_order->get_id(); ?>">
+						<?php echo __( 'Create draft', 'packlink-pro-shipping' ); ?>
+					</button>
+				<?php else : ?>
+					<button type="button" class="button button-primary" id="pl-create-draft"
+							disabled
+							style="opacity:0.5;cursor:not-allowed;pointer-events:none;"
+							title="<?php echo __( 'Integration is disabled', 'packlink-pro-shipping' ); ?>">
+						<?php echo __( 'Create draft', 'packlink-pro-shipping' ); ?>
+					</button>
+				<?php endif; ?>
 			</div>
 		</li>
 	<?php else : ?>
