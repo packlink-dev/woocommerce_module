@@ -40,12 +40,15 @@ class Packlink_Shipping_Method extends \WC_Shipping_Method {
 	 * @var array
 	 */
 	private static $shipping_services = array();
+
+
 	/**
-	 * Available shipping services loaded.
+	 * Last calculated parameters by cache key.
 	 *
-	 * @var bool
+	 * @var array
 	 */
-	private static $loaded = false;
+	private static $last_shipping_params  = array();
+
 	/**
 	 * Pricing policy.
 	 *
@@ -372,22 +375,91 @@ class Packlink_Shipping_Method extends \WC_Shipping_Method {
 		$id         = $shipping_method->getId();
 		$to_country = ! empty( $package['destination']['country'] ) ? $package['destination']['country'] : $warehouse->country;
 		$to_zip     = ! empty( $package['destination']['postcode'] ) ? $package['destination']['postcode'] : $warehouse->postalCode;
-		if ( ! static::$loaded ) {
+		$parcels       = $this->build_parcels( $package, $default_parcel );
+
+		$new_params = $this->get_shipping_calculation_params(
+			$package,
+			$parcels,
+			$warehouse->country,
+			$warehouse->postalCode,
+			$to_country,
+			$to_zip,
+			$cart_subtotal
+		);
+
+
+		if ( static::$last_shipping_params !== $new_params) {
 			static::$shipping_services = ShippingCostCalculator::getShippingCosts(
 				$this->shipping_method_service->getAllMethods(),
 				$warehouse->country,
 				$warehouse->postalCode,
 				$to_country,
 				$to_zip,
-				$this->build_parcels( $package, $default_parcel ),
+				$parcels,
                 $cart_subtotal,
 				System_Info_Service::SYSTEM_ID
 			);
 
-			static::$loaded = true;
+			static::$last_shipping_params = $new_params;
 		}
 
 		return array_key_exists( $id, static::$shipping_services ) || ( - 1 === $id && ! empty( static::$shipping_services ) );
+	}
+
+	/**
+	 * Builds normalized shipping calculation parameters.
+	 *
+	 * @param array  $package Package.
+	 * @param array  $parcels  Parcels.
+	 * @param string $from_country Origin country.
+	 * @param string $from_zip Origin postal code.
+	 * @param string $to_country Destination country.
+	 * @param string $to_zip Destination postal code.
+	 * @param float  $cart_subtotal Cart subtotal.
+	 *
+	 * @return array
+	 */
+	private function get_shipping_calculation_params(
+		array $package,
+		array $parcels,
+		string $from_country,
+		string $from_zip,
+		string $to_country,
+		string $to_zip,
+		float $cart_subtotal
+	) {
+		$contents = array();
+
+		foreach ( $package['contents'] as $item ) {
+			$contents[] = array(
+				'product_id'   => $item['product_id'] ?? null,
+				'variation_id' => $item['variation_id'] ?? null,
+				'quantity'     => isset( $item['quantity'] ) ? (int) $item['quantity'] : 0,
+				'line_total'   => isset( $item['line_total'] ) ? (float) $item['line_total'] : 0.0,
+			);
+		}
+
+		$normalized_parcels = array_map(
+			static function ( $parcel ) {
+				return array(
+					'weight' => isset( $parcel->weight ) ? (float) $parcel->weight : 0.0,
+					'width'  => isset( $parcel->width ) ? (float) $parcel->width : 0.0,
+					'height' => isset( $parcel->height ) ? (float) $parcel->height : 0.0,
+					'length' => isset( $parcel->length ) ? (float) $parcel->length : 0.0,
+				);
+			},
+			$parcels
+		);
+
+		return array(
+			'from_country'  => $from_country,
+			'from_zip'      => $from_zip,
+			'to_country'    => $to_country,
+			'to_zip'        => $to_zip,
+			'cart_subtotal' => $cart_subtotal,
+			'contents'      => $contents,
+			'parcels'       => $normalized_parcels,
+		);
 	}
 
     /**

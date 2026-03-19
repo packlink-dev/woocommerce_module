@@ -115,7 +115,6 @@ class Block_Checkout_Handler {
 	 */
 	public function load_data() {
 		if ( is_checkout() ) {
-			include dirname( __DIR__ ) . '/../resources/views/block-checkout-shipping-method-drop-off.php';
 			Script_Loader::load_js(
 				array(
 					'js/packlink-block-checkout.js',
@@ -130,6 +129,19 @@ class Block_Checkout_Handler {
 			);
 		}
 	}
+
+	/**
+     * Renders drop-off for locations
+     *
+	 * @return void
+	 */
+    public function render_drop_off_markup() {
+        if ( ! is_checkout() ) {
+            return;
+        }
+
+        include dirname( __DIR__ ) . '/../resources/views/block-checkout-shipping-method-drop-off.php';
+    }
 
 	/**
 	 * This hook is used to update drop-off point and order shipping address value.

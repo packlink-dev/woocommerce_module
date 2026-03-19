@@ -4,7 +4,7 @@ Tags: shipping, delivery, carrier, order, package
 Requires at least: 4.7
 Requires PHP: 7.0
 Tested up to: 6.9
-Stable tag: 4.0.0
+Stable tag: 4.0.1
 License: LICENSE-2.0
 License URI: http://www.apache.org/licenses/LICENSE-2.0
 
@@ -93,6 +93,15 @@ Click <a href="https://support-pro.packlink.com/hc/es-es/articles/210158585" tar
 
 
 == Changelog ==
+
+#### 4.0.1 - March 19th, 2026
+
+**Updates**
+* Corrected service ID sent to the Packlink API
+* Improved postal code handling for AE
+* Improved drop-off button rendering
+* Fix send draft when manual sync is enabled
+* Added caching for shipping calculation parameters
 
 #### 4.0.0 - March 10th, 2026
 
