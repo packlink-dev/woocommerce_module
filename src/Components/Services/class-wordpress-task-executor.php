@@ -273,6 +273,29 @@ class WordPress_Task_Executor implements TaskExecutorInterface {
 		// If not generator, task executed normally
 	}
 
+    /**
+     * @param BusinessTask $businessTask
+     *
+     * @return void
+     *
+     * @throws \Throwable
+     */
+    public function executeNow( BusinessTask $businessTask )
+    {
+        try {
+            $result = $businessTask->execute();
+
+            if ( $result instanceof \Generator ) {
+                $this->executeWithProgressTracking( $result );
+            }
+        } catch ( \Throwable $e ) {
+            Logger::logError( $e->getMessage(), 'Integration', [
+                'task_class' => get_class($businessTask),
+            ] );
+            throw $e;
+        }
+    }
+
 	/**
 	 * Execute generator with progress tracking.
 	 *
