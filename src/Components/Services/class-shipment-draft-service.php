@@ -8,7 +8,7 @@
 namespace Packlink\WooCommerce\Components\Services;
 
 use Logeecom\Infrastructure\ServiceRegister;
-use MailPoetVendor\Doctrine\DBAL\Driver\PDO\Exception;
+use Logeecom\Infrastructure\TaskExecutor\Interfaces\TaskExecutorInterface;
 use Packlink\BusinessLogic\OrderShipmentDetails\OrderShipmentDetailsService;
 use Packlink\BusinessLogic\ShipmentDraft\ShipmentDraftService;
 use Packlink\BusinessLogic\Tasks\BusinessTasks\SendDraftBusinessTask;
@@ -46,7 +46,8 @@ class Shipment_Draft_Service extends ShipmentDraftService
 					throw new \RuntimeException( 'Draft already exists' );
 				}
 
-				( new SendDraftBusinessTask( $orderId ) )->execute();
+                $taskExecutor = $this->get_task_executor();
+                $taskExecutor->executeNow( new SendDraftBusinessTask( $orderId ) );
 
 				$translation = __(
 					'Shipment draft for order %s created successfully',
@@ -110,4 +111,18 @@ class Shipment_Draft_Service extends ShipmentDraftService
 
 		return $orderShipmentDetailsService;
 	}
+
+    /**
+     * Retrieves task executor service.
+     *
+     * @return TaskExecutorInterface
+     */
+    private function get_task_executor()
+    {
+        /**@var TaskExecutorInterface $taskExecutor */
+        $taskExecutor = ServiceRegister::getService( TaskExecutorInterface::CLASS_NAME );
+
+        return $taskExecutor;
+    }
+
 }
