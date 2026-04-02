@@ -162,4 +162,14 @@ class Integration_Registration_Data_Provider implements IntegrationRegistrationD
 		$this->integrationId = null;
 		$this->configService->deleteIntegrationData();
 	}
+
+	/**
+	 * Reset AuthorizationCredentials.
+	 *
+	 * @return void
+	 */
+	public function deleteToken()
+	{
+		$this->configService->resetAuthorizationCredentials();
+	}
 }

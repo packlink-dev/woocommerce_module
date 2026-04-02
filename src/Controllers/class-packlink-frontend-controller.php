@@ -51,11 +51,21 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 	 */
 	protected function resolve_view_arguments() {
 		$userInfo = $this->configService->getUserInfo();
+		$platformDomain = 'com';
+
+		if ($userInfo && !empty($userInfo->country)) {
+			$country = strtolower($userInfo->country);
+
+			if ($country !== '' && $country !== 'un') {
+				$platformDomain = $country;
+			}
+		}
+
 		return array(
 			'lang'      => $this->get_lang(),
 			'templates' => $this->get_templates(),
 			'urls'      => $this->get_urls(),
-			'platformDomain' => $userInfo ? strtolower( $userInfo->country ) : 'com',
+			'platformDomain' => $platformDomain,
 		);
 	}
 
