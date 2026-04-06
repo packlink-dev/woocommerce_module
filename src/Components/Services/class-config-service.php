@@ -176,7 +176,6 @@ class Config_Service extends Configuration {
 		return $is_manual_sync_enabled ?: false;
 	}
 
-
 	/**
 	 * Saves whether manual synchronization is enabled.
 	 *
@@ -186,17 +185,4 @@ class Config_Service extends Configuration {
 		$this->saveConfigValue( 'Manual_Sync', $manual_sync_enabled );
 	}
 
-	/**
-	 * Removes integration registration data from the database
-	 * by annulling all integration-related configuration values.
-	 *
-	 * @return void
-	 */
-	public function deleteIntegrationData()
-	{
-		$this->saveConfigValue('integrationId', null);
-		$this->saveConfigValue('integrationGuid', null);
-		$this->saveConfigValue('webhookSecret', null);
-		$this->saveConfigValue('integrationStatus', null);
-	}
 }

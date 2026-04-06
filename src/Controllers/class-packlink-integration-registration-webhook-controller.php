@@ -39,8 +39,8 @@ class Packlink_Integration_Registration_Webhook_Controller extends Packlink_Base
 			$this->redirect404();
 		}
 
-		$result = IntegrationRegistrationWebhookEventHandler::getInstance()->handle( $this->get_raw_input() );
+		IntegrationRegistrationWebhookEventHandler::getInstance()->handle( $this->get_raw_input() );
 
-		$this->return_json( array( 'success' => $result ), $result ? 200 : 400 );
+		$this->return_json( array( 'success' => true ), 200);
 	}
 }
