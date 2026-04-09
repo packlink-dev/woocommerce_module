@@ -771,3 +771,8 @@ msgstr ""
 #: Components/Services/class-shipment-draft-service.php:59
 msgid "Shipment draft for order %s created successfully"
 msgstr ""
+
+#: Components/Checkout/class-checkout-handler.php:293
+#: Components/Checkout/class-block-checkout-handler.php:59
+msgid "There are no drop-off locations available for the entered address"
+msgstr ""
