@@ -3,6 +3,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [v4.0.1](https://github.com/packlink-dev/woocommerce_module/compare/v4.0.0...v4.0.1) - 2026-03-19
+### Changed
+- Corrected service ID sent to the Packlink API 
+- Improved postal code handling for AE 
+- Improved drop-off button rendering 
+- Fix send draft when manual sync is enabled 
+- Added caching for shipping calculation parameters
+
 ## [v4.0.0](https://github.com/packlink-dev/woocommerce_module/compare/v3.6.5...v4.0.0) - 2026-03-10
 ### Changed
 **BREAKING CHANGES**

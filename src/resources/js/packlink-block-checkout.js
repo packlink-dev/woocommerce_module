@@ -50,7 +50,13 @@ window.onload = () => {
 		}
 
 		const initializeBlockCheckout = document.getElementById('pl-block-checkout-initialize-endpoint').value;
-		setSaveEndpoint(document.getElementById('pl-block-checkout-save-selected').value);
+		const saveEndpoint = document.getElementById('pl-block-checkout-save-selected').value;
+
+		if (!initializeBlockCheckout || !saveEndpoint) {
+			return;
+		}
+
+		setSaveEndpoint(saveEndpoint);
 		const shippingMethodsIds = getShippingMethodIds(shippingOptions);
 		Packlink.ajaxService.post(
 			initializeBlockCheckout,
