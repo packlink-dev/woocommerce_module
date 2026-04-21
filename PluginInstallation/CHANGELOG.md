@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [v4.1.0](https://github.com/packlink-dev/woocommerce_module/compare/v4.0.1...v4.1.0) - 2026-04-21
+### Changed
+- Added store registration for Packlink
+- Fixed missing translations for drop-off
+
 ## [v4.0.1](https://github.com/packlink-dev/woocommerce_module/compare/v4.0.0...v4.0.1) - 2026-03-19
 ### Changed
 - Corrected service ID sent to the Packlink API 

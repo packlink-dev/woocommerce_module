@@ -1,5 +1,9 @@
 *** Packlink PRO Changelog ***
 
+2026-04-21 - version 4.1.0
+- Added store registration for Packlink
+- Fixed missing translations for drop-off
+
 2026-03-19 - version 4.0.1
 - Corrected service ID sent to the Packlink API
 - Improved postal code handling for AE
