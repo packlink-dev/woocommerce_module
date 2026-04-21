@@ -788,3 +788,8 @@ msgstr "https://pro.packlink.es/"
 #: Components/Services/class-shipment-draft-service.php:59
 msgid "Shipment draft for order %s created successfully"
 msgstr "El borrador del los pedidos %s se ha creado con éxito"
+
+#: Components/Checkout/class-checkout-handler.php:293
+#: Components/Checkout/class-block-checkout-handler.php:59
+msgid "There are no drop-off locations available for the entered address"
+msgstr "No hay puntos de entrega disponibles para la dirección ingresada"

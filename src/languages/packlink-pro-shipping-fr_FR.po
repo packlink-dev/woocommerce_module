@@ -783,3 +783,8 @@ msgstr "Vous y êtes presque !"
 #: resources/views/login.php:88
 msgid "Your API key can be found under"
 msgstr "Votre clé API se trouve dans"
+
+#: Components/Checkout/class-checkout-handler.php:293
+#: Components/Checkout/class-block-checkout-handler.php:59
+msgid "There are no drop-off locations available for the entered address"
+msgstr "Aucun point de dépôt n’est disponible pour l’adresse saisie"
