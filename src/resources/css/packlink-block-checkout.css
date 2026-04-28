@@ -94,3 +94,46 @@
 		align-items: flex-start;
 	}
 }
+
+/* Divi / Extra theme: force drop-off button to new line in WC Blocks flex container.
+   `order: 99` keeps the price on the carrier row — the button is injected before
+   the secondary-label in the DOM, so without re-ordering it pushes the price to
+   its own row. Extra ships its own body class (`et_extra`) and does not include
+   `et_divi_theme`, so it must be matched explicitly. */
+body.et_divi_theme .wc-block-components-radio-control__label-group #packlink-drop-off,
+body.et_extra .wc-block-components-radio-control__label-group #packlink-drop-off {
+	order: 99;
+	flex-basis: 100%;
+	margin-top: 8px;
+}
+
+/* Divi / Extra theme: ensure delivery address also breaks to new line, after the button. */
+body.et_divi_theme .wc-block-components-radio-control__label-group .woocommerce-shipping-destination,
+body.et_extra .wc-block-components-radio-control__label-group .woocommerce-shipping-destination {
+	order: 100;
+	flex-basis: 100%;
+	font-size: 12px;
+	margin-top: 4px;
+}
+
+/* Divi / Extra theme: style the drop-off button as a primary CTA on WC Blocks.
+   Uses Divi's accent color CSS variable so the button respects the user's theme
+   customizer choice; falls back to Divi's default blue when the variable is unset. */
+body.et_divi_theme .wc-block-components-shipping-rates-control #packlink-drop-off-picker,
+body.et_extra .wc-block-components-shipping-rates-control #packlink-drop-off-picker {
+	padding: 12px 16px;
+	background-color: var(--et_accent_color, var(--accent-color, #2ea3f2));
+	color: #ffffff;
+	border: none;
+	text-transform: uppercase;
+	line-height: 1.4;
+}
+
+body.et_divi_theme .wc-block-components-shipping-rates-control #packlink-drop-off-picker:hover,
+body.et_divi_theme .wc-block-components-shipping-rates-control #packlink-drop-off-picker:focus,
+body.et_extra .wc-block-components-shipping-rates-control #packlink-drop-off-picker:hover,
+body.et_extra .wc-block-components-shipping-rates-control #packlink-drop-off-picker:focus {
+	background-color: var(--et_accent_color, var(--accent-color, #2ea3f2));
+	color: #ffffff;
+	filter: brightness(0.9);
+}
