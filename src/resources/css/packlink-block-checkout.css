@@ -49,15 +49,19 @@
 	width: 100%;
 	align-items: center;
 	column-gap: 8px;
+	flex-wrap: wrap;
 }
 
 .wc-block-components-shipping-rates-control .wc-block-components-radio-control__label-group .wc-block-components-radio-control__label {
 	display: inline;
 	flex: 1;
+	min-width: 0;
 }
 
 .wc-block-components-shipping-rates-control .wc-block-components-radio-control__label-group .wc-block-components-radio-control__secondary-label {
 	min-width: unset;
+	white-space: nowrap;
+	flex-shrink: 0;
 }
 
 .lp-location-wrapper {
@@ -71,7 +75,8 @@
 	padding: 2px;
 	text-align: center;
 	border: 1px solid lightgray;
-	margin-right: 8px;
+	margin-right: 0;
+	flex-shrink: 0;
 }
 
 

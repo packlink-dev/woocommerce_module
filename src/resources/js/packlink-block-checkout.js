@@ -174,6 +174,8 @@ window.onload = () => {
 	}
 
 	function addDropOffButton(dataDiv, details) {
+		dataDiv.querySelectorAll('#packlink-drop-off').forEach(function (el) { el.remove(); });
+
 		let dropOffButton = document.getElementById('packlink-drop-off-picker');
 		if (dropOffButton === null) {
 			dropOffButton = document.createElement('button');
