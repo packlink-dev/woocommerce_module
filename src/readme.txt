@@ -94,6 +94,13 @@ Click <a href="https://support-pro.packlink.com/hc/es-es/articles/210158585" tar
 
 == Changelog ==
 
+#### 4.1.1 - April 29th, 2026
+
+**Updates**
+
+- Fix default integration name
+- Fix print labels bulk action
+
 #### 4.1.0 - April 21st, 2026
 
 **Updates**

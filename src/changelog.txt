@@ -1,5 +1,9 @@
 *** Packlink PRO Changelog ***
 
+2026-04-29 - version 4.1.1
+- Fix default integration name
+- Fix print labels bulk action
+
 2026-04-21 - version 4.1.0
 - Added store registration for Packlink
 - Fixed missing translations for drop-off
