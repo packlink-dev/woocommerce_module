@@ -766,6 +766,8 @@ class Plugin {
 		add_action( 'admin_head', array( $handler, 'add_packlink_hidden_fields' ) );
 		add_filter( 'bulk_actions-edit-shop_order', array( $handler, 'add_packlink_bulk_action' ) );
 		add_filter( 'handle_bulk_actions-edit-shop_order', array( $handler, 'bulk_print_labels' ), 10, 3 );
+		add_filter( 'bulk_actions-woocommerce_page_wc-orders', array( $handler, 'add_packlink_bulk_action' ) );
+		add_filter( 'handle_bulk_actions-woocommerce_page_wc-orders', array( $handler, 'bulk_print_labels' ), 10, 3 );
 		add_action( 'admin_enqueue_scripts', array( $handler, 'load_scripts' ) );
 
 		add_action(

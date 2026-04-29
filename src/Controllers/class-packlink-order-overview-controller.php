@@ -445,12 +445,20 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 			}
 
 			if ( ! empty( $paths ) ) {
-				$merger = new Merger();
-				foreach ( $paths as $path ) {
-					$merger->addFromFile( $path );
+				// Bundled FPDI 1.6.2 emits PHP 7.4+/8.x warnings while parsing certain
+				// label PDFs; buffer and discard so they cannot leak into the binary stream.
+				ob_start();
+				try {
+					$merger = new Merger();
+					foreach ( $paths as $path ) {
+						$merger->addFromFile( $path );
+					}
+
+					$file = $merger->merge();
+				} finally {
+					ob_end_clean();
 				}
 
-				$file = $merger->merge();
 				if ( $file ) {
 					$this->return_file( $file );
 				}
@@ -526,6 +534,13 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 	 * @param string $file File path.
 	 */
 	private function return_file( $file ) {
+		// Discard anything WordPress / plugins have buffered so far so that
+		// stray PHP notices/warnings cannot corrupt the PDF byte stream.
+		while ( ob_get_level() > 0 ) {
+			ob_end_clean();
+		}
+		@ini_set( 'display_errors', '0' );
+
 		$now  = date( 'Y-m-d' );
 		$name = "Packlink-bulk-shipping-labels_$now.pdf";
 
