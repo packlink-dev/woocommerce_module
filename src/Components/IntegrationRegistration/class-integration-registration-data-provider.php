@@ -18,6 +18,8 @@ class Integration_Registration_Data_Provider extends AbstractIntegrationDataProv
 
 	const INTEGRATION_TYPE = 'woocommerce_module';
 
+	const DEFAULT_INTEGRATION_NAME = 'Packlink WooCommerce store';
+
 	/**
 	 * Integration_Registration_Data_Provider constructor.
 	 */
@@ -40,7 +42,16 @@ class Integration_Registration_Data_Provider extends AbstractIntegrationDataProv
 	 * @return string Integration name.
 	 */
 	public function getIntegrationName() {
-		return get_option('blogname', '');
+		$name = trim( (string) get_option( 'blogname', '' ) );
+		if ( $name === '' ) {
+			$name = trim( (string) get_bloginfo( 'name' ) );
+		}
+		if ( $name === '' ) {
+			$host = wp_parse_url( home_url(), PHP_URL_HOST );
+			$name = $host ?: self::DEFAULT_INTEGRATION_NAME;
+		}
+
+		return $name;
 	}
 
 	/**
