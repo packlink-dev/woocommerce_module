@@ -45,7 +45,10 @@
 	margin-top: 1.5rem;
 	margin-left: 1em;
 	margin-bottom: 1rem;
-	line-height: inherit;
+	min-height: 2.5em;
+	overflow: visible;
+	white-space: normal;
+	line-height: 1.4;
 }
 
 .lp-location-wrapper {
