@@ -114,7 +114,7 @@ class Block_Checkout_Handler {
 	 * @return void
 	 */
 	public function load_data() {
-		if ( is_checkout() ) {
+		if ( Checkout_Helper::is_packlink_checkout() ) {
 			Script_Loader::load_js(
 				array(
 					'js/packlink-block-checkout.js',
@@ -136,7 +136,7 @@ class Block_Checkout_Handler {
 	 * @return void
 	 */
     public function render_drop_off_markup() {
-        if ( ! is_checkout() ) {
+        if ( ! Checkout_Helper::is_packlink_checkout() ) {
             return;
         }
 

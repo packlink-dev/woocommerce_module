@@ -31,6 +31,18 @@ window.onload = () => {
 		isObserverSet: false,
 		isObserverExecuted: false
 	};
+	document.addEventListener('packlink:dropoff-selected', function (e) {
+		document.querySelectorAll('#packlink-drop-off-picker').forEach(function (btn) {
+			btn.innerHTML = e.detail.buttonText;
+		});
+		document.querySelectorAll('input[name="packlink_drop_off_id"]').forEach(function (input) {
+			input.value = e.detail.location.id;
+		});
+		document.querySelectorAll('input[name="packlink_drop_off_extra"]').forEach(function (input) {
+			input.value = JSON.stringify(e.detail.location);
+		});
+	});
+
 	Packlink.blockCheckout = {};
 	Packlink.blockCheckout.init = initialize;
 
@@ -260,21 +272,29 @@ window.onload = () => {
 			return;
 		}
 
-		let button = document.querySelector('#packlink-drop-off-picker');
-		let element = document.querySelector('div.woocommerce-shipping-destination');
-		if (!element) {
-			element = document.createElement('div');
-			element.className = 'woocommerce-shipping-destination';
-			element.style.fontSize = '12px';
-			element.style.maxWidth = '200px';
-		}
-
-		element.innerHTML = '<strong>' + privateData.translations.dropOffTitle + '</strong><br/>'
+		let buttons = document.querySelectorAll('#packlink-drop-off-picker');
+		let addressHtml = '<strong>' + privateData.translations.dropOffTitle + '</strong><br/>'
 			+ [selected.name, selected.address, selected.city].join(', ');
 
-		if (button) {
+		buttons.forEach(function (button) {
+			let element = button.parentNode.querySelector('div.woocommerce-shipping-destination');
+			if (!element) {
+				element = document.createElement('div');
+				element.className = 'woocommerce-shipping-destination';
+				element.style.fontSize = '12px';
+				element.style.maxWidth = '200px';
+			}
+
+			element.innerHTML = addressHtml;
 			button.style.marginLeft = '0px';
 			button.after(element);
+		});
+
+		if (buttons.length === 0) {
+			let element = document.querySelector('div.woocommerce-shipping-destination');
+			if (element) {
+				element.innerHTML = addressHtml;
+			}
 		}
 	}
 
@@ -399,11 +419,17 @@ window.onload = () => {
 					privateData.endpoint,
 					selected,
 					function () {
-						let button = document.querySelector('#packlink-drop-off-picker');
-
-						if (button) {
+						document.querySelectorAll('#packlink-drop-off-picker').forEach(function (button) {
 							button.innerHTML = privateData.translations.changeDropOff;
-						}
+						});
+
+						document.dispatchEvent(new CustomEvent('packlink:dropoff-selected', {
+							detail: {
+								locationId: id,
+								location: selected,
+								buttonText: privateData.translations.changeDropOff
+							}
+						}));
 					},
 					function () {
 					}

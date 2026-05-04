@@ -14,6 +14,18 @@ var Packlink = window.Packlink || {};
 		locale: 'en'
 	};
 
+	document.addEventListener('packlink:dropoff-selected', function (e) {
+		document.querySelectorAll('#packlink-drop-off-picker').forEach(function (btn) {
+			btn.innerHTML = e.detail.buttonText;
+		});
+		document.querySelectorAll('input[name="packlink_drop_off_id"]').forEach(function (input) {
+			input.value = e.detail.location.id;
+		});
+		document.querySelectorAll('input[name="packlink_drop_off_extra"]').forEach(function (input) {
+			input.value = JSON.stringify(e.detail.location);
+		});
+	});
+
 	Packlink.checkout                       	   = {};
 	Packlink.checkout.init                  	   = initialize;
 	Packlink.checkout.setIsCart             	   = setIsCart;
@@ -100,29 +112,39 @@ var Packlink = window.Packlink || {};
 		}
 
 		setHiddenFields( selected );
-		let button  = document.querySelector( '#packlink-drop-off-picker' );
-		let element = document.querySelector( 'p.woocommerce-shipping-destination' );
-		if ( ! element) {
-			element           = document.createElement( 'p' );
-			element.className = 'woocommerce-shipping-destination';
-		}
-
-		element.innerHTML = '<strong>' + privateData.translations.dropOffTitle + '</strong><br/>'
+		let buttons = document.querySelectorAll( '#packlink-drop-off-picker' );
+		let addressHtml = '<strong>' + privateData.translations.dropOffTitle + '</strong><br/>'
 			+ [selected.name, selected.address, selected.city].join( ', ' );
 
-		if (button) {
+		buttons.forEach( function (button) {
+			let element = button.parentNode.querySelector( 'p.woocommerce-shipping-destination' );
+			if ( ! element) {
+				element           = document.createElement( 'p' );
+				element.className = 'woocommerce-shipping-destination';
+			}
+
+			element.innerHTML = addressHtml;
 			button.parentNode.insertBefore( element, button.nextSibling );
+		});
+
+		if (buttons.length === 0) {
+			let element = document.querySelector( 'p.woocommerce-shipping-destination' );
+			if (element) {
+				element.innerHTML = addressHtml;
+			}
 		}
 	}
 
 	function setHiddenFields(location) {
-		let dropOffId    = document.querySelector('input[name="packlink_drop_off_id"]');
-		let dropOffExtra = document.querySelector('input[name="packlink_drop_off_extra"]');
+		let dropOffIds    = document.querySelectorAll('input[name="packlink_drop_off_id"]');
+		let dropOffExtras = document.querySelectorAll('input[name="packlink_drop_off_extra"]');
 
-		if (dropOffId && dropOffExtra) {
-			dropOffId.value    = location.id;
-			dropOffExtra.value = JSON.stringify( location );
-		}
+		dropOffIds.forEach( function (input) {
+			input.value = location.id;
+		});
+		dropOffExtras.forEach( function (input) {
+			input.value = JSON.stringify( location );
+		});
 	}
 
 	function addCODMessage(dataDiv, codName, codFee) {
@@ -241,15 +263,23 @@ var Packlink = window.Packlink || {};
 					privateData.endpoint,
 					selected,
 					function () {
-						let button = document.querySelector( '#packlink-drop-off-picker' );
-
-						if (button) {
-							button.innerHTML = privateData.translations.changeDropOff;
-						}
+						document.querySelectorAll( '#packlink-drop-off-picker' ).forEach(
+							function (button) {
+								button.innerHTML = privateData.translations.changeDropOff;
+							}
+						);
 
 						if ( ! privateData.isCart) {
 							setHiddenFields( selected );
 						}
+
+						document.dispatchEvent( new CustomEvent( 'packlink:dropoff-selected', {
+							detail: {
+								locationId: id,
+								location: selected,
+								buttonText: privateData.translations.changeDropOff
+							}
+						}));
 					},
 					function () {
 					}

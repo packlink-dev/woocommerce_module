@@ -137,3 +137,24 @@ body.et_extra .wc-block-components-shipping-rates-control #packlink-drop-off-pic
 	color: #ffffff;
 	filter: brightness(0.9);
 }
+
+/* Astra theme: force drop-off button to new line in WC Blocks flex container.
+   `order: 99` keeps the price on the carrier row — the button is injected before
+   the secondary-label in the DOM, so without re-ordering it pushes the price to
+   its own row. Astra toggles between `ast-desktop` and `ast-header-break-point`
+   at responsive breakpoints, so both classes must be matched. */
+body.ast-desktop .wc-block-components-radio-control__label-group #packlink-drop-off,
+body.ast-header-break-point .wc-block-components-radio-control__label-group #packlink-drop-off {
+	order: 99;
+	flex-basis: 100%;
+	margin-top: 8px;
+}
+
+/* Astra theme: ensure delivery address also breaks to new line, after the button. */
+body.ast-desktop .wc-block-components-radio-control__label-group .woocommerce-shipping-destination,
+body.ast-header-break-point .wc-block-components-radio-control__label-group .woocommerce-shipping-destination {
+	order: 100;
+	flex-basis: 100%;
+	font-size: 12px;
+	margin-top: 4px;
+}
