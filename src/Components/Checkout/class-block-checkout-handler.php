@@ -161,24 +161,47 @@ class Block_Checkout_Handler {
 		}
 
 		if ( $shipping_method->isDestinationDropOff() ) {
-			$drop_off_id = wc()->session->get( Shipping_Method_Helper::DROP_OFF_ID );
-			if ( empty ( $drop_off_id )) {
-				wc_add_notice( __( 'Please choose a drop-off location.', 'packlink-pro-shipping' ), 'error' );
+			$drop_off_id    = wc()->session->get( Shipping_Method_Helper::DROP_OFF_ID );
+			$drop_off_extra = wc()->session->get( Shipping_Method_Helper::DROP_OFF_EXTRA );
 
-				return;
-			}
+            if ( empty( $drop_off_id ) ) {
+                $method         = isset( $_SERVER['REQUEST_METHOD'] ) ? strtoupper( $_SERVER['REQUEST_METHOD'] ) : '';
+                $is_calc_totals = ! empty( $_REQUEST['__experimental_calc_totals'] );
 
-			$order_drop_off_map_repository = RepositoryRegistry::getRepository( Order_Drop_Off_Map::CLASS_NAME );
+                if ( 'POST' === $method && ! $is_calc_totals ) {
+                    wc_add_notice( __( 'Please choose a drop-off location.', 'packlink-pro-shipping' ), 'error' );
+                }
+
+                return;
+            }
+
+            $order_drop_off_map_repository = RepositoryRegistry::getRepository( Order_Drop_Off_Map::CLASS_NAME );
 			$saved_order_drop_off_map      = Shipping_Method_Helper::get_drop_off_map_for_order( $order->get_id() );
 			$order_drop_off_map            = $saved_order_drop_off_map ?: new Order_Drop_Off_Map();
 			$order_drop_off_map->set_order_id( $order->get_id() );
 			$order_drop_off_map->set_drop_off_point_id( $drop_off_id );
 			$order_drop_off_map_repository->save( $order_drop_off_map );
 
-			$this->change_order_shipping_address( $order, wc()->session->get( Shipping_Method_Helper::DROP_OFF_EXTRA ) );
-
-			wc()->session->set( Shipping_Method_Helper::DROP_OFF_ID, '' );
+			if ( is_array( $drop_off_extra ) ) {
+				$this->change_order_shipping_address( $order, $drop_off_extra );
+			}
 		}
+	}
+
+	/**
+	 * Clears the drop-off session data once the order has actually been placed.
+	 * Bound to woocommerce_store_api_checkout_order_processed, which fires only
+	 * on final placement and not during intermediate totals recalculations.
+	 *
+	 * @param WC_Order $order
+	 */
+	public function clear_drop_off_session( WC_Order $order ) {
+		if ( ! function_exists( 'WC' ) || ! WC() || ! WC()->session ) {
+			return;
+		}
+
+		WC()->session->set( Shipping_Method_Helper::DROP_OFF_ID, '' );
+		WC()->session->set( Shipping_Method_Helper::DROP_OFF_EXTRA, '' );
 	}
 
 	/**
