@@ -104,7 +104,7 @@ class Shop_Helper {
 				require_once ABSPATH . 'wp-admin/includes/plugin.php';
 			}
 
-			$plugin_data = get_plugin_data( WP_PLUGIN_DIR . '/' . self::get_plugin_name() );
+			$plugin_data = get_plugin_data( WP_PLUGIN_DIR . '/' . self::get_plugin_name(), false, false );
 
 			self::$plugin_version = $plugin_data['Version'];
 		}

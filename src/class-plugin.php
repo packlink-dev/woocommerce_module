@@ -251,6 +251,27 @@ class Plugin {
 	}
 
 	/**
+	 * Forces use of the plugin-bundled .mo file when present, since the
+	 * auto-downloaded file under WP_LANG_DIR/plugins/ may be an incomplete
+	 * translation that would otherwise win priority.
+	 *
+	 * @param string $mofile Resolved .mo path WP is about to load.
+	 * @param string $domain Textdomain WP is loading.
+	 *
+	 * @return string
+	 */
+	public function override_textdomain_mofile( $mofile, $domain ) {
+		if ( 'packlink-pro-shipping' !== $domain ) {
+			return $mofile;
+		}
+		$bundled = plugin_dir_path( $this->packlink_plugin_file ) . 'languages/' . basename( $mofile );
+		if ( is_readable( $bundled ) ) {
+			return $bundled;
+		}
+		return $mofile;
+	}
+
+	/**
 	 * Handles shop URL changes.
 	 * Re-registers the integration with Packlink if the home or site URL has changed
 	 * so the webhook status_update_url stays current.
@@ -571,7 +592,6 @@ class Plugin {
 			$this->add_settings_link();
 			$this->load_admin_menu();
 			$this->shipping_method_hooks_and_actions();
-			$this->load_plugin_text_domain();
 			$this->order_hooks_and_actions();
 			$this->checkout_hooks_and_actions();
 		}
@@ -594,6 +614,7 @@ class Plugin {
 		add_filter( 'query_vars', array( $this, 'plugin_add_trigger' ) );
 		add_action( 'template_redirect', array( $this, 'plugin_trigger_check' ) );
 		add_action( 'init', array( $this, 'load_plugin_text_domain' ) );
+		add_filter( 'load_textdomain_mofile', array( $this, 'override_textdomain_mofile' ), 10, 2 );
 		add_action( 'updated_option', array( $this, 'update_home_url' ), 10, 3 );
 		add_action( 'admin_notices', array( $this, 'admin_messages' ) );
 		add_action( 'admin_notices', array( $this, 'admin_notice_messages_no_dismiss' ) );
