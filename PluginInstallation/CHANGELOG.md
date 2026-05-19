@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [v4.1.2](https://github.com/packlink-dev/woocommerce_module/compare/v4.1.1...v4.1.2) - 2026-05-19
+### Changed
+- Fix PHP notice about textdomain being loaded too early in WordPress 6.7+
+- Fix drop-off translations being overridden by incomplete auto-downloaded translations
+
 ## [v4.1.1](https://github.com/packlink-dev/woocommerce_module/compare/v4.1.0...v4.1.1) - 2026-04-29
 ### Changed
 - Fix default integration name

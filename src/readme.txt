@@ -4,7 +4,7 @@ Tags: shipping, delivery, carrier, order, package
 Requires at least: 4.7
 Requires PHP: 7.0
 Tested up to: 6.9
-Stable tag: 4.1.1
+Stable tag: 4.1.2
 License: LICENSE-2.0
 License URI: http://www.apache.org/licenses/LICENSE-2.0
 
@@ -93,6 +93,13 @@ Click <a href="https://support-pro.packlink.com/hc/es-es/articles/210158585" tar
 
 
 == Changelog ==
+
+#### 4.1.2 - May 19th, 2026
+
+**Updates**
+
+- Fix PHP notice about textdomain being loaded too early in WordPress 6.7+
+- Fix drop-off translations being overridden by incomplete auto-downloaded translations
 
 #### 4.1.1 - April 29th, 2026
 
