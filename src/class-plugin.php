@@ -35,6 +35,7 @@ use Packlink\WooCommerce\Controllers\Packlink_Frontend_Controller;
 use Packlink\WooCommerce\Controllers\Packlink_Index;
 use Packlink\WooCommerce\Controllers\Packlink_Order_Details_Controller;
 use Packlink\WooCommerce\Controllers\Packlink_Order_Overview_Controller;
+use Packlink\WooCommerce\Controllers\Packlink_Storefront_Controller;
 use Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController;
 use WC_Order;
 use WP_Post;
@@ -594,6 +595,7 @@ class Plugin {
 			$this->shipping_method_hooks_and_actions();
 			$this->order_hooks_and_actions();
 			$this->checkout_hooks_and_actions();
+			$this->storefront_hooks_and_actions();
 		}
 		// Register WordPress_Task_Executor callbacks for Action Scheduler
 		$executor = ServiceRegister::getService( TaskExecutorInterface::CLASS_NAME );
@@ -786,9 +788,9 @@ class Plugin {
 		add_action( 'add_meta_boxes', array( $this, 'add_packlink_shipping_box' ), 10, 2 );
 		add_action( 'admin_head', array( $handler, 'add_packlink_hidden_fields' ) );
 		add_filter( 'bulk_actions-edit-shop_order', array( $handler, 'add_packlink_bulk_action' ) );
-		add_filter( 'handle_bulk_actions-edit-shop_order', array( $handler, 'bulk_print_labels' ), 10, 3 );
+		add_filter( 'handle_bulk_actions-edit-shop_order', array( $handler, 'bulk_download_labels' ), 10, 3 );
 		add_filter( 'bulk_actions-woocommerce_page_wc-orders', array( $handler, 'add_packlink_bulk_action' ) );
-		add_filter( 'handle_bulk_actions-woocommerce_page_wc-orders', array( $handler, 'bulk_print_labels' ), 10, 3 );
+		add_filter( 'handle_bulk_actions-woocommerce_page_wc-orders', array( $handler, 'bulk_download_labels' ), 10, 3 );
 		add_action( 'admin_enqueue_scripts', array( $handler, 'load_scripts' ) );
 
 		add_action(
@@ -844,6 +846,20 @@ class Plugin {
         add_action('woocommerce_blocks_checkout_enqueue_data', array ($block_handler, 'load_data'));
         add_action( 'wp_footer', array( $block_handler, 'render_drop_off_markup' ) );
 		add_action('woocommerce_store_api_checkout_update_order_meta', array ($block_handler, 'checkout_update_drop_off'));
+	}
+
+	/**
+	 * Registers actions for extending customer-facing storefront order pages.
+	 */
+	private function storefront_hooks_and_actions() {
+		$controller = new Packlink_Storefront_Controller();
+
+		add_action(
+			'woocommerce_order_details_after_customer_address',
+			array( $controller, 'render_tracking_link' ),
+			10,
+			2
+		);
 	}
 
 	/**

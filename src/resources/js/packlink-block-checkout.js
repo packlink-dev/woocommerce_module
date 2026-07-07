@@ -29,8 +29,21 @@ window.onload = () => {
 		methodDetails: [],
 		isSingleShippingMethod: false,
 		isObserverSet: false,
-		isObserverExecuted: false
+		isObserverExecuted: false,
+		activeOptionValue: null
 	};
+	document.addEventListener('packlink:dropoff-selected', function (e) {
+		document.querySelectorAll('#packlink-drop-off-picker').forEach(function (btn) {
+			btn.innerHTML = e.detail.buttonText;
+		});
+		document.querySelectorAll('input[name="packlink_drop_off_id"]').forEach(function (input) {
+			input.value = e.detail.location.id;
+		});
+		document.querySelectorAll('input[name="packlink_drop_off_extra"]').forEach(function (input) {
+			input.value = JSON.stringify(e.detail.location);
+		});
+	});
+
 	Packlink.blockCheckout = {};
 	Packlink.blockCheckout.init = initialize;
 
@@ -63,7 +76,7 @@ window.onload = () => {
 			shippingMethodsIds,
 			function (response) {
 				setLocale(response['locale'] || 'en');
-				setSelectedLocationId(response['selected_shipping_method']);
+				setSelectedLocationId(response['selected_drop_off_id'] || '');
 				setTranslations({...response['translations']});
 				setNoDropOffLocationsMessage(response['no_drop_off_locations_message']);
 				privateData.offlinePaymentName = response['offline_payment_name'] || null;
@@ -95,10 +108,22 @@ window.onload = () => {
 
 					if ((option.checked || privateData.isSingleShippingMethod) && details[1]['packlink_is_drop_off']) {
 						addDropOffButton(dataDiv, details[1]);
+						restoreDropOffState(details[1]);
+					}
+
+					if (option.checked && !privateData.isSingleShippingMethod) {
+						privateData.activeOptionValue = option.value;
 					}
 
 					if (!privateData.isSingleShippingMethod) {
 						option.addEventListener('click', () => {
+							// Radios fire `click` even when already checked — re-clicking the
+							// selected option must not reset the saved drop-off state.
+							if (option.value === privateData.activeOptionValue) {
+								return;
+							}
+
+							privateData.activeOptionValue = option.value;
 							document.querySelectorAll('.packlink-cod-message').forEach(el => el.remove());
 
 							privateData.selectedLocation = null;
@@ -174,6 +199,8 @@ window.onload = () => {
 	}
 
 	function addDropOffButton(dataDiv, details) {
+		dataDiv.querySelectorAll('#packlink-drop-off').forEach(function (el) { el.remove(); });
+
 		let dropOffButton = document.getElementById('packlink-drop-off-picker');
 		if (dropOffButton === null) {
 			dropOffButton = document.createElement('button');
@@ -192,6 +219,30 @@ window.onload = () => {
 		dropOffButton.addEventListener('click', handleSelectDropOffLocationAction);
 
 		return buttonDiv;
+	}
+
+	/**
+	 * Re-applies the saved drop-off selection after (re)initialization. The block
+	 * checkout re-renders its DOM on every totals refresh, which loses the injected
+	 * button label and the address line — both must be derived from actual state.
+	 *
+	 * @param {object} details Method details of the checked shipping option.
+	 */
+	function restoreDropOffState(details) {
+		privateData.locations = details['packlink_drop_off_locations'] || [];
+
+		const button = document.getElementById('packlink-drop-off-picker');
+		const selected = findLocationById(privateData.selectedLocation);
+
+		if (button) {
+			button.innerHTML = selected
+				? privateData.translations.changeDropOff
+				: privateData.translations.pickDropOff;
+		}
+
+		if (selected) {
+			setDropOffAddress();
+		}
 	}
 
 	function addMutationObserverToCheckoutBlock(element) {
@@ -258,21 +309,29 @@ window.onload = () => {
 			return;
 		}
 
-		let button = document.querySelector('#packlink-drop-off-picker');
-		let element = document.querySelector('div.woocommerce-shipping-destination');
-		if (!element) {
-			element = document.createElement('div');
-			element.className = 'woocommerce-shipping-destination';
-			element.style.fontSize = '12px';
-			element.style.maxWidth = '200px';
-		}
-
-		element.innerHTML = '<strong>' + privateData.translations.dropOffTitle + '</strong><br/>'
+		let buttons = document.querySelectorAll('#packlink-drop-off-picker');
+		let addressHtml = '<strong>' + privateData.translations.dropOffTitle + '</strong><br/>'
 			+ [selected.name, selected.address, selected.city].join(', ');
 
-		if (button) {
+		buttons.forEach(function (button) {
+			let element = button.parentNode.querySelector('div.woocommerce-shipping-destination');
+			if (!element) {
+				element = document.createElement('div');
+				element.className = 'woocommerce-shipping-destination';
+				element.style.fontSize = '12px';
+				element.style.maxWidth = '200px';
+			}
+
+			element.innerHTML = addressHtml;
 			button.style.marginLeft = '0px';
 			button.after(element);
+		});
+
+		if (buttons.length === 0) {
+			let element = document.querySelector('div.woocommerce-shipping-destination');
+			if (element) {
+				element.innerHTML = addressHtml;
+			}
 		}
 	}
 
@@ -397,11 +456,17 @@ window.onload = () => {
 					privateData.endpoint,
 					selected,
 					function () {
-						let button = document.querySelector('#packlink-drop-off-picker');
-
-						if (button) {
+						document.querySelectorAll('#packlink-drop-off-picker').forEach(function (button) {
 							button.innerHTML = privateData.translations.changeDropOff;
-						}
+						});
+
+						document.dispatchEvent(new CustomEvent('packlink:dropoff-selected', {
+							detail: {
+								locationId: id,
+								location: selected,
+								buttonText: privateData.translations.changeDropOff
+							}
+						}));
 					},
 					function () {
 					}

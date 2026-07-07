@@ -34,6 +34,8 @@ use Packlink\BusinessLogic\IntegrationRegistration\Interfaces\ModuleResetService
 use Packlink\BusinessLogic\Order\Interfaces\ShopOrderService;
 use Packlink\BusinessLogic\Order\OrderService;
 use Packlink\BusinessLogic\OrderShipmentDetails\Models\OrderShipmentDetails;
+use Packlink\BusinessLogic\OrderShipmentDetails\OrderShipmentDetailsService;
+use Packlink\BusinessLogic\ShipmentDocument\Interfaces\LabelMergeServiceInterface;
 use Packlink\BusinessLogic\Registration\RegistrationInfoService;
 use Packlink\BusinessLogic\ShipmentDraft\Interfaces\ShipmentDraftServiceInterface;
 use Packlink\BusinessLogic\Tasks\Interfaces\TaskMetadataProviderInterface;
@@ -46,6 +48,7 @@ use Packlink\WooCommerce\Components\IntegrationRegistration\Integration_Reset_Se
 use Packlink\WooCommerce\Components\Services\Offline_Payments_Service;
 use Packlink\WooCommerce\Components\Services\Packlink_WordPress_Scheduler;
 use Packlink\WooCommerce\Components\Services\Order_Service;
+use Packlink\WooCommerce\Components\Services\Label_Merge_Service;
 use Packlink\WooCommerce\Components\Services\Shipment_Draft_Service;
 use Packlink\BusinessLogic\ShippingMethod\Interfaces\ShopShippingMethodService;
 use Packlink\BusinessLogic\ShippingMethod\Models\ShippingMethod;
@@ -106,6 +109,16 @@ class Bootstrap_Component extends BootstrapComponent {
 			OrderService::CLASS_NAME,
 			function () {
 				return Order_Service::getInstance();
+			}
+		);
+
+		ServiceRegister::registerService(
+			LabelMergeServiceInterface::CLASS_NAME,
+			function () {
+				return new Label_Merge_Service(
+					ServiceRegister::getService( OrderService::CLASS_NAME ),
+					ServiceRegister::getService( OrderShipmentDetailsService::CLASS_NAME )
+				);
 			}
 		);
 

@@ -6,6 +6,8 @@
  */
 
 use Packlink\BusinessLogic\OrderShipmentDetails\Models\OrderShipmentDetails;
+use Packlink\BusinessLogic\ShipmentDocument\DTO\ShipmentDocument;
+use Packlink\BusinessLogic\ShipmentDocument\ShipmentDocumentType;
 use Packlink\BusinessLogic\ShipmentDraft\Objects\ShipmentDraftStatus;
 use Packlink\BusinessLogic\ShipmentDraft\Utility\DraftStatus;
 use Packlink\BusinessLogic\ShippingMethod\Models\ShippingMethod;
@@ -20,7 +22,10 @@ use Packlink\WooCommerce\Components\Utility\Shop_Helper;
  * @var ShipmentDraftStatus  $draft_status
  * @var ShippingMethod       $shipping_method
  * @var string               $last_status_update
- * @var bool 				 $integration_active
+ * @var bool                 $integration_active
+ * @var ShipmentDocument[]   $shipping_label_documents
+ * @var string               $label_proxy_url
+ * @var string               $label_download_url
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -101,12 +106,38 @@ $draft_in_progress_statuses = array(
 					</button>
 				</a>
 
-				<?php if ( $order_details->getShipmentLabels() ) : ?>
-					<a href="<?php echo $order_details->getShipmentLabels()[0]->getLink(); ?>" target="_blank">
-						<button type="button" class="button button-primary" name="print label" value="Print">
-							<?php echo __( 'Print label', 'packlink-pro-shipping' ); ?>
+				<?php if ( ! empty( $public_tracking_url ) ) : ?>
+					<a href="<?php echo esc_url( $public_tracking_url ); ?>" target="_blank">
+						<button type="button" class="button pl-button-view" name="view tracking page" value="View">
+							<?php echo esc_html__( 'View tracking page', 'packlink-pro-shipping' ); ?>
 						</button>
 					</a>
+				<?php endif; ?>
+
+				<?php if ( ! empty( $shipping_label_documents ) ) :
+					$shipping_label_document = $shipping_label_documents[0];
+					?>
+					<div class="pl-documents-section">
+						<h4><?php echo esc_html__( 'Documents', 'packlink-pro-shipping' ); ?></h4>
+						<div class="pl-document-dropdown">
+							<button type="button" class="button pl-doc-btn">
+								<span class="dashicons dashicons-media-document"></span>
+								<?php echo esc_html( ShipmentDocumentType::getLabel( $shipping_label_document->getType() ) ); ?>
+								<span class="pl-dropdown-arrow">&#9662;</span>
+							</button>
+							<div class="pl-dropdown-menu">
+								<a href="<?php echo esc_url( $label_download_url ); ?>" target="_blank" class="pl-dropdown-item">
+									<span class="dashicons dashicons-download"></span>
+									<?php echo esc_html__( 'Download', 'packlink-pro-shipping' ); ?>
+								</a>
+								<a href="#" class="pl-dropdown-item pl-print-action"
+								   data-print-url="<?php echo esc_url( $label_proxy_url ); ?>">
+									<span class="dashicons dashicons-printer"></span>
+									<?php echo esc_html__( 'Print', 'packlink-pro-shipping' ); ?>
+								</a>
+							</div>
+						</div>
+					</div>
 				<?php endif; ?>
 			</li>
 		<?php endif; ?>

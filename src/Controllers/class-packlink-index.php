@@ -76,6 +76,7 @@ class Packlink_Index extends Packlink_Base_Controller {
 			'Manual_Sync',
 			'Manual_Refresh_Service',
             'Cash_On_Delivery',
+			'Subscription',
 		);
 
 		return in_array( $controller_name, $allowed_controllers, true );

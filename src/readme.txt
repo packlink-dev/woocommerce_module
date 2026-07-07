@@ -4,7 +4,7 @@ Tags: shipping, delivery, carrier, order, package
 Requires at least: 4.7
 Requires PHP: 7.0
 Tested up to: 6.9
-Stable tag: 4.1.2
+Stable tag: 4.2.0
 License: LICENSE-2.0
 License URI: http://www.apache.org/licenses/LICENSE-2.0
 

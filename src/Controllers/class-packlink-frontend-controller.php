@@ -94,6 +94,7 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 				'packlink/js/ValidationService.js',
 				'packlink/js/GridResizerService.js',
 				'packlink/js/ShippingServicesRenderer.js',
+				'packlink/js/SubscriptionBannerController.js',
 				'packlink/js/AutoTestController.js',
 				'js/override/ConfigurationController.js',
 				'packlink/js/DefaultParcelController.js',

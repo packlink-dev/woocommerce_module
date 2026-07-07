@@ -111,7 +111,8 @@ $data = $this->resolve_view_arguments();
 					submitUrl: "<?php echo Shop_Helper::get_controller_url( 'Manual_Sync', 'set_manual_sync_enabled' ); //phpcs:ignore ?>",
 				},
 				'configuration': {
-					getDataUrl: "<?php echo Shop_Helper::get_controller_url( 'Configuration', 'get' ); //phpcs:ignore ?>"
+					getDataUrl: "<?php echo Shop_Helper::get_controller_url( 'Configuration', 'get' ); //phpcs:ignore ?>",
+					getPromotionalBannerUrl: "<?php echo Shop_Helper::get_controller_url( 'Subscription', 'get_promotional_banner' ); //phpcs:ignore ?>"
 				},
 				'system-info': {
 					getStatusUrl: "<?php echo Shop_Helper::get_controller_url( 'Debug', 'get_status' ); //phpcs:ignore ?>",
@@ -125,7 +126,9 @@ $data = $this->resolve_view_arguments();
 					getServicesUrl: "<?php echo Shop_Helper::get_controller_url( 'My_Shipping_Services', 'get' ); //phpcs:ignore ?>",
 					deleteServiceUrl: "<?php echo Shop_Helper::get_controller_url( 'My_Shipping_Services', 'deactivate' ); //phpcs:ignore ?>",
 					getCurrencyDetailsUrl: "<?php echo Shop_Helper::get_controller_url( 'System_Info', 'get' ); //phpcs:ignore ?>",
-					systemId: "<?php echo System_Info_Service::SYSTEM_ID; ?>"
+					systemId: "<?php echo System_Info_Service::SYSTEM_ID; ?>",
+					getSubscriptionPlanUrl: "<?php echo Shop_Helper::get_controller_url( 'Subscription', 'get_plan' ); //phpcs:ignore ?>",
+					getPromotionalBannerUrl: "<?php echo Shop_Helper::get_controller_url( 'Subscription', 'get_promotional_banner' ); //phpcs:ignore ?>"
 				},
 				'pick-shipping-service': {
 					getActiveServicesUrl: "<?php echo Shop_Helper::get_controller_url( 'Shipping_Service', 'get_active' ); //phpcs:ignore ?>",
@@ -136,7 +139,9 @@ $data = $this->resolve_view_arguments();
 					getCurrencyDetailsUrl: "<?php echo Shop_Helper::get_controller_url( 'System_Info', 'get' ); //phpcs:ignore ?>",
 					systemId: "<?php echo System_Info_Service::SYSTEM_ID; ?>",
 					enqueue: "<?php echo Shop_Helper::get_controller_url('Manual_Refresh_Service', 'refresh'); //phpcs:ignore ?>",
-					getTaskStatus: "<?php echo Shop_Helper::get_controller_url('Manual_Refresh_Service', 'get_task_status'); //phpcs:ignore ?>"
+					getTaskStatus: "<?php echo Shop_Helper::get_controller_url('Manual_Refresh_Service', 'get_task_status'); //phpcs:ignore ?>",
+					getSubscriptionPlanUrl: "<?php echo Shop_Helper::get_controller_url( 'Subscription', 'get_plan' ); //phpcs:ignore ?>",
+					getPromotionalBannerUrl: "<?php echo Shop_Helper::get_controller_url( 'Subscription', 'get_promotional_banner' ); //phpcs:ignore ?>"
 				},
 				'edit-service': {
 					getServiceUrl: "<?php echo Shop_Helper::get_controller_url( 'Edit_Service', 'get_service' ); //phpcs:ignore ?>",

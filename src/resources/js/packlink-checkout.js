@@ -14,6 +14,18 @@ var Packlink = window.Packlink || {};
 		locale: 'en'
 	};
 
+	document.addEventListener('packlink:dropoff-selected', function (e) {
+		document.querySelectorAll('#packlink-drop-off-picker').forEach(function (btn) {
+			btn.innerHTML = e.detail.buttonText;
+		});
+		document.querySelectorAll('input[name="packlink_drop_off_id"]').forEach(function (input) {
+			input.value = e.detail.location.id;
+		});
+		document.querySelectorAll('input[name="packlink_drop_off_extra"]').forEach(function (input) {
+			input.value = JSON.stringify(e.detail.location);
+		});
+	});
+
 	Packlink.checkout                       	   = {};
 	Packlink.checkout.init                  	   = initialize;
 	Packlink.checkout.setIsCart             	   = setIsCart;
@@ -88,7 +100,52 @@ var Packlink = window.Packlink || {};
 		document.addEventListener( 'DOMContentLoaded', setDropOffAddress );
 	}
 
+	let dropOffAddressScheduled = false;
+
 	function setDropOffAddress() {
+		if (document.readyState === 'loading') {
+			scheduleDropOffAddress();
+
+			return;
+		}
+
+		applyDropOffAddress();
+	}
+
+	/**
+	 * The inline template script runs while the checkout HTML is still being parsed,
+	 * before WooCommerce's destination element exists. Applying as soon as that element
+	 * is parsed (instead of waiting for DOMContentLoaded) keeps the destination line
+	 * from visibly jumping from its default position to below the drop-off button.
+	 */
+	function scheduleDropOffAddress() {
+		if (dropOffAddressScheduled) {
+			return;
+		}
+
+		dropOffAddressScheduled = true;
+
+		let observer = new MutationObserver( function () {
+			if (document.querySelector( 'p.woocommerce-shipping-destination' )) {
+				observer.disconnect();
+				applyDropOffAddress();
+			}
+		} );
+
+		observer.observe( document.documentElement, { childList: true, subtree: true } );
+
+		// Fallback for pages where the destination element never renders.
+		document.addEventListener(
+			'DOMContentLoaded',
+			function () {
+				observer.disconnect();
+				applyDropOffAddress();
+			},
+			{ once: true }
+		);
+	}
+
+	function applyDropOffAddress() {
 		if ( ! privateData.selectedLocation || privateData.isCart) {
 			return;
 		}
@@ -100,29 +157,61 @@ var Packlink = window.Packlink || {};
 		}
 
 		setHiddenFields( selected );
-		let button  = document.querySelector( '#packlink-drop-off-picker' );
-		let element = document.querySelector( 'p.woocommerce-shipping-destination' );
-		if ( ! element) {
-			element           = document.createElement( 'p' );
-			element.className = 'woocommerce-shipping-destination';
-		}
-
-		element.innerHTML = '<strong>' + privateData.translations.dropOffTitle + '</strong><br/>'
+		// Only buttons rendered inside a shipping-rate list item: the block-checkout
+		// template copy printed into the page footer must never receive the address line.
+		let buttons = Array.prototype.filter.call(
+			document.querySelectorAll( '#packlink-drop-off-picker' ),
+			function (button) {
+				return button.closest( 'li' );
+			}
+		);
+		let addressHtml = '<strong>' + privateData.translations.dropOffTitle + '</strong><br/>'
 			+ [selected.name, selected.address, selected.city].join( ', ' );
 
-		if (button) {
+		// WooCommerce's own destination line (rendered after the rate list) is reused and
+		// moved under a button instead of duplicated. It can be claimed only once — and
+		// not at all when a previous run already placed it under a picker button.
+		let pageElement = document.querySelector( 'p.woocommerce-shipping-destination' );
+		if (pageElement && pageElement.previousElementSibling
+			&& pageElement.previousElementSibling.id === 'packlink-drop-off-picker') {
+			pageElement = null;
+		}
+
+		buttons.forEach( function (button) {
+			let element = button.parentNode.querySelector( 'p.woocommerce-shipping-destination' );
+
+			if ( ! element && pageElement) {
+				element     = pageElement;
+				pageElement = null;
+			}
+
+			if ( ! element) {
+				element           = document.createElement( 'p' );
+				element.className = 'woocommerce-shipping-destination';
+			}
+
+			element.innerHTML = addressHtml;
 			button.parentNode.insertBefore( element, button.nextSibling );
+		});
+
+		if (buttons.length === 0) {
+			let element = document.querySelector( 'p.woocommerce-shipping-destination' );
+			if (element) {
+				element.innerHTML = addressHtml;
+			}
 		}
 	}
 
 	function setHiddenFields(location) {
-		let dropOffId    = document.querySelector('input[name="packlink_drop_off_id"]');
-		let dropOffExtra = document.querySelector('input[name="packlink_drop_off_extra"]');
+		let dropOffIds    = document.querySelectorAll('input[name="packlink_drop_off_id"]');
+		let dropOffExtras = document.querySelectorAll('input[name="packlink_drop_off_extra"]');
 
-		if (dropOffId && dropOffExtra) {
-			dropOffId.value    = location.id;
-			dropOffExtra.value = JSON.stringify( location );
-		}
+		dropOffIds.forEach( function (input) {
+			input.value = location.id;
+		});
+		dropOffExtras.forEach( function (input) {
+			input.value = JSON.stringify( location );
+		});
 	}
 
 	function addCODMessage(dataDiv, codName, codFee) {
@@ -241,15 +330,23 @@ var Packlink = window.Packlink || {};
 					privateData.endpoint,
 					selected,
 					function () {
-						let button = document.querySelector( '#packlink-drop-off-picker' );
-
-						if (button) {
-							button.innerHTML = privateData.translations.changeDropOff;
-						}
+						document.querySelectorAll( '#packlink-drop-off-picker' ).forEach(
+							function (button) {
+								button.innerHTML = privateData.translations.changeDropOff;
+							}
+						);
 
 						if ( ! privateData.isCart) {
 							setHiddenFields( selected );
 						}
+
+						document.dispatchEvent( new CustomEvent( 'packlink:dropoff-selected', {
+							detail: {
+								locationId: id,
+								location: selected,
+								buttonText: privateData.translations.changeDropOff
+							}
+						}));
 					},
 					function () {
 					}
