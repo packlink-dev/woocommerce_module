@@ -1,5 +1,11 @@
 *** Packlink PRO Changelog ***
 
+2026-07-07 - version 4.2.0
+- Add compatibility with Divi, Astra, Makeaholic themes
+- Add subscription banners
+- Improve bulk printing labels
+- Fix drop-off location selection on CartFlows Store Checkout
+
 2026-05-19 - version 4.1.2
 - Fix PHP notice about textdomain being loaded too early in WordPress 6.7+
 - Fix drop-off translations being overridden by incomplete auto-downloaded translations

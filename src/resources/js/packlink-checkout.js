@@ -92,12 +92,24 @@ var Packlink = window.Packlink || {};
 			}
 		}
 
-		if ( ! hookedUpdate && updateButton && jQuery) {
-			jQuery( document.body ).on( 'updated_wc_div', initialize );
+		if ( ! hookedUpdate && jQuery) {
+			if (updateButton) {
+				jQuery( document.body ).on( 'updated_wc_div', initialize );
+			}
+
+			// Re-initialize after every checkout refresh. The inline init scripts inside
+			// shipping-rate fragments are not executed when a later fragment replaces an
+			// ancestor of an earlier one (CartFlows applies the same shipping-methods HTML
+			// under two selectors), so the surviving drop-off button would stay hidden.
+			jQuery( document.body ).on( 'updated_checkout', initialize );
 			hookedUpdate = true;
 		}
 
-		document.addEventListener( 'DOMContentLoaded', setDropOffAddress );
+		// Restores the saved selection (hidden inputs and address line) into freshly
+		// rendered shipping rows. setDropOffAddress defers on its own while the initial
+		// HTML is still being parsed, so calling it directly is safe both during page
+		// load and when re-initialized after a checkout fragment refresh.
+		setDropOffAddress();
 	}
 
 	let dropOffAddressScheduled = false;

@@ -94,6 +94,15 @@ Click <a href="https://support-pro.packlink.com/hc/es-es/articles/210158585" tar
 
 == Changelog ==
 
+#### 4.2.0 - July 07th, 2026
+
+**Updates**
+
+- Add compatibility with Divi, Astra, Makeaholic themes
+- Add subscription banners
+- Improve bulk printing labels
+- Fix drop-off location selection on CartFlows Store Checkout
+
 #### 4.1.2 - May 19th, 2026
 
 **Updates**
