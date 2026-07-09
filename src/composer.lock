@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "bc4dccdad5d508e3b951d8687935b4b5",
+    "content-hash": "217cea86587069aec50e3ef42667cf11",
     "packages": [
         {
             "name": "iio/libmergepdf",
@@ -62,16 +62,16 @@
         },
         {
             "name": "packlink/integration-core",
-            "version": "v4.2.3",
+            "version": "dev-CR-SET-67-Customs",
             "source": {
                 "type": "git",
                 "url": "git@github.com:packlink-dev/ecommerce_module_core.git",
-                "reference": "0a42818b17e1e3ac29c0d5fb5743f40458a19689"
+                "reference": "a72cecde2670d7cbb932c8a489b5e82b482efd8d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/packlink-dev/ecommerce_module_core/zipball/0a42818b17e1e3ac29c0d5fb5743f40458a19689",
-                "reference": "0a42818b17e1e3ac29c0d5fb5743f40458a19689",
+                "url": "https://api.github.com/repos/packlink-dev/ecommerce_module_core/zipball/a72cecde2670d7cbb932c8a489b5e82b482efd8d",
+                "reference": "a72cecde2670d7cbb932c8a489b5e82b482efd8d",
                 "shasum": ""
             },
             "require": {
@@ -82,7 +82,7 @@
             "require-dev": {
                 "codacy/coverage": "dev-master",
                 "leafo/scssphp": "0.0.12",
-                "phpunit/phpunit": "^4.8"
+                "phpunit/phpunit": "^4.8 || ^9.6 || ^11.0"
             },
             "type": "library",
             "autoload": {
@@ -111,7 +111,7 @@
                 "proprietary"
             ],
             "description": "Packlink integrations core library",
-            "time": "2026-07-06T13:00:43+00:00"
+            "time": "2026-07-06T13:46:42+00:00"
         },
         {
             "name": "setasign/fpdf",
@@ -1856,7 +1856,9 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {
+        "packlink/integration-core": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
@@ -1865,9 +1867,9 @@
         "ext-curl": "*",
         "ext-zip": "*"
     },
-    "platform-dev": [],
+    "platform-dev": {},
     "platform-overrides": {
         "php": "7.0.8"
     },
-    "plugin-api-version": "2.2.0"
+    "plugin-api-version": "2.9.0"
 }

@@ -97,15 +97,26 @@ class Packlink_Order_Details_Controller extends Packlink_Base_Controller {
 		}
 
 		/** @var ShipmentDocumentServiceInterface $document_service */ // phpcs:ignore
-		$document_service         = ServiceRegister::getService( ShipmentDocumentServiceInterface::CLASS_NAME );
-		$shipping_label_documents = $order_details ? array_values(
+		$document_service = ServiceRegister::getService( ShipmentDocumentServiceInterface::CLASS_NAME );
+		$order_documents  = $order_details ? $document_service->getDocumentsForOrder( (string) $id ) : array();
+
+		$shipping_label_documents = array_values(
 			array_filter(
-				$document_service->getDocumentsForOrder( (string) $id ),
+				$order_documents,
 				function ( ShipmentDocument $document ) {
 					return ShipmentDocumentType::SHIPPING_LABEL === $document->getType();
 				}
 			)
-		) : array();
+		);
+
+		$customs_invoice_documents = array_values(
+			array_filter(
+				$order_documents,
+				function ( ShipmentDocument $document ) {
+					return ShipmentDocumentType::CUSTOMS_INVOICE === $document->getType();
+				}
+			)
+		);
 
 		$label_proxy_url    = Shop_Helper::get_controller_url(
 			'Order_Overview',
