@@ -3,6 +3,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [v4.2.2](https://github.com/packlink-dev/woocommerce_module/compare/v4.2.1...v4.2.2) - 2026-07-14
+### Changed
+- Fix fatal error when activating the plugin on WordPress Multisite installations with multiple sites
+
+## [v4.2.1](https://github.com/packlink-dev/woocommerce_module/compare/v4.2.0...v4.2.1) - 2026-07-08
+### Changed
+- Add support for shipping in Brazil
+
 ## [v4.2.0](https://github.com/packlink-dev/woocommerce_module/compare/v4.1.2...v4.2.0) - 2026-07-07
 ### Changed
 - Add compatibility with Divi, Astra, Makeaholic themes
