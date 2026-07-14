@@ -1,5 +1,8 @@
 *** Packlink PRO Changelog ***
 
+2026-07-14 - version 4.2.2
+- Fix fatal error when activating the plugin on WordPress Multisite installations with multiple sites
+
 2026-07-08 - version 4.2.1
 - Add support for shipping in Brazil
 

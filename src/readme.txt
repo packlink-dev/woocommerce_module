@@ -4,7 +4,7 @@ Tags: shipping, delivery, carrier, order, package
 Requires at least: 4.7
 Requires PHP: 7.0
 Tested up to: 6.9
-Stable tag: 4.2.1
+Stable tag: 4.2.2
 License: LICENSE-2.0
 License URI: http://www.apache.org/licenses/LICENSE-2.0
 
@@ -93,6 +93,12 @@ Click <a href="https://support-pro.packlink.com/hc/es-es/articles/210158585" tar
 
 
 == Changelog ==
+
+#### 4.2.2 - July 14th, 2026
+
+**Updates**
+
+- Fix fatal error when activating the plugin on WordPress Multisite installations with multiple sites
 
 #### 4.2.1 - July 08th, 2026
 
