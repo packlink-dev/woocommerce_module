@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f4c6e15a66766179e9a237c9bfecd50e",
+    "content-hash": "b6591e951eae9edf2f4914e91806f03c",
     "packages": [
         {
             "name": "squizlabs/php_codesniffer",
