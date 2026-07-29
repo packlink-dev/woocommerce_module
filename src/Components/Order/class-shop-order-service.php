@@ -97,14 +97,12 @@ class Shop_Order_Service extends Singleton implements BaseShopOrderService {
 		$order->setBillingAddress( $this->get_billing_address( $wc_order ) );
 		$order->setShippingAddress( $this->get_shipping_address( $wc_order ) );
 
+		// One resolved value feeds both customs attributes: the core sends it as the receiver
+		// tax id (private person) or VAT number (company) based on the receiver user type.
 		$tax_id = $this->resolve_order_tax_id( $wc_order );
 		if ( '' !== $tax_id ) {
 			$order->setTaxId( $tax_id );
-		}
-
-		$vat_number = $this->resolve_order_vat_number( $wc_order );
-		if ( '' !== $vat_number ) {
-			$order->setVatNumber( $vat_number );
+			$order->setVatNumber( $tax_id );
 		}
 
         $order->setPaymentId($wc_order->get_payment_method());
@@ -298,15 +296,30 @@ class Shop_Order_Service extends Singleton implements BaseShopOrderService {
 	}
 
 	/**
-	 * Reads a mapped product field. A `pa_*` value is a global product attribute (read via
-	 * get_attribute); anything else is a product meta key.
+	 * Reads a mapped product field by its namespace: an `attr:{name}` value is a product attribute
+	 * (global `pa_*` taxonomy or per-product custom attribute name, read via get_attribute), a
+	 * `meta:{key}` value is a product meta key. Legacy un-namespaced values fall back to the old
+	 * behavior: `pa_*` is an attribute, anything else is a product meta key.
 	 *
 	 * @param WC_Product $product WooCommerce product.
-	 * @param string     $field   Mapped field (attribute taxonomy or meta key).
+	 * @param string     $field   Mapped field (namespaced attribute or meta key).
 	 *
 	 * @return string
 	 */
 	private function read_product_field( WC_Product $product, $field ) {
+		if ( 0 === strpos( $field, Customs_Mapping_Service::PREFIX_ATTRIBUTE ) ) {
+			$name = substr( $field, strlen( Customs_Mapping_Service::PREFIX_ATTRIBUTE ) );
+
+			return (string) $product->get_attribute( $name );
+		}
+
+		if ( 0 === strpos( $field, Customs_Mapping_Service::PREFIX_PRODUCT_META ) ) {
+			$key   = substr( $field, strlen( Customs_Mapping_Service::PREFIX_PRODUCT_META ) );
+			$value = $product->get_meta( $key );
+
+			return ( '' !== $value && null !== $value ) ? (string) $value : '';
+		}
+
 		if ( 0 === strpos( $field, 'pa_' ) ) {
 			return (string) $product->get_attribute( $field );
 		}
@@ -317,21 +330,81 @@ class Shop_Order_Service extends Singleton implements BaseShopOrderService {
 	}
 
 	/**
-	 * Resolves an item country of origin from the dedicated product meta, then empty (core applies
-	 * the configured default).
+	 * Reads a mapped customer field by its namespace: an `order:{key}` value is an order meta key,
+	 * a `user:{key}` value is a customer user meta key (empty for guest orders). Legacy
+	 * un-namespaced values fall back to the old behavior: an order meta key.
+	 *
+	 * @param WC_Order $wc_order WooCommerce order.
+	 * @param string   $field    Mapped field (namespaced order or user meta key).
+	 *
+	 * @return string
+	 */
+	private function read_customer_field( WC_Order $wc_order, $field ) {
+		if ( 0 === strpos( $field, Customs_Mapping_Service::PREFIX_ORDER_META ) ) {
+			$key   = substr( $field, strlen( Customs_Mapping_Service::PREFIX_ORDER_META ) );
+			$value = $wc_order->get_meta( $key );
+
+			return ( '' !== $value && null !== $value ) ? (string) $value : '';
+		}
+
+		if ( 0 === strpos( $field, Customs_Mapping_Service::PREFIX_USER_META ) ) {
+			$key = substr( $field, strlen( Customs_Mapping_Service::PREFIX_USER_META ) );
+
+			return $this->read_customer_user_meta( $wc_order, $key );
+		}
+
+		$value = $wc_order->get_meta( $field );
+
+		return ( '' !== $value && null !== $value ) ? (string) $value : '';
+	}
+
+	/**
+	 * Reads a user meta value of the order customer. Guest orders (customer id 0) have no profile,
+	 * so they resolve to an empty string.
+	 *
+	 * @param WC_Order $wc_order WooCommerce order.
+	 * @param string   $key      User meta key.
+	 *
+	 * @return string
+	 */
+	private function read_customer_user_meta( WC_Order $wc_order, $key ) {
+		$customer_id = (int) $wc_order->get_customer_id();
+		if ( 0 === $customer_id ) {
+			return '';
+		}
+
+		$value = get_user_meta( $customer_id, $key, true );
+
+		return ( '' !== $value && null !== $value ) ? (string) $value : '';
+	}
+
+	/**
+	 * Resolves an item country of origin: mapped product field, then the dedicated
+	 * country-of-origin meta, then empty (core applies the configured default).
 	 *
 	 * @param WC_Product $product WooCommerce product.
 	 *
 	 * @return string
 	 */
 	private function resolve_item_country_of_origin( WC_Product $product ) {
-		$value = $product->get_meta( Customs_Mapping_Service::PRODUCT_COUNTRY_OF_ORIGIN_META );
+		$mapping = $this->get_customs_mapping();
 
-		return $value ? (string) $value : '';
+		if ( $mapping && ! empty( $mapping->mappingCountryOfOrigin ) ) {
+			$value = $this->read_product_field( $product, $mapping->mappingCountryOfOrigin );
+			if ( '' !== $value ) {
+				return $value;
+			}
+		}
+
+		$fallback = $product->get_meta( Customs_Mapping_Service::PRODUCT_COUNTRY_OF_ORIGIN_META );
+
+		return $fallback ? (string) $fallback : '';
 	}
 
 	/**
-	 * Resolves the customer tax id: mapped order field, then the dedicated tax-id meta, then empty.
+	 * Resolves the customer tax ID / VAT number: mapped customer field, then the dedicated user
+	 * meta of the order customer, then empty. One value serves both customs attributes - the core
+	 * routes it to tax id or VAT number based on the configured receiver user type.
 	 *
 	 * @param WC_Order $wc_order WooCommerce order.
 	 *
@@ -341,37 +414,13 @@ class Shop_Order_Service extends Singleton implements BaseShopOrderService {
 		$mapping = $this->get_customs_mapping();
 
 		if ( $mapping && ! empty( $mapping->mappingReceiverTaxId ) ) {
-			$value = $wc_order->get_meta( $mapping->mappingReceiverTaxId );
-			if ( '' !== $value && null !== $value ) {
-				return (string) $value;
+			$value = $this->read_customer_field( $wc_order, $mapping->mappingReceiverTaxId );
+			if ( '' !== $value ) {
+				return $value;
 			}
 		}
 
-		$fallback = $wc_order->get_meta( Customs_Mapping_Service::BILLING_TAX_ID_META );
-
-		return $fallback ? (string) $fallback : '';
-	}
-
-	/**
-	 * Resolves the company VAT number: mapped order field, then the dedicated VAT meta, then empty.
-	 *
-	 * @param WC_Order $wc_order WooCommerce order.
-	 *
-	 * @return string
-	 */
-	private function resolve_order_vat_number( WC_Order $wc_order ) {
-		$mapping = $this->get_customs_mapping();
-
-		if ( $mapping && ! empty( $mapping->mappingCompanyVat ) ) {
-			$value = $wc_order->get_meta( $mapping->mappingCompanyVat );
-			if ( '' !== $value && null !== $value ) {
-				return (string) $value;
-			}
-		}
-
-		$fallback = $wc_order->get_meta( Customs_Mapping_Service::BILLING_VAT_META );
-
-		return $fallback ? (string) $fallback : '';
+		return $this->read_customer_user_meta( $wc_order, Customs_Mapping_Service::USER_TAX_ID_META );
 	}
 
 	/**

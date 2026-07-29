@@ -22,8 +22,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Class Customs_Handler
  *
  * Adds the customs data-capture fields WooCommerce lacks natively: HS code and country of origin on
- * products, and customer tax ID and company VAT on billing/orders. The captured meta is later mapped
- * into the core order objects at synchronization time (Shop_Order_Service).
+ * products, and customer tax ID and company VAT on the admin customer profile. The captured meta is
+ * later mapped into the core order objects at synchronization time (Shop_Order_Service).
  *
  * @package Packlink\WooCommerce\Components\Customs
  */
@@ -97,53 +97,26 @@ class Customs_Handler {
 	}
 
 	/**
-	 * Adds tax ID and company VAT to the storefront billing fields.
+	 * Adds a "Packlink customs" section with a single tax ID / VAT number text field to the admin
+	 * customer profile. WooCommerce renders and saves the declared field automatically. One value
+	 * serves both customs attributes: the core sends it as the receiver tax id or VAT number
+	 * depending on the configured receiver user type.
 	 *
-	 * Hook: woocommerce_billing_fields.
+	 * Hook: woocommerce_customer_meta_fields.
 	 *
-	 * @param array $fields Billing fields.
-	 *
-	 * @return array
-	 */
-	public function add_billing_fields( $fields ) {
-		// WooCommerce billing-field keys are the meta key without the leading underscore; WC persists
-		// each `billing_*` field to the `_billing_*` order meta the mapping service reads.
-		$fields[ ltrim( Customs_Mapping_Service::BILLING_TAX_ID_META, '_' ) ] = array(
-			'label'    => __( 'Tax ID', 'packlink-pro-shipping' ),
-			'required' => false,
-			'class'    => array( 'form-row-wide' ),
-			'priority' => 120,
-		);
-
-		$fields[ ltrim( Customs_Mapping_Service::BILLING_VAT_META, '_' ) ] = array(
-			'label'    => __( 'Company VAT', 'packlink-pro-shipping' ),
-			'required' => false,
-			'class'    => array( 'form-row-wide' ),
-			'priority' => 130,
-		);
-
-		return $fields;
-	}
-
-	/**
-	 * Adds tax ID and company VAT as editable fields on the admin order billing panel.
-	 *
-	 * Hook: woocommerce_admin_billing_fields.
-	 *
-	 * @param array $fields Admin billing fields.
+	 * @param array $fields Customer meta field sections.
 	 *
 	 * @return array
 	 */
-	public function add_admin_billing_fields( $fields ) {
-		// Admin billing field keys are meta keys without the leading "_billing_" prefix.
-		$fields['packlink_tax_id'] = array(
-			'label' => __( 'Tax ID', 'packlink-pro-shipping' ),
-			'show'  => true,
-		);
-
-		$fields['packlink_vat'] = array(
-			'label' => __( 'Company VAT', 'packlink-pro-shipping' ),
-			'show'  => true,
+	public function add_customer_meta_fields( $fields ) {
+		$fields['packlink_customs'] = array(
+			'title'  => __( 'Packlink customs', 'packlink-pro-shipping' ),
+			'fields' => array(
+				Customs_Mapping_Service::USER_TAX_ID_META => array(
+					'label'       => __( 'Tax ID / VAT number', 'packlink-pro-shipping' ),
+					'description' => __( 'Used on customs invoices: sent as the customer tax ID for private persons or as the company VAT number for companies.', 'packlink-pro-shipping' ),
+				),
+			),
 		);
 
 		return $fields;
@@ -170,18 +143,15 @@ class Customs_Handler {
 
 		$mapping = new CustomsMapping();
 
-		$mapping->defaultReason           = 'sale_of_goods';
+		$mapping->defaultReason           = 'purchase_or_sale';
 		$mapping->defaultSenderTaxId      = '';
 		$mapping->defaultReceiverUserType = CustomsService::PRIVATE_PERSON;
 		$mapping->defaultReceiverTaxId    = '';
-		// Core CustomsMapping validation requires a 6-8 digit default tariff number; an empty value
-		// produces a mapping that fails validation on read. Seed a valid placeholder HS code that the
-		// merchant can override; per-product HS codes still take precedence at order-mapping time.
-		$mapping->defaultTariffNumber     = '61091000';
+		$mapping->defaultTariffNumber     = '';
 		$mapping->defaultCountry          = '';
-		$mapping->mappingReceiverTaxId    = Customs_Mapping_Service::BILLING_TAX_ID_META;
-		$mapping->mappingTariffNumber     = Customs_Mapping_Service::PRODUCT_HS_CODE_META;
-		$mapping->mappingCompanyVat       = Customs_Mapping_Service::BILLING_VAT_META;
+		$mapping->mappingReceiverTaxId    = Customs_Mapping_Service::PREFIX_USER_META . Customs_Mapping_Service::USER_TAX_ID_META;
+		$mapping->mappingTariffNumber     = Customs_Mapping_Service::PREFIX_PRODUCT_META . Customs_Mapping_Service::PRODUCT_HS_CODE_META;
+		$mapping->mappingCountryOfOrigin  = Customs_Mapping_Service::PREFIX_PRODUCT_META . Customs_Mapping_Service::PRODUCT_COUNTRY_OF_ORIGIN_META;
 
 		$config->setCustomsMappings( $mapping );
 	}

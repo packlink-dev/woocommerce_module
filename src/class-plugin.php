@@ -868,7 +868,7 @@ class Plugin {
 
 	/**
 	 * Registers actions and filters for the customs data-capture fields (product HS code and
-	 * country of origin; customer tax ID and company VAT).
+	 * country of origin; customer tax ID and company VAT on the admin customer profile).
 	 */
 	private function customs_hooks_and_actions() {
 		$handler = new Customs_Handler();
@@ -876,8 +876,7 @@ class Plugin {
 		add_action( 'woocommerce_product_options_shipping', array( $handler, 'render_product_fields' ) );
 		add_action( 'woocommerce_process_product_meta', array( $handler, 'save_product_fields' ) );
 
-		add_filter( 'woocommerce_billing_fields', array( $handler, 'add_billing_fields' ) );
-		add_filter( 'woocommerce_admin_billing_fields', array( $handler, 'add_admin_billing_fields' ) );
+		add_filter( 'woocommerce_customer_meta_fields', array( $handler, 'add_customer_meta_fields' ) );
 	}
 
 	/**
