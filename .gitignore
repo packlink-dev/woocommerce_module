@@ -20,3 +20,6 @@ src/resources/images/carriers/*
 .ai-docs
 CLAUDE.md
 .claude
+DESIGN.md
+LEARNINGS.md
+docs/
