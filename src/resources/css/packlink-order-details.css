@@ -174,3 +174,38 @@
 	align-items: center;
 	gap: 6px;
 }
+
+/* Document sections (shipping label / customs label): a heading above a Download (primary) +
+   Print button pair, matching the order-details mock-up. No dividers between the info rows and
+   the label sections — the separator line belongs only before the View button. */
+#packlink-shipping-modal .order_actions li.wide {
+	border: 0;
+}
+
+#packlink-shipping-modal .pl-document-section {
+	clear: both;
+	margin: 0 0 14px;
+}
+
+#packlink-shipping-modal .pl-document-section h4 {
+	margin: 0 0 6px;
+}
+
+#packlink-shipping-modal .pl-document-section .pl-doc-button {
+	float: none;
+	margin: 0 10px 0 0;
+}
+
+/* Gray separator line + spacing before "View on Packlink PRO" — the same 1px #ddd line
+   WooCommerce draws between .order_actions rows. */
+#packlink-shipping-modal .pl-view-actions {
+	clear: both;
+	margin-top: 16px;
+	padding-top: 16px;
+	border-top: 1px solid #ddd;
+}
+
+#packlink-shipping-modal .pl-view-actions .pl-button-view {
+	float: none;
+	margin: 0;
+}

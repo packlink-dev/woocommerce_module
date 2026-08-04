@@ -28,6 +28,7 @@ use Packlink\BusinessLogic\Brand\BrandConfigurationService;
 use Packlink\BusinessLogic\CashOnDelivery\Model\CashOnDelivery;
 use Packlink\BusinessLogic\CashOnDelivery\Services\OfflinePaymentsServices;
 use Packlink\BusinessLogic\Country\WarehouseCountryService;
+use Packlink\BusinessLogic\Customs\CustomsMappingService;
 use Packlink\BusinessLogic\FileResolver\FileResolverService;
 use Packlink\BusinessLogic\IntegrationRegistration\Interfaces\IntegrationRegistrationDataProviderInterface;
 use Packlink\BusinessLogic\IntegrationRegistration\Interfaces\ModuleResetServiceInterface;
@@ -45,6 +46,7 @@ use Packlink\BusinessLogic\UpdateShippingServices\UpdateShippingServiceTaskStatu
 use Packlink\BusinessLogic\Scheduler\Interfaces\SchedulerInterface;
 use Packlink\WooCommerce\Components\IntegrationRegistration\Integration_Registration_Data_Provider;
 use Packlink\WooCommerce\Components\IntegrationRegistration\Integration_Reset_Service;
+use Packlink\WooCommerce\Components\Services\Customs_Mapping_Service;
 use Packlink\WooCommerce\Components\Services\Offline_Payments_Service;
 use Packlink\WooCommerce\Components\Services\Packlink_WordPress_Scheduler;
 use Packlink\WooCommerce\Components\Services\Order_Service;
@@ -154,6 +156,13 @@ class Bootstrap_Component extends BootstrapComponent {
             OfflinePaymentsServices::CLASS_NAME,
             static function () {
                 return new Offline_Payments_Service;
+            }
+        );
+
+        ServiceRegister::registerService(
+            CustomsMappingService::CLASS_NAME,
+            static function () {
+                return new Customs_Mapping_Service();
             }
         );
 

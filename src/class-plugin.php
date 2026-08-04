@@ -19,6 +19,7 @@ use Packlink\WooCommerce\Components\Bootstrap_Component;
 use Packlink\WooCommerce\Components\Checkout\Block_Checkout_Handler;
 use Packlink\WooCommerce\Components\Checkout\Checkout_Handler;
 use Packlink\WooCommerce\Components\Checkout\Surcharge_Handler;
+use Packlink\WooCommerce\Components\Customs\Customs_Handler;
 use Packlink\WooCommerce\Components\Order\Paid_Order_Handler;
 use Packlink\WooCommerce\Components\Services\Config_Service;
 use Packlink\WooCommerce\Components\Services\Logger_Service;
@@ -596,6 +597,7 @@ class Plugin {
 			$this->order_hooks_and_actions();
 			$this->checkout_hooks_and_actions();
 			$this->storefront_hooks_and_actions();
+			$this->customs_hooks_and_actions();
 		}
 		// Register WordPress_Task_Executor callbacks for Action Scheduler
 		$executor = ServiceRegister::getService( TaskExecutorInterface::CLASS_NAME );
@@ -673,6 +675,8 @@ class Plugin {
 				ShipmentStatus::INCIDENT         => 'wc-failed'
 			)
 		);
+
+		Customs_Handler::seed_default_customs_mapping();
 	}
 
 	/**
@@ -860,6 +864,19 @@ class Plugin {
 			10,
 			2
 		);
+	}
+
+	/**
+	 * Registers actions and filters for the customs data-capture fields (product HS code and
+	 * country of origin; customer tax ID and company VAT on the admin customer profile).
+	 */
+	private function customs_hooks_and_actions() {
+		$handler = new Customs_Handler();
+
+		add_action( 'woocommerce_product_options_shipping', array( $handler, 'render_product_fields' ) );
+		add_action( 'woocommerce_process_product_meta', array( $handler, 'save_product_fields' ) );
+
+		add_filter( 'woocommerce_customer_meta_fields', array( $handler, 'add_customer_meta_fields' ) );
 	}
 
 	/**

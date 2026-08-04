@@ -120,6 +120,7 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 				'packlink/js/SettingsButtonService.js',
 				'js/custom/ManualSyncController.js',
                 'packlink/js/CashOnDeliveryController.js',
+                'packlink/js/CustomsController.js',
 			)
 		);
 	}
@@ -178,6 +179,7 @@ class Packlink_Frontend_Controller extends Packlink_Base_Controller {
 			'manual-sync'               => json_encode( file_get_contents( $custom_dir . 'manual-sync.html' ) ),
 			'location-picker'           => json_encode( file_get_contents( $custom_dir . 'location-picker.html' ) ),
             'cash-on-delivery'          => json_encode( file_get_contents( $base_dir . 'cash-on-delivery.html' ) ),
+            'customs'                   => json_encode( file_get_contents( $base_dir . 'customs.html' ) ),
         );
 		//@codingStandardsIgnoreEnd
 	}

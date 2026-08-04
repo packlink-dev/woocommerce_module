@@ -106,6 +106,12 @@ $data = $this->resolve_view_arguments();
                     getDataUrl: "<?php echo Shop_Helper::get_controller_url( 'Cash_On_Delivery', 'get_data' ); //phpcs:ignore ?>",
                     submitDataUrl: "<?php echo Shop_Helper::get_controller_url( 'Cash_On_Delivery', 'save_data' );//phpcs:ignore ?>",
                 },
+                'customs': {
+                    getUrl: "<?php echo Shop_Helper::get_controller_url( 'Customs', 'get_data' ); //phpcs:ignore ?>",
+                    submitUrl: "<?php echo Shop_Helper::get_controller_url( 'Customs', 'save_data' ); //phpcs:ignore ?>",
+                    getSupportedCountriesUrl: "<?php echo Shop_Helper::get_controller_url( 'Customs', 'get_countries' ); //phpcs:ignore ?>",
+                    getCustomData: "<?php echo Shop_Helper::get_controller_url( 'Customs', 'get_mapping_fields_options' ); //phpcs:ignore ?>",
+                },
 				'manual-sync': {
 					getUrl: "<?php echo Shop_Helper::get_controller_url( 'Manual_Sync', 'is_manual_sync_enabled' ); //phpcs:ignore ?>",
 					submitUrl: "<?php echo Shop_Helper::get_controller_url( 'Manual_Sync', 'set_manual_sync_enabled' ); //phpcs:ignore ?>",
@@ -217,6 +223,9 @@ $data = $this->resolve_view_arguments();
 						'pl-countries-selection-modal': <?php echo $data['templates']['countries-selection-modal']; //phpcs:ignore ?>,
                         'pl-cod-page': {
                             'pl-main-page-holder': <?php echo $data['templates']['cash-on-delivery']; //phpcs:ignore ?>
+                        },
+                        'pl-customs-page': {
+                            'pl-main-page-holder': <?php echo $data['templates']['customs']; //phpcs:ignore ?>
                         },
 					}
 				}
