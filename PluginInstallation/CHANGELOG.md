@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [v4.3.1](https://github.com/packlink-dev/woocommerce_module/compare/v4.3.0...v4.3.1) - 2026-08-12
+### Changed
+- Security update 
+
 ## [v4.3.0](https://github.com/packlink-dev/woocommerce_module/compare/v4.2.3...v4.3.0) - 2026-07-28
 ### Added
 - Customs support for international shipments: Customs settings page with default values and data mapping to product attributes and customer fields, product HS code and country of origin fields, a customer tax ID / VAT number field on the admin customer profile, automatic customs invoice creation when an order is paid, and customs invoice download/print on the order details page

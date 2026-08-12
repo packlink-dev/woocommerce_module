@@ -188,7 +188,8 @@ window.onload = () => {
 			const messageDiv = document.createElement('div');
 			messageDiv.className = 'packlink-cod-message';
 
-			messageDiv.innerHTML = `This service supports <strong>${codName}</strong>. If you choose the <strong>${codName}</strong> payment method, an additional fee of <strong>${codPrice}</strong> will be applied.`;
+			// Build with text nodes so codName/codPrice can never be reinterpreted as HTML.
+			appendCODMessageContent(messageDiv, codName, codPrice);
 
 			messageDiv.style.marginTop = '8px';
 			messageDiv.style.fontSize = '12px';
@@ -196,6 +197,31 @@ window.onload = () => {
 
 			dataDiv.lastChild.before(messageDiv);
 		}
+	}
+
+	/**
+	 * Appends the COD notice text to a container using text nodes only, so the
+	 * payment-method name and fee are never interpreted as HTML.
+	 *
+	 * @param {HTMLElement} container
+	 * @param {string} codName
+	 * @param {number|string} codPrice
+	 */
+	function appendCODMessageContent(container, codName, codPrice) {
+		let nameStrong1 = document.createElement('strong');
+		nameStrong1.textContent = codName;
+		let nameStrong2 = document.createElement('strong');
+		nameStrong2.textContent = codName;
+		let priceStrong = document.createElement('strong');
+		priceStrong.textContent = codPrice;
+
+		container.appendChild(document.createTextNode('This service supports '));
+		container.appendChild(nameStrong1);
+		container.appendChild(document.createTextNode('. If you choose the '));
+		container.appendChild(nameStrong2);
+		container.appendChild(document.createTextNode(' payment method, an additional fee of '));
+		container.appendChild(priceStrong);
+		container.appendChild(document.createTextNode(' will be applied.'));
 	}
 
 	function addDropOffButton(dataDiv, details) {
@@ -310,8 +336,19 @@ window.onload = () => {
 		}
 
 		let buttons = document.querySelectorAll('#packlink-drop-off-picker');
-		let addressHtml = '<strong>' + privateData.translations.dropOffTitle + '</strong><br/>'
-			+ [selected.name, selected.address, selected.city].join(', ');
+		// Populate the destination element with DOM nodes instead of an HTML string,
+		// so the carrier-supplied location fields can never be reinterpreted as HTML.
+		let renderAddress = function (target) {
+			let title = document.createElement('strong');
+			title.textContent = privateData.translations.dropOffTitle;
+
+			target.textContent = '';
+			target.appendChild(title);
+			target.appendChild(document.createElement('br'));
+			target.appendChild(
+				document.createTextNode([selected.name, selected.address, selected.city].join(', '))
+			);
+		};
 
 		buttons.forEach(function (button) {
 			let element = button.parentNode.querySelector('div.woocommerce-shipping-destination');
@@ -322,7 +359,7 @@ window.onload = () => {
 				element.style.maxWidth = '200px';
 			}
 
-			element.innerHTML = addressHtml;
+			renderAddress(element);
 			button.style.marginLeft = '0px';
 			button.after(element);
 		});
@@ -330,7 +367,7 @@ window.onload = () => {
 		if (buttons.length === 0) {
 			let element = document.querySelector('div.woocommerce-shipping-destination');
 			if (element) {
-				element.innerHTML = addressHtml;
+				renderAddress(element);
 			}
 		}
 	}
@@ -425,7 +462,10 @@ window.onload = () => {
 		let imageDiv = document.createElement('div');
 		imageDiv.className = 'pl-image-wrapper';
 		let image = document.createElement('img');
-		image.src = imageSrcInput;
+		// Only accept http(s) logo URLs; ignore anything else (data:, javascript:, etc.).
+		if (/^https?:\/\//i.test(imageSrcInput)) {
+			image.src = imageSrcInput;
+		}
 		image.alt = 'carrier image';
 		image.className = 'pl-checkout-carrier-image';
 		imageDiv.appendChild(image);
