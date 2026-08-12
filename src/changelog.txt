@@ -1,5 +1,8 @@
 *** Packlink PRO Changelog ***
 
+2026-08-12 - version 4.3.1
+- Security update
+
 2026-07-28 - version 4.3.0
 - Add customs support for international shipments: customs settings with default values and data mapping, product HS code and country of origin fields, a customer tax ID / VAT number field on the admin customer profile, automatic customs invoice creation, and customs invoice download/print on the order details page
 

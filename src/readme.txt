@@ -94,6 +94,12 @@ Click <a href="https://support-pro.packlink.com/hc/es-es/articles/210158585" tar
 
 == Changelog ==
 
+#### 4.3.1 - August 12th, 2026
+
+**Updates**
+
+- Security update
+
 #### 4.3.0 - July 28th, 2026
 
 **Updates**
