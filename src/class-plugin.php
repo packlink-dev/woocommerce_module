@@ -18,6 +18,7 @@ use Packlink\BusinessLogic\ShippingMethod\Utility\ShipmentStatus;
 use Packlink\WooCommerce\Components\Bootstrap_Component;
 use Packlink\WooCommerce\Components\Checkout\Block_Checkout_Handler;
 use Packlink\WooCommerce\Components\Checkout\Checkout_Handler;
+use Packlink\WooCommerce\Components\Checkout\Ddp_Fee_Handler;
 use Packlink\WooCommerce\Components\Checkout\Surcharge_Handler;
 use Packlink\WooCommerce\Components\Customs\Customs_Handler;
 use Packlink\WooCommerce\Components\Order\Paid_Order_Handler;
@@ -846,6 +847,21 @@ class Plugin {
         add_action('woocommerce_checkout_create_order', array($surcharge_handle, 'add_surcharge_to_order'), 20, 1);
 
         add_action( 'woocommerce_store_api_checkout_update_order_from_request', [ $surcharge_handle, 'add_surcharge_block' ], 10, 2 );
+
+		$ddp_handler = new Ddp_Fee_Handler();
+
+		// Duties ride their own cart fee rather than a higher shipping cost, so the shopper sees a
+		// separate line. Persisted after the fee lines exist, so the recorded amount is read back from
+		// the order rather than recomputed - which is also why these are the *_update_order_meta hooks
+		// and not the create_order ones, where no fee line exists yet.
+		// A duties-paid rate vanishes as soon as the shopper edits the address into a route that quotes no
+		// duties, and WooCommerce would keep the vanished rate id selected. Priority 20 puts this after
+		// check_additional_packlink_rate(), so the fallback is chosen from the final rate set.
+		add_filter( 'woocommerce_package_rates', array( $handler, 'reset_stale_ddp_selection' ), 20 );
+
+		add_action( 'woocommerce_cart_calculate_fees', array( $ddp_handler, 'add_fee' ), 20 );
+		add_action( 'woocommerce_checkout_update_order_meta', array( $ddp_handler, 'persist_on_order' ), 30 );
+		add_action( 'woocommerce_store_api_checkout_update_order_meta', array( $ddp_handler, 'persist_on_order' ), 20 );
 
         add_action('woocommerce_blocks_checkout_enqueue_data', array ($block_handler, 'load_data'));
         add_action( 'wp_footer', array( $block_handler, 'render_drop_off_markup' ) );

@@ -793,3 +793,16 @@ msgstr "El borrador del los pedidos %s se ha creado con éxito"
 #: Components/Checkout/class-block-checkout-handler.php:59
 msgid "There are no drop-off locations available for the entered address"
 msgstr "No hay puntos de entrega disponibles para la dirección ingresada"
+
+#: Components/Checkout/class-checkout-handler.php
+#: Components/Checkout/class-block-checkout-handler.php
+msgid "- Delivery Duty Paid"
+msgstr "- Aduanas y aranceles pagados"
+
+#: Components/Checkout/class-ddp-fee-handler.php
+msgid "Delivery Duty Paid"
+msgstr "Aduanas y aranceles pagados"
+
+#: resources/views/meta-post-box.php
+msgid "DDP cost charged to customer"
+msgstr "Coste DDP cobrado al cliente"

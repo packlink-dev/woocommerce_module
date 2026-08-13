@@ -35,6 +35,17 @@ class Block_Checkout_Handler {
      */
     private $offline_payments_service;
 
+    /**
+     * Drop-off locations already fetched during this request, keyed by Packlink shipping method id.
+     *
+     * A DDP-capable method contributes two rate ids to one payload - the plain rate and its `:ddp`
+     * variant - and both resolve to the same Packlink method. Without this memo the same drop-off
+     * lookup would be sent to Packlink twice on every checkout render.
+     *
+     * @var array
+     */
+    private $drop_off_locations = array();
+
     public function __construct()
     {
         $this->offline_payments_service = ServiceRegister::getService(
@@ -42,9 +53,16 @@ class Block_Checkout_Handler {
     }
 
     /**
-	 * Returns method details for all shipping methods rendered on checkout.
+	 * Returns method details for all shipping rates rendered on checkout, keyed by rate id.
 	 *
-	 * @param array $payload - Shipping method IDs.
+	 * The key is the rate id and not the shipping-method instance id, because a DDP-capable method
+	 * renders two rows out of a single instance - `packlink_shipping_method:12` and
+	 * `packlink_shipping_method:12:ddp` - so the instance id no longer identifies a row. Every key is
+	 * therefore exactly the `value` of that row's radio input, which is what
+	 * `resources/js/packlink-block-checkout.js` selects on. `selected_shipping_method` likewise carries
+	 * the chosen rate id rather than the instance id it used to.
+	 *
+	 * @param array $payload - Shipping rate IDs rendered on checkout.
 	 *
 	 * @return array
 	 *
@@ -54,7 +72,7 @@ class Block_Checkout_Handler {
 	public function initialize( array $payload ) {
 		$response = [
 			'translations'                  => $this->get_checkout_translations(),
-			'selected_shipping_method'      => $selected_shipping_method = $this->get_selected_shipping_method(),
+			'selected_shipping_method'      => $selected_rate_id = $this->get_selected_rate_id(),
 			'selected_drop_off_id'          => $this->get_selected_drop_off_id(),
 			'method_details'                => [],
 			'no_drop_off_locations_message' => __( 'There are no drop-off locations available for the entered address', 'packlink-pro-shipping' )
@@ -97,13 +115,13 @@ class Block_Checkout_Handler {
 
 
         if ( ! count( $payload ) ) {
-			$response['method_details'][ $selected_shipping_method ] = $this->get_shipping_method_details( (int) $selected_shipping_method, $current_total );
+			$response['method_details'][ $selected_rate_id ] = $this->get_shipping_method_details( $selected_rate_id, $current_total );
 
 			return $response;
 		}
 
-		foreach ( $payload as $id ) {
-			$response['method_details'][ $id ] = $this->get_shipping_method_details( $id, $current_total );
+		foreach ( $payload as $rate_id ) {
+			$response['method_details'][ $rate_id ] = $this->get_shipping_method_details( $rate_id, $current_total );
 		}
 
 		return $response;
@@ -153,9 +171,11 @@ class Block_Checkout_Handler {
 	 * @throws RepositoryNotRegisteredException
 	 */
 	public function checkout_update_drop_off( WC_Order $order ) {
-		$selected_shipping_method = (int) $this->get_selected_shipping_method();
-		$shipping_method          = Shipping_Method_Helper::get_packlink_shipping_method(
-			IndexHelper::castFieldValue( $selected_shipping_method, gettype( $selected_shipping_method ) )
+		// The chosen value is a rate id, and a duties-paid rate id carries a third segment, so the
+		// instance id has to be parsed out of it instead of being taken for the whole value.
+		$instance_id     = Ddp_Checkout::instance_id( $this->get_selected_rate_id() );
+		$shipping_method = Shipping_Method_Helper::get_packlink_shipping_method(
+			IndexHelper::castFieldValue( $instance_id, gettype( $instance_id ) )
 		);
 		if ( ! $shipping_method ) {
 			return;
@@ -183,23 +203,36 @@ class Block_Checkout_Handler {
 	}
 
 	/**
-	 * Get details for specific shipping method.
+	 * Get details for one rendered shipping rate.
 	 *
-	 * @param $shipping_id
+	 * Takes a rate id and resolves the Packlink method behind it with `Ddp_Checkout::instance_id()`,
+	 * which reads the instance out of segment `[1]` and is therefore blind to the `:ddp` suffix - a
+	 * duties-paid rate resolves to the very same method as its plain sibling, so the carrier logo, the
+	 * drop-off picker and the cash-on-delivery message come out identical on both rows.
+	 *
+	 * `packlink_is_ddp` is false whenever no duty amount is known, even on a `:ddp` rate id, because the
+	 * cart fee falls silent in exactly the same case - a row labelled "Delivery Duty Paid" that charges
+	 * no duty would be a promise nothing keeps.
+	 *
+	 * @param string $rate_id WooCommerce shipping rate id.
+	 * @param float  $current_total Cart total the cash-on-delivery fee is calculated against.
 	 *
 	 * @return array
 	 *
 	 * @throws QueryFilterInvalidParamException
 	 * @throws RepositoryNotRegisteredException
 	 */
-	private function get_shipping_method_details( $shipping_id, $current_total ) {
+	private function get_shipping_method_details( $rate_id, $current_total ) {
+		$instance_id     = Ddp_Checkout::instance_id( $rate_id );
 		$shipping_method = Shipping_Method_Helper::get_packlink_shipping_method(
-			IndexHelper::castFieldValue( $shipping_id, gettype( $shipping_id ) )
+			IndexHelper::castFieldValue( $instance_id, gettype( $instance_id ) )
 		);
 
 		if ( null === $shipping_method ) {
 			return [];
 		}
+
+		$ddp_total = $this->get_ddp_total( $rate_id, $shipping_method );
 
 		return array(
 			'packlink_image_url'          => $shipping_method->getLogoUrl() ?:
@@ -210,6 +243,139 @@ class Block_Checkout_Handler {
 				$this->get_drop_off_locations( $shipping_method->getId() ) : [],
             'packlink_cash_on_delivery'   => $this->is_cash_on_delivery_enabled($shipping_method),
             'packlink_cash_on_delivery_fee' => $this->offline_payments_service->calculateFee($shipping_method->getId(), $current_total),
+			'packlink_is_ddp'             => null !== $ddp_total,
+			'packlink_ddp_suffix'         => __( '- Delivery Duty Paid', 'packlink-pro-shipping' ),
+			'packlink_ddp_total'          => null !== $ddp_total ? $this->format_price( $ddp_total ) : '',
+		);
+	}
+
+	/**
+	 * Combined transport-plus-duties price of a duties-paid rate, or null when the row is not a
+	 * duties-paid one or no duty amount is known for it.
+	 *
+	 * Never performs a lookup. This runs on a Store API request on which the shipping-rate path may
+	 * never have run at all, and one lookup is two Packlink requests the first of which permanently
+	 * creates a customs invoice - so a cache miss simply means the row is presented exactly as it was
+	 * before this feature existed.
+	 *
+	 * @param string         $rate_id WooCommerce shipping rate id.
+	 * @param ShippingMethod $shipping_method Packlink shipping method the rate belongs to.
+	 *
+	 * @return float|null Transport cost plus duties, or null when there is nothing to present.
+	 */
+	private function get_ddp_total( $rate_id, ShippingMethod $shipping_method ) {
+		if ( ! Ddp_Checkout::is_ddp_rate_id( $rate_id ) ) {
+			return null;
+		}
+
+		$rate = $this->cached_rate( $rate_id );
+		if ( null === $rate ) {
+			// Without the rate WooCommerce cached there is no transport price to add the duties to, and
+			// presenting duties on their own would understate what the shopper is asked to pay.
+			return null;
+		}
+
+		$amount = $this->ddp_amount( $rate, $shipping_method );
+		if ( null === $amount || $amount <= 0 ) {
+			return null;
+		}
+
+		return (float) $rate->get_cost() + $amount;
+	}
+
+	/**
+	 * Duty amount quoted for a rate: the rate's own meta first, the session-cached quote as fallback.
+	 *
+	 * Mirrors `Ddp_Fee_Handler::amount_for_rate()` deliberately, so the figure presented on the row and
+	 * the figure charged as a cart fee are read from the same place and cannot disagree. The fetching
+	 * accessor `Ddp_Checkout_Service::amount_for_method()` is never called from here.
+	 *
+	 * @param \WC_Shipping_Rate $rate Rate WooCommerce cached for this request.
+	 * @param ShippingMethod    $shipping_method Packlink shipping method the rate belongs to.
+	 *
+	 * @return float|null
+	 */
+	private function ddp_amount( $rate, ShippingMethod $shipping_method ) {
+		if ( method_exists( $rate, 'get_meta_data' ) ) {
+			$meta = $rate->get_meta_data();
+			if ( isset( $meta[ Ddp_Checkout::RATE_META_AMOUNT ] ) ) {
+				return (float) $meta[ Ddp_Checkout::RATE_META_AMOUNT ];
+			}
+		}
+
+		return $this->ddp_amount_from_cache( $shipping_method );
+	}
+
+	/**
+	 * Falls back to the quote the shipping-rate path cached for this cart.
+	 *
+	 * @param ShippingMethod $shipping_method Packlink shipping method.
+	 *
+	 * @return float|null
+	 */
+	private function ddp_amount_from_cache( ShippingMethod $shipping_method ) {
+		$packages = ( function_exists( 'WC' ) && WC()->shipping() ) ? WC()->shipping()->get_packages() : array();
+		if ( empty( $packages ) ) {
+			return null;
+		}
+
+		/** @var Ddp_Checkout_Service $service */ // phpcs:ignore
+		$service = ServiceRegister::getService( Ddp_Checkout_Service::CLASS_NAME );
+
+		return $service->cached_amount_for_method( $shipping_method, reset( $packages ) );
+	}
+
+	/**
+	 * The shipping rate WooCommerce has cached for this request under the given rate id.
+	 *
+	 * WooCommerce stores the calculated rates of every package in the session as
+	 * `shipping_for_package_<index> => array( 'package_hash' => ..., 'rates' => array( rate_id => WC_Shipping_Rate ) )`
+	 * and serves later renders straight from there without calling `calculate_shipping()` again, so this
+	 * is the only place the duty amount is reliably available at presentation time.
+	 *
+	 * @param string $rate_id WooCommerce shipping rate id.
+	 *
+	 * @return \WC_Shipping_Rate|null
+	 */
+	private function cached_rate( $rate_id ) {
+		if ( ! function_exists( 'WC' ) || ! WC()->session ) {
+			return null;
+		}
+
+		$packages = WC()->shipping() ? WC()->shipping()->get_packages() : array();
+		$count    = max( 1, count( $packages ) );
+
+		for ( $index = 0; $index < $count; $index ++ ) {
+			$stored = WC()->session->get( 'shipping_for_package_' . $index );
+			if ( ! is_array( $stored ) || ! isset( $stored['rates'] ) || ! is_array( $stored['rates'] ) ) {
+				continue;
+			}
+
+			if ( isset( $stored['rates'][ $rate_id ] ) ) {
+				return $stored['rates'][ $rate_id ];
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Formats a money amount for display.
+	 *
+	 * Server-side on purpose: the currency symbol, its position, the decimal and thousand separators and
+	 * the number of decimals all live in WooCommerce settings, and money is never formatted in
+	 * JavaScript. Tags are stripped and entities decoded because the value travels as JSON and is
+	 * written into the DOM as text, where `wc_price()`'s `&euro;` would otherwise show up verbatim.
+	 *
+	 * @param float $amount Amount to format.
+	 *
+	 * @return string
+	 */
+	private function format_price( $amount ) {
+		return html_entity_decode(
+			wp_strip_all_tags( wc_price( $amount, array( 'currency' => get_woocommerce_currency() ) ) ),
+			ENT_QUOTES,
+			'UTF-8'
 		);
 	}
 
@@ -231,11 +397,21 @@ class Block_Checkout_Handler {
 	/**
 	 * Get available locations for drop-off shipping method.
 	 *
+	 * Memoized per Packlink method for the length of the request: a DDP-capable drop-off method now
+	 * contributes two rate ids to one payload and both resolve to the same method, so without the memo
+	 * the same lookup would be sent to Packlink twice for a single checkout render.
+	 *
 	 * @param $method_id
 	 *
 	 * @return array
 	 */
 	private function get_drop_off_locations( $method_id ) {
+		$key = (string) $method_id;
+
+		if ( array_key_exists( $key, $this->drop_off_locations ) ) {
+			return $this->drop_off_locations[ $key ];
+		}
+
 		$customer = wc()->session->customer;
 
 		/**
@@ -245,26 +421,33 @@ class Block_Checkout_Handler {
 		 */
 		$location_service = ServiceRegister::getService( LocationService::CLASS_NAME );
 
-		return $location_service->getLocations(
+		$this->drop_off_locations[ $key ] = $location_service->getLocations(
 			$method_id,
 			$customer['shipping_country'],
 			$customer['shipping_postcode']
 		);
+
+		return $this->drop_off_locations[ $key ];
 	}
 
 	/**
-	 * Get selected shipping method.
+	 * The full rate id of the shipping option the customer has chosen - `packlink_shipping_method:12`,
+	 * or `packlink_shipping_method:12:ddp` for a duties-paid option.
 	 *
-	 * @return mixed|string
+	 * Returns the rate id where it used to return the instance id: `method_details` is now keyed by rate
+	 * id, and the callers that need the instance take it from `Ddp_Checkout::instance_id()`, which reads
+	 * segment `[1]` and is therefore blind to the suffix.
+	 *
+	 * @return string Rate id, or an empty string when no option is chosen.
 	 */
-	private function get_selected_shipping_method() {
+	private function get_selected_rate_id() {
 		$chosen_shipping_methods = wc()->session->get( 'chosen_shipping_methods', '' );
 
-		if ( empty( $chosen_shipping_methods ) ){
+		if ( empty( $chosen_shipping_methods ) ) {
 			return '';
 		}
 
-		return explode( ':', reset( $chosen_shipping_methods ) )[1];
+		return (string) reset( $chosen_shipping_methods );
 	}
 
 	/**

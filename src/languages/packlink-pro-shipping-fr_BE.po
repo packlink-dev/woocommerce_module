@@ -798,3 +798,16 @@ msgstr "Le brouillon de la commandes %s a été crée avec succès"
 #: Components/Checkout/class-block-checkout-handler.php:59
 msgid "There are no drop-off locations available for the entered address"
 msgstr "Aucun point de dépôt n'est disponible pour l'adresse saisie"
+
+#: Components/Checkout/class-checkout-handler.php
+#: Components/Checkout/class-block-checkout-handler.php
+msgid "- Delivery Duty Paid"
+msgstr "- Droits de douane et taxes payés"
+
+#: Components/Checkout/class-ddp-fee-handler.php
+msgid "Delivery Duty Paid"
+msgstr "Droits de douane et taxes payés"
+
+#: resources/views/meta-post-box.php
+msgid "DDP cost charged to customer"
+msgstr "Coût DDP facturé au client"

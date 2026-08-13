@@ -12,7 +12,7 @@
   ],
   "require": {
     "php": ">=7.0",
-    "packlink/integration-core": "4.3.0",
+    "packlink/integration-core": "dev-feature/cr-set-68-ddp-support",
     "ext-json": "*",
     "ext-curl": "*",
     "ext-zip": "*",

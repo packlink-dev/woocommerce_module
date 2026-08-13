@@ -56,6 +56,7 @@ use Packlink\BusinessLogic\ShippingMethod\Interfaces\ShopShippingMethodService;
 use Packlink\BusinessLogic\ShippingMethod\Models\ShippingMethod;
 use Packlink\BusinessLogic\SystemInformation\SystemInfoService;
 use Packlink\WooCommerce\Components\Order\Order_Drop_Off_Map;
+use Packlink\WooCommerce\Components\Checkout\Ddp_Checkout_Service;
 use Packlink\WooCommerce\Components\Order\Shop_Order_Service;
 use Packlink\WooCommerce\Components\Repositories\Base_Repository;
 use Packlink\WooCommerce\Components\Services\Config_Service;
@@ -177,6 +178,15 @@ class Bootstrap_Component extends BootstrapComponent {
 			ShopOrderService::CLASS_NAME,
 			static function () {
 				return Shop_Order_Service::getInstance();
+			}
+		);
+
+		// Shared instance on purpose: the checkout duty lookup memoizes its result for the request, and
+		// getService() invokes this delegate on every call.
+		ServiceRegister::registerService(
+			Ddp_Checkout_Service::CLASS_NAME,
+			static function () {
+				return Ddp_Checkout_Service::getInstance();
 			}
 		);
 

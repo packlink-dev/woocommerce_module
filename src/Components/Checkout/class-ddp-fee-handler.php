@@ -1,0 +1,321 @@
+<?php
+/**
+ * Packlink PRO Shipping WooCommerce Integration.
+ *
+ * @package Packlink
+ */
+
+namespace Packlink\WooCommerce\Components\Checkout;
+
+use Logeecom\Infrastructure\Logger\Logger;
+use Logeecom\Infrastructure\ServiceRegister;
+use Packlink\WooCommerce\Components\ShippingMethod\Packlink_Shipping_Method;
+use Packlink\WooCommerce\Components\ShippingMethod\Shipping_Method_Helper;
+use WC_Cart;
+use WC_Order;
+
+/**
+ * Class Ddp_Fee_Handler
+ *
+ * Charges the duties of a duties-paid shipping option as its own cart fee, and records on the order
+ * what was charged.
+ *
+ * A fee rather than a higher shipping cost, deliberately: it gives the shopper a separate
+ * "Delivery Duty Paid" line instead of an unexplained increase, it can carry its own tax treatment,
+ * and WooCommerce turns it into an order fee item on checkout - so it reaches the confirmation page,
+ * the emails, the invoice and the refund flow without a line of code per surface.
+ *
+ * @package Packlink\WooCommerce\Components\Checkout
+ */
+class Ddp_Fee_Handler {
+
+	/**
+	 * Adds the duties fee when the customer has chosen a duties-paid shipping option.
+	 *
+	 * Runs on `woocommerce_cart_calculate_fees`, which WooCommerce fires after it has totalled
+	 * shipping (WC_Cart_Totals::calculate() runs shipping before fees), so the chosen rate and the
+	 * amount quoted for it are always available here - including on a render served from the cached
+	 * rates, where `calculate_shipping()` never ran.
+	 *
+	 * @param WC_Cart $cart WooCommerce cart.
+	 *
+	 * @return void
+	 */
+	public function add_fee( $cart ) {
+		try {
+			if ( ! $cart instanceof WC_Cart ) {
+				return;
+			}
+
+			$rate_id = $this->chosen_rate_id();
+			if ( '' === $rate_id || ! Ddp_Checkout::is_ddp_rate_id( $rate_id ) ) {
+				return;
+			}
+
+			$name = $this->fee_name();
+			if ( $this->has_fee( $cart, $name ) ) {
+				// Totals can be recalculated more than once in a request; the fee must not stack.
+				return;
+			}
+
+			$amount = $this->amount_for_rate( $rate_id );
+			if ( null === $amount || $amount <= 0 ) {
+				return;
+			}
+
+			// A free-shipping coupon or threshold zeroes the shipping line and never touches a cart
+			// fee, so duties keep being charged on a free-shipping order without any code here. That is
+			// deliberate: duty is a government charge the merchant has to pay either way.
+			$cart->add_fee( $name, $amount, $this->is_taxable( $rate_id ), '' );
+		} catch ( \Exception $e ) {
+			Logger::logWarning( 'Could not add the duties fee: ' . $e->getMessage(), 'Integration' );
+		}
+	}
+
+	/**
+	 * Records the duty selection and the amount charged on the WooCommerce order.
+	 *
+	 * Runs after the fee lines exist, so the amount is read back from the order's own fee item: what is
+	 * persisted is then exactly what the customer paid, not a re-derived figure.
+	 *
+	 * `Shop_Order_Service` reads this meta to flag the shipment draft. Skipping it would let a
+	 * mandatory-DDP order reach Packlink without the flag, which is refused at purchase with
+	 * `400 mandatory_ddp_not_selected`, so this is correctness rather than bookkeeping.
+	 *
+	 * @param WC_Order|int $order Order or order id, depending on the hook.
+	 *
+	 * @return void
+	 */
+	public function persist_on_order( $order ) {
+		try {
+			$wc_order = $order instanceof WC_Order ? $order : \WC_Order_Factory::get_order( $order );
+			if ( ! $wc_order instanceof WC_Order ) {
+				return;
+			}
+
+			$rate_id = $this->order_rate_id( $wc_order );
+			if ( '' === $rate_id || ! Ddp_Checkout::is_ddp_rate_id( $rate_id ) ) {
+				return;
+			}
+
+			$amount = $this->fee_total( $wc_order );
+			if ( null === $amount ) {
+				// No fee line means nothing was charged, so there is nothing to record - and recording a
+				// selection without an amount would tell the draft to buy duties nobody paid for.
+				return;
+			}
+
+			$wc_order->update_meta_data( Ddp_Checkout::META_SELECTED, 'yes' );
+			$wc_order->update_meta_data( Ddp_Checkout::META_COST, $amount );
+			$wc_order->update_meta_data( Ddp_Checkout::META_CURRENCY, $wc_order->get_currency() );
+			$wc_order->save();
+		} catch ( \Exception $e ) {
+			Logger::logWarning( 'Could not record the duties charged on the order: ' . $e->getMessage(), 'Integration' );
+		}
+	}
+
+	/**
+	 * Translated fee name, used both to add the fee and to find it again on the order.
+	 *
+	 * @return string
+	 */
+	private function fee_name() {
+		return __( 'Delivery Duty Paid', 'packlink-pro-shipping' );
+	}
+
+	/**
+	 * The shipping rate the customer has chosen.
+	 *
+	 * @return string Rate id, or an empty string when none is chosen.
+	 */
+	private function chosen_rate_id() {
+		if ( ! function_exists( 'WC' ) || ! WC()->session ) {
+			return '';
+		}
+
+		$chosen = WC()->session->get( 'chosen_shipping_methods' );
+
+		return is_array( $chosen ) && ! empty( $chosen ) ? (string) reset( $chosen ) : '';
+	}
+
+	/**
+	 * The shipping rate recorded on an order.
+	 *
+	 * @param WC_Order $wc_order WooCommerce order.
+	 *
+	 * @return string Rate id, or an empty string when the order has no Packlink shipping line.
+	 */
+	private function order_rate_id( WC_Order $wc_order ) {
+		foreach ( $wc_order->get_shipping_methods() as $item ) {
+			$data        = $item->get_data();
+			$method_id   = isset( $data['method_id'] ) ? $data['method_id'] : '';
+			$instance_id = isset( $data['instance_id'] ) ? $data['instance_id'] : '';
+
+			if ( Packlink_Shipping_Method::PACKLINK_SHIPPING_METHOD !== $method_id ) {
+				continue;
+			}
+
+			// WooCommerce splits the rate id into method and instance on the order line and drops the
+			// suffix, so the chosen variant is recovered from the session instead.
+			$chosen = $this->chosen_rate_id();
+			if ( '' !== $chosen && (int) $instance_id === Ddp_Checkout::instance_id( $chosen ) ) {
+				return $chosen;
+			}
+		}
+
+		return '';
+	}
+
+	/**
+	 * Whether the cart already carries the duties fee.
+	 *
+	 * @param WC_Cart $cart WooCommerce cart.
+	 * @param string  $name Fee name.
+	 *
+	 * @return bool
+	 */
+	private function has_fee( WC_Cart $cart, $name ) {
+		foreach ( $cart->get_fees() as $fee ) {
+			if ( isset( $fee->name ) && $fee->name === $name ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Total of the duties fee line on an order.
+	 *
+	 * @param WC_Order $wc_order WooCommerce order.
+	 *
+	 * @return float|null Fee total, or null when the order carries no duties fee.
+	 */
+	private function fee_total( WC_Order $wc_order ) {
+		$name = $this->fee_name();
+
+		foreach ( $wc_order->get_items( 'fee' ) as $item ) {
+			if ( $item->get_name() === $name ) {
+				return (float) $item->get_total();
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Duty amount quoted for a rate.
+	 *
+	 * Read from the rate's own meta first, because that is the one place the amount survives
+	 * WooCommerce serving a render from its cached rates. The session-cached quote is the fallback, and
+	 * the fetching accessor is deliberately never used: a fee callback must not spend two Packlink
+	 * requests and permanently create a customs invoice.
+	 *
+	 * @param string $rate_id Chosen rate id.
+	 *
+	 * @return float|null Charged duty amount, or null when none is known.
+	 */
+	private function amount_for_rate( $rate_id ) {
+		$amount = $this->amount_from_rate_meta( $rate_id );
+		if ( null !== $amount ) {
+			return $amount;
+		}
+
+		return $this->amount_from_cache( $rate_id );
+	}
+
+	/**
+	 * Reads the quoted amount off the cached shipping rate.
+	 *
+	 * @param string $rate_id Chosen rate id.
+	 *
+	 * @return float|null
+	 */
+	private function amount_from_rate_meta( $rate_id ) {
+		foreach ( $this->cached_rates() as $rates ) {
+			if ( ! isset( $rates[ $rate_id ] ) ) {
+				continue;
+			}
+
+			$rate = $rates[ $rate_id ];
+			if ( ! method_exists( $rate, 'get_meta_data' ) ) {
+				continue;
+			}
+
+			$meta = $rate->get_meta_data();
+			if ( isset( $meta[ Ddp_Checkout::RATE_META_AMOUNT ] ) ) {
+				return (float) $meta[ Ddp_Checkout::RATE_META_AMOUNT ];
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Rate sets WooCommerce has stored for this request's packages.
+	 *
+	 * @return array[] Arrays of WC_Shipping_Rate keyed by rate id.
+	 */
+	private function cached_rates() {
+		$sets = array();
+
+		if ( ! function_exists( 'WC' ) || ! WC()->session ) {
+			return $sets;
+		}
+
+		$packages = WC()->shipping() ? WC()->shipping()->get_packages() : array();
+		$count    = max( 1, count( $packages ) );
+
+		for ( $index = 0; $index < $count; $index++ ) {
+			$stored = WC()->session->get( 'shipping_for_package_' . $index );
+			if ( is_array( $stored ) && isset( $stored['rates'] ) && is_array( $stored['rates'] ) ) {
+				$sets[] = $stored['rates'];
+			}
+		}
+
+		return $sets;
+	}
+
+	/**
+	 * Falls back to the quote cached by the rate path for this cart.
+	 *
+	 * @param string $rate_id Chosen rate id.
+	 *
+	 * @return float|null
+	 */
+	private function amount_from_cache( $rate_id ) {
+		$method = Shipping_Method_Helper::get_packlink_shipping_method( Ddp_Checkout::instance_id( $rate_id ) );
+		if ( null === $method ) {
+			return null;
+		}
+
+		$packages = ( function_exists( 'WC' ) && WC()->shipping() ) ? WC()->shipping()->get_packages() : array();
+		if ( empty( $packages ) ) {
+			return null;
+		}
+
+		/** @var Ddp_Checkout_Service $service */ // phpcs:ignore
+		$service = ServiceRegister::getService( Ddp_Checkout_Service::CLASS_NAME );
+
+		return $service->cached_amount_for_method( $method, reset( $packages ) );
+	}
+
+	/**
+	 * Whether the duties fee is taxed, following the Tax status of the shipping method instance that
+	 * carries it - so the duties line behaves like the transport line it accompanies.
+	 *
+	 * @param string $rate_id Chosen rate id.
+	 *
+	 * @return bool
+	 */
+	private function is_taxable( $rate_id ) {
+		$instance_id = Ddp_Checkout::instance_id( $rate_id );
+		if ( 0 === $instance_id ) {
+			return false;
+		}
+
+		$method = new Packlink_Shipping_Method( $instance_id );
+
+		return 'taxable' === $method->tax_status;
+	}
+}

@@ -66,6 +66,16 @@ var Packlink = window.Packlink || {};
 					}
 				}
 
+				let isDdp = parent.querySelector('input[name="packlink_is_ddp"]');
+
+				if (isDdp && isDdp.value === 'yes') {
+					let ddpSuffix = parent.querySelector('input[name="packlink_ddp_suffix"]');
+					let ddpTotal  = parent.querySelector('input[name="packlink_ddp_total"]');
+
+					appendDdpSuffix( parent, ddpSuffix ? ddpSuffix.value : '' );
+					replaceDdpPrice( parent, ddpTotal ? ddpTotal.value : '' );
+				}
+
 				if (showImage === 'yes' && imageInput && parent.querySelector('.pl-checkout-carrier-image') === null) {
 					injectImage( imageInput );
 				}
@@ -235,6 +245,99 @@ var Packlink = window.Packlink || {};
 		dropOffExtras.forEach( function (input) {
 			input.value = JSON.stringify( location );
 		});
+	}
+
+	/**
+	 * Marks a shipping row as decorated with the duties-paid suffix.
+	 */
+	const DDP_SUFFIX_MARKER = 'data-pl-ddp-suffix';
+
+	/**
+	 * Marks a shipping row whose price has been replaced with the duties-paid total.
+	 */
+	const DDP_PRICE_MARKER = 'data-pl-ddp-price';
+
+	/**
+	 * Appends the duties-paid suffix to a shipping option's label, right after the service title and
+	 * before the price WooCommerce renders there.
+	 *
+	 * Only option rows are decorated: the suffix is not part of the rate label, so the order-summary
+	 * shipping row keeps the clean title while duties appear there as their own fee line.
+	 *
+	 * Idempotent by marker attribute, because initialize() runs again after every checkout fragment
+	 * refresh and would otherwise append the suffix once per refresh to a row that survived it.
+	 *
+	 * @param {HTMLElement} row
+	 * @param {string} suffix
+	 */
+	function appendDdpSuffix(row, suffix) {
+		if ( ! suffix) {
+			return;
+		}
+
+		let label = row.querySelector( 'label' );
+
+		if ( ! label || label.getAttribute( DDP_SUFFIX_MARKER ) === 'yes') {
+			return;
+		}
+
+		let title = null;
+		for (let i = 0; i < label.childNodes.length; i++) {
+			let node = label.childNodes[i];
+			if (node.nodeType === Node.TEXT_NODE && node.nodeValue.trim() !== '') {
+				title = node;
+				break;
+			}
+		}
+
+		if (title) {
+			// WooCommerce renders the row as "<title>: <price>", with the separator sitting at the end of
+			// the same text node as the title - so the suffix goes in front of it, never after the price.
+			let separator = title.nodeValue.match( /:\s*$/ );
+
+			title.nodeValue = separator
+				? title.nodeValue.replace( /:\s*$/, '' ) + ' ' + suffix + separator[0]
+				: title.nodeValue.replace( /\s+$/, '' ) + ' ' + suffix + ' ';
+		} else {
+			label.appendChild( document.createTextNode( ' ' + suffix ) );
+		}
+
+		label.setAttribute( DDP_SUFFIX_MARKER, 'yes' );
+	}
+
+	/**
+	 * Replaces the price rendered on a shipping option row with the transport-plus-duties total, so the
+	 * shopper compares two rows by one figure each instead of adding them up.
+	 *
+	 * The figure is formatted server-side in the shop's own currency format and arrives ready to print.
+	 * Idempotent by marker attribute, for the same reason as the suffix.
+	 *
+	 * @param {HTMLElement} row
+	 * @param {string} total
+	 */
+	function replaceDdpPrice(row, total) {
+		if ( ! total) {
+			return;
+		}
+
+		let label = row.querySelector( 'label' );
+
+		if ( ! label || label.getAttribute( DDP_PRICE_MARKER ) === 'yes') {
+			return;
+		}
+
+		let price = label.querySelector( '.woocommerce-Price-amount' );
+
+		if (price) {
+			price.textContent = total;
+		} else {
+			// Nothing was priced on the row (a zero-cost transport), so the duties total is what there is
+			// to show. The suffix already leaves a trailing space behind it when it ran first.
+			let separator = /\s$/.test( label.textContent ) ? '' : ' ';
+			label.appendChild( document.createTextNode( separator + total ) );
+		}
+
+		label.setAttribute( DDP_PRICE_MARKER, 'yes' );
 	}
 
 	function addCODMessage(dataDiv, codName, codFee) {

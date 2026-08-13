@@ -96,6 +96,24 @@ $draft_in_progress_statuses = array(
 					); ?>
 				</div>
 			<?php endif; ?>
+
+			<?php
+			/*
+			 * The label says "charged to customer" on purpose: this line sits directly beneath
+			 * "Packlink shipping price", which is what Packlink bills the merchant, so the two
+			 * amounts must not be confusable. The > 0 guard keeps the line absent entirely for
+			 * non-DDP shipments instead of rendering a 0,00 amount.
+			 */
+			?>
+			<?php if ( $order_details->getDdpCost() > 0 ) : ?>
+				<div class="pl-order-detail-section">
+					<h4><?php echo esc_html__( 'DDP cost charged to customer', 'packlink-pro-shipping' ); ?></h4>
+					<?php echo wc_price(
+							$order_details->getDdpCost(),
+							array('currency' => $order_details->getCurrency())
+					); ?>
+				</div>
+			<?php endif; ?>
 		</li>
 
 		<?php if ( ! $shipment_deleted ) : ?>
