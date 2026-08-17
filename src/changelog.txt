@@ -1,5 +1,12 @@
 *** Packlink PRO Changelog ***
 
+2026-08-17 - version 4.4.0
+- Add Delivery Duty Paid (DDP) support at checkout: duties-paid shipping option with the duty amount shown as a separate line, per-service duties behaviour and cost adjustment, and a "Customs and duties paid" badge on the shipping services page
+- Fix customs settings accepting an incomplete configuration, which left DDP silently unavailable at checkout: required fields are now validated and the shipping service page warns while customs is not ready
+- Fix customs invoices being rejected by Packlink for orders whose products have no weight; the default parcel weight is used instead
+- Fix duties not being offered for products without their own HS code when a default HS code is configured
+(upgrades the packlink/integration-core shared library with DDP support and customs validation)
+
 2026-08-12 - version 4.3.1
 - Security update
 
