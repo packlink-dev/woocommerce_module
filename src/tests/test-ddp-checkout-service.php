@@ -259,12 +259,76 @@ class DdpCheckoutServiceTest extends WP_UnitTestCase {
 	}
 
 	/**
+	 * A product without its own HS code is covered by the default tariff number on the customs
+	 * settings page - the core applies it when it builds the invoice, so the checkout gate must
+	 * judge the cart the same way instead of refusing it.
+	 */
+	public function test_the_default_tariff_number_covers_a_product_without_one() {
+		$this->seed_method( DdpBehavior::OPTIONAL, DdpBehavior::LEVEL_SUPPORTED );
+		$this->seed_customs_mapping( '851713' );
+
+		$amount = $this->service()->amount_for_method( $this->method(), $this->package( 'CH', 1, '8001', '123456789', '' ) );
+
+		$this->assertSame( 24.51, $amount );
+		$this->assertSame( 1, $this->spy->calls, 'A cart covered by the default tariff number must be quoted.' );
+	}
+
+	/**
+	 * With no HS code on the product and no default configured, nothing can describe the goods.
+	 */
+	public function test_no_lookup_without_any_tariff_number() {
+		$this->seed_method( DdpBehavior::OPTIONAL, DdpBehavior::LEVEL_SUPPORTED );
+		$this->seed_customs_mapping( '' );
+
+		$amount = $this->service()->amount_for_method( $this->method(), $this->package( 'CH', 1, '8001', '123456789', '' ) );
+
+		$this->assertNull( $amount );
+		$this->assertSame( 0, $this->spy->calls, 'A cart with no tariff number anywhere must not be quoted.' );
+	}
+
+	/**
+	 * The customs page is optional; a shop that never opened it has no mapping at all, and the
+	 * default lookup must not fatal on that.
+	 */
+	public function test_no_lookup_without_a_customs_mapping() {
+		$this->seed_method( DdpBehavior::OPTIONAL, DdpBehavior::LEVEL_SUPPORTED );
+
+		$amount = $this->service()->amount_for_method( $this->method(), $this->package( 'CH', 1, '8001', '123456789', '' ) );
+
+		$this->assertNull( $amount );
+		$this->assertSame( 0, $this->spy->calls, 'A cart with no mapping and no product HS code must not be quoted.' );
+	}
+
+	/**
 	 * Service under test.
 	 *
 	 * @return Ddp_Checkout_Service
 	 */
 	private function service() {
 		return Ddp_Checkout_Service::getInstance();
+	}
+
+	/**
+	 * Stores a customs mapping carrying the given default tariff number.
+	 *
+	 * @param string $default_tariff_number Default HS code, or empty for none.
+	 */
+	private function seed_customs_mapping( $default_tariff_number ) {
+		$mapping = new \Packlink\BusinessLogic\Customs\Models\CustomsMapping();
+
+		$mapping->defaultReason           = 'purchase_or_sale';
+		$mapping->defaultSenderTaxId      = 'DE123456789';
+		$mapping->defaultReceiverUserType = 'private_person';
+		$mapping->defaultReceiverTaxId    = '';
+		$mapping->defaultTariffNumber     = $default_tariff_number;
+		$mapping->defaultCountry          = 'DE';
+		$mapping->mappingReceiverTaxId    = '';
+		$mapping->mappingTariffNumber     = '';
+		$mapping->mappingCountryOfOrigin  = '';
+
+		ServiceRegister::getService(
+			\Packlink\WooCommerce\Components\Services\Config_Service::CLASS_NAME
+		)->setCustomsMappings( $mapping );
 	}
 
 	/**
@@ -361,10 +425,11 @@ class DdpCheckoutServiceTest extends WP_UnitTestCase {
 	 * @param int    $lines Number of distinct cart lines.
 	 * @param string $postcode Destination postcode.
 	 * @param string $phone Contact phone number; empty to model the phone-less case.
+	 * @param string $hs_code HS code set on every product; empty to model a product without one.
 	 *
 	 * @return array
 	 */
-	private function package( $country = 'CH', $lines = 1, $postcode = '8001', $phone = '123456789' ) {
+	private function package( $country = 'CH', $lines = 1, $postcode = '8001', $phone = '123456789', $hs_code = '85171300' ) {
 		WC()->customer->set_shipping_country( $country );
 		WC()->customer->set_shipping_postcode( $postcode );
 		WC()->customer->set_shipping_city( 'Zurich' );
@@ -384,7 +449,9 @@ class DdpCheckoutServiceTest extends WP_UnitTestCase {
 			$product->set_name( 'Item ' . $i );
 			$product->set_regular_price( '25' );
 			$product->set_weight( '1' );
-			$product->update_meta_data( '_packlink_hs_code', '85171300' );
+			if ( '' !== $hs_code ) {
+				$product->update_meta_data( '_packlink_hs_code', $hs_code );
+			}
 			$product->save();
 
 			$contents[] = array(

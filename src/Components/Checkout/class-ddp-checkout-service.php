@@ -294,9 +294,16 @@ class Ddp_Checkout_Service extends Singleton {
 			return 'the delivery address has no phone number, which a customs invoice requires';
 		}
 
+		// The cart carries only what the products themselves resolved; the core fills the gaps from
+		// the customs settings when it builds the invoice. Judging the raw item value would refuse
+		// carts the invoice can in fact describe - a shop that sets one default HS code instead of
+		// tagging every product would never be offered duties.
+		$default_tariff_number = $this->default_tariff_number();
+
 		foreach ( $items as $item ) {
-			if ( '' === (string) $item->getTariffNumber() ) {
-				return 'no customs tariff number (HS code) is set for "' . $item->getTitle() . '"';
+			if ( '' === (string) ( $item->getTariffNumber() ?: $default_tariff_number ) ) {
+				return 'no customs tariff number (HS code) is set for "' . $item->getTitle()
+					. '" and no default tariff number is configured';
 			}
 		}
 
@@ -306,6 +313,18 @@ class Ddp_Checkout_Service extends Singleton {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Default HS code from the customs settings, applied to every item the products left blank.
+	 * A shop that never opened the customs page has no mapping at all.
+	 *
+	 * @return string Configured default tariff number, or an empty string when there is none.
+	 */
+	private function default_tariff_number() {
+		$mapping = $this->config()->getCustomsMappings();
+
+		return null !== $mapping ? (string) $mapping->defaultTariffNumber : '';
 	}
 
 	/**
