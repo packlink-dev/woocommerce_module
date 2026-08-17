@@ -4,7 +4,7 @@ Tags: shipping, delivery, carrier, order, package
 Requires at least: 4.7
 Requires PHP: 7.0
 Tested up to: 6.9
-Stable tag: 4.3.1
+Stable tag: 4.4.0
 License: LICENSE-2.0
 License URI: http://www.apache.org/licenses/LICENSE-2.0
 
@@ -93,6 +93,15 @@ Click <a href="https://support-pro.packlink.com/hc/es-es/articles/210158585" tar
 
 
 == Changelog ==
+
+#### 4.4.0 - August 17th, 2026
+
+**Updates**
+
+- Add Delivery Duty Paid (DDP) support at checkout: a duties-paid variant of each DDP-capable shipping option, the duty amount presented as its own "Delivery Duty Paid" line, per-service duties behaviour and cost adjustment settings, and a "Customs and duties paid" badge on the shipping services page
+- Fix customs settings accepting an incomplete configuration, which left duties silently unavailable at checkout: required fields (reason for export, sender tax ID, receiver user type, HS code and country of origin) are now validated on save, and a DDP-capable service warns while customs is not ready
+- Fix customs invoices being rejected by Packlink for orders whose products carry no weight; the configured default parcel weight is now used for those products
+- Fix duties not being offered for products without their own HS code when a default HS code is configured (upgrades the packlink/integration-core shared library with DDP support and customs validation)
 
 #### 4.3.1 - August 12th, 2026
 
