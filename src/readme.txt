@@ -4,7 +4,7 @@ Tags: shipping, delivery, carrier, order, package
 Requires at least: 4.7
 Requires PHP: 7.0
 Tested up to: 6.9
-Stable tag: 4.3.1
+Stable tag: 4.3.2
 License: LICENSE-2.0
 License URI: http://www.apache.org/licenses/LICENSE-2.0
 
@@ -93,6 +93,14 @@ Click <a href="https://support-pro.packlink.com/hc/es-es/articles/210158585" tar
 
 
 == Changelog ==
+
+#### 4.3.2 - August 27th, 2026
+
+**Updates**
+
+- Fix shipment incident notifications being rejected, which left the order in its previous status (upgrades the packlink/integration-core shared library)
+- Fix the order status not updating for shipment incidents on installations created before the incident status mapping existed
+- Add logging of rejected and unsynchronised shipment notifications, to make missing status updates diagnosable without enabling debug logging
 
 #### 4.3.1 - August 12th, 2026
 

@@ -1,5 +1,10 @@
 *** Packlink PRO Changelog ***
 
+2026-08-27 - version 4.3.2
+- Fix shipment incident notifications being rejected, which left the order in its previous status (upgrades the packlink/integration-core shared library)
+- Fix the order status not updating for shipment incidents on installations created before the incident status mapping existed
+- Add logging of rejected and unsynchronised shipment notifications
+
 2026-08-12 - version 4.3.1
 - Security update
 

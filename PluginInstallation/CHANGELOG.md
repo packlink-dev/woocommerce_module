@@ -3,6 +3,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [v4.3.2](https://github.com/packlink-dev/woocommerce_module/compare/v4.3.1...v4.3.2) - 2026-08-27
+### Fixed
+- Shipment incident notifications were rejected and the order status was never updated (upgrades the packlink/integration-core shared library)
+- The order status did not update for shipment incidents on installations created before the incident status mapping existed
+### Added
+- Logging of rejected and unsynchronised shipment notifications, so missing status updates are diagnosable without enabling debug logging
+
 ## [v4.3.1](https://github.com/packlink-dev/woocommerce_module/compare/v4.3.0...v4.3.1) - 2026-08-12
 ### Changed
 - Security update 

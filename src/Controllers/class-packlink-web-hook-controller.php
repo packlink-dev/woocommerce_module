@@ -13,7 +13,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 namespace Packlink\WooCommerce\Controllers;
 
-use Packlink\WooCommerce\Components\Services\WebHook_Event_Handler;
+use Logeecom\Infrastructure\Logger\Logger;
+use Packlink\BusinessLogic\WebHook\WebHookEventHandler;
 use Packlink\WooCommerce\Components\Utility\Shop_Helper;
 
 /**
@@ -41,7 +42,27 @@ class Packlink_Web_Hook_Controller extends Packlink_Base_Controller {
 			$this->redirect404();
 		}
 
-		$result = WebHook_Event_Handler::getInstance()->handle( $this->get_raw_input() );
+		$input  = $this->get_raw_input();
+		$result = WebHookEventHandler::getInstance()->handle( $input );
+
+		if ( ! $result ) {
+			// A rejected payload is discarded before anything above debug level is written, so a
+			// production install with debug mode off keeps no record of what was refused. Log the
+			// event name and reference so recurring rejections are diagnosable without having to
+			// run full debug logging in production.
+			$payload = json_decode( $input, false );
+
+			Logger::logWarning(
+				'Webhook from Packlink was rejected.',
+				'Core',
+				array(
+					'event'     => isset( $payload->event ) ? $payload->event : '(missing)',
+					'reference' => isset( $payload->data->shipment_reference )
+						? $payload->data->shipment_reference
+						: '(missing)',
+				)
+			);
+		}
 
 		$this->return_json( array( 'success' => $result ), $result ? 200 : 400 );
 	}
