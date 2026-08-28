@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [v4.3.2](https://github.com/packlink-dev/woocommerce_module/compare/v4.3.1...v4.3.2) - 2026-08-28
+### Changed
+- Declare compatibility with WordPress 7.0.3 and WooCommerce 11.0.1
+
 ## [v4.3.1](https://github.com/packlink-dev/woocommerce_module/compare/v4.3.0...v4.3.1) - 2026-08-12
 ### Changed
 - Security update 
