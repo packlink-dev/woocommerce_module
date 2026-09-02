@@ -234,6 +234,37 @@ class ShopOrderServiceCustomsTest extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Packlink matches a draft by the order number it arrives with, per account, so two shops sharing an
+	 * account both reaching order 254 would resolve the second draft to the first shop's shipment. The
+	 * reference therefore carries a per-order digest, the way PrestaShop sends its own order reference.
+	 */
+	public function test_order_reference_is_unique_per_order_and_stable() {
+		$product = $this->create_product( '12345678', 'DE' );
+		$first   = $this->create_order( $product );
+		$second  = $this->create_order( $product );
+
+		$one = $this->sync_order( $first );
+		$two = $this->sync_order( $second );
+
+		$this->assertRegExp(
+			'/^' . preg_quote( (string) $first->get_order_number(), '/' ) . '-[0-9a-f]{6}$/',
+			$one->getOrderNumber(),
+			'The shop order number stays readable, with a digest appended.'
+		);
+		$this->assertSame( $one->getOrderNumber(), $one->getId(), 'Both identifiers carry the reference.' );
+		$this->assertNotSame(
+			$one->getOrderNumber(),
+			$two->getOrderNumber(),
+			'Two orders must never present the same reference to Packlink.'
+		);
+		$this->assertSame(
+			$one->getOrderNumber(),
+			$this->sync_order( $first )->getOrderNumber(),
+			'The reference must not change between sends, or a re-send would orphan the first draft.'
+		);
+	}
+
+	/**
 	 * The customs invoice declares a per-unit value next to the quantity, so a multi-unit line has to
 	 * report the unit price. Sending the line subtotal makes Packlink apply the quantity twice and
 	 * refuse the shipment: the declared goods then exceed the package value.

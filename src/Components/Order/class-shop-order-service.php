@@ -76,16 +76,32 @@ class Shop_Order_Service extends Singleton implements BaseShopOrderService {
 	public function getOrderAndShippingData( $order_id ) {
 		$wc_order = $this->get_order_by_id( $order_id );
 
+		/**
+		 * Reference this order is known by on the Packlink side: the draft's shipment reference and the
+		 * customs invoice number both come from it.
+		 *
+		 * Packlink matches a draft against the order number it arrives with, per account - so a bare
+		 * sequential number collides the moment one account serves more than one shop. Two shops both
+		 * reach order 254 and the second draft resolves to the first shop's shipment, inheriting its
+		 * carrier, its status and its customs invoice while no draft of its own is ever created.
+		 *
+		 * PrestaShop avoids this by sending its own random per-order reference rather than the id.
+		 * WooCommerce has no equivalent field, so the order number carries a short digest of the order
+		 * key, which is random per order - the digest and not the key itself, because the key authorises
+		 * access to the order-received page while this value is shown in the Packlink panel and printed
+		 * on the customs invoice.
+		 */
+		$reference = $this->get_order_reference( $wc_order );
+
 		$order = new Order();
-		$order->setId( $order_id );
-		$order->setOrderNumber( $wc_order->get_order_number() );
+		$order->setId( $reference );
+		$order->setOrderNumber( $reference );
 		$order->setStatus( $wc_order->get_status() );
 		$order->setBasePrice( $wc_order->get_subtotal() );
 		$order->setCartPrice( $wc_order->get_total() - $wc_order->get_shipping_total() );
 		$order->setCurrency( $wc_order->get_currency() );
 		$order->setCustomerId( $wc_order->get_customer_id() );
 		$order->setNetCartPrice( $order->getCartPrice() - $wc_order->get_cart_tax() );
-		$order->setOrderNumber( $wc_order->get_order_number() );
 		$order->setTotalPrice( $wc_order->get_total() );
 		$order->setShippingPrice( $wc_order->get_shipping_total() );
 
@@ -176,6 +192,28 @@ class Shop_Order_Service extends Singleton implements BaseShopOrderService {
 		}
 
 		return $wc_order;
+	}
+
+	/**
+	 * Returns the reference Packlink knows this order by: the shop's order number with a short digest
+	 * of the order key appended, so it cannot collide with the same number in another shop sharing the
+	 * account. Stable for the life of the order, so re-sending resolves to the same shipment instead of
+	 * creating an orphan draft.
+	 *
+	 * @param WC_Order $wc_order WooCommerce order.
+	 *
+	 * @return string
+	 */
+	private function get_order_reference( WC_Order $wc_order ) {
+		$seed = (string) $wc_order->get_order_key();
+
+		if ( '' === $seed ) {
+			// Orders created programmatically can carry no key. The shop's own address then keeps the
+			// reference distinct between shops, which is what the collision is about.
+			$seed = get_site_url() . '|' . $wc_order->get_id();
+		}
+
+		return $wc_order->get_order_number() . '-' . substr( md5( $seed ), 0, 6 );
 	}
 
 	/**
