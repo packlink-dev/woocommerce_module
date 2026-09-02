@@ -198,8 +198,10 @@ class Shop_Order_Service extends Singleton implements BaseShopOrderService {
 				continue;
 			}
 
+			$quantity = (int) $wc_item->get_quantity();
+
 			$item = new Item();
-			$item->setQuantity( $wc_item->get_quantity() );
+			$item->setQuantity( $quantity );
 			$item->setId( $wc_item->get_product_id() );
 			$item->setTotalPrice( (float) $wc_item->get_total() );
 			$item->setSku( $product->get_sku() );
@@ -209,7 +211,11 @@ class Shop_Order_Service extends Singleton implements BaseShopOrderService {
 			$item->setWeight( (float) $product->get_weight() );
 			$item->setTitle( $product->get_title() );
 			$item->setCategoryName( Customs_Data_Resolver::product_category_name( $product ) );
-			$item->setPrice( $wc_item->get_subtotal() );
+			// The customs invoice declares a per-unit value next to the quantity, so a line subtotal
+			// here is multiplied by the quantity a second time: a 9 x 44.99 line goes out as 404.91 per
+			// unit, and Packlink refuses the shipment because the declared goods exceed the package
+			// value. Tax-excluded, like the value the invoice asks for.
+			$item->setPrice( $quantity > 0 ? (float) $wc_item->get_subtotal() / $quantity : (float) $wc_item->get_subtotal() );
 			$item->setConcept( $product->get_description() );
 
 			$tariff_number = $this->customs_resolver->resolve_item_tariff_number( $product );

@@ -253,8 +253,10 @@ class Cart_Order_Factory {
 			return null;
 		}
 
+		$quantity = isset( $line['quantity'] ) ? (int) $line['quantity'] : 1;
+
 		$item = new Item();
-		$item->setQuantity( isset( $line['quantity'] ) ? (int) $line['quantity'] : 1 );
+		$item->setQuantity( $quantity );
 		$item->setId( isset( $line['product_id'] ) ? $line['product_id'] : $product->get_id() );
 		$item->setTotalPrice( isset( $line['line_total'] ) ? (float) $line['line_total'] : 0.0 );
 		$item->setSku( $product->get_sku() );
@@ -264,7 +266,10 @@ class Cart_Order_Factory {
 		$item->setWeight( (float) $product->get_weight() );
 		$item->setTitle( $product->get_title() );
 		$item->setCategoryName( Customs_Data_Resolver::product_category_name( $product ) );
-		$item->setPrice( isset( $line['line_subtotal'] ) ? (float) $line['line_subtotal'] : 0.0 );
+		// Per-unit value: the customs invoice this order builds declares it next to the quantity, so a
+		// line subtotal would be counted once per unit and inflate the declared goods by the quantity.
+		$line_subtotal = isset( $line['line_subtotal'] ) ? (float) $line['line_subtotal'] : 0.0;
+		$item->setPrice( $quantity > 0 ? $line_subtotal / $quantity : $line_subtotal );
 		$item->setConcept( $product->get_description() );
 
 		$tariff_number = $resolver->resolve_item_tariff_number( $product );

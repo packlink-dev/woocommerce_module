@@ -234,6 +234,31 @@ class ShopOrderServiceCustomsTest extends WP_UnitTestCase {
 	}
 
 	/**
+	 * The customs invoice declares a per-unit value next to the quantity, so a multi-unit line has to
+	 * report the unit price. Sending the line subtotal makes Packlink apply the quantity twice and
+	 * refuse the shipment: the declared goods then exceed the package value.
+	 */
+	public function test_item_price_is_the_unit_value_not_the_line_subtotal() {
+		$product = $this->create_product( '12345678', 'DE' );
+		$order   = wc_create_order();
+		$order->add_product( $product, 3 );
+		$order->set_shipping_country( 'CH' );
+		$order->calculate_totals();
+		$order->save();
+
+		$items = $this->sync_order( $order )->getItems();
+
+		$this->assertNotEmpty( $items, 'Expected the order to contain an item.' );
+		$this->assertEquals( 3, $items[0]->getQuantity() );
+		$this->assertEquals(
+			20.0,
+			$items[0]->getPrice(),
+			'The unit price belongs here, not the 60.00 line subtotal.',
+			0.0001
+		);
+	}
+
+	/**
 	 * The customs invoice declares the freight, so the order must carry the shipping total as its
 	 * shipping cost. Left unset, the core falls back to the order total - which double-counts the goods
 	 * already itemised on the invoice and inflates every duty computed from it (C8).
