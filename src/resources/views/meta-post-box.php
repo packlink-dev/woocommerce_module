@@ -101,11 +101,13 @@ $draft_in_progress_statuses = array(
 			/*
 			 * The label says "charged to customer" on purpose: this line sits directly beneath
 			 * "Packlink shipping price", which is what Packlink bills the merchant, so the two
-			 * amounts must not be confusable. The > 0 guard keeps the line absent entirely for
-			 * non-DDP shipments instead of rendering a 0,00 amount.
+			 * amounts must not be confusable. The cost is null unless the shipment was sold
+			 * duties-paid, so the line is absent for ordinary shipments; a duty the merchant absorbed
+			 * shows as 0,00, which is the answer to "what did the customer pay for duties", not a
+			 * missing value.
 			 */
 			?>
-			<?php if ( $order_details->getDdpCost() > 0 ) : ?>
+			<?php if ( null !== $order_details->getDdpCost() ) : ?>
 				<div class="pl-order-detail-section">
 					<h4><?php echo esc_html__( 'DDP cost charged to customer', 'packlink-pro-shipping' ); ?></h4>
 					<?php echo wc_price(

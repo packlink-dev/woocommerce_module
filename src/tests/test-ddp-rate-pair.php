@@ -107,13 +107,48 @@ class DdpRatePairTest extends WP_UnitTestCase {
 	}
 
 	/**
-	 * A zero amount is not a free duty option: it means nothing was quoted.
+	 * A quoted 0.00 is a duty the merchant absorbed with a cost adjustment, so it is offered like any
+	 * other amount - the duties-paid row simply costs the same as the plain one. Only null means nothing
+	 * was quoted.
 	 */
-	public function test_a_zero_amount_is_not_offered() {
+	public function test_a_zero_amount_is_offered() {
 		$rates = $this->compose( DdpBehavior::OPTIONAL, 0.0 );
 
-		$this->assertCount( 1, $rates );
+		$this->assertCount( 2, $rates );
 		$this->assertSame( self::BASE_ID, $rates[0]['id'] );
+		$this->assertSame( self::DDP_ID, $rates[1]['id'] );
+		$this->assertSame(
+			0.0,
+			$rates[1]['meta_data'][ Ddp_Checkout::RATE_META_AMOUNT ],
+			'An absorbed duty still travels on the rate, so the fee and the row agree it is zero.'
+		);
+	}
+
+	/**
+	 * A merchant who absorbs the whole duty must not lose the service. Withholding the row would take a
+	 * mandatory-DDP service off checkout altogether, and an enforced one back to duty-free shipping.
+	 *
+	 * @dataProvider ddp_only_behaviours
+	 *
+	 * @param string $behavior Effective behaviour that offers only the duties-paid rate.
+	 */
+	public function test_a_zero_amount_still_offers_the_ddp_only_rate( $behavior ) {
+		$rates = $this->compose( $behavior, 0.0 );
+
+		$this->assertCount( 1, $rates );
+		$this->assertSame( self::DDP_ID, $rates[0]['id'] );
+	}
+
+	/**
+	 * Behaviours whose duties-paid row replaces the plain one.
+	 *
+	 * @return array
+	 */
+	public function ddp_only_behaviours() {
+		return array(
+			array( DdpBehavior::ENFORCED ),
+			array( DdpBehavior::MANDATORY ),
+		);
 	}
 
 	/**

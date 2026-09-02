@@ -160,6 +160,19 @@ class BlockCheckoutDdpTest extends WP_UnitTestCase {
 	}
 
 	/**
+	 * A duty absorbed down to zero is a quoted duty, so the row keeps its label and shows the transport
+	 * price - the same figure the classic checkout row shows for the same rate.
+	 */
+	public function test_an_absorbed_duty_keeps_the_row_labelled_at_the_transport_price() {
+		$this->seed_rates( 0.0 );
+
+		$entry = $this->details( array( self::DDP_ID ) )[ self::DDP_ID ];
+
+		$this->assertTrue( $entry['packlink_is_ddp'] );
+		$this->assertSame( $this->formatted( self::COST ), $entry['packlink_ddp_total'] );
+	}
+
+	/**
 	 * Both rows of one instance resolve to the same Packlink method, so the carrier logo, the drop-off
 	 * flag and locations, and the cash-on-delivery message and fee come out identical on both. This is
 	 * the regression guard for the three features that share this payload with DDP.

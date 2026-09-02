@@ -234,6 +234,37 @@ class ShopOrderServiceCustomsTest extends WP_UnitTestCase {
 	}
 
 	/**
+	 * The customs invoice declares the freight, so the order must carry the shipping total as its
+	 * shipping cost. Left unset, the core falls back to the order total - which double-counts the goods
+	 * already itemised on the invoice and inflates every duty computed from it (C8).
+	 */
+	public function test_the_order_carries_the_freight_as_its_shipping_cost() {
+		$product = $this->create_product( '12345678', 'DE' );
+		$order   = $this->create_order( $product );
+
+		$shipping = new \WC_Order_Item_Shipping();
+		$shipping->set_method_title( 'UPS - 3 DAYS delivery' );
+		$shipping->set_total( 7.90 );
+		$order->add_item( $shipping );
+		$order->calculate_totals();
+		$order->save();
+
+		$core_order = $this->sync_order( $order );
+
+		$this->assertEquals(
+			7.90,
+			$core_order->getShippingCost(),
+			'The freight, not the order value, is what the customs invoice declares.',
+			0.0001
+		);
+		$this->assertNotEquals(
+			(float) $core_order->getTotalPrice(),
+			(float) $core_order->getShippingCost(),
+			'A shipping cost equal to the order total is the C8 double-count the fallback causes.'
+		);
+	}
+
+	/**
 	 * A product without customs meta leaves the item tariff/country empty (core applies defaults later).
 	 */
 	public function test_unmapped_product_leaves_item_customs_empty() {

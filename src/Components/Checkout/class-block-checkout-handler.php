@@ -210,9 +210,10 @@ class Block_Checkout_Handler {
 	 * duties-paid rate resolves to the very same method as its plain sibling, so the carrier logo, the
 	 * drop-off picker and the cash-on-delivery message come out identical on both rows.
 	 *
-	 * `packlink_is_ddp` is false whenever no duty amount is known, even on a `:ddp` rate id, because the
-	 * cart fee falls silent in exactly the same case - a row labelled "Delivery Duty Paid" that charges
-	 * no duty would be a promise nothing keeps.
+	 * `packlink_is_ddp` is false whenever no duty amount is known, even on a `:ddp` rate id, because a row
+	 * labelled "Delivery Duty Paid" against an unknown duty would be a promise nothing keeps. A quoted
+	 * 0.00 is known, not unknown: the merchant absorbed the duty, so the row is labelled and totals the
+	 * transport price.
 	 *
 	 * @param string $rate_id WooCommerce shipping rate id.
 	 * @param float  $current_total Cart total the cash-on-delivery fee is calculated against.
@@ -276,10 +277,12 @@ class Block_Checkout_Handler {
 		}
 
 		$amount = $this->ddp_amount( $rate, $shipping_method );
-		if ( null === $amount || $amount <= 0 ) {
+		if ( null === $amount ) {
 			return null;
 		}
 
+		// A duty absorbed down to zero by a cost adjustment still ships duties-paid, so the row keeps its
+		// label and simply totals the transport price - the same figure the classic checkout row shows.
 		return (float) $rate->get_cost() + $amount;
 	}
 

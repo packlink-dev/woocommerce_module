@@ -202,6 +202,11 @@ class Packlink_Shipping_Method extends \WC_Shipping_Method {
 	 *   mandatory, duty quoted                 -> the DDP rate only
 	 *   mandatory, no duty                      -> nothing; the service cannot be offered at all
 	 *
+	 * A quoted 0.00 is a duty the merchant absorbed with a cost adjustment, so it counts as quoted: the
+	 * duties-paid rate is offered at the transport price. Withholding it would take a mandatory-DDP
+	 * service off checkout for no reason other than the merchant charging nothing for the duty. Only a
+	 * null amount - no duty on this route, or a lookup that produced nothing - is "no duty".
+	 *
 	 * @param array      $base_rate Transport-only rate as WooCommerce would receive it.
 	 * @param string     $ddp_rate_id Rate id of the duties-paid variant.
 	 * @param string     $behavior Effective DDP behaviour of the method.
@@ -218,7 +223,7 @@ class Packlink_Shipping_Method extends \WC_Shipping_Method {
 		}
 
 		$rates          = array();
-		$duty_available = null !== $ddp_amount && $ddp_amount > 0;
+		$duty_available = null !== $ddp_amount;
 
 		if ( ! static::hides_plain_rate( $behavior, $duty_available ) ) {
 			$rates[] = $base_rate;

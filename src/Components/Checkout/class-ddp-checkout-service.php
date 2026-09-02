@@ -27,8 +27,10 @@ use Throwable;
  * shipping method instance, and not once per render.
  *
  * Duty is a function of the goods and the route, not of the carrier service, so one call answers for
- * every DDP-capable method of a cart. The per-method adjustment is applied on top of that one answer,
- * which is why the cached value is a map of method id to charged amount rather than a single figure.
+ * every DDP-capable method of a cart. What is cached is therefore the raw duty base plus the ids of the
+ * methods it applies to - never a charged amount. Each method's own merchant adjustment is applied on
+ * read, so an adjustment the merchant edits mid-session takes effect on the next render instead of when
+ * the quote expires, and the cache key does not have to fingerprint every method's configuration.
  *
  * Two accessors, deliberately. WooCommerce caches per-package shipping rates in the session, so
  * `calculate_shipping()` does not run on every checkout render - meaning the cart-fee and
@@ -83,18 +85,18 @@ class Ddp_Checkout_Service extends Singleton {
 	const SESSION_KEY = '_packlink_ddp_quote';
 
 	/**
-	 * Request-scoped memo: signature of the cart the amounts were quoted for.
+	 * Request-scoped memo: signature of the cart the quote was made for.
 	 *
 	 * @var string|null
 	 */
 	private $memo_signature;
 
 	/**
-	 * Request-scoped memo: charged amounts keyed by shipping method id, or null when unavailable.
+	 * Request-scoped memo: the resolved quote, or null when DDP is unavailable for this cart.
 	 *
 	 * @var array|null
 	 */
-	private $memo_amounts;
+	private $memo_quote;
 
 	/**
 	 * Configuration service.
@@ -117,9 +119,7 @@ class Ddp_Checkout_Service extends Singleton {
 	 * @return float|null Charged duty amount, or null when DDP is not available.
 	 */
 	public function amount_for_method( ShippingMethod $method, array $package, $transport_cost = null ) {
-		$amounts = $this->amounts( $package, $transport_cost, true );
-
-		return $this->pick( $amounts, $method );
+		return $this->pick( $this->quote( $package, $transport_cost, true ), $method );
 	}
 
 	/**
@@ -137,27 +137,27 @@ class Ddp_Checkout_Service extends Singleton {
 	 * @return float|null Charged duty amount, or null when nothing is cached for this cart.
 	 */
 	public function cached_amount_for_method( ShippingMethod $method, array $package ) {
-		$amounts = $this->amounts( $package, null, false );
-
-		return $this->pick( $amounts, $method );
+		return $this->pick( $this->quote( $package, null, false ), $method );
 	}
 
 	/**
-	 * Reads the amount of one method out of a quote map.
+	 * Prices one method off a quote by applying that method's own merchant adjustment to the raw base.
 	 *
-	 * @param array|null     $amounts Charged amounts keyed by method id, or null.
-	 * @param ShippingMethod $method Shipping method.
+	 * The quote carries the ids of the methods the base was obtained for. A method outside that set is
+	 * not simply unadjusted, it is ineligible: `eligible_methods()` only admits methods whose service on
+	 * this route supports duties, and duty must not be offered on a service Packlink cannot ship it with.
 	 *
-	 * @return float|null
+	 * @param array|null     $quote Resolved quote, or null when DDP is unavailable.
+	 * @param ShippingMethod $method Shipping method the amount is wanted for.
+	 *
+	 * @return float|null Charged duty amount, or null when this method has none.
 	 */
-	private function pick( $amounts, ShippingMethod $method ) {
-		if ( ! is_array( $amounts ) ) {
+	private function pick( $quote, ShippingMethod $method ) {
+		if ( ! is_array( $quote ) || ! in_array( (string) $method->getId(), $quote['methods'], true ) ) {
 			return null;
 		}
 
-		$id = (string) $method->getId();
-
-		return isset( $amounts[ $id ] ) ? (float) $amounts[ $id ] : null;
+		return Ddp_Cost_Calculator::charged_amount( $quote['base'], $method );
 	}
 
 	/**
@@ -168,13 +168,14 @@ class Ddp_Checkout_Service extends Singleton {
 	 * @param float|null $transport_cost Transport price, for the customs invoice.
 	 * @param bool       $may_fetch Whether a live lookup is permitted.
 	 *
-	 * @return array|null Charged amounts keyed by method id, or null when DDP is unavailable.
+	 * @return array|null Quote as `array( 'base' => float, 'methods' => string[] )`, or null when DDP is
+	 *                    unavailable for this cart.
 	 */
-	private function amounts( array $package, $transport_cost, $may_fetch ) {
+	private function quote( array $package, $transport_cost, $may_fetch ) {
 		$signature = $this->signature( $package );
 
 		if ( $this->memo_signature === $signature ) {
-			return $this->memo_amounts;
+			return $this->memo_quote;
 		}
 
 		$cached = $this->read_cache( $signature );
@@ -192,13 +193,14 @@ class Ddp_Checkout_Service extends Singleton {
 	}
 
 	/**
-	 * Performs the lookup and composes one charged amount per eligible method.
+	 * Performs the lookup and composes the raw duty base the cart's eligible methods are priced from.
 	 *
 	 * @param array      $package WooCommerce shipping package.
 	 * @param float|null $transport_cost Transport price, for the customs invoice.
 	 * @param string     $signature Cart signature the result is cached under.
 	 *
-	 * @return array|null Charged amounts keyed by method id, or null when DDP is unavailable.
+	 * @return array|null Quote as `array( 'base' => float, 'methods' => string[] )`, or null when DDP is
+	 *                    unavailable.
 	 */
 	private function fetch( array $package, $transport_cost, $signature ) {
 		try {
@@ -234,42 +236,34 @@ class Ddp_Checkout_Service extends Singleton {
 				return $this->fail( $signature, 'Packlink returned no duty cost' );
 			}
 
-			$amounts = $this->compose( $response, $eligible );
-			if ( empty( $amounts ) ) {
-				return $this->fail( $signature, 'no duty amount could be composed for any service' );
+			$foreign = Ddp_Cost_Calculator::foreign_currency( $response, $this->shop_currency() );
+			if ( null !== $foreign ) {
+				return $this->fail(
+					$signature,
+					'Packlink quoted the duty in ' . $foreign . ' but the cart charges in '
+					. $this->shop_currency() . ', and the amount cannot be converted here'
+				);
 			}
 
-			$this->write_cache( $signature, $amounts, self::OK_TTL );
+			$base = Ddp_Cost_Calculator::composed_base( $response );
+			if ( null === $base ) {
+				// Every component came back disabled: the route carries no duty for this service. Not a
+				// failure of the lookup, but worth remembering so the two requests are not spent again.
+				return $this->fail( $signature, 'Packlink reported no applicable duty for this route' );
+			}
 
-			return $amounts;
+			$quote = array(
+				'base'    => $base,
+				'methods' => array_map( 'strval', array_keys( $eligible ) ),
+			);
+
+			$this->write_cache( $signature, $quote, self::OK_TTL );
+
+			return $quote;
 		} catch ( Throwable $e ) {
 			// A duty estimate is optional; a shipping-rate calculation is not. Nothing may escape.
 			return $this->fail( $signature, 'the lookup failed: ' . $e->getMessage() );
 		}
-	}
-
-	/**
-	 * Applies each method's own adjustment to the shared duty response.
-	 *
-	 * The response's adjustment fields describe only the queried service, so they are deliberately not
-	 * reused: every method's amount comes from its own configuration.
-	 *
-	 * @param DdpCostResponse  $response Duty cost response.
-	 * @param ShippingMethod[] $eligible Eligible methods keyed by method id.
-	 *
-	 * @return array Charged amounts keyed by method id.
-	 */
-	private function compose( DdpCostResponse $response, array $eligible ) {
-		$amounts = array();
-
-		foreach ( $eligible as $id => $method ) {
-			$amount = Ddp_Cost_Calculator::charged_amount( $response, $method );
-			if ( null !== $amount && $amount > 0 ) {
-				$amounts[ (string) $id ] = $amount;
-			}
-		}
-
-		return $amounts;
 	}
 
 	/**
@@ -468,6 +462,15 @@ class Ddp_Checkout_Service extends Singleton {
 	}
 
 	/**
+	 * Currency the cart charges in, which both the quote's validity and its cache key depend on.
+	 *
+	 * @return string ISO code, or an empty string outside a WooCommerce request.
+	 */
+	private function shop_currency() {
+		return function_exists( 'get_woocommerce_currency' ) ? (string) get_woocommerce_currency() : '';
+	}
+
+	/**
 	 * Fingerprint of everything the duty amount depends on: destination, declared value and contents.
 	 *
 	 * Mirrors the normalisation the shipping-cost memo already uses, so the two invalidate together.
@@ -481,7 +484,7 @@ class Ddp_Checkout_Service extends Singleton {
 			isset( $package['destination']['country'] ) ? $package['destination']['country'] : '',
 			isset( $package['destination']['postcode'] ) ? $package['destination']['postcode'] : '',
 			isset( $package['cart_subtotal'] ) ? (float) $package['cart_subtotal'] : 0.0,
-			function_exists( 'get_woocommerce_currency' ) ? get_woocommerce_currency() : '',
+			$this->shop_currency(),
 		);
 
 		$contents = isset( $package['contents'] ) ? $package['contents'] : array();
@@ -502,7 +505,7 @@ class Ddp_Checkout_Service extends Singleton {
 	 *
 	 * @param string $signature Cart signature.
 	 *
-	 * @return array|null|false Amounts, null for a cached failure, or false when nothing is cached.
+	 * @return array|null|false Quote, null for a cached failure, or false when nothing usable is cached.
 	 */
 	private function read_cache( $signature ) {
 		$session = $this->session();
@@ -519,19 +522,29 @@ class Ddp_Checkout_Service extends Singleton {
 			return false;
 		}
 
-		return isset( $entry['amounts'] ) && is_array( $entry['amounts'] ) ? $entry['amounts'] : null;
+		if ( ! isset( $entry['quote'] ) ) {
+			return null;
+		}
+
+		// A session can outlive a plugin update, so an entry written in another shape is a miss rather
+		// than a quote to trust: reading a stale shape would price the cart off a figure of unknown
+		// meaning.
+		$quote = $entry['quote'];
+
+		return ( is_array( $quote ) && isset( $quote['base'] ) && isset( $quote['methods'] )
+			&& is_array( $quote['methods'] ) ) ? $quote : false;
 	}
 
 	/**
 	 * Stores the quote for this signature.
 	 *
 	 * @param string     $signature Cart signature.
-	 * @param array|null $amounts Charged amounts keyed by method id, or null for a failure.
+	 * @param array|null $quote Quote to store, or null for a failure.
 	 * @param int        $ttl Seconds the entry stays valid.
 	 *
 	 * @return void
 	 */
-	private function write_cache( $signature, $amounts, $ttl ) {
+	private function write_cache( $signature, $quote, $ttl ) {
 		$session = $this->session();
 		if ( null === $session ) {
 			return;
@@ -541,7 +554,7 @@ class Ddp_Checkout_Service extends Singleton {
 			self::SESSION_KEY,
 			array(
 				'signature' => $signature,
-				'amounts'   => $amounts,
+				'quote'     => $quote,
 				'expires'   => time() + (int) $ttl,
 			)
 		);
@@ -551,15 +564,15 @@ class Ddp_Checkout_Service extends Singleton {
 	 * Records the resolved quote for the rest of this request.
 	 *
 	 * @param string     $signature Cart signature.
-	 * @param array|null $amounts Charged amounts keyed by method id, or null.
+	 * @param array|null $quote Resolved quote, or null.
 	 *
-	 * @return array|null The amounts, unchanged.
+	 * @return array|null The quote, unchanged.
 	 */
-	private function memoize( $signature, $amounts ) {
+	private function memoize( $signature, $quote ) {
 		$this->memo_signature = $signature;
-		$this->memo_amounts   = $amounts;
+		$this->memo_quote     = $quote;
 
-		return $amounts;
+		return $quote;
 	}
 
 	/**

@@ -177,6 +177,54 @@ class DdpFeeHandlerTest extends WP_UnitTestCase {
 	}
 
 	/**
+	 * A duty the merchant absorbed is recorded as the selection it is, at zero cost.
+	 */
+	public function test_an_absorbed_duty_records_the_selection_at_zero() {
+		$this->choose( self::DDP_ID, 0.0 );
+
+		$order = $this->order_with_shipping_and_fee( 0.0 );
+		$this->handler()->persist_on_order( $order );
+
+		$saved = \WC_Order_Factory::get_order( $order->get_id() );
+		$this->assertSame( 'yes', $saved->get_meta( Ddp_Checkout::META_SELECTED ) );
+		$this->assertEquals( 0.0, $saved->get_meta( Ddp_Checkout::META_COST ) );
+		$this->assertSame( $saved->get_currency(), $saved->get_meta( Ddp_Checkout::META_CURRENCY ) );
+	}
+
+	/**
+	 * A duties-paid order whose fee line never made it still records the selection. Without the flag a
+	 * mandatory-DDP draft is refused at purchase with `400 mandatory_ddp_not_selected`, and the shopper
+	 * did choose the duties-paid option - a missing line means nothing was charged, not nothing chosen.
+	 */
+	public function test_a_ddp_order_without_a_fee_line_still_records_the_selection() {
+		$this->choose( self::DDP_ID, 24.51 );
+
+		$order = $this->order_with_shipping_and_fee( null );
+		$this->handler()->persist_on_order( $order );
+
+		$saved = \WC_Order_Factory::get_order( $order->get_id() );
+		$this->assertSame( 'yes', $saved->get_meta( Ddp_Checkout::META_SELECTED ) );
+		$this->assertEquals( 0.0, $saved->get_meta( Ddp_Checkout::META_COST ) );
+	}
+
+	/**
+	 * A duty absorbed down to zero still gets its own line, at 0.00: the shopper chose a duties-paid
+	 * option, so the totals have to say the duties were covered rather than stay silent about them.
+	 */
+	public function test_an_absorbed_duty_is_charged_as_a_zero_fee_line() {
+		$this->choose( self::DDP_ID, 0.0 );
+
+		$this->handler()->add_fee( WC()->cart );
+
+		$fees = WC()->cart->get_fees();
+		$this->assertCount( 1, $fees );
+
+		$fee = reset( $fees );
+		$this->assertSame( 'Delivery Duty Paid', $fee->name );
+		$this->assertEquals( 0.0, $fee->amount );
+	}
+
+	/**
 	 * A non-DDP order records nothing, so its draft never claims duties were paid.
 	 */
 	public function test_a_plain_order_records_nothing() {

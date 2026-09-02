@@ -59,7 +59,9 @@ class CustomsMigrationTest extends WP_UnitTestCase {
 
 		$mapping = $this->config()->getCustomsMappings();
 		$this->assertInstanceOf( CustomsMapping::class, $mapping );
-		$this->assertSame( 'purchase_or_sale', $mapping->defaultReason );
+		// The core normalises the customs enums to the upper-case tokens Packlink's schema defines, so
+		// that is the spelling a stored mapping comes back with.
+		$this->assertSame( 'PURCHASE_OR_SALE', $mapping->defaultReason );
 		$this->assertSame( '', $mapping->defaultTariffNumber, 'Default tariff number must be seeded empty; the core skips invoices with a warning when nothing resolves.' );
 		$this->assertSame( '', $mapping->defaultCountry );
 		$this->assertSame(
@@ -82,9 +84,11 @@ class CustomsMigrationTest extends WP_UnitTestCase {
 	 */
 	public function test_does_not_overwrite_existing_mapping() {
 		$existing                          = new CustomsMapping();
-		$existing->defaultReason           = 'gift';
+		// A reason other than the seeded default, so the assertion below can only pass if the merchant's
+		// own value survived. It has to be one of Packlink's tokens: the core rejects anything else.
+		$existing->defaultReason           = 'SAMPLE';
 		$existing->defaultSenderTaxId      = '';
-		$existing->defaultReceiverUserType = 'private_person';
+		$existing->defaultReceiverUserType = CustomsMapping::USER_TYPE_PRIVATE_PERSON;
 		$existing->defaultReceiverTaxId    = '';
 		$existing->defaultTariffNumber     = '99999999';
 		$existing->defaultCountry          = 'DE';
@@ -99,7 +103,7 @@ class CustomsMigrationTest extends WP_UnitTestCase {
 		$this->assertInstanceOf( CustomsMapping::class, $mapping );
 		$this->assertSame( '99999999', $mapping->defaultTariffNumber, 'Seed must not overwrite an existing mapping.' );
 		$this->assertSame( 'DE', $mapping->defaultCountry );
-		$this->assertSame( 'gift', $mapping->defaultReason );
+		$this->assertSame( 'SAMPLE', $mapping->defaultReason );
 	}
 
 	/**

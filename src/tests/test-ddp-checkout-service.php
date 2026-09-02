@@ -244,6 +244,106 @@ class DdpCheckoutServiceTest extends WP_UnitTestCase {
 	}
 
 	/**
+	 * A duty quoted in a currency the cart does not charge in is refused outright: the core hands the
+	 * amount over unconverted, so adding it to the total would charge the shopper wrong money. The
+	 * refusal is cached like any other failure, so a misconfigured account is not re-quoted per render.
+	 */
+	public function test_a_quote_in_another_currency_yields_no_amount() {
+		$this->seed_method( DdpBehavior::OPTIONAL, DdpBehavior::LEVEL_SUPPORTED );
+		$foreign             = 'EUR' === get_woocommerce_currency() ? 'USD' : 'EUR';
+		$this->spy->response = $this->response( true, $foreign );
+		$package             = $this->package();
+
+		$this->assertNull( $this->service()->amount_for_method( $this->method(), $package ) );
+		$this->assertSame( 1, $this->spy->calls );
+
+		$this->assertNull( $this->service()->amount_for_method( $this->method(), $package ) );
+		$this->assertSame( 1, $this->spy->calls, 'A refused currency must be cached, not re-quoted.' );
+	}
+
+	/**
+	 * A quote priced in the shop's own currency passes the check that refuses a foreign one.
+	 */
+	public function test_a_quote_in_the_shop_currency_is_charged() {
+		$this->seed_method( DdpBehavior::OPTIONAL, DdpBehavior::LEVEL_SUPPORTED );
+		$this->spy->response = $this->response( true, get_woocommerce_currency() );
+
+		$this->assertEquals(
+			24.51,
+			$this->service()->amount_for_method( $this->method(), $this->package() ),
+			'',
+			0.0001
+		);
+	}
+
+	/**
+	 * The cache holds the raw duty base, never a charged amount, so an adjustment the merchant edits
+	 * mid-session takes effect on the very next read - and repricing costs no second lookup, which is
+	 * the whole reason the adjustment is not baked into the cached figure.
+	 */
+	public function test_an_edited_adjustment_reprices_the_cached_quote() {
+		$this->seed_method( DdpBehavior::OPTIONAL, DdpBehavior::LEVEL_SUPPORTED );
+		$package = $this->package();
+
+		$this->assertEquals(
+			24.51,
+			$this->service()->amount_for_method( $this->method(), $package ),
+			'',
+			0.0001
+		);
+		$this->assertSame( 1, $this->spy->calls );
+
+		$method = $this->method();
+		$method->setDdpAdjustmentType( DdpBehavior::ADJUSTMENT_FIXED );
+		$method->setDdpAdjustmentAmount( 5.00 );
+		RepositoryRegistry::getRepository( ShippingMethod::CLASS_NAME )->update( $method );
+
+		$this->assertEquals(
+			29.51,
+			$this->service()->amount_for_method( $this->method(), $package ),
+			'An edited adjustment must reprice the quote already cached for this cart.',
+			0.0001
+		);
+		$this->assertSame( 1, $this->spy->calls, 'Repricing must not spend another lookup.' );
+	}
+
+	/**
+	 * A method that is not one of the quote's own eligible methods gets no amount. Duty must not be
+	 * offered on a service whose route Packlink cannot ship duties-paid, even though the cart has a base.
+	 */
+	public function test_a_method_outside_the_quote_gets_no_amount() {
+		$this->seed_method( DdpBehavior::OPTIONAL, DdpBehavior::LEVEL_SUPPORTED );
+		$package = $this->package();
+
+		$this->assertNotNull( $this->service()->amount_for_method( $this->method(), $package ) );
+
+		$foreign = new ShippingMethod();
+		$foreign->setId( 999999 );
+		$foreign->setDdpBehavior( DdpBehavior::OPTIONAL );
+
+		$this->assertNull( $this->service()->amount_for_method( $foreign, $package ) );
+	}
+
+	/**
+	 * A merchant who absorbs the duty with a -100% adjustment still gets a quote: the base is kept and
+	 * priced to 0.00, because refusing it would take the duties-paid option - and a mandatory service
+	 * with it - off checkout.
+	 */
+	public function test_an_absorbed_duty_is_quoted_as_zero() {
+		$this->seed_method( DdpBehavior::OPTIONAL, DdpBehavior::LEVEL_SUPPORTED );
+
+		$method = $this->method();
+		$method->setDdpAdjustmentType( DdpBehavior::ADJUSTMENT_PERCENTAGE );
+		$method->setDdpAdjustmentAmount( -100.0 );
+		RepositoryRegistry::getRepository( ShippingMethod::CLASS_NAME )->update( $method );
+
+		$amount = $this->service()->amount_for_method( $this->method(), $this->package() );
+
+		$this->assertNotNull( $amount, 'An absorbed duty is a quoted duty, not a missing one.' );
+		$this->assertEquals( 0.0, $amount, '', 0.0001 );
+	}
+
+	/**
 	 * A method carries one service per destination and only some routes support duties. Shipping to a
 	 * route whose service has no DDP must not be quoted, even though the method as a whole reports
 	 * support because another destination has it.
@@ -334,15 +434,18 @@ class DdpCheckoutServiceTest extends WP_UnitTestCase {
 	/**
 	 * Duty response with both components enabled by default (5.76 + 18.75 = 24.51).
 	 *
-	 * @param bool $enabled Whether the components are enabled.
+	 * @param bool   $enabled Whether the components are enabled.
+	 * @param string $currency Currency the components are priced in; empty to omit the field.
 	 *
 	 * @return DdpCostResponse
 	 */
-	private function response( $enabled = true ) {
+	private function response( $enabled = true, $currency = '' ) {
 		$fee                = new DdpProductCost();
+		$fee->currency      = $currency;
 		$fee->totalPrice    = 5.76;
 		$fee->isEnabled     = $enabled;
 		$duties             = new DdpProductCost();
+		$duties->currency   = $currency;
 		$duties->totalPrice = 18.75;
 		$duties->isEnabled  = $enabled;
 

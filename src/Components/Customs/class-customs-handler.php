@@ -143,7 +143,9 @@ class Customs_Handler {
 
 		$mapping = new CustomsMapping();
 
-		$mapping->defaultReason           = 'purchase_or_sale';
+		// Packlink spells the customs enums upper-case and the core normalises whatever it is given to
+		// that spelling, so seed the token the API actually uses rather than relying on the conversion.
+		$mapping->defaultReason           = 'PURCHASE_OR_SALE';
 		$mapping->defaultSenderTaxId      = '';
 		$mapping->defaultReceiverUserType = CustomsService::PRIVATE_PERSON;
 		$mapping->defaultReceiverTaxId    = '';

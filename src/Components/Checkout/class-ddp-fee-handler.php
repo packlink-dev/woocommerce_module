@@ -58,8 +58,11 @@ class Ddp_Fee_Handler {
 				return;
 			}
 
+			// A duty absorbed down to zero by a cost adjustment still gets its line, at 0.00: the shopper
+			// chose a duties-paid option and the totals have to say the duties were covered rather than
+			// leave them unmentioned. Only an unknown amount adds nothing.
 			$amount = $this->amount_for_rate( $rate_id );
-			if ( null === $amount || $amount <= 0 ) {
+			if ( null === $amount ) {
 				return;
 			}
 
@@ -100,9 +103,11 @@ class Ddp_Fee_Handler {
 
 			$amount = $this->fee_total( $wc_order );
 			if ( null === $amount ) {
-				// No fee line means nothing was charged, so there is nothing to record - and recording a
-				// selection without an amount would tell the draft to buy duties nobody paid for.
-				return;
+				// The chosen rate is the duties-paid variant, so duties were selected; a missing fee line
+				// only means they cost nothing, because the merchant absorbed them with a cost adjustment.
+				// The flag still has to be recorded: without it a mandatory-DDP draft is refused at
+				// purchase with 400 mandatory_ddp_not_selected.
+				$amount = 0.0;
 			}
 
 			$wc_order->update_meta_data( Ddp_Checkout::META_SELECTED, 'yes' );

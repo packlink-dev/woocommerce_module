@@ -126,6 +126,17 @@ class DdpOptionRowTest extends WP_UnitTestCase {
 	}
 
 	/**
+	 * A duty absorbed down to zero is an amount, not a missing one: the row is labelled duties-paid and
+	 * shows the transport price. The block checkout decides this the same way.
+	 */
+	public function test_a_ddp_rate_with_an_absorbed_duty_is_decorated() {
+		$markup = $this->render( self::DDP_ID, 0.0 );
+
+		$this->assertSame( 'yes', $this->hidden_value( $markup, 'packlink_is_ddp' ) );
+		$this->assertSame( $this->formatted( self::COST ), $this->price_shown( $markup ) );
+	}
+
+	/**
 	 * The decoration rides alongside the carrier logo and drop-off inputs, not instead of them.
 	 */
 	public function test_the_existing_row_inputs_are_still_emitted() {
