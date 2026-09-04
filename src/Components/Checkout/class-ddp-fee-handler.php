@@ -13,6 +13,7 @@ use Packlink\WooCommerce\Components\ShippingMethod\Packlink_Shipping_Method;
 use Packlink\WooCommerce\Components\ShippingMethod\Shipping_Method_Helper;
 use WC_Cart;
 use WC_Order;
+use WC_Tax;
 
 /**
  * Class Ddp_Fee_Handler
@@ -69,7 +70,7 @@ class Ddp_Fee_Handler {
 			// A free-shipping coupon or threshold zeroes the shipping line and never touches a cart
 			// fee, so duties keep being charged on a free-shipping order without any code here. That is
 			// deliberate: duty is a government charge the merchant has to pay either way.
-			$cart->add_fee( $name, $amount, $this->is_taxable( $rate_id ), '' );
+			$cart->add_fee( $name, $amount, $this->is_taxable( $rate_id ), $this->shipping_tax_class() );
 		} catch ( \Exception $e ) {
 			Logger::logWarning( 'Could not add the duties fee: ' . $e->getMessage(), 'Integration' );
 		}
@@ -113,6 +114,14 @@ class Ddp_Fee_Handler {
 			$wc_order->update_meta_data( Ddp_Checkout::META_SELECTED, 'yes' );
 			$wc_order->update_meta_data( Ddp_Checkout::META_COST, $amount );
 			$wc_order->update_meta_data( Ddp_Checkout::META_CURRENCY, $wc_order->get_currency() );
+
+			// Recorded only when the rate carried one: the draft distinguishes "no carrier price known"
+			// from a zero, and writing 0.0 would have it declare a shipment with no transport at all.
+			$porterage = $this->porterage_from_rate_meta( $rate_id );
+			if ( null !== $porterage ) {
+				$wc_order->update_meta_data( Ddp_Checkout::META_PORTERAGE, $porterage );
+			}
+
 			$wc_order->save();
 		} catch ( \Exception $e ) {
 			Logger::logWarning( 'Could not record the duties charged on the order: ' . $e->getMessage(), 'Integration' );
@@ -236,6 +245,37 @@ class Ddp_Fee_Handler {
 	 *
 	 * @return float|null
 	 */
+	private function porterage_from_rate_meta( $rate_id ) {
+		foreach ( $this->cached_rates() as $rates ) {
+			if ( ! isset( $rates[ $rate_id ] ) ) {
+				continue;
+			}
+
+			$rate = $rates[ $rate_id ];
+			if ( ! method_exists( $rate, 'get_meta_data' ) ) {
+				continue;
+			}
+
+			$meta = $rate->get_meta_data();
+			if ( isset( $meta[ Ddp_Checkout::RATE_META_PORTERAGE ] )
+				&& '' !== $meta[ Ddp_Checkout::RATE_META_PORTERAGE ]
+				&& null !== $meta[ Ddp_Checkout::RATE_META_PORTERAGE ] ) {
+				$porterage = (float) $meta[ Ddp_Checkout::RATE_META_PORTERAGE ];
+
+				return $porterage > 0.0 ? $porterage : null;
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Reads the quoted amount off the cached shipping rate.
+	 *
+	 * @param string $rate_id Chosen rate id.
+	 *
+	 * @return float|null
+	 */
 	private function amount_from_rate_meta( $rate_id ) {
 		foreach ( $this->cached_rates() as $rates ) {
 			if ( ! isset( $rates[ $rate_id ] ) ) {
@@ -322,5 +362,62 @@ class Ddp_Fee_Handler {
 		$method = new Packlink_Shipping_Method( $instance_id );
 
 		return 'taxable' === $method->tax_status;
+	}
+
+	/**
+	 * The tax class the duties fee is charged under: the one WooCommerce taxes the shipping line with.
+	 *
+	 * is_taxable() already carries the shipping method's Tax status onto this fee so that the duties
+	 * line behaves like the transport line it accompanies. The class is the other half of that, and it
+	 * was missing: add_fee()'s fourth argument defaults to '', which is the STANDARD rate, while
+	 * WooCommerce taxes shipping through the woocommerce_shipping_tax_class option. On any store whose
+	 * shipping tax class is not the standard one, the duty was taxed at a different rate than the
+	 * transport it belongs to - two halves of one shipping charge, taxed differently.
+	 *
+	 * An explicitly configured class is used as-is. 'inherit' means "whatever the cart's items use",
+	 * which WooCommerce resolves in WC_Tax::get_shipping_tax_rates() from the classes present in the
+	 * cart, taking the highest-priority one when they differ. That resolution is mirrored here rather
+	 * than guessed, because guessing the standard rate is exactly the defect being fixed.
+	 *
+	 * Every branch that cannot be answered returns '', which is the behaviour this replaces - so a
+	 * store whose configuration cannot be resolved is left as it was rather than made differently
+	 * wrong.
+	 *
+	 * @return string Tax class slug; '' for the standard rate.
+	 */
+	private function shipping_tax_class() {
+		$configured = get_option( 'woocommerce_shipping_tax_class', 'inherit' );
+
+		if ( 'inherit' !== $configured ) {
+			return (string) $configured;
+		}
+
+		if ( ! function_exists( 'WC' ) || null === WC() || ! class_exists( 'WC_Tax' ) ) {
+			return '';
+		}
+
+		$cart = WC()->cart;
+		if ( ! $cart instanceof WC_Cart || ! method_exists( $cart, 'get_cart_item_tax_classes_for_shipping' ) ) {
+			return '';
+		}
+
+		$found = $cart->get_cart_item_tax_classes_for_shipping();
+		if ( empty( $found ) || ! is_array( $found ) ) {
+			return '';
+		}
+
+		// One class across the cart is the ordinary case, and resolves exactly.
+		if ( 1 === count( $found ) ) {
+			return (string) reset( $found );
+		}
+
+		// Mixed classes: WooCommerce takes the first in its own configured order of precedence.
+		foreach ( WC_Tax::get_tax_class_slugs() as $slug ) {
+			if ( in_array( $slug, $found, true ) ) {
+				return (string) $slug;
+			}
+		}
+
+		return '';
 	}
 }

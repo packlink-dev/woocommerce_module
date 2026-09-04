@@ -11,6 +11,7 @@ use Logeecom\Infrastructure\Logger\Logger;
 use Logeecom\Infrastructure\ServiceRegister;
 use Logeecom\Infrastructure\Singleton;
 use Packlink\BusinessLogic\DDP\DdpBehavior;
+use Packlink\BusinessLogic\DDP\DdpCostComposer;
 use Packlink\BusinessLogic\DDP\Interfaces\DdpCostServiceInterface;
 use Packlink\BusinessLogic\DDP\Models\DdpCostResponse;
 use Packlink\BusinessLogic\Order\Objects\Order;
@@ -26,11 +27,23 @@ use Throwable;
  * permanently creates a customs invoice, so it must happen once per cart and address - not once per
  * shipping method instance, and not once per render.
  *
- * Duty is a function of the goods and the route, not of the carrier service, so one call answers for
- * every DDP-capable method of a cart. What is cached is therefore the raw duty base plus the ids of the
- * methods it applies to - never a charged amount. Each method's own merchant adjustment is applied on
- * read, so an adjustment the merchant edits mid-session takes effect on the next render instead of when
- * the quote expires, and the cache key does not have to fingerprint every method's configuration.
+ * Duty is a function of the goods, the route AND the carrier service. Packlink prices it from goods
+ * plus freight, and it does not use the freight a platform declares - it re-prices at its own
+ * `porterage` for the chosen service. Measured on FR->CH with one identical declared freight across
+ * four services: duties 87.12 / 86.71 / 87.04 / 88.58; and ten different declared freights against ONE
+ * service: all 87.65. So one lookup per SERVICE, and the price a method happens to show changes
+ * nothing. This class previously quoted one service for the whole cart, which charged every other
+ * carrier a duty computed for a shipment it was not - up to 1.87 out on those figures.
+ *
+ * What is cached is therefore a raw duty base per service, plus the ids of the methods each one prices
+ * and the carrier price it was quoted against - never a charged amount. Each method's own merchant
+ * adjustment is applied on read, so an adjustment the merchant edits mid-session takes effect on the
+ * next render instead of when the quote expires, and the cache key does not have to fingerprint every
+ * method's configuration.
+ *
+ * The lookups are dispatched together rather than one after another: core runs the invoices as one
+ * concurrent wave and the products calls as a second, so the render waits for the slowest lookup
+ * instead of the sum of them (four real carriers measured 3840 ms against 11382 ms sequential).
  *
  * Two accessors, deliberately. WooCommerce caches per-package shipping rates in the session, so
  * `calculate_shipping()` does not run on every checkout render - meaning the cart-fee and
@@ -83,6 +96,19 @@ class Ddp_Checkout_Service extends Singleton {
 	 * WooCommerce session key holding the cached quote.
 	 */
 	const SESSION_KEY = '_packlink_ddp_quote';
+
+	/**
+	 * WooCommerce session key holding the checkout customs invoice ids, keyed by service.
+	 *
+	 * Deliberately NOT part of the quote entry. That entry is replaced wholesale on every write - a
+	 * failed lookup replaces it with a failure marker - so invoice ids kept inside it would be discarded
+	 * by the very failure that makes reuse matter most, and the retry would create fresh permanent
+	 * invoices. Packlink offers neither a delete nor a list endpoint, so every abandoned one is forever.
+	 *
+	 * Outlives the quote's signature and TTL on purpose: an invoice exists at Packlink whatever the cart
+	 * has since become, and re-pointing it with PUT is the only way not to orphan it.
+	 */
+	const SESSION_INVOICES_KEY = '_packlink_ddp_invoices';
 
 	/**
 	 * Request-scoped memo: signature of the cart the quote was made for.
@@ -141,11 +167,46 @@ class Ddp_Checkout_Service extends Singleton {
 	}
 
 	/**
+	 * Packlink's own carrier price for the service that prices one method, from the cache only.
+	 *
+	 * The freight the draft must declare on its customs invoice. The shipping total WooCommerce records
+	 * is the SHOPPER-facing carrier price - porterage plus Packlink's platform fee, plus any
+	 * pricing-policy markup - and only porterage is carrier freight. Measured on the identical
+	 * PrestaShop defect: a shopper-facing 44.99 against a real carrier price of 44.00, which had the
+	 * draft screen quote 26.49 where the shopper was charged, and Packlink billed, 26.40.
+	 *
+	 * Knowable nowhere else: `porterage` appears only inside a products response, and the draft is
+	 * assembled in a later request that makes no such call. So it is carried on the rate's meta and
+	 * from there onto the order - see Ddp_Checkout::RATE_META_PORTERAGE.
+	 *
+	 * Never fetches, for the same reason cached_amount_for_method() does not.
+	 *
+	 * @param ShippingMethod $method Shipping method the carrier price is wanted for.
+	 * @param array          $package WooCommerce shipping package.
+	 *
+	 * @return float|null Carrier price, or null when this cart's quote did not record one.
+	 */
+	public function porterage_for_method( ShippingMethod $method, array $package ) {
+		$entry = $this->service_entry( $this->quote( $package, null, false ), $method );
+
+		if ( null === $entry || empty( $entry['porterage'] ) ) {
+			return null;
+		}
+
+		$porterage = (float) $entry['porterage'];
+
+		return $porterage > 0.0 ? $porterage : null;
+	}
+
+	/**
 	 * Prices one method off a quote by applying that method's own merchant adjustment to the raw base.
 	 *
-	 * The quote carries the ids of the methods the base was obtained for. A method outside that set is
-	 * not simply unadjusted, it is ineligible: `eligible_methods()` only admits methods whose service on
-	 * this route supports duties, and duty must not be offered on a service Packlink cannot ship it with.
+	 * The quote carries one entry per service, and a map from method id to the service that prices it.
+	 * A method outside that map is not simply unadjusted, it is ineligible: `eligible_methods()` only
+	 * admits methods whose service on this route supports duties, and duty must not be offered on a
+	 * service Packlink cannot ship it with. A method whose own service failed to quote is equally
+	 * absent - it must not fall back to another service's base, which is exactly the defect this
+	 * structure replaced.
 	 *
 	 * @param array|null     $quote Resolved quote, or null when DDP is unavailable.
 	 * @param ShippingMethod $method Shipping method the amount is wanted for.
@@ -153,11 +214,71 @@ class Ddp_Checkout_Service extends Singleton {
 	 * @return float|null Charged duty amount, or null when this method has none.
 	 */
 	private function pick( $quote, ShippingMethod $method ) {
-		if ( ! is_array( $quote ) || ! in_array( (string) $method->getId(), $quote['methods'], true ) ) {
+		$entry = $this->service_entry( $quote, $method );
+
+		if ( null === $entry ) {
 			return null;
 		}
 
-		return Ddp_Cost_Calculator::charged_amount( $quote['base'], $method );
+		return DdpCostComposer::chargedFromBase( $entry['base'], $method );
+	}
+
+	/**
+	 * The quote entry for the service that prices one method, or null when there is none.
+	 *
+	 * @param array|null     $quote Resolved quote.
+	 * @param ShippingMethod $method Shipping method.
+	 *
+	 * @return array|null
+	 */
+	private function service_entry( $quote, ShippingMethod $method ) {
+		if ( ! is_array( $quote ) || empty( $quote['byMethod'] ) || empty( $quote['services'] ) ) {
+			return null;
+		}
+
+		$method_id = (string) $method->getId();
+
+		if ( ! isset( $quote['byMethod'][ $method_id ] ) ) {
+			return null;
+		}
+
+		$service_id = (string) $quote['byMethod'][ $method_id ];
+
+		return isset( $quote['services'][ $service_id ]['base'] )
+			? $quote['services'][ $service_id ]
+			: null;
+	}
+
+	/**
+	 * Why a quote cannot be charged in the cart's currency, or null when it can.
+	 *
+	 * The core hands the component amounts over unconverted and answers this question as a code, so
+	 * that each integration can word it in its own voice; mapping the code to the line WooCommerce
+	 * logs is this method's only job.
+	 *
+	 * Two of these refuse quotes the module used to charge. An enabled component naming no currency,
+	 * and a shop currency that will not resolve, were both previously read as "nothing to compare, so
+	 * assume the shop's own money". An amount whose unit cannot be established is not money that can
+	 * be added to a total, so nothing is assumed now.
+	 *
+	 * @param DdpCostResponse $response Core duty cost response.
+	 *
+	 * @return string|null Reason to record against the failed quote, or null when it is usable.
+	 */
+	private function currency_refusal( DdpCostResponse $response ) {
+		switch ( DdpCostComposer::checkCurrency( $response, $this->shop_currency() ) ) {
+			case DdpCostComposer::CURRENCY_USABLE:
+				return null;
+			case DdpCostComposer::CURRENCY_FOREIGN:
+				return 'Packlink quoted the duty in ' . DdpCostComposer::quotedCurrency( $response )
+					. ' but the cart charges in ' . $this->shop_currency()
+					. ', and the amount cannot be converted here';
+			case DdpCostComposer::CURRENCY_UNQUOTED:
+				return 'Packlink quoted a duty amount without naming a currency, so its unit is unknown'
+					. ' and it cannot be charged';
+			default:
+				return 'the shop currency could not be resolved, so the quoted duty cannot be verified';
+		}
 	}
 
 	/**
@@ -168,8 +289,8 @@ class Ddp_Checkout_Service extends Singleton {
 	 * @param float|null $transport_cost Transport price, for the customs invoice.
 	 * @param bool       $may_fetch Whether a live lookup is permitted.
 	 *
-	 * @return array|null Quote as `array( 'base' => float, 'methods' => string[] )`, or null when DDP is
-	 *                    unavailable for this cart.
+	 * @return array|null Quote as `array( 'services' => array, 'byMethod' => array )`, or null when DDP
+	 *                    is unavailable for this cart.
 	 */
 	private function quote( array $package, $transport_cost, $may_fetch ) {
 		$signature = $this->signature( $package );
@@ -193,14 +314,18 @@ class Ddp_Checkout_Service extends Singleton {
 	}
 
 	/**
-	 * Performs the lookup and composes the raw duty base the cart's eligible methods are priced from.
+	 * Performs the lookups - one per service the cart can ship on - and composes a raw duty base for
+	 * each.
 	 *
 	 * @param array      $package WooCommerce shipping package.
-	 * @param float|null $transport_cost Transport price, for the customs invoice.
+	 * @param float|null $transport_cost First-guess transport price for the customs invoice. Only a
+	 *                                  guess: core re-quotes at each service's own porterage and
+	 *                                  discards whatever is sent, which is why one value serves every
+	 *                                  service here.
 	 * @param string     $signature Cart signature the result is cached under.
 	 *
-	 * @return array|null Quote as `array( 'base' => float, 'methods' => string[] )`, or null when DDP is
-	 *                    unavailable.
+	 * @return array|null Quote as `array( 'services' => array, 'byMethod' => array )`, or null when DDP
+	 *                    is unavailable.
 	 */
 	private function fetch( array $package, $transport_cost, $signature ) {
 		try {
@@ -216,45 +341,127 @@ class Ddp_Checkout_Service extends Singleton {
 				return null;
 			}
 
-			$service_id = $this->quotable_service_id( $eligible, $to_country );
-			if ( null === $service_id ) {
+			$groups = $this->group_by_service( $eligible, $to_country );
+			if ( empty( $groups ) ) {
 				return null;
 			}
 
-			$order = Cart_Order_Factory::from_package( $package, $transport_cost );
-			if ( null === $order ) {
+			// Validated once, on a throwaway order: the checks are properties of the CART - line count,
+			// tariff numbers, declared value - so they cannot differ between services, and running them
+			// per service would multiply the log noise by the number of carriers.
+			$probe = Cart_Order_Factory::from_package( $package, $transport_cost );
+			if ( null === $probe ) {
 				return $this->fail( $signature, 'the cart could not be described to Packlink' );
 			}
 
-			$reason = $this->validate( $order );
+			$reason = $this->validate( $probe );
 			if ( null !== $reason ) {
 				return $this->fail( $signature, $reason );
 			}
 
-			$response = $this->ddp_cost_service()->getDdpCosts( $order, $service_id );
-			if ( ! $response instanceof DdpCostResponse ) {
-				return $this->fail( $signature, 'Packlink returned no duty cost' );
-			}
+			$reused = $this->cached_invoice_ids();
+			$items  = array();
 
-			$foreign = Ddp_Cost_Calculator::foreign_currency( $response, $this->shop_currency() );
-			if ( null !== $foreign ) {
-				return $this->fail(
-					$signature,
-					'Packlink quoted the duty in ' . $foreign . ' but the cart charges in '
-					. $this->shop_currency() . ', and the amount cannot be converted here'
+			foreach ( $groups as $service_id => $method_ids ) {
+				// A FRESH order per lookup. Core sets the shipping cost of the order it is handed to that
+				// service's porterage, so a shared object would end up carrying whichever correction ran
+				// last and every service would read the same carrier price.
+				$order = Cart_Order_Factory::from_package( $package, $transport_cost );
+				if ( null === $order ) {
+					continue;
+				}
+
+				$items[ (string) $service_id ] = array(
+					'order'     => $order,
+					'serviceId' => $service_id,
+					// An invoice already made for this cart and service is re-pointed with PUT instead
+					// of another being created. Packlink offers no way to delete or even list checkout
+					// invoices, so every one abandoned here is permanent and invisible.
+					'invoiceId' => isset( $reused[ (string) $service_id ] ) ? $reused[ (string) $service_id ] : null,
 				);
 			}
 
-			$base = Ddp_Cost_Calculator::composed_base( $response );
-			if ( null === $base ) {
-				// Every component came back disabled: the route carries no duty for this service. Not a
-				// failure of the lookup, but worth remembering so the two requests are not spent again.
-				return $this->fail( $signature, 'Packlink reported no applicable duty for this route' );
+			if ( empty( $items ) ) {
+				return $this->fail( $signature, 'the cart could not be described to Packlink' );
+			}
+
+			$results = $this->lookup_many( $items );
+
+			// Recorded first, and for EVERY service that produced one - including those whose quote then
+			// turned out unusable. The invoice exists at Packlink either way, so the id is worth keeping
+			// so the next attempt re-points it rather than leaving it orphaned.
+			$invoice_ids = array();
+			foreach ( $results as $service_id => $result ) {
+				if ( ! empty( $result['invoiceId'] ) ) {
+					$invoice_ids[ (string) $service_id ] = (string) $result['invoiceId'];
+				}
+			}
+			$this->remember_invoice_ids( $invoice_ids );
+
+			$services  = array();
+			$by_method = array();
+			$errors    = array();
+
+			foreach ( $items as $service_id => $item ) {
+				$result   = isset( $results[ $service_id ] ) ? $results[ $service_id ] : array();
+				$response = isset( $result['costs'] ) ? $result['costs'] : null;
+
+				if ( ! $response instanceof DdpCostResponse ) {
+					$errors[] = $service_id . ': ' . ( empty( $result['error'] )
+						? 'Packlink returned no duty cost'
+						: $result['error'] );
+					continue;
+				}
+
+				// Composed before the currency is judged, and in that order deliberately. A response
+				// with no enabled component names no currency either, so asking about the currency
+				// first answers "the duty has no currency" for a route that simply carries no duty -
+				// two different outcomes reported as one, and only one worth a merchant's attention.
+				$base = DdpCostComposer::composeBase( $response );
+				if ( null === $base ) {
+					$errors[] = $service_id . ': Packlink reported no applicable duty for this route';
+					continue;
+				}
+
+				$refusal = $this->currency_refusal( $response );
+				if ( null !== $refusal ) {
+					$errors[] = $service_id . ': ' . $refusal;
+					continue;
+				}
+
+				// Mutated by core's correction, so after the call this IS Packlink's carrier price for
+				// the service. The only moment it is knowable - the draft makes no products call.
+				$porterage = (float) $item['order']->getShippingCost();
+
+				$services[ (string) $service_id ] = array(
+					'base'      => $base,
+					'porterage' => $porterage > 0.0 ? $porterage : null,
+					'invoiceId' => empty( $result['invoiceId'] ) ? null : (string) $result['invoiceId'],
+					'methods'   => array_map( 'strval', $groups[ $service_id ] ),
+				);
+
+				foreach ( $groups[ $service_id ] as $method_id ) {
+					$by_method[ (string) $method_id ] = (string) $service_id;
+				}
+			}
+
+			if ( empty( $services ) ) {
+				return $this->fail( $signature, 'no service could be quoted - ' . implode( '; ', $errors ) );
+			}
+
+			if ( ! empty( $errors ) ) {
+				// A partial answer is the normal shape here: each service is an independent lookup, so
+				// the carriers that did quote keep their duty and only the rest go without. Recorded
+				// because otherwise a carrier silently losing its option looks like configuration.
+				Logger::logWarning(
+					'Duties unavailable for some services: ' . implode( '; ', $errors ) . '.',
+					'Integration'
+				);
 			}
 
 			$quote = array(
-				'base'    => $base,
-				'methods' => array_map( 'strval', array_keys( $eligible ) ),
+				'services' => $services,
+				'byMethod' => $by_method,
 			);
 
 			$this->write_cache( $signature, $quote, self::OK_TTL );
@@ -264,6 +471,132 @@ class Ddp_Checkout_Service extends Singleton {
 			// A duty estimate is optional; a shipping-rate calculation is not. Nothing may escape.
 			return $this->fail( $signature, 'the lookup failed: ' . $e->getMessage() );
 		}
+	}
+
+	/**
+	 * Hands every prepared lookup to core at once, or prices them one at a time on a core that cannot.
+	 *
+	 * The plugin ships with its own vendored core, so the batched path may simply not be there - and a
+	 * fatal on a missing method would take out the shipping-rate calculation rather than just the duty
+	 * option. The fallback prices each service separately, which is slower and skips core's
+	 * carrier-price correction, but keeps every carrier priced from its OWN service; degrading to one
+	 * shared lookup would be faster and wrong.
+	 *
+	 * @param array $items Lookups keyed by service id.
+	 *
+	 * @return array Same keys, each with 'invoiceId', 'costs' and 'error'.
+	 */
+	private function lookup_many( array $items ) {
+		$service = $this->ddp_cost_service();
+
+		if ( method_exists( $service, 'getDdpCostsMany' ) ) {
+			return $service->getDdpCostsMany( $items );
+		}
+
+		Logger::logWarning(
+			'The bundled Packlink core has no batched duty lookup, so duties are priced one service at a'
+			. ' time and without the carrier-price correction. Update the core dependency.',
+			'Integration'
+		);
+
+		$results = array();
+
+		foreach ( $items as $key => $item ) {
+			$results[ $key ] = array(
+				'invoiceId' => null,
+				'costs'     => $service->getDdpCosts( $item['order'], $item['serviceId'] ),
+				'error'     => null,
+			);
+		}
+
+		return $results;
+	}
+
+	/**
+	 * Groups the eligible methods by the service that will carry them on this route.
+	 *
+	 * @param ShippingMethod[] $eligible Eligible methods keyed by method id.
+	 * @param string           $to_country Destination country code.
+	 *
+	 * @return array Service id => method ids.
+	 */
+	private function group_by_service( array $eligible, $to_country ) {
+		$from   = $this->warehouse_country();
+		$groups = array();
+
+		foreach ( $eligible as $method_id => $method ) {
+			$service_id = $this->route_service_id( $method, $from, $to_country );
+
+			if ( null === $service_id ) {
+				continue;
+			}
+
+			$groups[ (string) $service_id ][] = (string) $method_id;
+		}
+
+		return $groups;
+	}
+
+	/**
+	 * Checkout customs invoice ids this session already holds, keyed by service.
+	 *
+	 * Read without regard to the signature or the TTL, both deliberately. An invoice exists at Packlink
+	 * whatever the cart has since become, and re-pointing it with PUT is the only way to avoid leaving
+	 * it orphaned - there is no delete and no list endpoint. A stale signature means the AMOUNT must be
+	 * re-quoted, not that the invoice must be a new one, and that is exactly when reuse saves the most.
+	 *
+	 * @return array Service id => invoice id.
+	 */
+	private function cached_invoice_ids() {
+		$session = $this->session();
+
+		if ( null === $session ) {
+			return array();
+		}
+
+		$stored = $session->get( self::SESSION_INVOICES_KEY );
+
+		if ( ! is_array( $stored ) ) {
+			return array();
+		}
+
+		$ids = array();
+
+		foreach ( $stored as $service_id => $invoice_id ) {
+			if ( ! empty( $invoice_id ) ) {
+				$ids[ (string) $service_id ] = (string) $invoice_id;
+			}
+		}
+
+		return $ids;
+	}
+
+	/**
+	 * Remembers the invoice ids this lookup used, merged over whatever the session already held.
+	 *
+	 * Merged rather than replaced: a lookup that quoted two of a cart's four services must not drop the
+	 * other two's ids, or the next render orphans them.
+	 *
+	 * @param array $ids Service id => invoice id, from this lookup.
+	 *
+	 * @return void
+	 */
+	private function remember_invoice_ids( array $ids ) {
+		if ( empty( $ids ) ) {
+			return;
+		}
+
+		$session = $this->session();
+
+		if ( null === $session ) {
+			return;
+		}
+
+		$existing = $session->get( self::SESSION_INVOICES_KEY );
+		$session->set(
+			self::SESSION_INVOICES_KEY,
+			array_merge( is_array( $existing ) ? $existing : array(), $ids )
+		);
 	}
 
 	/**
@@ -377,29 +710,6 @@ class Ddp_Checkout_Service extends Singleton {
 		}
 
 		return $result;
-	}
-
-	/**
-	 * Picks any one service id that Packlink can quote duty for on this route. Duty does not vary by
-	 * service, so one is enough - and the request is never batched, because batched responses cannot be
-	 * attributed back to the service that priced them.
-	 *
-	 * @param ShippingMethod[] $eligible Eligible methods.
-	 * @param string           $to_country Destination country code.
-	 *
-	 * @return string|int|null Service id, or null when none can be quoted.
-	 */
-	private function quotable_service_id( array $eligible, $to_country ) {
-		$from = $this->warehouse_country();
-
-		foreach ( $eligible as $method ) {
-			$service_id = $this->route_service_id( $method, $from, $to_country );
-			if ( null !== $service_id ) {
-				return $service_id;
-			}
-		}
-
-		return null;
 	}
 
 	/**
@@ -531,8 +841,8 @@ class Ddp_Checkout_Service extends Singleton {
 		// meaning.
 		$quote = $entry['quote'];
 
-		return ( is_array( $quote ) && isset( $quote['base'] ) && isset( $quote['methods'] )
-			&& is_array( $quote['methods'] ) ) ? $quote : false;
+		return ( is_array( $quote ) && ! empty( $quote['services'] ) && is_array( $quote['services'] )
+			&& isset( $quote['byMethod'] ) && is_array( $quote['byMethod'] ) ) ? $quote : false;
 	}
 
 	/**

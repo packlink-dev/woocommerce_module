@@ -183,7 +183,15 @@ class Packlink_Shipping_Method extends \WC_Shipping_Method {
 			);
 		}
 
-		foreach ( static::compose_rates( $rate, $this->get_rate_id( Ddp_Checkout::RATE_SUFFIX ), $behavior, $ddp_amount ) as $composed ) {
+		$composed_rates = static::compose_rates(
+			$rate,
+			$this->get_rate_id( Ddp_Checkout::RATE_SUFFIX ),
+			$behavior,
+			$ddp_amount,
+			null === $ddp_amount ? null : $this->get_ddp_porterage( $shipping_method, $package )
+		);
+
+		foreach ( $composed_rates as $composed ) {
 			$this->add_rate( $composed );
 		}
 	}
@@ -211,10 +219,21 @@ class Packlink_Shipping_Method extends \WC_Shipping_Method {
 	 * @param string     $ddp_rate_id Rate id of the duties-paid variant.
 	 * @param string     $behavior Effective DDP behaviour of the method.
 	 * @param float|null $ddp_amount Charged duty amount, or null when none is available.
+	 * @param float|null $ddp_porterage Packlink's own carrier price for the service behind this rate,
+	 *                                  passed in rather than looked up because this method is static
+	 *                                  and pure - it is the seam the rate-composition tests drive.
+	 *                                  Omitted from the meta entirely when there is none, so a rate
+	 *                                  composed without one is byte-identical to before.
 	 *
 	 * @return array[] Rates to add, in the order they should be offered.
 	 */
-	public static function compose_rates( array $base_rate, $ddp_rate_id, $behavior, $ddp_amount ) {
+	public static function compose_rates(
+		array $base_rate,
+		$ddp_rate_id,
+		$behavior,
+		$ddp_amount,
+		$ddp_porterage = null
+	) {
 		if ( DdpBehavior::NONE === $behavior ) {
 			// Total over the behaviour enum on purpose: the caller short-circuits this case to avoid
 			// the lookup, but a merchant who charges no duty must get one plain rate even if an amount
@@ -237,6 +256,15 @@ class Packlink_Shipping_Method extends \WC_Shipping_Method {
 			// and serves later renders from that cache without calling calculate_shipping(). The cart
 			// fee reads it back from here, so it cannot go missing on a cached render.
 			$ddp_rate['meta_data'] = array( Ddp_Checkout::RATE_META_AMOUNT => $ddp_amount );
+
+			// The carrier price rides along with the amount. It is read back off the chosen rate when
+			// the order is placed and recorded on the order, because the shipment draft is assembled in
+			// a later request that makes no products call and so cannot learn it again. Added only when
+			// there is one: the draft distinguishes "no carrier price known" from a zero, and a null in
+			// the meta would be indistinguishable from a rate composed before this existed.
+			if ( null !== $ddp_porterage ) {
+				$ddp_rate['meta_data'][ Ddp_Checkout::RATE_META_PORTERAGE ] = $ddp_porterage;
+			}
 
 			$rates[] = $ddp_rate;
 		}
@@ -287,6 +315,35 @@ class Packlink_Shipping_Method extends \WC_Shipping_Method {
 			return $service->amount_for_method( $shipping_method, $package, $transport_cost );
 		} catch ( \Exception $e ) {
 			Logger::logWarning( 'Could not resolve duties at checkout: ' . $e->getMessage(), 'Integration' );
+
+			return null;
+		}
+	}
+
+	/**
+	 * Packlink's own carrier price for this method's service, read from the quote the amount above just
+	 * populated.
+	 *
+	 * Never fetches - get_ddp_amount() has already run for this package by the time the rate is built,
+	 * so the quote is in hand. Null is a normal answer on a core too old to report it, and the draft
+	 * then falls back to the shipping total.
+	 *
+	 * @param ShippingMethod $shipping_method Packlink shipping method.
+	 * @param array          $package WooCommerce shipping package.
+	 *
+	 * @return float|null Carrier price, or null when the quote recorded none.
+	 */
+	private function get_ddp_porterage( ShippingMethod $shipping_method, array $package ) {
+		try {
+			/** @var Ddp_Checkout_Service $service */ // phpcs:ignore
+			$service = ServiceRegister::getService( Ddp_Checkout_Service::CLASS_NAME );
+
+			return $service->porterage_for_method( $shipping_method, $package );
+		} catch ( \Exception $e ) {
+			Logger::logWarning(
+				'Could not resolve the carrier price for duties: ' . $e->getMessage(),
+				'Integration'
+			);
 
 			return null;
 		}

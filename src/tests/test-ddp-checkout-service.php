@@ -277,6 +277,23 @@ class DdpCheckoutServiceTest extends WP_UnitTestCase {
 	}
 
 	/**
+	 * An enabled component that names no currency is refused, not assumed to be in the shop's money.
+	 *
+	 * The unit of an amount cannot be inferred from the fact that somebody sent it. Charging it anyway
+	 * is how a quote in another currency reaches a shopper's total unconverted, so a nameless unit is
+	 * treated exactly like a foreign one: no duties option, and a line in the log saying why.
+	 */
+	public function test_a_quote_naming_no_currency_yields_no_amount() {
+		$this->seed_method( DdpBehavior::OPTIONAL, DdpBehavior::LEVEL_SUPPORTED );
+		$this->spy->response = $this->response( true, '' );
+
+		$this->assertNull(
+			$this->service()->amount_for_method( $this->method(), $this->package() ),
+			'An amount whose currency is unknown must not be charged.'
+		);
+	}
+
+	/**
 	 * The cache holds the raw duty base, never a charged amount, so an adjustment the merchant edits
 	 * mid-session takes effect on the very next read - and repricing costs no second lookup, which is
 	 * the whole reason the adjustment is not baked into the cached figure.
@@ -439,7 +456,16 @@ class DdpCheckoutServiceTest extends WP_UnitTestCase {
 	 *
 	 * @return DdpCostResponse
 	 */
-	private function response( $enabled = true, $currency = '' ) {
+	private function response( $enabled = true, $currency = null ) {
+		// Defaults to the SHOP currency. It used to default to '', which the module's own calculator
+		// read as "nothing to compare, so assume the shop's own money" - a quote whose unit was unknown
+		// was charged anyway. Composition now lives in the core, which refuses an amount it was given no
+		// unit for, so a stub naming no currency exercises the refusal rather than the happy path. Pass
+		// '' explicitly to test that refusal.
+		if ( null === $currency ) {
+			$currency = get_woocommerce_currency();
+		}
+
 		$fee                = new DdpProductCost();
 		$fee->currency      = $currency;
 		$fee->totalPrice    = 5.76;

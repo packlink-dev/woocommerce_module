@@ -405,10 +405,16 @@ class CartOrderFactoryTest extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Currency and the declared cart value come from the store and from the package the rates were
-	 * priced on.
+	 * The declared value is the sum of the itemised lines, NOT the package's own subtotal.
+	 *
+	 * The fixture sets them apart on purpose: `cart_subtotal` is 40.0 while the one shippable line
+	 * totals 20.0. The package figure is the one to ignore - WooCommerce fills it from
+	 * get_displayed_subtotal(), which is tax-INCLUDED whenever the shop displays gross prices, and it
+	 * counts virtual lines that are dropped as unshippable. Either would make the declared total
+	 * disagree with the lines printed beneath it on the customs invoice, and inflate the value Packlink
+	 * prices the duty from - a customs value must not swing on a display setting.
 	 */
-	public function test_currency_and_declared_value() {
+	public function test_the_declared_value_is_the_sum_of_the_itemised_lines() {
 		$product = $this->create_product();
 
 		$order = Cart_Order_Factory::from_package(
@@ -416,8 +422,25 @@ class CartOrderFactoryTest extends WP_UnitTestCase {
 		);
 
 		$this->assertSame( get_woocommerce_currency(), $order->getCurrency() );
-		$this->assertSame( 40.0, $order->getTotalPrice() );
-		$this->assertSame( 40.0, $order->getBasePrice() );
+		$this->assertSame(
+			20.0,
+			$order->getTotalPrice(),
+			'The declared value must come from the lines, not the package subtotal of 40.0.'
+		);
+		$this->assertSame( 20.0, $order->getBasePrice() );
+	}
+
+	/**
+	 * And it follows the quantity, so a multi-unit line is declared at what the line is worth.
+	 */
+	public function test_the_declared_value_follows_the_line_total() {
+		$product = $this->create_product();
+
+		$order = Cart_Order_Factory::from_package(
+			$this->package( array( 'a' => $this->content_row( $product, 3, 60.0 ) ) )
+		);
+
+		$this->assertSame( 60.0, $order->getTotalPrice() );
 	}
 
 	/**

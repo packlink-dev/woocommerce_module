@@ -42,6 +42,15 @@ class Ddp_Checkout {
 	const RATE_META_AMOUNT = 'packlink_ddp_amount';
 
 	/**
+	 * Rate meta key holding Packlink's own carrier price for the service behind a duties-paid rate.
+	 *
+	 * Carried on the rate because the draft is built in a later request that cannot ask Packlink for it
+	 * again - `porterage` appears only inside a products response. From here it reaches the order as
+	 * META_PORTERAGE, which is what the draft declares as the shipment's transport cost.
+	 */
+	const RATE_META_PORTERAGE = 'packlink_ddp_porterage';
+
+	/**
 	 * Order meta key holding whether the customer chose the DDP variant.
 	 */
 	const META_SELECTED = '_packlink_ddp_selected';
@@ -53,6 +62,16 @@ class Ddp_Checkout {
 	 * Order meta key holding the currency of the charged DDP amount.
 	 */
 	const META_CURRENCY = '_packlink_ddp_currency';
+
+	/**
+	 * Order meta key holding Packlink's own carrier price for the chosen service.
+	 *
+	 * The freight the shipment draft declares. The order's shipping total is the SHOPPER-facing carrier
+	 * price - porterage plus Packlink's platform fee, plus any pricing-policy markup - and only
+	 * porterage is carrier freight, so declaring the total over-states the customs value. Absent on
+	 * orders placed before this was recorded, and the draft then falls back to the shipping total.
+	 */
+	const META_PORTERAGE = '_packlink_ddp_porterage';
 
 	/**
 	 * Checks whether the given rate id is the DDP variant of a Packlink shipping rate. A base

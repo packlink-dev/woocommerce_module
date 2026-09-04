@@ -33,6 +33,7 @@ use Packlink\BusinessLogic\FileResolver\FileResolverService;
 use Packlink\BusinessLogic\IntegrationRegistration\Interfaces\IntegrationRegistrationDataProviderInterface;
 use Packlink\BusinessLogic\IntegrationRegistration\Interfaces\ModuleResetServiceInterface;
 use Packlink\BusinessLogic\Order\Interfaces\ShopOrderService;
+use Packlink\BusinessLogic\DDP\Interfaces\DdpCostServiceInterface;
 use Packlink\BusinessLogic\Order\OrderService;
 use Packlink\BusinessLogic\OrderShipmentDetails\Models\OrderShipmentDetails;
 use Packlink\BusinessLogic\OrderShipmentDetails\OrderShipmentDetailsService;
@@ -47,6 +48,7 @@ use Packlink\BusinessLogic\Scheduler\Interfaces\SchedulerInterface;
 use Packlink\WooCommerce\Components\IntegrationRegistration\Integration_Registration_Data_Provider;
 use Packlink\WooCommerce\Components\IntegrationRegistration\Integration_Reset_Service;
 use Packlink\WooCommerce\Components\Services\Customs_Mapping_Service;
+use Packlink\WooCommerce\Components\Services\Ddp_Cost_Service;
 use Packlink\WooCommerce\Components\Services\Offline_Payments_Service;
 use Packlink\WooCommerce\Components\Services\Packlink_WordPress_Scheduler;
 use Packlink\WooCommerce\Components\Services\Order_Service;
@@ -112,6 +114,17 @@ class Bootstrap_Component extends BootstrapComponent {
 			OrderService::CLASS_NAME,
 			function () {
 				return Order_Service::getInstance();
+			}
+		);
+
+		// Replaces the core's own registration made in parent::initServices() above. The only
+		// difference is whether the concurrent duty transport may bypass wp_remote_* on this site -
+		// see Ddp_Cost_Service. Registered under the core's interface name because that is the key
+		// every caller resolves by.
+		ServiceRegister::registerService(
+			DdpCostServiceInterface::CLASS_NAME,
+			function () {
+				return new Ddp_Cost_Service();
 			}
 		);
 

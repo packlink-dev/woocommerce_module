@@ -12,7 +12,6 @@ use Packlink\BusinessLogic\Order\Objects\Address;
 use Packlink\BusinessLogic\Order\Objects\Item;
 use Packlink\BusinessLogic\Order\Objects\Order;
 use Throwable;
-use WC_Cart;
 use WC_Customer;
 use WC_Product;
 
@@ -42,8 +41,9 @@ class Cart_Order_Factory {
 	/**
 	 * Builds a core Order from a WooCommerce shipping package.
 	 *
-	 * @param array      $package       WooCommerce shipping package (`contents`, `destination`,
-	 *                                  `cart_subtotal`).
+	 * @param array      $package       WooCommerce shipping package (`contents`, `destination`). The
+	 *                                  package's own `cart_subtotal` is deliberately not read — see
+	 *                                  declared_value().
 	 * @param float|null $shipping_cost Transport price of the service being priced, in the store
 	 *                                  currency. When given it is carried on the order as the
 	 *                                  shipment cost, because the customs value Packlink computes is
@@ -69,16 +69,26 @@ class Cart_Order_Factory {
 			$order->setCustomerId( $customer_id );
 			$order->setCurrency( get_woocommerce_currency() );
 
-			// Declared value of the goods, read from the same subtotal the shipping rates were
-			// priced on. Shipping is deliberately excluded here and carried separately in
-			// $shipping_cost, since Packlink adds the freight to the goods value itself.
-			$subtotal = self::get_cart_subtotal( $package );
+			$items = self::get_items( $package, $resolver );
+
+			// Declared value of the goods: the sum of the very lines this invoice itemises, so the
+			// declared total can never contradict them. Shipping is deliberately excluded here and
+			// carried separately in $shipping_cost, since Packlink adds the freight to the goods
+			// value itself.
+			//
+			// Not $package['cart_subtotal']. WooCommerce fills that from get_displayed_subtotal(),
+			// which is tax-INCLUDED whenever the shop displays gross prices, and it covers the whole
+			// cart including the virtual lines get_item() deliberately drops as unshippable. Either
+			// one makes the declared value disagree with the itemised lines and inflates the customs
+			// value Packlink prices the duty from - and a customs value must never swing on a display
+			// setting. The lines themselves carry `line_total`, which is net and post-discount: the
+			// transaction value customs actually wants.
+			$subtotal = self::declared_value( $items );
 			$order->setBasePrice( $subtotal );
 			$order->setNetCartPrice( $subtotal );
 			$order->setCartPrice( $subtotal );
 			$order->setTotalPrice( $subtotal );
 
-			$items = self::get_items( $package, $resolver );
 			$order->setItems( $items );
 			$order->setTotalWeight( Customs_Data_Resolver::total_weight( $items ) );
 
@@ -286,24 +296,27 @@ class Cart_Order_Factory {
 	}
 
 	/**
-	 * Cart subtotal to declare, resolved exactly as
-	 * Packlink_Shipping_Method::get_cart_subtotal() resolves it for the rate calculation.
+	 * Sums the itemised lines into the goods value declared for the shipment.
 	 *
-	 * @param array $package WooCommerce shipping package.
+	 * Derived from the items rather than read off the cart so that the declared total and the invoice
+	 * lines are the same figure by construction. They are what Packlink prices the duty from, and a
+	 * total assembled from a different source than the lines beneath it is the kind of disagreement
+	 * nobody notices until the invoice arrives.
 	 *
-	 * @return float
+	 * Rounded once, here: the lines are already money and no caller re-rounds this.
+	 *
+	 * @param Item[] $items Itemised, shippable cart lines.
+	 *
+	 * @return float Net, post-discount value of the goods.
 	 */
-	private static function get_cart_subtotal( array $package ) {
-		if ( isset( $package['cart_subtotal'] ) ) {
-			return (float) $package['cart_subtotal'];
+	private static function declared_value( array $items ) {
+		$total = 0.0;
+
+		foreach ( $items as $item ) {
+			$total += (float) $item->getTotalPrice();
 		}
 
-		$cart = self::get_cart();
-		if ( null !== $cart && method_exists( $cart, 'get_subtotal' ) ) {
-			return (float) $cart->get_subtotal();
-		}
-
-		return 0.0;
+		return round( $total, 2 );
 	}
 
 	/**
@@ -318,19 +331,6 @@ class Cart_Order_Factory {
 		}
 
 		return WC()->customer instanceof WC_Customer ? WC()->customer : null;
-	}
-
-	/**
-	 * Returns the current WooCommerce cart, or null when there is none.
-	 *
-	 * @return WC_Cart|null
-	 */
-	private static function get_cart() {
-		if ( ! function_exists( 'WC' ) || null === WC() ) {
-			return null;
-		}
-
-		return WC()->cart instanceof WC_Cart ? WC()->cart : null;
 	}
 
 	/**

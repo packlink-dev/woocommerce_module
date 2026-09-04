@@ -108,8 +108,24 @@ class Shop_Order_Service extends Singleton implements BaseShopOrderService {
 		// The customs invoice declares the freight, and the core falls back to the order total when the
 		// platform leaves this unset - which double-counts the goods that are already itemised on the
 		// invoice and inflates every duty computed from it (C8). Duties ride on their own fee line here,
-		// so the shipping total is the freight alone and needs nothing subtracted from it.
-		$order->setShippingCost( (float) $wc_order->get_shipping_total() );
+		// so the shipping total needs nothing subtracted from it.
+		//
+		// But the shipping total is still the SHOPPER-facing carrier price: Packlink's `porterage` plus
+		// its platform fee, plus whatever a pricing policy added. Only porterage is carrier freight, and
+		// it is what the checkout quote was priced against - so declaring it here makes the draft
+		// describe the same shipment the shopper was quoted. Measured on the identical PrestaShop
+		// defect: a shopper-facing 44.99 against a real carrier price of 44.00 had the draft screen
+		// quote 26.49 where the shopper was charged, and Packlink billed, 26.40.
+		//
+		// The shipping total remains the fallback, for orders placed before the carrier price was
+		// recorded and for any rate whose quote never reported one.
+		$porterage = $wc_order->get_meta( Ddp_Checkout::META_PORTERAGE );
+
+		$order->setShippingCost(
+			( '' !== $porterage && null !== $porterage && (float) $porterage > 0.0 )
+				? (float) $porterage
+				: (float) $wc_order->get_shipping_total()
+		);
 
 		$items = $this->get_order_items( $wc_order );
 		$order->setItems( $items );
