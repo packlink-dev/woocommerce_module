@@ -1,5 +1,8 @@
 *** Packlink PRO Changelog ***
 
+2026-08-28 - version 4.3.2
+- Declare compatibility with WordPress 7.0.3 and WooCommerce 11.0.1
+
 2026-08-12 - version 4.3.1
 - Security update
 

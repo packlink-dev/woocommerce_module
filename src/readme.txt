@@ -3,8 +3,8 @@ Contributors: packlink
 Tags: shipping, delivery, carrier, order, package
 Requires at least: 4.7
 Requires PHP: 7.0
-Tested up to: 6.9
-Stable tag: 4.3.1
+Tested up to: 7.0.3
+Stable tag: 4.3.2
 License: LICENSE-2.0
 License URI: http://www.apache.org/licenses/LICENSE-2.0
 
@@ -93,6 +93,12 @@ Click <a href="https://support-pro.packlink.com/hc/es-es/articles/210158585" tar
 
 
 == Changelog ==
+
+#### 4.3.2 - August 28th, 2026
+
+**Updates**
+
+- Declare compatibility with WordPress 7.0.3 and WooCommerce 11.0.1
 
 #### 4.3.1 - August 12th, 2026
 
