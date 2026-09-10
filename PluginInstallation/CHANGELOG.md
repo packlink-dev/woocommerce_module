@@ -3,6 +3,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [v4.4.0](https://github.com/packlink-dev/woocommerce_module/compare/v4.3.2...v4.4.0) - 2026-09-10
+### Added
+- Delivery Duty Paid (DDP) support at checkout
+### Changed
+- Upgrade packlink/integration-core to 4.4.0 (DDP support and customs validation)
+### Fixed
+- Customs settings validation, customs invoice weight and per-unit item values, per-order Packlink reference, and backfill of missing order status mappings
+
 ## [v4.3.2](https://github.com/packlink-dev/woocommerce_module/compare/v4.3.1...v4.3.2) - 2026-08-28
 ### Changed
 - Declare compatibility with WordPress 7.0.3 and WooCommerce 11.0.1
