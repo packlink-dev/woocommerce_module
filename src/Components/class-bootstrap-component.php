@@ -33,6 +33,7 @@ use Packlink\BusinessLogic\FileResolver\FileResolverService;
 use Packlink\BusinessLogic\IntegrationRegistration\Interfaces\IntegrationRegistrationDataProviderInterface;
 use Packlink\BusinessLogic\IntegrationRegistration\Interfaces\ModuleResetServiceInterface;
 use Packlink\BusinessLogic\Order\Interfaces\ShopOrderService;
+use Packlink\BusinessLogic\DDP\Interfaces\DdpCostServiceInterface;
 use Packlink\BusinessLogic\Order\OrderService;
 use Packlink\BusinessLogic\OrderShipmentDetails\Models\OrderShipmentDetails;
 use Packlink\BusinessLogic\OrderShipmentDetails\OrderShipmentDetailsService;
@@ -47,6 +48,7 @@ use Packlink\BusinessLogic\Scheduler\Interfaces\SchedulerInterface;
 use Packlink\WooCommerce\Components\IntegrationRegistration\Integration_Registration_Data_Provider;
 use Packlink\WooCommerce\Components\IntegrationRegistration\Integration_Reset_Service;
 use Packlink\WooCommerce\Components\Services\Customs_Mapping_Service;
+use Packlink\WooCommerce\Components\Services\Ddp_Cost_Service;
 use Packlink\WooCommerce\Components\Services\Offline_Payments_Service;
 use Packlink\WooCommerce\Components\Services\Packlink_WordPress_Scheduler;
 use Packlink\WooCommerce\Components\Services\Order_Service;
@@ -56,6 +58,7 @@ use Packlink\BusinessLogic\ShippingMethod\Interfaces\ShopShippingMethodService;
 use Packlink\BusinessLogic\ShippingMethod\Models\ShippingMethod;
 use Packlink\BusinessLogic\SystemInformation\SystemInfoService;
 use Packlink\WooCommerce\Components\Order\Order_Drop_Off_Map;
+use Packlink\WooCommerce\Components\Checkout\Ddp_Checkout_Service;
 use Packlink\WooCommerce\Components\Order\Shop_Order_Service;
 use Packlink\WooCommerce\Components\Repositories\Base_Repository;
 use Packlink\WooCommerce\Components\Services\Config_Service;
@@ -111,6 +114,17 @@ class Bootstrap_Component extends BootstrapComponent {
 			OrderService::CLASS_NAME,
 			function () {
 				return Order_Service::getInstance();
+			}
+		);
+
+		// Replaces the core's own registration made in parent::initServices() above. The only
+		// difference is whether the concurrent duty transport may bypass wp_remote_* on this site -
+		// see Ddp_Cost_Service. Registered under the core's interface name because that is the key
+		// every caller resolves by.
+		ServiceRegister::registerService(
+			DdpCostServiceInterface::CLASS_NAME,
+			function () {
+				return new Ddp_Cost_Service();
 			}
 		);
 
@@ -177,6 +191,15 @@ class Bootstrap_Component extends BootstrapComponent {
 			ShopOrderService::CLASS_NAME,
 			static function () {
 				return Shop_Order_Service::getInstance();
+			}
+		);
+
+		// Shared instance on purpose: the checkout duty lookup memoizes its result for the request, and
+		// getService() invokes this delegate on every call.
+		ServiceRegister::registerService(
+			Ddp_Checkout_Service::CLASS_NAME,
+			static function () {
+				return Ddp_Checkout_Service::getInstance();
 			}
 		);
 

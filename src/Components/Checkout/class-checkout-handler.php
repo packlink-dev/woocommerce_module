@@ -82,6 +82,13 @@ class Checkout_Handler {
         $offlinePaymentName = $this->getOfflinePaymentName();
 
 
+        $ddp_total = $this->get_ddp_row_total( $rate, Ddp_Checkout::is_ddp_rate_id( $rate_data['rate_id'] ) );
+        // A duties-paid rate id is not enough on its own: the row is only decorated once an amount is
+        // actually known, because the fee handler charges nothing without one and a row labelled
+        // "Delivery Duty Paid" at the plain transport price would promise what nothing keeps. Matches
+        // how the block checkout decides the same thing.
+        $is_ddp = '' !== $ddp_total;
+
         $fields = array(
 			'packlink_image_url'   => $shipping_method->getLogoUrl() ?: Shop_Helper::get_plugin_base_url() . 'resources/images/box.svg',
 			'packlink_show_image'  => $shipping_method->isDisplayLogo() ? 'yes' : 'no',
@@ -89,6 +96,14 @@ class Checkout_Handler {
             'packlink_cash_on_delivery' => $this->is_cash_on_delivery_enabled($shipping_method) ? 'yes' : 'no',
             'packlink_cash_on_delivery_fee' => $this->offline_payments_service->calculateFee($shipping_method->getId(), $current_total),
             'packlink_cash_on_delivery_name' => $offlinePaymentName ?: '',
+			// The duties-paid decoration is deliberately not the rate label: WooCommerce runs the label
+			// through the same filter for the options list and for the order-summary shipping row, while
+			// this hook fires only for option rows. That is what lets the row show the combined price
+			// while the summary keeps the clean title at the transport price, with duties on their own
+			// fee line (WC-DDP-14/15).
+			'packlink_is_ddp'      => $is_ddp ? 'yes' : 'no',
+			'packlink_ddp_suffix'  => __( '- Delivery Duty Paid', 'packlink-pro-shipping' ),
+			'packlink_ddp_total'   => $ddp_total,
 
         );
 
@@ -243,6 +258,53 @@ class Checkout_Handler {
 	}
 
 	/**
+	 * Moves a chosen duties-paid selection off a rate that is no longer offered.
+	 *
+	 * A DDP rate disappears from the set whenever the shopper edits the address into a route that quotes
+	 * no duties - a domestic one above all - and WooCommerce would then keep the vanished rate id in the
+	 * session, leaving the checkout with no valid shipping selection.
+	 *
+	 * The fallback is the same service without duties when it is offered, so the shopper keeps the carrier
+	 * and transit time they picked and only loses the duties option; a mandatory-DDP service has no such
+	 * variant, so the first available rate is taken instead. Deliberately silent (spec D10): an
+	 * unexplained warning on an ordinary address edit costs more conversions than it saves. The duties fee
+	 * disappears on its own at the next fee calculation, because `Ddp_Fee_Handler`'s guard stops matching.
+	 *
+	 * Registered on `woocommerce_package_rates` after `check_additional_packlink_rate()`, so the decision
+	 * is taken against the final rate set rather than one that still holds a rate about to be removed.
+	 *
+	 * @param array $rates Shipping rates keyed by rate id.
+	 *
+	 * @return array The rates, unchanged.
+	 */
+	public function reset_stale_ddp_selection( array $rates ) {
+		if ( empty( $rates ) || ! function_exists( 'WC' ) || ! WC()->session ) {
+			return $rates;
+		}
+
+		$chosen = WC()->session->get( 'chosen_shipping_methods' );
+		$chosen = is_array( $chosen ) && ! empty( $chosen ) ? (string) reset( $chosen ) : '';
+
+		if ( ! Ddp_Checkout::is_ddp_rate_id( $chosen ) || isset( $rates[ $chosen ] ) ) {
+			return $rates;
+		}
+
+		$base = Ddp_Checkout::base_rate_id( $chosen );
+
+		if ( isset( $rates[ $base ] ) ) {
+			$fallback = $base;
+		} else {
+			// reset()/key() rather than array_key_first(), which is PHP 7.3+ against a 7.0 floor.
+			reset( $rates );
+			$fallback = key( $rates );
+		}
+
+		WC()->session->set( 'chosen_shipping_methods', array( $fallback ) );
+
+		return $rates;
+	}
+
+	/**
 	 * Loads javascript and css resources
 	 */
 	public function load_scripts() {
@@ -360,6 +422,37 @@ class Checkout_Handler {
 		}
 
 		return Shipping_Method_Helper::get_packlink_shipping_method( $instance_id );
+	}
+
+	/**
+	 * Transport plus duties for a duties-paid option row, formatted for display.
+	 *
+	 * The amount rides on the rate itself, put there by the rate path, because WooCommerce serves later
+	 * renders from its cached rates without calling `calculate_shipping()` again - so the rate meta is the
+	 * one place the quoted duty is guaranteed to still be found here.
+	 *
+	 * Formatted server-side so the row shows the shop's own currency format, and de-tagged because the
+	 * value travels as a hidden input value through `print_hidden_input()`'s `wp_kses` allow-list, which
+	 * would strip the markup `wc_price()` returns and leave a mangled figure behind.
+	 *
+	 * @param WC_Shipping_Rate $rate Shipping rate.
+	 * @param bool             $is_ddp Whether the rate is the duties-paid variant.
+	 *
+	 * @return string Formatted combined price, or an empty string when no duty amount is known.
+	 */
+	private function get_ddp_row_total( WC_Shipping_Rate $rate, $is_ddp ) {
+		if ( ! $is_ddp || ! method_exists( $rate, 'get_meta_data' ) ) {
+			return '';
+		}
+
+		$meta = $rate->get_meta_data();
+		if ( ! isset( $meta[ Ddp_Checkout::RATE_META_AMOUNT ] ) ) {
+			return '';
+		}
+
+		$total = (float) $rate->get_cost() + (float) $meta[ Ddp_Checkout::RATE_META_AMOUNT ];
+
+		return wp_strip_all_tags( wc_price( $total, array( 'currency' => get_woocommerce_currency() ) ) );
 	}
 
 	/**
