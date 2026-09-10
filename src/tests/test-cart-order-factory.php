@@ -196,7 +196,7 @@ class CartOrderFactoryTest extends WP_UnitTestCase {
 		$this->assertSame( 2, $item->getQuantity() );
 		$this->assertSame( $product->get_id(), $item->getId() );
 		$this->assertSame( 40.0, $item->getTotalPrice() );
-		$this->assertSame( 40.0, $item->getPrice() );
+		$this->assertSame( 20.0, $item->getPrice(), 'Per-unit value: a 40.00 subtotal over two units.' );
 		$this->assertSame( 'SKU-9', $item->getSku() );
 		$this->assertSame( 'Cart Test Product', $item->getTitle() );
 		$this->assertSame( 'A shippable thing.', $item->getConcept() );
@@ -206,6 +206,28 @@ class CartOrderFactoryTest extends WP_UnitTestCase {
 		$this->assertSame( 5.0, $item->getLength() );
 		$this->assertSame( '12345678', $item->getTariffNumber() );
 		$this->assertSame( 'DE', $item->getCountryOfOrigin() );
+	}
+
+	/**
+	 * The customs invoice this order feeds declares a per-unit value next to the quantity, so a
+	 * multi-unit line has to report the unit price. The line subtotal would be counted once per unit,
+	 * and Packlink then refuses the shipment because the declared goods exceed the package value.
+	 */
+	public function test_item_price_is_the_unit_value_not_the_line_subtotal() {
+		$product = $this->create_product();
+
+		$order = Cart_Order_Factory::from_package(
+			$this->package( array( 'a' => $this->content_row( $product, 9, 404.91 ) ) )
+		);
+
+		$items = $order->getItems();
+		$this->assertSame( 9, $items[0]->getQuantity() );
+		$this->assertEquals(
+			44.99,
+			$items[0]->getPrice(),
+			'404.91 over nine units is 44.99 each.',
+			0.0001
+		);
 	}
 
 	/**

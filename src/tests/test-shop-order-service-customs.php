@@ -234,6 +234,62 @@ class ShopOrderServiceCustomsTest extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Packlink matches a draft by the order number it arrives with, per account, so two shops sharing an
+	 * account both reaching order 254 would resolve the second draft to the first shop's shipment. The
+	 * reference therefore carries a per-order digest, the way PrestaShop sends its own order reference.
+	 */
+	public function test_order_reference_is_unique_per_order_and_stable() {
+		$product = $this->create_product( '12345678', 'DE' );
+		$first   = $this->create_order( $product );
+		$second  = $this->create_order( $product );
+
+		$one = $this->sync_order( $first );
+		$two = $this->sync_order( $second );
+
+		$this->assertRegExp(
+			'/^' . preg_quote( (string) $first->get_order_number(), '/' ) . '-[0-9a-f]{6}$/',
+			$one->getOrderNumber(),
+			'The shop order number stays readable, with a digest appended.'
+		);
+		$this->assertSame( $one->getOrderNumber(), $one->getId(), 'Both identifiers carry the reference.' );
+		$this->assertNotSame(
+			$one->getOrderNumber(),
+			$two->getOrderNumber(),
+			'Two orders must never present the same reference to Packlink.'
+		);
+		$this->assertSame(
+			$one->getOrderNumber(),
+			$this->sync_order( $first )->getOrderNumber(),
+			'The reference must not change between sends, or a re-send would orphan the first draft.'
+		);
+	}
+
+	/**
+	 * The customs invoice declares a per-unit value next to the quantity, so a multi-unit line has to
+	 * report the unit price. Sending the line subtotal makes Packlink apply the quantity twice and
+	 * refuse the shipment: the declared goods then exceed the package value.
+	 */
+	public function test_item_price_is_the_unit_value_not_the_line_subtotal() {
+		$product = $this->create_product( '12345678', 'DE' );
+		$order   = wc_create_order();
+		$order->add_product( $product, 3 );
+		$order->set_shipping_country( 'CH' );
+		$order->calculate_totals();
+		$order->save();
+
+		$items = $this->sync_order( $order )->getItems();
+
+		$this->assertNotEmpty( $items, 'Expected the order to contain an item.' );
+		$this->assertEquals( 3, $items[0]->getQuantity() );
+		$this->assertEquals(
+			20.0,
+			$items[0]->getPrice(),
+			'The unit price belongs here, not the 60.00 line subtotal.',
+			0.0001
+		);
+	}
+
+	/**
 	 * The customs invoice declares the freight, so the order must carry the shipping total as its
 	 * shipping cost. Left unset, the core falls back to the order total - which double-counts the goods
 	 * already itemised on the invoice and inflates every duty computed from it (C8).
