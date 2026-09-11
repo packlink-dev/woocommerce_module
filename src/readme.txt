@@ -4,7 +4,7 @@ Tags: shipping, delivery, carrier, order, package
 Requires at least: 4.7
 Requires PHP: 7.0
 Tested up to: 7.0.3
-Stable tag: 4.4.0
+Stable tag: 4.4.1
 License: LICENSE-2.0
 License URI: http://www.apache.org/licenses/LICENSE-2.0
 
@@ -93,6 +93,14 @@ Click <a href="https://support-pro.packlink.com/hc/es-es/articles/210158585" tar
 
 
 == Changelog ==
+
+#### 4.4.1 - September 11th, 2026
+
+**Updates**
+
+- Fix the selected drop-off location not being saved on themes and page builders that render the checkout's delivery options outside the WooCommerce checkout form (for example Divi): the location was missing from the order in the shop's back office, and the shipment reached Packlink without a drop-off point and could not be completed
+- Fix the chosen Packlink service not being recognised on carts split into several shipping packages, which discarded a valid drop-off selection
+- Fix an incomplete drop-off location overwriting the customer's delivery address with empty values; the delivery address is now left unchanged
 
 #### 4.4.0 - September 10th, 2026
 
