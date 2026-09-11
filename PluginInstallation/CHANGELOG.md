@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [v4.4.1](https://github.com/packlink-dev/woocommerce_module/compare/v4.4.0...v4.4.1) - 2026-09-11
+### Fixed
+- Drop-off location not saved on themes and page builders that render the checkout's delivery options outside the WooCommerce checkout form, which left the location missing from the order and sent the shipment to Packlink without a drop-off point
+- Chosen Packlink service not recognised on carts split into several shipping packages, and an incomplete drop-off location overwriting the customer's delivery address
+
 ## [v4.4.0](https://github.com/packlink-dev/woocommerce_module/compare/v4.3.2...v4.4.0) - 2026-09-10
 ### Added
 - Delivery Duty Paid (DDP) support at checkout
