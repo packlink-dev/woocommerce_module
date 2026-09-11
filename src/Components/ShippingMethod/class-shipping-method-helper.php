@@ -76,6 +76,35 @@ class Shipping_Method_Helper {
 	}
 
 	/**
+	 * Returns the chosen shipping rate identifier that belongs to a Packlink shipping method.
+	 *
+	 * WooCommerce keys the chosen shipping methods by shipping package. Stores that split the
+	 * cart into more than one package - or whose first package is served by another carrier -
+	 * do not keep the Packlink rate under index 0, so the packages must be scanned instead of
+	 * assuming a fixed index.
+	 *
+	 * @param array|null $chosen_shipping_methods Chosen shipping methods. Read from the session
+	 *                                            when not provided.
+	 *
+	 * @return string Chosen Packlink rate identifier, or an empty string when none is chosen.
+	 */
+	public static function get_chosen_packlink_rate_id( $chosen_shipping_methods = null ) {
+		if ( ! is_array( $chosen_shipping_methods ) ) {
+			$chosen_shipping_methods = (array) wc()->session->get( 'chosen_shipping_methods', array() );
+		}
+
+		$prefix = Packlink_Shipping_Method::PACKLINK_SHIPPING_METHOD . ':';
+
+		foreach ( $chosen_shipping_methods as $chosen_method ) {
+			if ( is_string( $chosen_method ) && 0 === strpos( $chosen_method, $prefix ) ) {
+				return $chosen_method;
+			}
+		}
+
+		return '';
+	}
+
+	/**
 	 * Returns Packlink shipping method that is assigned to this WooCommerce shipping method.
 	 *
 	 * @param int $wc_shipping_method_id Shipping method identifier.

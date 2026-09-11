@@ -42,16 +42,15 @@ class Checkout_Handler {
 	 */
 	const DEFAULT_SHIPPING = 'shipping cost';
 
-    /**
-     * @var Offline_Payments_Service
-     */
-    private $offline_payments_service;
+	/**
+	 * @var Offline_Payments_Service
+	 */
+	private $offline_payments_service;
 
-    public function __construct()
-    {
-        $this->offline_payments_service = ServiceRegister::getService(
-            OfflinePaymentsServices::CLASS_NAME);
-    }
+	public function __construct() {
+		$this->offline_payments_service = ServiceRegister::getService(
+			OfflinePaymentsServices::CLASS_NAME );
+	}
 
 	/**
 	 * This hook is triggered after shipping method label, and it will insert hidden input values.
@@ -70,16 +69,16 @@ class Checkout_Handler {
 			return;
 		}
 
-        $cart = WC()->cart;
-        $totals = $cart->get_totals();
+		$cart   = WC()->cart;
+		$totals = $cart->get_totals();
 
-        $subtotal   = isset($totals['cart_contents_total']) ? (float) $totals['cart_contents_total'] : 0;
-        $shipping   = isset($totals['shipping_total']) ? (float) $totals['shipping_total'] : 0;
-        $discount   = isset($totals['discount_total']) ? (float) $totals['discount_total'] : 0;
+		$subtotal = isset( $totals['cart_contents_total'] ) ? (float) $totals['cart_contents_total'] : 0;
+		$shipping = isset( $totals['shipping_total'] ) ? (float) $totals['shipping_total'] : 0;
+		$discount = isset( $totals['discount_total'] ) ? (float) $totals['discount_total'] : 0;
 
-        $current_total = $subtotal + $shipping - $discount;
+		$current_total = $subtotal + $shipping - $discount;
 
-        $offlinePaymentName = $this->getOfflinePaymentName();
+		$offlinePaymentName = $this->getOfflinePaymentName();
 
 
         $ddp_total = $this->get_ddp_row_total( $rate, Ddp_Checkout::is_ddp_rate_id( $rate_data['rate_id'] ) );
@@ -105,14 +104,21 @@ class Checkout_Handler {
 			'packlink_ddp_suffix'  => __( '- Delivery Duty Paid', 'packlink-pro-shipping' ),
 			'packlink_ddp_total'   => $ddp_total,
 
-        );
+		);
 
 		foreach ( $fields as $field => $value ) {
 			$this->print_hidden_input( $field, $value );
 		}
 
-		$chosen_method = wc()->session->chosen_shipping_methods[ $index ];
-		if ( wc()->session->get( Shipping_Method_Helper::SHIPPING_ID, '' ) !== $chosen_method ) {
+		$chosen_methods = (array) wc()->session->get( 'chosen_shipping_methods', array() );
+		$chosen_method  = isset( $chosen_methods[ $index ] ) ? $chosen_methods[ $index ] : '';
+		$saved_method   = wc()->session->get( Shipping_Method_Helper::SHIPPING_ID, '' );
+
+		// The saved selection belongs to one specific rate. Discard it only once that rate is no
+		// longer chosen for any shipping package - comparing against a single package index threw
+		// a notice on stores whose packages are not keyed from zero, and wiped valid selections.
+		if ( '' !== $saved_method
+			&& Shipping_Method_Helper::get_chosen_packlink_rate_id( $chosen_methods ) !== $saved_method ) {
 			wc()->session->set( Shipping_Method_Helper::DROP_OFF_ID, '' );
 			wc()->session->set( Shipping_Method_Helper::SHIPPING_ID, '' );
 		}
@@ -148,22 +154,12 @@ class Checkout_Handler {
 	 * This hook is used to validate drop-off point.
 	 */
 	public function checkout_process() {
-		$shipping_param = $this->get_param( 'shipping_method', false );
-		if ( ! $shipping_param ) {
+		$shipping_method = $this->get_shipping_method();
+		if ( null === $shipping_method || ! $shipping_method->isDestinationDropOff() ) {
 			return;
 		}
 
-		$parts = explode( ':', $shipping_param );
-		$code  = $parts[0];
-
-		if ( Packlink_Shipping_Method::PACKLINK_SHIPPING_METHOD !== $code ) {
-			return;
-		}
-
-		$shipping_method = Shipping_Method_Helper::get_packlink_shipping_method( (int) $parts[1] );
-		$is_drop_off     = $shipping_method->isDestinationDropOff();
-		$drop_off_id     = $this->get_param( static::PACKLINK_DROP_OFF_ID );
-		if ( $is_drop_off && empty( $drop_off_id ) ) {
+		if ( '' === $this->get_drop_off_id() ) {
 			wc_add_notice( __( 'Please choose a drop-off location.', 'packlink-pro-shipping' ), 'error' );
 		}
 	}
@@ -183,18 +179,31 @@ class Checkout_Handler {
 			return;
 		}
 
-		$is_drop_off = $shipping_method->isDestinationDropOff();
-		if ( $is_drop_off ) {
-			try {
-				$drop_off_address = json_decode( $this->get_param( static::PACKLINK_DROP_OFF_EXTRA ), true );
-				$order->set_shipping_company( $drop_off_address['name'] );
-				$order->set_shipping_city( $drop_off_address['city'] );
-				$order->set_shipping_postcode( $drop_off_address['zip'] );
-				$order->set_shipping_state( $drop_off_address['state'] );
-				$order->set_shipping_address_1( $drop_off_address['address'] );
-			} catch ( \WC_Data_Exception $e ) {
-				Logger::logError( 'Unable to substitute delivery address with drop-off location.', 'Integration', $data );
-			}
+		if ( ! $shipping_method->isDestinationDropOff() ) {
+			return;
+		}
+
+		// Never partially overwrite the customer address: an incomplete drop-off payload used to
+		// blank out city, postcode and street instead of leaving the delivery address alone.
+		$drop_off_address = $this->get_drop_off_address();
+		if ( empty( $drop_off_address ) ) {
+			Logger::logWarning(
+				'Drop-off location data is unavailable. Delivery address is left unchanged.',
+				'Integration',
+				$data
+			);
+
+			return;
+		}
+
+		try {
+			$order->set_shipping_company( $drop_off_address['name'] );
+			$order->set_shipping_city( $drop_off_address['city'] );
+			$order->set_shipping_postcode( $drop_off_address['zip'] );
+			$order->set_shipping_state( $drop_off_address['state'] );
+			$order->set_shipping_address_1( $drop_off_address['address'] );
+		} catch ( \WC_Data_Exception $e ) {
+			Logger::logError( 'Unable to substitute delivery address with drop-off location.', 'Integration', $data );
 		}
 	}
 
@@ -213,11 +222,25 @@ class Checkout_Handler {
 		}
 
 		if ( $shipping_method->isDestinationDropOff() ) {
-			$order_drop_off_map_repository = RepositoryRegistry::getRepository( Order_Drop_Off_Map::CLASS_NAME );
-			$order_drop_off_map            = new Order_Drop_Off_Map();
-			$order_drop_off_map->set_order_id( $order_id );
-			$order_drop_off_map->set_drop_off_point_id( $this->get_param( static::PACKLINK_DROP_OFF_ID ) );
-			$order_drop_off_map_repository->save( $order_drop_off_map );
+			$drop_off_id = $this->get_drop_off_id();
+
+			if ( '' === $drop_off_id ) {
+				// Storing an empty mapping used to hide the problem: the shipment was sent to
+				// Packlink without a drop-off point and nothing recorded that it went missing.
+				Logger::logWarning(
+					'Drop-off location is not selected for order ' . $order_id
+					. '. Shipment will be created without a drop-off point.',
+					'Integration',
+					$data
+				);
+			} else {
+				$order_drop_off_map_repository = RepositoryRegistry::getRepository( Order_Drop_Off_Map::CLASS_NAME );
+				$order_drop_off_map            = Shipping_Method_Helper::get_drop_off_map_for_order( $order_id )
+					?: new Order_Drop_Off_Map();
+				$order_drop_off_map->set_order_id( $order_id );
+				$order_drop_off_map->set_drop_off_point_id( $drop_off_id );
+				$order_drop_off_map_repository->save( $order_drop_off_map );
+			}
 
 			wc()->session->set( Shipping_Method_Helper::DROP_OFF_ID, '' );
 		}
@@ -355,48 +378,48 @@ class Checkout_Handler {
 		return __( 'There are no drop-off locations available for the entered address', 'packlink-pro-shipping' );
 	}
 
-    /**
-     * Returns the display name of the current offline payment method or null.
-     *
-     * @return string|null
-     */
-    private function getOfflinePaymentName()
-    {
-        try {
-            $offlinePayments = $this->offline_payments_service->getOfflinePayments();
-            $accountConfig   = $this->offline_payments_service->getAccountConfiguration();
-            $offlinePaymentName = null;
+	/**
+	 * Returns the display name of the current offline payment method or null.
+	 *
+	 * @return string|null
+	 */
+	private function getOfflinePaymentName() {
+		try {
+			$offlinePayments    = $this->offline_payments_service->getOfflinePayments();
+			$accountConfig      = $this->offline_payments_service->getAccountConfiguration();
+			$offlinePaymentName = null;
 
-            if ($accountConfig && $accountConfig->account) {
-                $id = $accountConfig->account->getOfflinePaymentMethod();
+			if ( $accountConfig && $accountConfig->account ) {
+				$id = $accountConfig->account->getOfflinePaymentMethod();
 
-                foreach ($offlinePayments as $payment) {
-                    if ($payment['name'] === $id) {
-                        $offlinePaymentName = $payment['displayName'];
-                        break;
-                    }
-                }
-            }
+				foreach ( $offlinePayments as $payment ) {
+					if ( $payment['name'] === $id ) {
+						$offlinePaymentName = $payment['displayName'];
+						break;
+					}
+				}
+			}
 
-            return $offlinePaymentName;
-        } catch (\Exception $e) {
-            return null;
-        }
-    }
-    /**
-     * @param ShippingMethod $shippingMethod
-     *
-     * @return bool
-     */
-    private function is_cash_on_delivery_enabled($shippingMethod) {
-        foreach ($shippingMethod->getShippingServices() as $service) {
-            if ($service->cashOnDeliveryConfig && $service->cashOnDeliveryConfig->offered) {
-                return true;
-            }
-        }
+			return $offlinePaymentName;
+		} catch ( \Exception $e ) {
+			return null;
+		}
+	}
 
-        return false;
-    }
+	/**
+	 * @param ShippingMethod $shippingMethod
+	 *
+	 * @return bool
+	 */
+	private function is_cash_on_delivery_enabled( $shippingMethod ) {
+		foreach ( $shippingMethod->getShippingServices() as $service ) {
+			if ( $service->cashOnDeliveryConfig && $service->cashOnDeliveryConfig->offered ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
 
 	/**
 	 * Returns Packlink shipping method.
@@ -409,19 +432,107 @@ class Checkout_Handler {
 	 * @throws \Logeecom\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException
 	 */
 	private function get_shipping_method( array $data = array() ) {
-		if ( empty( $data ) || ! isset( $data['shipping_method'][0] ) ) {
+		$chosen_method = Shipping_Method_Helper::get_chosen_packlink_rate_id(
+			$this->get_chosen_shipping_methods( $data )
+		);
+
+		if ( '' === $chosen_method ) {
 			return null;
 		}
 
-		$parts       = explode( ':', $data['shipping_method'][0] );
-		$code        = $parts[0];
-		$instance_id = (int) $parts[1];
-
-		if ( Packlink_Shipping_Method::PACKLINK_SHIPPING_METHOD !== $code ) {
+		$parts = explode( ':', $chosen_method );
+		if ( ! isset( $parts[1] ) ) {
 			return null;
 		}
 
-		return Shipping_Method_Helper::get_packlink_shipping_method( $instance_id );
+		return Shipping_Method_Helper::get_packlink_shipping_method( (int) $parts[1] );
+	}
+
+	/**
+	 * Returns the chosen shipping methods, keyed by shipping package.
+	 *
+	 * The posted `shipping_method` field only reaches the server when the shipping rate markup
+	 * is rendered inside `form.checkout`. Themes and checkout plugins that move the order review
+	 * outside of that form submit no such field at all, and WooCommerce does not depend on it:
+	 * it merges the field into the session in WC_Checkout::update_session() and builds the order
+	 * shipping lines from the session in WC_Checkout::set_data_from_cart(). The session is
+	 * therefore never less accurate than the posted field and is used as the fallback here, so
+	 * that drop-off handling no longer depends on where the theme places its markup.
+	 *
+	 * @param array $data Posted checkout data.
+	 *
+	 * @return array Chosen shipping methods.
+	 */
+	private function get_chosen_shipping_methods( array $data = array() ) {
+		if ( ! empty( $data['shipping_method'] ) && is_array( $data['shipping_method'] ) ) {
+			return $data['shipping_method'];
+		}
+
+		// checkout_process() receives no posted data and runs before WC_Checkout::update_session()
+		// merges the posted field into the session, so the raw request is consulted first.
+		if ( isset( $_REQUEST['shipping_method'] ) && is_array( $_REQUEST['shipping_method'] ) ) {
+			$posted_methods = array();
+			foreach ( wp_unslash( $_REQUEST['shipping_method'] ) as $package_key => $chosen_method ) {
+				if ( is_string( $chosen_method ) ) {
+					$posted_methods[ $package_key ] = sanitize_text_field( $chosen_method );
+				}
+			}
+
+			if ( ! empty( $posted_methods ) ) {
+				return $posted_methods;
+			}
+		}
+
+		return (array) wc()->session->get( 'chosen_shipping_methods', array() );
+	}
+
+	/**
+	 * Returns the selected drop-off location identifier.
+	 *
+	 * Falls back to the value stored in the session when the checkout form did not submit the
+	 * hidden input. The session copy is written by Packlink_Checkout_Controller::save_selected()
+	 * at the moment the customer picks the location, so it is available regardless of the
+	 * checkout markup.
+	 *
+	 * @return string Drop-off location identifier, or an empty string when none is selected.
+	 */
+	private function get_drop_off_id() {
+		$drop_off_id = $this->get_param( static::PACKLINK_DROP_OFF_ID );
+		if ( ! empty( $drop_off_id ) ) {
+			return (string) $drop_off_id;
+		}
+
+		return (string) wc()->session->get( Shipping_Method_Helper::DROP_OFF_ID, '' );
+	}
+
+	/**
+	 * Returns the selected drop-off location address.
+	 *
+	 * Falls back to the session copy for the same reason as the drop-off identifier. The session
+	 * holds the already decoded payload, which also avoids running the JSON string through
+	 * sanitize_text_field().
+	 *
+	 * @return array Drop-off address, or an empty array when unavailable.
+	 */
+	private function get_drop_off_address() {
+		$extra   = $this->get_param( static::PACKLINK_DROP_OFF_EXTRA );
+		$address = ! empty( $extra ) ? json_decode( $extra, true ) : null;
+
+		if ( ! is_array( $address ) ) {
+			$address = wc()->session->get( Shipping_Method_Helper::DROP_OFF_EXTRA );
+		}
+
+		if ( ! is_array( $address ) ) {
+			return array();
+		}
+
+		foreach ( array( 'name', 'city', 'zip', 'state', 'address' ) as $field ) {
+			if ( ! isset( $address[ $field ] ) ) {
+				return array();
+			}
+		}
+
+		return $address;
 	}
 
 	/**

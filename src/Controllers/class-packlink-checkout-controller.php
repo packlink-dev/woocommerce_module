@@ -41,9 +41,9 @@ class Packlink_Checkout_Controller extends Packlink_Base_Controller {
 			$this->return_json( array( 'success' => false ) );
 		}
 
-		wc()->session->set( Shipping_Method_Helper::DROP_OFF_ID, $payload['id'] );
+		wc()->session->set( Shipping_Method_Helper::DROP_OFF_ID, isset( $payload['id'] ) ? $payload['id'] : '' );
 		wc()->session->set( Shipping_Method_Helper::DROP_OFF_EXTRA, $payload );
-		wc()->session->set( Shipping_Method_Helper::SHIPPING_ID, $chosen_method = wc()->session->chosen_shipping_methods[0] );
+		wc()->session->set( Shipping_Method_Helper::SHIPPING_ID, Shipping_Method_Helper::get_chosen_packlink_rate_id() );
 		$this->return_json( array( 'success' => true ) );
 	}
 

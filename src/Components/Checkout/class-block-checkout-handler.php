@@ -444,13 +444,7 @@ class Block_Checkout_Handler {
 	 * @return string Rate id, or an empty string when no option is chosen.
 	 */
 	private function get_selected_rate_id() {
-		$chosen_shipping_methods = wc()->session->get( 'chosen_shipping_methods', '' );
-
-		if ( empty( $chosen_shipping_methods ) ) {
-			return '';
-		}
-
-		return (string) reset( $chosen_shipping_methods );
+		return Shipping_Method_Helper::get_chosen_packlink_rate_id();
 	}
 
 	/**
@@ -460,8 +454,7 @@ class Block_Checkout_Handler {
 	 * @return string
 	 */
 	private function get_selected_drop_off_id() {
-		$chosen_methods = wc()->session->get( 'chosen_shipping_methods', array() );
-		$chosen         = ! empty( $chosen_methods ) ? reset( $chosen_methods ) : '';
+		$chosen = Shipping_Method_Helper::get_chosen_packlink_rate_id();
 
 		if ( '' === $chosen || wc()->session->get( Shipping_Method_Helper::SHIPPING_ID, '' ) !== $chosen ) {
 			return '';
