@@ -28,6 +28,7 @@ use Packlink\BusinessLogic\ShipmentDocument\Interfaces\LabelMergeServiceInterfac
 use Packlink\BusinessLogic\ShipmentDocument\Interfaces\ShipmentDocumentServiceInterface;
 use Packlink\BusinessLogic\ShipmentDocument\ShipmentDocumentType;
 use Packlink\BusinessLogic\ShipmentDraft\Interfaces\ShipmentDraftServiceInterface;
+use Packlink\WooCommerce\Components\Http\Document_Fetcher;
 use Packlink\WooCommerce\Components\Services\Config_Service;
 use Packlink\WooCommerce\Components\Services\Shipment_Draft_Service;
 use Packlink\WooCommerce\Components\Utility\Script_Loader;
@@ -185,16 +186,7 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 			return esc_html( __( 'Label is not yet available.', 'packlink-pro-shipping' ) );
 		}
 
-		$this->get_labels_to_print( $shipment_details );
-
-		$documents = array_values(
-			array_filter(
-				$this->get_shipment_document_service()->getDocumentsForOrder( (string) $order_id ),
-				function ( ShipmentDocument $document ) {
-					return ShipmentDocumentType::SHIPPING_LABEL === $document->getType();
-				}
-			)
-		);
+		$documents = $this->get_shipping_label_documents( (string) $order_id );
 
 		$params = array( 'order_id' => $order_id );
 
@@ -352,11 +344,50 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 
 		$disposition = ! empty( $_GET['disposition'] ) ? sanitize_key( $_GET['disposition'] ) : 'inline';
 
-		if ( $this->stream_first_shipping_label( (string) $order_id, $disposition ) ) {
+		$documents = $this->get_shipping_label_documents( (string) $order_id );
+		if ( empty( $documents ) ) {
+			Logger::logWarning(
+				"No shipping label is available for order [$order_id].",
+				'Integration'
+			);
+
+			status_header( 404 );
 			exit;
 		}
 
-		status_header( 404 );
+		$link    = $documents[0]->getLink();
+		$fetcher = new Document_Fetcher();
+		$data    = $fetcher->fetch( $link );
+
+		$this->mark_shipping_label_printed( (string) $order_id, $link );
+
+		if ( false === $data ) {
+			// This server cannot fetch the label, but the merchant's browser very likely can - it
+			// is the party that fetched it before the same-origin proxy existed. Handing the link
+			// over keeps the download working instead of answering an empty 404, and the log line
+			// says why the proxy could not do it.
+			// Logged as an error on purpose: the default minimum log level records errors only, and
+			// a support case for "the label will not download" has to leave a trace on the site it
+			// happened on, even though the merchant is served by the fallback below.
+			Logger::logError(
+				"Could not fetch the shipping label for order [$order_id] from [$link]: "
+				. $fetcher->get_last_error() . ' Falling back to a direct download.',
+				'Integration'
+			);
+
+			header( 'Location: ' . $link, true, 302 );
+			exit;
+		}
+
+		if ( 'attachment' === $disposition ) {
+			$this->return_file(
+				$data,
+				sprintf( 'Packlink-shipping-label-%s.pdf', preg_replace( '/[^0-9]/', '', $order_id ) )
+			);
+		} else {
+			$this->return_file_inline( $data );
+		}
+
 		exit;
 	}
 
@@ -546,33 +577,25 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 	}
 
 	/**
-	 * Resolves the first SHIPPING_LABEL document for the given order, fetches its PDF bytes,
-	 * marks the document printed and streams the response. Returns true once the response has
-	 * started (caller is expected to `exit()` immediately after) or false when nothing was
-	 * streamed (no shipment, no shipping-label documents, or the CDN fetch failed).
+	 * Returns the SHIPPING_LABEL documents for the given order, fetching and persisting the labels
+	 * first when the order has none stored yet.
 	 *
-	 * Used by `get_label_pdf`, `bulk_download_labels` and `bulk_print_labels_ajax` so all three
-	 * paths share identical persistence + mark-printed semantics.
+	 * @param string $order_id Order id as string.
 	 *
-	 * @param string $order_id    Order id as string.
-	 * @param string $disposition 'attachment' to stream as a download with a filename, anything
-	 *                            else streams inline (for the browser print iframe).
-	 *
-	 * @return bool true if a PDF was streamed, false otherwise.
+	 * @return ShipmentDocument[] Shipping-label documents, empty when the order has none.
 	 *
 	 * @throws RepositoryNotRegisteredException
-	 * @throws OrderShipmentDetailsNotFound
 	 */
-	private function stream_first_shipping_label( $order_id, $disposition ) {
+	private function get_shipping_label_documents( $order_id ) {
 		//TODO: function to be removed when packlink merge endpoint is implemented
-		$shipment_details = $this->get_order_shipment_details_service()->getDetailsByOrderId( $order_id );
+		$shipment_details = $this->get_order_shipment_details( $order_id );
 		if ( null === $shipment_details ) {
-			return false;
+			return array();
 		}
 
 		$this->get_labels_to_print( $shipment_details );
 
-		$documents = array_values(
+		return array_values(
 			array_filter(
 				$this->get_shipment_document_service()->getDocumentsForOrder( $order_id ),
 				function ( ShipmentDocument $document ) {
@@ -580,30 +603,34 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 				}
 			)
 		);
+	}
 
-		if ( empty( $documents ) ) {
-			return false;
+	/**
+	 * Marks the order's shipping label as printed. The merchant has been handed the document by
+	 * this point, whether it was streamed or the link was passed to the browser, so a failure to
+	 * record that must not take the download down with it.
+	 *
+	 * @param string $order_id Order id as string.
+	 * @param string $link     Label link that was served.
+	 */
+	private function mark_shipping_label_printed( $order_id, $link ) {
+		try {
+			$shipment_details = $this->get_order_shipment_details( $order_id );
+			if ( null === $shipment_details ) {
+				return;
+			}
+
+			$this->get_shipment_document_service()->markDocumentPrinted(
+				$shipment_details->getReference(),
+				ShipmentDocumentType::SHIPPING_LABEL,
+				$link
+			);
+		} catch ( Exception $e ) {
+			Logger::logWarning(
+				"Could not mark the shipping label of order [$order_id] as printed: " . $e->getMessage(),
+				'Integration'
+			);
 		}
-
-		$link = $documents[0]->getLink();
-		$data = file_get_contents( $link );
-		if ( false === $data ) {
-			return false;
-		}
-
-		$this->get_shipment_document_service()->markDocumentPrinted(
-			$shipment_details->getReference(),
-			ShipmentDocumentType::SHIPPING_LABEL,
-			$link
-		);
-
-		if ( 'attachment' === $disposition ) {
-			$this->return_file( $data, sprintf( 'Packlink-shipping-label-%s.pdf', preg_replace( '/[^0-9]/', '', $order_id ) ) );
-		} else {
-			$this->return_file_inline( $data );
-		}
-
-		return true;
 	}
 
 	/**
@@ -776,8 +803,16 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 	 * @return bool | string
 	 */
 	protected function download_pdf( $link ) {
-		if ( ( $data = file_get_contents( $link ) ) === false ) {
-			return $data;
+		$fetcher = new Document_Fetcher();
+		$data    = $fetcher->fetch( $link );
+
+		if ( false === $data ) {
+			Logger::logError(
+				"Could not download the label at [$link]: " . $fetcher->get_last_error(),
+				'Integration'
+			);
+
+			return false;
 		}
 
 		$file = tempnam( sys_get_temp_dir(), 'packlink_pdf' );
