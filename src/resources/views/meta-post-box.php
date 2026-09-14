@@ -26,6 +26,8 @@ use Packlink\WooCommerce\Components\Utility\Shop_Helper;
  * @var ShipmentDocument[]   $customs_invoice_documents
  * @var string               $label_proxy_url
  * @var string               $label_download_url
+ * @var string               $customs_proxy_url
+ * @var string               $customs_download_url
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -134,17 +136,15 @@ $draft_in_progress_statuses = array(
 					</div>
 				<?php endif; ?>
 
-				<?php if ( ! empty( $customs_invoice_documents ) ) :
-					$customs_invoice_document = $customs_invoice_documents[0];
-					?>
+				<?php if ( ! empty( $customs_invoice_documents ) ) : ?>
 					<div class="pl-document-section">
 						<h4><?php echo esc_html__( 'Customs label', 'packlink-pro-shipping' ); ?></h4>
-						<a href="<?php echo esc_url( $customs_invoice_document->getLink() ); ?>" target="_blank"
+						<a href="<?php echo esc_url( $customs_download_url ); ?>" target="_blank"
 						   class="button button-primary pl-doc-button">
 							<?php echo esc_html__( 'Download', 'packlink-pro-shipping' ); ?>
 						</a>
 						<a href="#" class="button pl-doc-button pl-print-action"
-						   data-print-url="<?php echo esc_url( $customs_invoice_document->getLink() ); ?>">
+						   data-print-url="<?php echo esc_url( $customs_proxy_url ); ?>">
 							<?php echo esc_html__( 'Print', 'packlink-pro-shipping' ); ?>
 						</a>
 					</div>

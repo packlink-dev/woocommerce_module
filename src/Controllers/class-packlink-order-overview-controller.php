@@ -186,7 +186,7 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 			return esc_html( __( 'Label is not yet available.', 'packlink-pro-shipping' ) );
 		}
 
-		$documents = $this->get_shipping_label_documents( (string) $order_id );
+		$documents = $this->get_documents_of_type( (string) $order_id, ShipmentDocumentType::SHIPPING_LABEL );
 
 		$params = array( 'order_id' => $order_id );
 
@@ -336,6 +336,37 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 	public function get_label_pdf() {
 		$this->validate( 'no' );
 
+		$this->serve_requested_document( ShipmentDocumentType::SHIPPING_LABEL );
+	}
+
+	/**
+	 * Streams the order's customs invoice.
+	 *
+	 * Unlike a shipping label, whose link is stable, the customs invoice URL is signed by Packlink
+	 * on every read and its storage rejects it a couple of hours later. Serving it through here
+	 * resolves the document at the moment the merchant clicks, instead of handing out a link that
+	 * was signed when the order screen happened to render - which is how a merchant ends up
+	 * printing "the provided token has expired" on a sheet of paper.
+	 *
+	 * @throws RepositoryNotRegisteredException
+	 */
+	public function get_customs_invoice_pdf() {
+		$this->validate( 'no' );
+
+		$this->serve_requested_document( ShipmentDocumentType::CUSTOMS_INVOICE );
+	}
+
+	/**
+	 * Resolves the requested document for the order in the current request and streams it back.
+	 *
+	 * Resolving happens here rather than when the page was rendered, so the link is as fresh as
+	 * Packlink can make it. Never returns - every path ends the request.
+	 *
+	 * @param string $type One of the ShipmentDocumentType constants.
+	 *
+	 * @throws RepositoryNotRegisteredException
+	 */
+	private function serve_requested_document( $type ) {
 		$order_id = ! empty( $_GET['order_id'] ) ? absint( $_GET['order_id'] ) : 0;
 		if ( ! $order_id ) {
 			status_header( 400 );
@@ -344,12 +375,13 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 
 		$disposition = ! empty( $_GET['disposition'] ) ? sanitize_key( $_GET['disposition'] ) : 'inline';
 
-		$documents = $this->get_shipping_label_documents( (string) $order_id );
+		// Not ShipmentDocumentType::getLabel(): that is localised, and a log line a support agent
+		// has to read should say the same thing on every store.
+		$label = ShipmentDocumentType::CUSTOMS_INVOICE === $type ? 'customs invoice' : 'shipping label';
+
+		$documents = $this->get_documents_of_type( (string) $order_id, $type );
 		if ( empty( $documents ) ) {
-			Logger::logWarning(
-				"No shipping label is available for order [$order_id].",
-				'Integration'
-			);
+			Logger::logWarning( "No $label is available for order [$order_id].", 'Integration' );
 
 			status_header( 404 );
 			exit;
@@ -359,18 +391,17 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 		$fetcher = new Document_Fetcher();
 		$data    = $fetcher->fetch( $link );
 
-		$this->mark_shipping_label_printed( (string) $order_id, $link );
+		$this->mark_document_printed( (string) $order_id, $type, $link );
 
 		if ( false === $data ) {
-			// This server cannot fetch the label, but the merchant's browser very likely can - it
-			// is the party that fetched it before the same-origin proxy existed. Handing the link
-			// over keeps the download working instead of answering an empty 404, and the log line
-			// says why the proxy could not do it.
+			// This server cannot fetch the document, but the merchant's browser very likely can -
+			// it is the party that fetched it before the same-origin proxy existed. Handing the
+			// link over keeps the download working instead of answering an empty 404.
 			// Logged as an error on purpose: the default minimum log level records errors only, and
-			// a support case for "the label will not download" has to leave a trace on the site it
-			// happened on, even though the merchant is served by the fallback below.
+			// a support case for "the document will not download" has to leave a trace on the site
+			// it happened on, even though the merchant is served by the fallback below.
 			Logger::logError(
-				"Could not fetch the shipping label for order [$order_id] from [$link]: "
+				"Could not fetch the $label for order [$order_id] from [$link]: "
 				. $fetcher->get_last_error() . ' Falling back to a direct download.',
 				'Integration'
 			);
@@ -380,15 +411,28 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 		}
 
 		if ( 'attachment' === $disposition ) {
-			$this->return_file(
-				$data,
-				sprintf( 'Packlink-shipping-label-%s.pdf', preg_replace( '/[^0-9]/', '', $order_id ) )
-			);
+			$this->return_file( $data, $this->get_document_filename( $type, $order_id ) );
 		} else {
 			$this->return_file_inline( $data );
 		}
 
 		exit;
+	}
+
+	/**
+	 * Builds the download filename for a document.
+	 *
+	 * @param string $type     One of the ShipmentDocumentType constants.
+	 * @param mixed  $order_id Order id.
+	 *
+	 * @return string
+	 */
+	private function get_document_filename( $type, $order_id ) {
+		$prefix = ShipmentDocumentType::CUSTOMS_INVOICE === $type
+			? 'Packlink-customs-invoice'
+			: 'Packlink-shipping-label';
+
+		return sprintf( '%s-%s.pdf', $prefix, preg_replace( '/[^0-9]/', '', $order_id ) );
 	}
 
 	/**
@@ -577,16 +621,17 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 	}
 
 	/**
-	 * Returns the SHIPPING_LABEL documents for the given order, fetching and persisting the labels
+	 * Returns the order's documents of the given type, fetching and persisting the shipping labels
 	 * first when the order has none stored yet.
 	 *
 	 * @param string $order_id Order id as string.
+	 * @param string $type     One of the ShipmentDocumentType constants.
 	 *
-	 * @return ShipmentDocument[] Shipping-label documents, empty when the order has none.
+	 * @return ShipmentDocument[] Matching documents, empty when the order has none.
 	 *
 	 * @throws RepositoryNotRegisteredException
 	 */
-	private function get_shipping_label_documents( $order_id ) {
+	private function get_documents_of_type( $order_id, $type ) {
 		//TODO: function to be removed when packlink merge endpoint is implemented
 		$shipment_details = $this->get_order_shipment_details( $order_id );
 		if ( null === $shipment_details ) {
@@ -598,22 +643,23 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 		return array_values(
 			array_filter(
 				$this->get_shipment_document_service()->getDocumentsForOrder( $order_id ),
-				function ( ShipmentDocument $document ) {
-					return ShipmentDocumentType::SHIPPING_LABEL === $document->getType();
+				function ( ShipmentDocument $document ) use ( $type ) {
+					return $type === $document->getType();
 				}
 			)
 		);
 	}
 
 	/**
-	 * Marks the order's shipping label as printed. The merchant has been handed the document by
-	 * this point, whether it was streamed or the link was passed to the browser, so a failure to
-	 * record that must not take the download down with it.
+	 * Marks the order's document as printed. The merchant has been handed it by this point,
+	 * whether it was streamed or the link was passed to the browser, so a failure to record that
+	 * must not take the download down with it.
 	 *
 	 * @param string $order_id Order id as string.
-	 * @param string $link     Label link that was served.
+	 * @param string $type     One of the ShipmentDocumentType constants.
+	 * @param string $link     Document link that was served.
 	 */
-	private function mark_shipping_label_printed( $order_id, $link ) {
+	private function mark_document_printed( $order_id, $type, $link ) {
 		try {
 			$shipment_details = $this->get_order_shipment_details( $order_id );
 			if ( null === $shipment_details ) {
@@ -622,12 +668,12 @@ class Packlink_Order_Overview_Controller extends Packlink_Base_Controller {
 
 			$this->get_shipment_document_service()->markDocumentPrinted(
 				$shipment_details->getReference(),
-				ShipmentDocumentType::SHIPPING_LABEL,
+				$type,
 				$link
 			);
 		} catch ( Exception $e ) {
 			Logger::logWarning(
-				"Could not mark the shipping label of order [$order_id] as printed: " . $e->getMessage(),
+				"Could not mark the document of order [$order_id] as printed: " . $e->getMessage(),
 				'Integration'
 			);
 		}

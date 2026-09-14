@@ -132,6 +132,22 @@ class Packlink_Order_Details_Controller extends Packlink_Base_Controller {
 			)
 		);
 
+		// The customs invoice link Packlink returns is signed for this read only, so the page must
+		// point at the controller rather than at the link it happens to be holding right now.
+		$customs_proxy_url    = Shop_Helper::get_controller_url(
+			'Order_Overview',
+			'get_customs_invoice_pdf',
+			array( 'order_id' => $id )
+		);
+		$customs_download_url = Shop_Helper::get_controller_url(
+			'Order_Overview',
+			'get_customs_invoice_pdf',
+			array(
+				'order_id'    => $id,
+				'disposition' => 'attachment',
+			)
+		);
+
 		$public_tracking_url = '';
 		if ( $order_details && ! $shipment_deleted && $order_details->getReference() ) {
 			try {

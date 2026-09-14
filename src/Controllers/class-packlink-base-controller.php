@@ -33,6 +33,7 @@ class Packlink_Base_Controller {
 		'is_manual_sync_enabled',
 		'get_draft_status',
 		'get_label_pdf',
+		'get_customs_invoice_pdf',
 		'bulk_print_labels_ajax'
 	);
 
