@@ -4,7 +4,7 @@ Tags: shipping, delivery, carrier, order, package
 Requires at least: 4.7
 Requires PHP: 7.0
 Tested up to: 7.0.3
-Stable tag: 4.4.1
+Stable tag: 4.4.2
 License: LICENSE-2.0
 License URI: http://www.apache.org/licenses/LICENSE-2.0
 
@@ -93,6 +93,14 @@ Click <a href="https://support-pro.packlink.com/hc/es-es/articles/210158585" tar
 
 
 == Changelog ==
+
+#### 4.4.2 - September 14th, 2026
+
+**Updates**
+
+- Fix the shipping label download opening an empty page on stores whose server cannot fetch the label itself (an outbound proxy, a restricted PHP configuration or an outdated certificate store): labels are now downloaded through WordPress's own HTTP layer, and the download falls back to the direct label link when the server still cannot reach Packlink
+- Fix the customs invoice download and print failing once the order screen had been open for a few minutes, because the document link had expired; the link is now requested at the moment Download or Print is clicked, and a response that is not a PDF is refused instead of being downloaded or printed
+- Fix labels being left out of a bulk label PDF without any notice when one of them could not be downloaded; the reason is now recorded in the Packlink log
 
 #### 4.4.1 - September 11th, 2026
 

@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [v4.4.2](https://github.com/packlink-dev/woocommerce_module/compare/v4.4.1...v4.4.2) - 2026-09-14
+### Fixed
+- Shipping label download opening an empty page on stores whose server cannot fetch the label itself; labels are downloaded through WordPress's HTTP layer, with a fallback to the direct label link and the reason recorded in the log
+- Customs invoice download and print failing once the order screen had been open for a few minutes, because the document link had expired; the link is requested when Download or Print is clicked, and a response that is not a PDF is refused
+- Labels silently missing from a bulk label PDF when one of them could not be downloaded
+
 ## [v4.4.1](https://github.com/packlink-dev/woocommerce_module/compare/v4.4.0...v4.4.1) - 2026-09-11
 ### Fixed
 - Drop-off location not saved on themes and page builders that render the checkout's delivery options outside the WooCommerce checkout form, which left the location missing from the order and sent the shipment to Packlink without a drop-off point
