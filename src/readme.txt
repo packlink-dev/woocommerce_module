@@ -3,8 +3,8 @@ Contributors: packlink
 Tags: shipping, delivery, carrier, order, package
 Requires at least: 4.7
 Requires PHP: 7.0
-Tested up to: 6.9
-Stable tag: 4.3.2
+Tested up to: 7.0.3
+Stable tag: 4.4.2
 License: LICENSE-2.0
 License URI: http://www.apache.org/licenses/LICENSE-2.0
 
@@ -94,13 +94,37 @@ Click <a href="https://support-pro.packlink.com/hc/es-es/articles/210158585" tar
 
 == Changelog ==
 
-#### 4.3.2 - August 27th, 2026
+#### 4.4.2 - September 14th, 2026
 
 **Updates**
 
-- Fix shipment incident notifications being rejected, which left the order in its previous status (upgrades the packlink/integration-core shared library)
-- Fix the order status not updating for shipment incidents on installations created before the incident status mapping existed
-- Add logging of rejected and unsynchronised shipment notifications, to make missing status updates diagnosable without enabling debug logging
+- Fix the shipping label download opening an empty page on stores whose server cannot fetch the label itself (an outbound proxy, a restricted PHP configuration or an outdated certificate store): labels are now downloaded through WordPress's own HTTP layer, and the download falls back to the direct label link when the server still cannot reach Packlink
+- Fix the customs invoice download and print failing once the order screen had been open for a few minutes, because the document link had expired; the link is now requested at the moment Download or Print is clicked, and a response that is not a PDF is refused instead of being downloaded or printed
+- Fix labels being left out of a bulk label PDF without any notice when one of them could not be downloaded; the reason is now recorded in the Packlink log
+
+#### 4.4.1 - September 11th, 2026
+
+**Updates**
+
+- Fix the selected drop-off location not being saved on themes and page builders that render the checkout's delivery options outside the WooCommerce checkout form (for example Divi): the location was missing from the order in the shop's back office, and the shipment reached Packlink without a drop-off point and could not be completed
+- Fix the chosen Packlink service not being recognised on carts split into several shipping packages, which discarded a valid drop-off selection
+- Fix an incomplete drop-off location overwriting the customer's delivery address with empty values; the delivery address is now left unchanged
+
+#### 4.4.0 - September 10th, 2026
+
+**Updates**
+
+- Add Delivery Duty Paid (DDP) support at checkout: a duties-paid variant of each DDP-capable shipping option, the duty amount presented as its own "Delivery Duty Paid" line, per-service duties behaviour and cost adjustment settings, and a "Customs and duties paid" badge on the shipping services page
+- Fix customs settings accepting an incomplete configuration, which left duties silently unavailable at checkout: required fields (reason for export, sender tax ID, receiver user type, HS code and country of origin) are now validated on save, and a DDP-capable service warns while customs is not ready
+- Fix customs invoices being rejected by Packlink for orders whose products carry no weight; the configured default parcel weight is now used for those products
+- Fix duties not being offered for products without their own HS code when a default HS code is configured (upgrades the packlink/integration-core shared library with DDP support and customs validation)
+- Fix order status not updating on shipment incidents for installs created before the "incident" status mapping existed; missing order status mappings are backfilled on upgrade
+
+#### 4.3.2 - August 28th, 2026
+
+**Updates**
+
+- Declare compatibility with WordPress 7.0.3 and WooCommerce 11.0.1
 
 #### 4.3.1 - August 12th, 2026
 

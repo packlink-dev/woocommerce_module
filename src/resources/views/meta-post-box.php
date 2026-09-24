@@ -26,6 +26,8 @@ use Packlink\WooCommerce\Components\Utility\Shop_Helper;
  * @var ShipmentDocument[]   $customs_invoice_documents
  * @var string               $label_proxy_url
  * @var string               $label_download_url
+ * @var string               $customs_proxy_url
+ * @var string               $customs_download_url
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -96,6 +98,26 @@ $draft_in_progress_statuses = array(
 					); ?>
 				</div>
 			<?php endif; ?>
+
+			<?php
+			/*
+			 * The label says "charged to customer" on purpose: this line sits directly beneath
+			 * "Packlink shipping price", which is what Packlink bills the merchant, so the two
+			 * amounts must not be confusable. The cost is null unless the shipment was sold
+			 * duties-paid, so the line is absent for ordinary shipments; a duty the merchant absorbed
+			 * shows as 0,00, which is the answer to "what did the customer pay for duties", not a
+			 * missing value.
+			 */
+			?>
+			<?php if ( null !== $order_details->getDdpCost() ) : ?>
+				<div class="pl-order-detail-section">
+					<h4><?php echo esc_html__( 'DDP cost charged to customer', 'packlink-pro-shipping' ); ?></h4>
+					<?php echo wc_price(
+							$order_details->getDdpCost(),
+							array('currency' => $order_details->getCurrency())
+					); ?>
+				</div>
+			<?php endif; ?>
 		</li>
 
 		<?php if ( ! $shipment_deleted ) : ?>
@@ -114,17 +136,15 @@ $draft_in_progress_statuses = array(
 					</div>
 				<?php endif; ?>
 
-				<?php if ( ! empty( $customs_invoice_documents ) ) :
-					$customs_invoice_document = $customs_invoice_documents[0];
-					?>
+				<?php if ( ! empty( $customs_invoice_documents ) ) : ?>
 					<div class="pl-document-section">
 						<h4><?php echo esc_html__( 'Customs label', 'packlink-pro-shipping' ); ?></h4>
-						<a href="<?php echo esc_url( $customs_invoice_document->getLink() ); ?>" target="_blank"
+						<a href="<?php echo esc_url( $customs_download_url ); ?>" target="_blank"
 						   class="button button-primary pl-doc-button">
 							<?php echo esc_html__( 'Download', 'packlink-pro-shipping' ); ?>
 						</a>
 						<a href="#" class="button pl-doc-button pl-print-action"
-						   data-print-url="<?php echo esc_url( $customs_invoice_document->getLink() ); ?>">
+						   data-print-url="<?php echo esc_url( $customs_proxy_url ); ?>">
 							<?php echo esc_html__( 'Print', 'packlink-pro-shipping' ); ?>
 						</a>
 					</div>

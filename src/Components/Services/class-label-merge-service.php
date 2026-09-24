@@ -13,6 +13,7 @@ use Logeecom\Infrastructure\Logger\Logger;
 use Packlink\BusinessLogic\Order\OrderService;
 use Packlink\BusinessLogic\OrderShipmentDetails\OrderShipmentDetailsService;
 use Packlink\BusinessLogic\ShipmentDocument\Interfaces\LabelMergeServiceInterface;
+use Packlink\WooCommerce\Components\Http\Document_Fetcher;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
@@ -71,8 +72,17 @@ class Label_Merge_Service implements LabelMergeServiceInterface {
 					continue;
 				}
 
-				$data = file_get_contents( $link );
+				$fetcher = new Document_Fetcher();
+				$data    = $fetcher->fetch( $link );
 				if ( false === $data ) {
+					// Skipping silently would drop a label out of the merged file without anyone
+					// noticing, or produce an empty PDF when every fetch fails.
+					Logger::logError(
+						"Could not fetch the label of shipment [$reference] at [$link]: "
+						. $fetcher->get_last_error() . ' It will be missing from the merged file.',
+						'Integration'
+					);
+
 					continue;
 				}
 

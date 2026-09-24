@@ -798,3 +798,16 @@ msgstr "Der Auftragsentwurfs %s wurde erfolgreich erstellt"
 #: Components/Checkout/class-block-checkout-handler.php:59
 msgid "There are no drop-off locations available for the entered address"
 msgstr "Für deine eingegebene Adresse sind keine Abgabestellen verfügbar"
+
+#: Components/Checkout/class-checkout-handler.php
+#: Components/Checkout/class-block-checkout-handler.php
+msgid "- Delivery Duty Paid"
+msgstr "- Zölle und Abgaben bezahlt"
+
+#: Components/Checkout/class-ddp-fee-handler.php
+msgid "Delivery Duty Paid"
+msgstr "Zölle und Abgaben bezahlt"
+
+#: resources/views/meta-post-box.php
+msgid "DDP cost charged to customer"
+msgstr "Dem Kunden berechnete DDP-Kosten"

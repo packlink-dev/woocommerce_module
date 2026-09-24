@@ -20,12 +20,10 @@ use Packlink\BusinessLogic\Order\Interfaces\ShopOrderService as BaseShopOrderSer
 use Packlink\BusinessLogic\Order\Objects\Address;
 use Packlink\BusinessLogic\Order\Objects\Item;
 use Packlink\BusinessLogic\Order\Objects\Order;
+use Packlink\WooCommerce\Components\Checkout\Ddp_Checkout;
 use Packlink\WooCommerce\Components\Services\Config_Service;
-use Packlink\WooCommerce\Components\Services\Customs_Mapping_Service;
 use Packlink\WooCommerce\Components\ShippingMethod\Shipping_Method_Helper;
 use WC_Order;
-use WC_Product;
-use WP_Term;
 
 /**
  * Class Shop_Order_Service
@@ -48,11 +46,11 @@ class Shop_Order_Service extends Singleton implements BaseShopOrderService {
 	protected $configuration;
 
 	/**
-	 * Cached customs mapping. `false` means "not loaded yet"; `null` means "none saved".
+	 * Customs data resolver, shared with the checkout-time duty estimate.
 	 *
-	 * @var \Packlink\BusinessLogic\Customs\Models\CustomsMapping|null|false
+	 * @var Customs_Data_Resolver
 	 */
-	private $customs_mapping = false;
+	private $customs_resolver;
 
 	/**
 	 * Order_Repository constructor.
@@ -60,7 +58,8 @@ class Shop_Order_Service extends Singleton implements BaseShopOrderService {
 	protected function __construct() {
 		parent::__construct();
 
-		$this->configuration = ServiceRegister::getService( Config_Service::CLASS_NAME );
+		$this->configuration    = ServiceRegister::getService( Config_Service::CLASS_NAME );
+		$this->customs_resolver = new Customs_Data_Resolver();
 	}
 
 	/**
@@ -77,35 +76,83 @@ class Shop_Order_Service extends Singleton implements BaseShopOrderService {
 	public function getOrderAndShippingData( $order_id ) {
 		$wc_order = $this->get_order_by_id( $order_id );
 
+		/**
+		 * Reference this order is known by on the Packlink side: the draft's shipment reference and the
+		 * customs invoice number both come from it.
+		 *
+		 * Packlink matches a draft against the order number it arrives with, per account - so a bare
+		 * sequential number collides the moment one account serves more than one shop. Two shops both
+		 * reach order 254 and the second draft resolves to the first shop's shipment, inheriting its
+		 * carrier, its status and its customs invoice while no draft of its own is ever created.
+		 *
+		 * PrestaShop avoids this by sending its own random per-order reference rather than the id.
+		 * WooCommerce has no equivalent field, so the order number carries a short digest of the order
+		 * key, which is random per order - the digest and not the key itself, because the key authorises
+		 * access to the order-received page while this value is shown in the Packlink panel and printed
+		 * on the customs invoice.
+		 */
+		$reference = $this->get_order_reference( $wc_order );
+
 		$order = new Order();
-		$order->setId( $order_id );
-		$order->setOrderNumber( $wc_order->get_order_number() );
+		$order->setId( $reference );
+		$order->setOrderNumber( $reference );
 		$order->setStatus( $wc_order->get_status() );
 		$order->setBasePrice( $wc_order->get_subtotal() );
 		$order->setCartPrice( $wc_order->get_total() - $wc_order->get_shipping_total() );
 		$order->setCurrency( $wc_order->get_currency() );
 		$order->setCustomerId( $wc_order->get_customer_id() );
 		$order->setNetCartPrice( $order->getCartPrice() - $wc_order->get_cart_tax() );
-		$order->setOrderNumber( $wc_order->get_order_number() );
 		$order->setTotalPrice( $wc_order->get_total() );
 		$order->setShippingPrice( $wc_order->get_shipping_total() );
 
+		// The customs invoice declares the freight, and the core falls back to the order total when the
+		// platform leaves this unset - which double-counts the goods that are already itemised on the
+		// invoice and inflates every duty computed from it (C8). Duties ride on their own fee line here,
+		// so the shipping total needs nothing subtracted from it.
+		//
+		// But the shipping total is still the SHOPPER-facing carrier price: Packlink's `porterage` plus
+		// its platform fee, plus whatever a pricing policy added. Only porterage is carrier freight, and
+		// it is what the checkout quote was priced against - so declaring it here makes the draft
+		// describe the same shipment the shopper was quoted. Measured on the identical PrestaShop
+		// defect: a shopper-facing 44.99 against a real carrier price of 44.00 had the draft screen
+		// quote 26.49 where the shopper was charged, and Packlink billed, 26.40.
+		//
+		// The shipping total remains the fallback, for orders placed before the carrier price was
+		// recorded and for any rate whose quote never reported one.
+		$porterage = $wc_order->get_meta( Ddp_Checkout::META_PORTERAGE );
+
+		$order->setShippingCost(
+			( '' !== $porterage && null !== $porterage && (float) $porterage > 0.0 )
+				? (float) $porterage
+				: (float) $wc_order->get_shipping_total()
+		);
+
 		$items = $this->get_order_items( $wc_order );
 		$order->setItems( $items );
-		$order->setTotalWeight( $this->calculate_total_weight( $items ) );
+		$order->setTotalWeight( Customs_Data_Resolver::total_weight( $items ) );
 
 		$order->setBillingAddress( $this->get_billing_address( $wc_order ) );
 		$order->setShippingAddress( $this->get_shipping_address( $wc_order ) );
 
 		// One resolved value feeds both customs attributes: the core sends it as the receiver
 		// tax id (private person) or VAT number (company) based on the receiver user type.
-		$tax_id = $this->resolve_order_tax_id( $wc_order );
+		$tax_id = $this->customs_resolver->resolve_tax_id_from_order( $wc_order );
 		if ( '' !== $tax_id ) {
 			$order->setTaxId( $tax_id );
 			$order->setVatNumber( $tax_id );
 		}
 
         $order->setPaymentId($wc_order->get_payment_method());
+
+		// Core turns this flag into `selected_products.ddp.is_selected` on the shipment draft, and a
+		// service whose DDP support level is mandatory rejects the purchase with
+		// `400 mandatory_ddp_not_selected` when the draft omits it. So carrying the selection is a
+		// correctness requirement, not a display one. The charged amount is read back rather than
+		// recomputed, so what the shipment records is exactly what the customer paid.
+		if ( 'yes' === $wc_order->get_meta( Ddp_Checkout::META_SELECTED ) ) {
+			$order->setDdpSelected( true );
+			$order->setDdpCost( (float) $wc_order->get_meta( Ddp_Checkout::META_COST ) );
+		}
 
 		$shipping_method = Shipping_Method_Helper::get_packlink_shipping_method_from_order( $wc_order );
 		if ( null !== $shipping_method ) {
@@ -164,21 +211,25 @@ class Shop_Order_Service extends Singleton implements BaseShopOrderService {
 	}
 
 	/**
-	 * Returns category name.
+	 * Returns the reference Packlink knows this order by: the shop's order number with a short digest
+	 * of the order key appended, so it cannot collide with the same number in another shop sharing the
+	 * account. Stable for the life of the order, so re-sending resolves to the same shipment instead of
+	 * creating an orphan draft.
 	 *
-	 * @param \WC_Product $product WooCommerce product.
+	 * @param WC_Order $wc_order WooCommerce order.
 	 *
-	 * @return string|null Category name.
+	 * @return string
 	 */
-	private function get_product_category_name( \WC_Product $product ) {
-		$category_ids = $product->get_category_ids();
-		if ( empty( $category_ids ) ) {
-			return null;
+	private function get_order_reference( WC_Order $wc_order ) {
+		$seed = (string) $wc_order->get_order_key();
+
+		if ( '' === $seed ) {
+			// Orders created programmatically can carry no key. The shop's own address then keeps the
+			// reference distinct between shops, which is what the collision is about.
+			$seed = get_site_url() . '|' . $wc_order->get_id();
 		}
 
-		$category = WP_Term::get_instance( $category_ids[0] );
-
-		return $category instanceof WP_Term ? $category->name : null;
+		return $wc_order->get_order_number() . '-' . substr( md5( $seed ), 0, 6 );
 	}
 
 	/**
@@ -201,8 +252,10 @@ class Shop_Order_Service extends Singleton implements BaseShopOrderService {
 				continue;
 			}
 
+			$quantity = (int) $wc_item->get_quantity();
+
 			$item = new Item();
-			$item->setQuantity( $wc_item->get_quantity() );
+			$item->setQuantity( $quantity );
 			$item->setId( $wc_item->get_product_id() );
 			$item->setTotalPrice( (float) $wc_item->get_total() );
 			$item->setSku( $product->get_sku() );
@@ -211,16 +264,20 @@ class Shop_Order_Service extends Singleton implements BaseShopOrderService {
 			$item->setWidth( (float) $product->get_width() );
 			$item->setWeight( (float) $product->get_weight() );
 			$item->setTitle( $product->get_title() );
-			$item->setCategoryName( $this->get_product_category_name( $product ) );
-			$item->setPrice( $wc_item->get_subtotal() );
+			$item->setCategoryName( Customs_Data_Resolver::product_category_name( $product ) );
+			// The customs invoice declares a per-unit value next to the quantity, so a line subtotal
+			// here is multiplied by the quantity a second time: a 9 x 44.99 line goes out as 404.91 per
+			// unit, and Packlink refuses the shipment because the declared goods exceed the package
+			// value. Tax-excluded, like the value the invoice asks for.
+			$item->setPrice( $quantity > 0 ? (float) $wc_item->get_subtotal() / $quantity : (float) $wc_item->get_subtotal() );
 			$item->setConcept( $product->get_description() );
 
-			$tariff_number = $this->resolve_item_tariff_number( $product );
+			$tariff_number = $this->customs_resolver->resolve_item_tariff_number( $product );
 			if ( '' !== $tariff_number ) {
 				$item->setTariffNumber( $tariff_number );
 			}
 
-			$country_of_origin = $this->resolve_item_country_of_origin( $product );
+			$country_of_origin = $this->customs_resolver->resolve_item_country_of_origin( $product );
 			if ( '' !== $country_of_origin ) {
 				$item->setCountryOfOrigin( $country_of_origin );
 			}
@@ -234,193 +291,6 @@ class Shop_Order_Service extends Singleton implements BaseShopOrderService {
 		}
 
 		return $items;
-	}
-
-	/**
-	 * Sums the weight of all order items (unit weight multiplied by quantity).
-	 *
-	 * The core Order model keeps its own total-weight field, separate from the per-item weights, and
-	 * it defaults to 0. The customs invoice request (CustomsService::getShipmentDetails) reads this
-	 * order-level value for `parcels_weight`, which Packlink rejects when it is 0. So it must be set
-	 * explicitly here even though the draft packages are built from the individual item weights.
-	 *
-	 * @param Item[] $items Formatted order items.
-	 *
-	 * @return float Total order weight in the store weight unit.
-	 */
-	private function calculate_total_weight( array $items ) {
-		$total_weight = 0.0;
-
-		foreach ( $items as $item ) {
-			$quantity      = $item->getQuantity() ? $item->getQuantity() : 1;
-			$total_weight += (float) $item->getWeight() * $quantity;
-		}
-
-		return $total_weight;
-	}
-
-	/**
-	 * Returns the saved customs mapping, loading it once per request.
-	 *
-	 * @return \Packlink\BusinessLogic\Customs\Models\CustomsMapping|null
-	 */
-	private function get_customs_mapping() {
-		if ( false === $this->customs_mapping ) {
-			$this->customs_mapping = $this->configuration->getCustomsMappings();
-		}
-
-		return $this->customs_mapping;
-	}
-
-	/**
-	 * Resolves an item tariff (HS) code: mapped product field, then the dedicated HS-code meta, then
-	 * empty (core applies the configured default).
-	 *
-	 * @param WC_Product $product WooCommerce product.
-	 *
-	 * @return string
-	 */
-	private function resolve_item_tariff_number( WC_Product $product ) {
-		$mapping = $this->get_customs_mapping();
-
-		if ( $mapping && ! empty( $mapping->mappingTariffNumber ) ) {
-			$value = $this->read_product_field( $product, $mapping->mappingTariffNumber );
-			if ( '' !== $value ) {
-				return $value;
-			}
-		}
-
-		$fallback = $product->get_meta( Customs_Mapping_Service::PRODUCT_HS_CODE_META );
-
-		return $fallback ? (string) $fallback : '';
-	}
-
-	/**
-	 * Reads a mapped product field by its namespace: an `attr:{name}` value is a product attribute
-	 * (global `pa_*` taxonomy or per-product custom attribute name, read via get_attribute), a
-	 * `meta:{key}` value is a product meta key. Legacy un-namespaced values fall back to the old
-	 * behavior: `pa_*` is an attribute, anything else is a product meta key.
-	 *
-	 * @param WC_Product $product WooCommerce product.
-	 * @param string     $field   Mapped field (namespaced attribute or meta key).
-	 *
-	 * @return string
-	 */
-	private function read_product_field( WC_Product $product, $field ) {
-		if ( 0 === strpos( $field, Customs_Mapping_Service::PREFIX_ATTRIBUTE ) ) {
-			$name = substr( $field, strlen( Customs_Mapping_Service::PREFIX_ATTRIBUTE ) );
-
-			return (string) $product->get_attribute( $name );
-		}
-
-		if ( 0 === strpos( $field, Customs_Mapping_Service::PREFIX_PRODUCT_META ) ) {
-			$key   = substr( $field, strlen( Customs_Mapping_Service::PREFIX_PRODUCT_META ) );
-			$value = $product->get_meta( $key );
-
-			return ( '' !== $value && null !== $value ) ? (string) $value : '';
-		}
-
-		if ( 0 === strpos( $field, 'pa_' ) ) {
-			return (string) $product->get_attribute( $field );
-		}
-
-		$value = $product->get_meta( $field );
-
-		return ( '' !== $value && null !== $value ) ? (string) $value : '';
-	}
-
-	/**
-	 * Reads a mapped customer field by its namespace: an `order:{key}` value is an order meta key,
-	 * a `user:{key}` value is a customer user meta key (empty for guest orders). Legacy
-	 * un-namespaced values fall back to the old behavior: an order meta key.
-	 *
-	 * @param WC_Order $wc_order WooCommerce order.
-	 * @param string   $field    Mapped field (namespaced order or user meta key).
-	 *
-	 * @return string
-	 */
-	private function read_customer_field( WC_Order $wc_order, $field ) {
-		if ( 0 === strpos( $field, Customs_Mapping_Service::PREFIX_ORDER_META ) ) {
-			$key   = substr( $field, strlen( Customs_Mapping_Service::PREFIX_ORDER_META ) );
-			$value = $wc_order->get_meta( $key );
-
-			return ( '' !== $value && null !== $value ) ? (string) $value : '';
-		}
-
-		if ( 0 === strpos( $field, Customs_Mapping_Service::PREFIX_USER_META ) ) {
-			$key = substr( $field, strlen( Customs_Mapping_Service::PREFIX_USER_META ) );
-
-			return $this->read_customer_user_meta( $wc_order, $key );
-		}
-
-		$value = $wc_order->get_meta( $field );
-
-		return ( '' !== $value && null !== $value ) ? (string) $value : '';
-	}
-
-	/**
-	 * Reads a user meta value of the order customer. Guest orders (customer id 0) have no profile,
-	 * so they resolve to an empty string.
-	 *
-	 * @param WC_Order $wc_order WooCommerce order.
-	 * @param string   $key      User meta key.
-	 *
-	 * @return string
-	 */
-	private function read_customer_user_meta( WC_Order $wc_order, $key ) {
-		$customer_id = (int) $wc_order->get_customer_id();
-		if ( 0 === $customer_id ) {
-			return '';
-		}
-
-		$value = get_user_meta( $customer_id, $key, true );
-
-		return ( '' !== $value && null !== $value ) ? (string) $value : '';
-	}
-
-	/**
-	 * Resolves an item country of origin: mapped product field, then the dedicated
-	 * country-of-origin meta, then empty (core applies the configured default).
-	 *
-	 * @param WC_Product $product WooCommerce product.
-	 *
-	 * @return string
-	 */
-	private function resolve_item_country_of_origin( WC_Product $product ) {
-		$mapping = $this->get_customs_mapping();
-
-		if ( $mapping && ! empty( $mapping->mappingCountryOfOrigin ) ) {
-			$value = $this->read_product_field( $product, $mapping->mappingCountryOfOrigin );
-			if ( '' !== $value ) {
-				return $value;
-			}
-		}
-
-		$fallback = $product->get_meta( Customs_Mapping_Service::PRODUCT_COUNTRY_OF_ORIGIN_META );
-
-		return $fallback ? (string) $fallback : '';
-	}
-
-	/**
-	 * Resolves the customer tax ID / VAT number: mapped customer field, then the dedicated user
-	 * meta of the order customer, then empty. One value serves both customs attributes - the core
-	 * routes it to tax id or VAT number based on the configured receiver user type.
-	 *
-	 * @param WC_Order $wc_order WooCommerce order.
-	 *
-	 * @return string
-	 */
-	private function resolve_order_tax_id( WC_Order $wc_order ) {
-		$mapping = $this->get_customs_mapping();
-
-		if ( $mapping && ! empty( $mapping->mappingReceiverTaxId ) ) {
-			$value = $this->read_customer_field( $wc_order, $mapping->mappingReceiverTaxId );
-			if ( '' !== $value ) {
-				return $value;
-			}
-		}
-
-		return $this->read_customer_user_meta( $wc_order, Customs_Mapping_Service::USER_TAX_ID_META );
 	}
 
 	/**

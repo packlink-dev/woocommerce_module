@@ -796,3 +796,16 @@ msgstr "Shipment draft for order %s created successfully"
 #: Components/Checkout/class-block-checkout-handler.php:59
 msgid "There are no drop-off locations available for the entered address"
 msgstr "There are no drop-off locations available for the entered address"
+
+#: Components/Checkout/class-checkout-handler.php
+#: Components/Checkout/class-block-checkout-handler.php
+msgid "- Delivery Duty Paid"
+msgstr "- Delivery Duty Paid"
+
+#: Components/Checkout/class-ddp-fee-handler.php
+msgid "Delivery Duty Paid"
+msgstr "Delivery Duty Paid"
+
+#: resources/views/meta-post-box.php
+msgid "DDP cost charged to customer"
+msgstr "DDP cost charged to customer"

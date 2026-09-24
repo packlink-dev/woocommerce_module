@@ -7,16 +7,20 @@
 
 namespace Packlink\WooCommerce\Components\ShippingMethod;
 
+use Logeecom\Infrastructure\Logger\Logger;
 use Logeecom\Infrastructure\ORM\Interfaces\RepositoryInterface;
 use Logeecom\Infrastructure\ORM\QueryFilter\QueryFilter;
 use Logeecom\Infrastructure\ORM\RepositoryRegistry;
 use Logeecom\Infrastructure\ServiceRegister;
+use Packlink\BusinessLogic\DDP\DdpBehavior;
 use Packlink\BusinessLogic\Http\DTO\Package;
 use Packlink\BusinessLogic\Http\DTO\ParcelInfo;
 use Packlink\BusinessLogic\ShippingMethod\Models\ShippingMethod;
 use Packlink\BusinessLogic\ShippingMethod\ShippingCostCalculator;
 use Packlink\BusinessLogic\ShippingMethod\ShippingMethodService;
 use Packlink\WooCommerce\Components\Checkout\Checkout_Handler;
+use Packlink\WooCommerce\Components\Checkout\Ddp_Checkout;
+use Packlink\WooCommerce\Components\Checkout\Ddp_Checkout_Service;
 use Packlink\WooCommerce\Components\Services\Config_Service;
 use Packlink\WooCommerce\Components\Services\System_Info_Service;
 use WC_Eval_Math;
@@ -158,7 +162,191 @@ class Packlink_Shipping_Method extends \WC_Shipping_Method {
 			$rate['label'] = __( 'shipping cost', 'packlink-pro-shipping' );
 		}
 
-		$this->add_rate( $rate );
+		$behavior = $shipping_method->getEffectiveDdpBehavior();
+		if ( DdpBehavior::NONE === $behavior ) {
+			// Nothing about DDP runs for a method that does not charge duty, so a store without the
+			// capability behaves exactly as it did before this feature existed.
+			$this->add_rate( $rate );
+
+			return;
+		}
+
+		// The rate keeps the transport price. Duty is charged as a separate cart fee, so it is never
+		// folded into the shipping cost - which also keeps the price policy meaning what it says.
+		$ddp_amount = $this->get_ddp_amount( $shipping_method, $package, (float) $rate['cost'] );
+
+		if ( null === $ddp_amount && DdpBehavior::ENFORCED === $behavior ) {
+			Logger::logWarning(
+				'Duties are enforced for "' . $shipping_method->getTitle() . '" but could not be quoted,'
+				. ' so the service is offered without them for now.',
+				'Integration'
+			);
+		}
+
+		$composed_rates = static::compose_rates(
+			$rate,
+			$this->get_rate_id( Ddp_Checkout::RATE_SUFFIX ),
+			$behavior,
+			$ddp_amount,
+			null === $ddp_amount ? null : $this->get_ddp_porterage( $shipping_method, $package )
+		);
+
+		foreach ( $composed_rates as $composed ) {
+			$this->add_rate( $composed );
+		}
+	}
+
+	/**
+	 * Builds the rates a DDP-capable method offers for one package.
+	 *
+	 * Pure on purpose: the five outcomes the specification lists are decided here and nowhere else, so
+	 * they can be asserted without a live Packlink account.
+	 *
+	 *   none                                   -> the plain rate only, whatever was quoted
+	 *   optional, duty quoted                  -> both rates, plain first
+	 *   optional, no duty                      -> the plain rate only
+	 *   enforced, duty quoted                  -> the DDP rate only
+	 *   enforced, no duty                      -> the plain rate only (fail soft, INV-5)
+	 *   mandatory, duty quoted                 -> the DDP rate only
+	 *   mandatory, no duty                      -> nothing; the service cannot be offered at all
+	 *
+	 * A quoted 0.00 is a duty the merchant absorbed with a cost adjustment, so it counts as quoted: the
+	 * duties-paid rate is offered at the transport price. Withholding it would take a mandatory-DDP
+	 * service off checkout for no reason other than the merchant charging nothing for the duty. Only a
+	 * null amount - no duty on this route, or a lookup that produced nothing - is "no duty".
+	 *
+	 * @param array      $base_rate Transport-only rate as WooCommerce would receive it.
+	 * @param string     $ddp_rate_id Rate id of the duties-paid variant.
+	 * @param string     $behavior Effective DDP behaviour of the method.
+	 * @param float|null $ddp_amount Charged duty amount, or null when none is available.
+	 * @param float|null $ddp_porterage Packlink's own carrier price for the service behind this rate,
+	 *                                  passed in rather than looked up because this method is static
+	 *                                  and pure - it is the seam the rate-composition tests drive.
+	 *                                  Omitted from the meta entirely when there is none, so a rate
+	 *                                  composed without one is byte-identical to before.
+	 *
+	 * @return array[] Rates to add, in the order they should be offered.
+	 */
+	public static function compose_rates(
+		array $base_rate,
+		$ddp_rate_id,
+		$behavior,
+		$ddp_amount,
+		$ddp_porterage = null
+	) {
+		if ( DdpBehavior::NONE === $behavior ) {
+			// Total over the behaviour enum on purpose: the caller short-circuits this case to avoid
+			// the lookup, but a merchant who charges no duty must get one plain rate even if an amount
+			// somehow reaches here.
+			return array( $base_rate );
+		}
+
+		$rates          = array();
+		$duty_available = null !== $ddp_amount;
+
+		if ( ! static::hides_plain_rate( $behavior, $duty_available ) ) {
+			$rates[] = $base_rate;
+		}
+
+		if ( $duty_available ) {
+			$ddp_rate = $base_rate;
+
+			$ddp_rate['id'] = $ddp_rate_id;
+			// The amount rides on the rate because WooCommerce caches calculated rates in the session
+			// and serves later renders from that cache without calling calculate_shipping(). The cart
+			// fee reads it back from here, so it cannot go missing on a cached render.
+			$ddp_rate['meta_data'] = array( Ddp_Checkout::RATE_META_AMOUNT => $ddp_amount );
+
+			// The carrier price rides along with the amount. It is read back off the chosen rate when
+			// the order is placed and recorded on the order, because the shipment draft is assembled in
+			// a later request that makes no products call and so cannot learn it again. Added only when
+			// there is one: the draft distinguishes "no carrier price known" from a zero, and a null in
+			// the meta would be indistinguishable from a rate composed before this existed.
+			if ( null !== $ddp_porterage ) {
+				$ddp_rate['meta_data'][ Ddp_Checkout::RATE_META_PORTERAGE ] = $ddp_porterage;
+			}
+
+			$rates[] = $ddp_rate;
+		}
+
+		return $rates;
+	}
+
+	/**
+	 * Whether the transport-only rate is withheld.
+	 *
+	 * One predicate consulted by both branches, so the two rows cannot contradict each other: a
+	 * mandatory service never offers a duty-free option, an enforced one withholds it only while duty
+	 * is actually available - otherwise it is the fail-soft fallback - and an optional one always
+	 * offers it.
+	 *
+	 * @param string $behavior Effective DDP behaviour.
+	 * @param bool   $duty_available Whether a usable duty amount was obtained.
+	 *
+	 * @return bool
+	 */
+	private static function hides_plain_rate( $behavior, $duty_available ) {
+		if ( DdpBehavior::MANDATORY === $behavior ) {
+			return true;
+		}
+
+		if ( DdpBehavior::ENFORCED === $behavior ) {
+			return (bool) $duty_available;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Asks the checkout duty service for this method's charged amount, tolerating any failure: a
+	 * shipping-rate calculation must not break because an optional estimate did not arrive.
+	 *
+	 * @param ShippingMethod $shipping_method Packlink shipping method.
+	 * @param array          $package WooCommerce shipping package.
+	 * @param float          $transport_cost Transport price, for the customs invoice.
+	 *
+	 * @return float|null Charged duty amount, or null when unavailable.
+	 */
+	private function get_ddp_amount( ShippingMethod $shipping_method, array $package, $transport_cost ) {
+		try {
+			/** @var Ddp_Checkout_Service $service */ // phpcs:ignore
+			$service = ServiceRegister::getService( Ddp_Checkout_Service::CLASS_NAME );
+
+			return $service->amount_for_method( $shipping_method, $package, $transport_cost );
+		} catch ( \Exception $e ) {
+			Logger::logWarning( 'Could not resolve duties at checkout: ' . $e->getMessage(), 'Integration' );
+
+			return null;
+		}
+	}
+
+	/**
+	 * Packlink's own carrier price for this method's service, read from the quote the amount above just
+	 * populated.
+	 *
+	 * Never fetches - get_ddp_amount() has already run for this package by the time the rate is built,
+	 * so the quote is in hand. Null is a normal answer on a core too old to report it, and the draft
+	 * then falls back to the shipping total.
+	 *
+	 * @param ShippingMethod $shipping_method Packlink shipping method.
+	 * @param array          $package WooCommerce shipping package.
+	 *
+	 * @return float|null Carrier price, or null when the quote recorded none.
+	 */
+	private function get_ddp_porterage( ShippingMethod $shipping_method, array $package ) {
+		try {
+			/** @var Ddp_Checkout_Service $service */ // phpcs:ignore
+			$service = ServiceRegister::getService( Ddp_Checkout_Service::CLASS_NAME );
+
+			return $service->porterage_for_method( $shipping_method, $package );
+		} catch ( \Exception $e ) {
+			Logger::logWarning(
+				'Could not resolve the carrier price for duties: ' . $e->getMessage(),
+				'Integration'
+			);
+
+			return null;
+		}
 	}
 
 	/**

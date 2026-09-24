@@ -16,6 +16,12 @@ window.onload = () => {
 	}, 500);
 };
 (function () {
+	// Markers left on the nodes the duties decoration has touched. The block checkout re-renders its
+	// rate list on every totals refresh and a MutationObserver re-runs initialize(), so both decorating
+	// helpers must be safe to call over and over against the same row.
+	const DDP_LABEL_MARKER = 'pl-ddp-label';
+	const DDP_PRICE_MARKER = 'pl-ddp-price';
+
 	let modal;
 	let closeButton;
 	let methodDetails;
@@ -85,8 +91,10 @@ window.onload = () => {
 					let option, dataDiv;
 					if (privateData.methodDetails.length > 1) {
 						privateData.isSingleShippingMethod = false;
-						const inputValue = 'packlink_shipping_method:' + details[0];
-						option = document.querySelector("input[value='" + inputValue + "']");
+						// details[0] IS the rate id, which is the value of the row's radio input — a
+						// DDP-capable method renders two rows from one instance id, so nothing shorter
+						// than the full rate id identifies a row.
+						option = document.querySelector("input[value='" + details[0] + "']");
 						dataDiv = option.parentElement.querySelector("div[class='wc-block-components-radio-control__label-group']")
 					} else {
 						privateData.isSingleShippingMethod = true;
@@ -100,6 +108,10 @@ window.onload = () => {
 
 					if (details[1]['packlink_show_image']) {
 						injectImage(option, details[1]['packlink_image_url']);
+					}
+
+					if (details[1]['packlink_is_ddp']) {
+						decorateDdpRow(dataDiv, details[1]);
 					}
 
 					if (option.checked || privateData.isSingleShippingMethod) {
@@ -224,6 +236,69 @@ window.onload = () => {
 		container.appendChild(document.createTextNode(' will be applied.'));
 	}
 
+	/**
+	 * Presents a duties-paid row as one: the service title gains the duties suffix and the rendered
+	 * transport price is replaced by the combined transport + duties price the server formatted.
+	 *
+	 * @param dataDiv Label group of the rate row.
+	 * @param details Method details of that row.
+	 */
+	function decorateDdpRow(dataDiv, details) {
+		if (!dataDiv) {
+			return;
+		}
+
+		appendDdpSuffix(dataDiv, details['packlink_ddp_suffix']);
+		replaceDdpPrice(dataDiv, details['packlink_ddp_total']);
+	}
+
+	/**
+	 * Appends the duties suffix to the row's service title.
+	 *
+	 * The guard is the rendered text rather than only the marker class: the block checkout re-renders
+	 * by rewriting the text of nodes it keeps, so a class alone would survive a reset that wiped the
+	 * suffix and would then block re-applying it.
+	 *
+	 * @param dataDiv Label group of the rate row.
+	 * @param suffix Translated suffix, e.g. '- Delivery Duty Paid'.
+	 */
+	function appendDdpSuffix(dataDiv, suffix) {
+		const label = dataDiv.querySelector('.wc-block-components-radio-control__label');
+
+		if (!label || !suffix || label.textContent.indexOf(suffix) !== -1) {
+			return;
+		}
+
+		label.textContent = label.textContent + ' ' + suffix;
+		label.classList.add(DDP_LABEL_MARKER);
+	}
+
+	/**
+	 * Replaces the row's rendered price with the combined transport + duties price.
+	 *
+	 * The value arrives already formatted by wc_price() — currency symbol, its position and the
+	 * separators are store settings, and money is never formatted here. It is written as text, so a
+	 * price string can never carry markup into the page.
+	 *
+	 * @param dataDiv Label group of the rate row.
+	 * @param total Server-formatted combined price.
+	 */
+	function replaceDdpPrice(dataDiv, total) {
+		const holder = dataDiv.querySelector('.wc-block-components-radio-control__secondary-label');
+
+		if (!holder || !total) {
+			return;
+		}
+
+		const price = holder.querySelector('.wc-block-components-formatted-money-amount') || holder;
+		if (price.textContent.trim() === total.trim()) {
+			return;
+		}
+
+		price.textContent = total;
+		price.classList.add(DDP_PRICE_MARKER);
+	}
+
 	function addDropOffButton(dataDiv, details) {
 		dataDiv.querySelectorAll('#packlink-drop-off').forEach(function (el) { el.remove(); });
 
@@ -306,7 +381,9 @@ window.onload = () => {
 				}
 
 				if (option.children[0].value.includes('packlink_shipping_method')) {
-					ids.push(parseInt(option.children[0].value.split(':')[1]));
+					// Full rate ids, not parsed instance ids: `method_details` is keyed by rate id so that
+					// the plain rate and its `:ddp` sibling stay two distinct entries.
+					ids.push(option.children[0].value);
 				} else {
 					option.addEventListener('click', () => {
 						let dropOff = document.getElementById('packlink-drop-off');
