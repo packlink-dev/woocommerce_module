@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [v4.4.3](https://github.com/packlink-dev/woocommerce_module/compare/v4.4.2...v4.4.3) - 2026-09-24
+### Fixed
+- Shipment incident notifications were rejected instead of updating the order, and event names sent with a plural "shipments." prefix were rejected for every event type (upgrades the packlink/integration-core shared library)
+### Added
+- A log record for every notification the module refuses, and for notifications it accepts without synchronising, so they can be diagnosed without enabling debug logging
+
 ## [v4.4.2](https://github.com/packlink-dev/woocommerce_module/compare/v4.4.1...v4.4.2) - 2026-09-14
 ### Fixed
 - Shipping label download opening an empty page on stores whose server cannot fetch the label itself; labels are downloaded through WordPress's HTTP layer, with a fallback to the direct label link and the reason recorded in the log

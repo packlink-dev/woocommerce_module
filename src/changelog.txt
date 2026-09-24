@@ -1,5 +1,9 @@
 *** Packlink PRO Changelog ***
 
+2026-09-24 - version 4.4.3
+- Fix shipment incident notifications being rejected instead of updating the order, and event names sent with a plural "shipments." prefix being rejected for every event type (upgrades the packlink/integration-core shared library)
+- Add a log record for every refused notification, and for notifications accepted without synchronising, so they can be diagnosed without enabling debug logging
+
 2026-09-14 - version 4.4.2
 - Fix the shipping label download opening an empty page on stores whose server cannot fetch the label itself (outbound proxy, restricted PHP configuration or outdated certificate store); labels are now downloaded through WordPress's own HTTP layer, with a fallback to the direct label link
 - Fix the customs invoice download and print failing once the order screen had been open for a few minutes because the document link had expired; the link is now requested when Download or Print is clicked, and a response that is not a PDF is refused

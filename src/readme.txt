@@ -4,7 +4,7 @@ Tags: shipping, delivery, carrier, order, package
 Requires at least: 4.7
 Requires PHP: 7.0
 Tested up to: 7.0.3
-Stable tag: 4.4.2
+Stable tag: 4.4.3
 License: LICENSE-2.0
 License URI: http://www.apache.org/licenses/LICENSE-2.0
 
@@ -93,6 +93,13 @@ Click <a href="https://support-pro.packlink.com/hc/es-es/articles/210158585" tar
 
 
 == Changelog ==
+
+#### 4.4.3 - September 24th, 2026
+
+**Updates**
+
+- Fix shipment incident notifications being rejected instead of updating the order, and event names sent with a plural "shipments." prefix being rejected for every event type (upgrades the packlink/integration-core shared library)
+- Add a log record for every notification the module refuses, and for notifications it accepts without synchronising, so they can be diagnosed without enabling debug logging
 
 #### 4.4.2 - September 14th, 2026
 
