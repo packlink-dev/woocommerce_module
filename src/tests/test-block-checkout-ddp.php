@@ -284,6 +284,48 @@ class BlockCheckoutDdpTest extends WP_UnitTestCase {
 	}
 
 	/**
+	 * The Store API fires the update-order-meta hook on every draft order update (`PUT /checkout`) as
+	 * well as on the final `POST /checkout`, so the selection must survive the first run - otherwise the
+	 * real submission fails with "Please choose a drop-off location.".
+	 */
+	public function test_the_drop_off_selection_survives_a_draft_order_update() {
+		$this->make_drop_off();
+		WC()->session->set( 'chosen_shipping_methods', array( self::BASE_ID ) );
+		WC()->session->set( Shipping_Method_Helper::DROP_OFF_ID, '44' );
+		WC()->session->set(
+			Shipping_Method_Helper::DROP_OFF_EXTRA,
+			array(
+				'name'    => 'Kiosk',
+				'city'    => 'Madrid',
+				'zip'     => '28001',
+				'address' => 'Gran Via 1',
+			)
+		);
+
+		$order   = wc_create_order();
+		$handler = new Block_Checkout_Handler();
+		$handler->checkout_update_drop_off( $order );
+		$handler->checkout_update_drop_off( $order );
+
+		$this->assertSame( '44', (string) WC()->session->get( Shipping_Method_Helper::DROP_OFF_ID ) );
+		$map = Shipping_Method_Helper::get_drop_off_map_for_order( $order->get_id() );
+		$this->assertNotNull( $map );
+		$this->assertSame( '44', (string) $map->get_drop_off_point_id() );
+	}
+
+	/**
+	 * Once the order is placed WooCommerce empties the cart, and the selection must not leak into the
+	 * shopper's next order.
+	 */
+	public function test_the_drop_off_selection_is_cleared_when_the_cart_is_emptied() {
+		WC()->session->set( Shipping_Method_Helper::DROP_OFF_ID, '45' );
+
+		( new Block_Checkout_Handler() )->clear_drop_off_selection();
+
+		$this->assertSame( '', WC()->session->get( Shipping_Method_Helper::DROP_OFF_ID ) );
+	}
+
+	/**
 	 * Runs the handler and returns just the rate details.
 	 *
 	 * @param array $payload Rate ids as the JavaScript sends them.

@@ -198,8 +198,26 @@ class Block_Checkout_Handler {
 
 			$this->change_order_shipping_address( $order, wc()->session->get( Shipping_Method_Helper::DROP_OFF_EXTRA ) );
 
-			wc()->session->set( Shipping_Method_Helper::DROP_OFF_ID, '' );
+			// The selection is deliberately kept in the session here. The Store API fires this hook for
+			// every draft order update (the `PUT /checkout` sent when the payment method changes), not
+			// only for the final `POST /checkout` - clearing it now made the real order submission fail
+			// with "Please choose a drop-off location.". It is cleared in clear_drop_off_selection().
 		}
+	}
+
+	/**
+	 * Clears the saved drop-off selection once the cart is emptied, which WooCommerce does only after
+	 * the order is placed and paid for. Clearing it earlier would drop the selection on a failed payment
+	 * attempt, and the shopper retrying the payment would be asked for the drop-off location again.
+	 *
+	 * @return void
+	 */
+	public function clear_drop_off_selection() {
+		if ( ! wc()->session ) {
+			return;
+		}
+
+		wc()->session->set( Shipping_Method_Helper::DROP_OFF_ID, '' );
 	}
 
 	/**
