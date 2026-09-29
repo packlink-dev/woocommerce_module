@@ -125,6 +125,12 @@ class Plugin {
 		}
 
 		if ( ! Shop_Helper::is_woocommerce_active() ) {
+			if ( ! $is_network_wide ) {
+				// WordPress redirects back to the plugin list, where deactivate_if_woocommerce_inactive()
+				// deactivates the plugin again and explains why under its row.
+				return;
+			}
+
 			deactivate_plugins( plugin_basename( __FILE__ ) );
 			wp_die(
 				esc_html( __( 'Please install and activate WooCommerce.', 'packlink-pro-shipping' ) ),
@@ -384,6 +390,49 @@ class Plugin {
 	}
 
 	/**
+	 * Deactivates the plugin when WooCommerce is not active, since the plugin cannot work without it.
+	 *
+	 * Covers both WooCommerce being deactivated and this plugin being activated without it: in both cases
+	 * WordPress redirects to the plugin list, which is where this runs. It cannot run later, because once
+	 * this plugin is deactivated its code is not loaded on the next request, so the message can only be
+	 * shown on the request that deactivates it. A network-wide activation is left alone, because
+	 * WooCommerce missing on one site does not mean it is missing on the others.
+	 */
+	public function deactivate_if_woocommerce_inactive() {
+		global $pagenow;
+
+		if ( Shop_Helper::is_woocommerce_active() || ! Shop_Helper::is_plugin_active_for_current_site() ) {
+			return;
+		}
+
+		deactivate_plugins( Shop_Helper::get_plugin_name() );
+		// Otherwise WordPress reports "Plugin activated." for the activation that was just undone.
+		unset( $_GET['activate'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+		if ( 'plugins.php' === $pagenow ) {
+			add_action( 'after_plugin_row_' . Shop_Helper::get_plugin_name(), array( $this, 'woocommerce_inactive_plugin_row' ) );
+		} else {
+			add_action( 'admin_notices', array( $this, 'woocommerce_inactive_notice' ) );
+		}
+	}
+
+	/**
+	 * Displays the message under the plugin's row in the plugin list.
+	 */
+	public function woocommerce_inactive_plugin_row() {
+		/** @noinspection DirectoryConstantCanBeUsedInspection */ // phpcs:ignore
+		include dirname( __FILE__ ) . '/resources/views/woocommerce-inactive-plugin-row.php';
+	}
+
+	/**
+	 * Displays the message as an admin notice, for when the plugin is deactivated outside the plugin list.
+	 */
+	public function woocommerce_inactive_notice() {
+		/** @noinspection DirectoryConstantCanBeUsedInspection */ // phpcs:ignore
+		include dirname( __FILE__ ) . '/resources/views/woocommerce-inactive-message.php';
+	}
+
+	/**
 	 * Displays messages if needed, but only once.
 	 */
 	public function admin_messages() {
@@ -615,6 +664,7 @@ class Plugin {
 		register_deactivation_hook( $this->packlink_plugin_file, array( $this, 'deactivate' ) );
 		add_action( 'admin_init', array( $this, 'initialize_new_site' ) );
 		add_action( 'admin_init', [ $this, 'dismiss_admin_notices' ] );
+		add_action( 'admin_init', array( $this, 'deactivate_if_woocommerce_inactive' ) );
 
 		add_filter( 'query_vars', array( $this, 'plugin_add_trigger' ) );
 		add_action( 'template_redirect', array( $this, 'plugin_trigger_check' ) );

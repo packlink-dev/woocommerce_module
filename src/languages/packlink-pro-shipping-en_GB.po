@@ -809,3 +809,7 @@ msgstr "Delivery Duty Paid"
 #: resources/views/meta-post-box.php
 msgid "DDP cost charged to customer"
 msgstr "DDP cost charged to customer"
+
+#: resources/views/woocommerce-inactive-message.php
+msgid "The plugin has been deactivated because it requires WooCommerce. Please install and activate WooCommerce, then activate Packlink PRO Shipping again."
+msgstr "The plugin has been deactivated because it requires WooCommerce. Please install and activate WooCommerce, then activate Packlink PRO Shipping again."

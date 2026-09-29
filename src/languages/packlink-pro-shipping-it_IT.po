@@ -811,3 +811,7 @@ msgstr "Dogana e dazi pagati"
 #: resources/views/meta-post-box.php
 msgid "DDP cost charged to customer"
 msgstr "Costo DDP addebitato al cliente"
+
+#: resources/views/woocommerce-inactive-message.php
+msgid "The plugin has been deactivated because it requires WooCommerce. Please install and activate WooCommerce, then activate Packlink PRO Shipping again."
+msgstr "Il plugin è stato disattivato perché richiede WooCommerce. Si prega di installare e attivare WooCommerce, quindi riattivare Packlink PRO Shipping."
