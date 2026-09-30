@@ -171,21 +171,13 @@ class Block_Checkout_Handler {
 	 * @throws RepositoryNotRegisteredException
 	 */
 	public function checkout_update_drop_off( WC_Order $order ) {
-		// The chosen value is a rate id, and a duties-paid rate id carries a third segment, so the
-		// instance id has to be parsed out of it instead of being taken for the whole value.
-		$instance_id     = Ddp_Checkout::instance_id( $this->get_selected_rate_id() );
-		$shipping_method = Shipping_Method_Helper::get_packlink_shipping_method(
-			IndexHelper::castFieldValue( $instance_id, gettype( $instance_id ) )
-		);
-		if ( ! $shipping_method ) {
-			return;
-		}
-
-		if ( $shipping_method->isDestinationDropOff() ) {
+		if ( $this->is_drop_off_method_selected() ) {
 			$drop_off_id = wc()->session->get( Shipping_Method_Helper::DROP_OFF_ID );
-			if ( empty ( $drop_off_id )) {
-				wc_add_notice( __( 'Please choose a drop-off location.', 'packlink-pro-shipping' ), 'error' );
-
+			// A missing location is reported by validate_drop_off_selection() on the real submission
+			// only. This hook also runs on draft order updates, where a `wc_add_notice()` error is put
+			// back into the session by the Store API cart validation and then rejects every following
+			// request with 409 "Please choose a drop-off location.", even after a location is chosen.
+			if ( empty( $drop_off_id ) ) {
 				return;
 			}
 
@@ -203,6 +195,51 @@ class Block_Checkout_Handler {
 			// only for the final `POST /checkout` - clearing it now made the real order submission fail
 			// with "Please choose a drop-off location.". It is cleared in clear_drop_off_selection().
 		}
+	}
+
+	/**
+	 * Rejects the order submission (`POST /checkout`) when a drop-off service is chosen without a
+	 * location. Draft order updates (`PUT /checkout`, sent e.g. when the payment method changes) are
+	 * not validated, since the shopper has not tried to place the order yet.
+	 *
+	 * The error is thrown instead of being added as a notice, so it is returned for this request only
+	 * and never lingers in the session.
+	 *
+	 * @param WC_Order         $order Order object.
+	 * @param \WP_REST_Request $request Store API checkout request.
+	 *
+	 * @return void
+	 *
+	 * @throws \Automattic\WooCommerce\StoreApi\Exceptions\RouteException When no location is chosen.
+	 */
+	public function validate_drop_off_selection( $order, $request ) {
+		if ( 'POST' !== $request->get_method() || ! $this->is_drop_off_method_selected() ) {
+			return;
+		}
+
+		if ( empty( wc()->session->get( Shipping_Method_Helper::DROP_OFF_ID ) ) ) {
+			throw new \Automattic\WooCommerce\StoreApi\Exceptions\RouteException(
+				'packlink_drop_off_location_missing',
+				esc_html__( 'Please choose a drop-off location.', 'packlink-pro-shipping' ),
+				400
+			);
+		}
+	}
+
+	/**
+	 * Whether the chosen shipping option is a Packlink drop-off service.
+	 *
+	 * @return bool
+	 */
+	private function is_drop_off_method_selected() {
+		// The chosen value is a rate id, and a duties-paid rate id carries a third segment, so the
+		// instance id has to be parsed out of it instead of being taken for the whole value.
+		$instance_id     = Ddp_Checkout::instance_id( $this->get_selected_rate_id() );
+		$shipping_method = Shipping_Method_Helper::get_packlink_shipping_method(
+			IndexHelper::castFieldValue( $instance_id, gettype( $instance_id ) )
+		);
+
+		return $shipping_method && $shipping_method->isDestinationDropOff();
 	}
 
 	/**

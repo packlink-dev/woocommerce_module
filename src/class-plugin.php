@@ -866,6 +866,7 @@ class Plugin {
         add_action('woocommerce_blocks_checkout_enqueue_data', array ($block_handler, 'load_data'));
         add_action( 'wp_footer', array( $block_handler, 'render_drop_off_markup' ) );
 		add_action('woocommerce_store_api_checkout_update_order_meta', array ($block_handler, 'checkout_update_drop_off'));
+		add_action( 'woocommerce_store_api_checkout_update_order_from_request', array( $block_handler, 'validate_drop_off_selection' ), 10, 2 );
 		add_action( 'woocommerce_cart_emptied', array( $block_handler, 'clear_drop_off_selection' ) );
 	}
 
