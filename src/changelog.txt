@@ -1,5 +1,8 @@
 *** Packlink PRO Changelog ***
 
+2026-09-30 - version 4.4.4
+- Fix the block checkout rejecting the order with "Please choose a drop-off location." although a drop-off location was selected, when the payment method was changed before or after choosing the location
+
 2026-09-24 - version 4.4.3
 - Fix shipment incident notifications being rejected instead of updating the order, and event names sent with a plural "shipments." prefix being rejected for every event type (upgrades the packlink/integration-core shared library)
 - Add a log record for every refused notification, and for notifications accepted without synchronising, so they can be diagnosed without enabling debug logging
