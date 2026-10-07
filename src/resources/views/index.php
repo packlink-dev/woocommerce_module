@@ -19,7 +19,7 @@ $data = $this->resolve_view_arguments();
 <div id="pl-page">
 	<header id="pl-main-header">
 		<div class="pl-main-logo" style="width: 200px">
-			<img src="https://cdn.packlink.com/apps/giger/logos/packlink-pro.svg" alt="logo">
+			<img src="<?php echo esc_url( Shop_Helper::get_plugin_base_url() . 'resources/images/logo-pl.svg' ); ?>" alt="logo">
 		</div>
 		<div class="pl-header-holder" id="pl-header-section"></div>
 	</header>
