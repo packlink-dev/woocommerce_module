@@ -45,7 +45,7 @@ Join 20,000+ online stores already using Packlink PRO and start optimizing your 
 <li><strong>Dedicated Local Support:</strong> Get expert help from a single point of contact.</li>
 </ul>
 
-**<a href="https://auth.packlink.com/en-GB/woocommerce/register" target="_blank" title="Subscription">Register free</a> in Packlink PRO and get started!**
+**<a href="https://pro.packlink.com/authentication/en-GB/woocommerce/register?tenant_id=PACKLINKPRO" target="_blank" title="Subscription">Register free</a> in Packlink PRO and get started!**
 
 
 == Installation ==
