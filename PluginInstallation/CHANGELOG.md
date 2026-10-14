@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [v4.4.4](https://github.com/packlink-dev/woocommerce_module/compare/v4.4.3...v4.4.4) - 2026-10-14
+### Changed
+- Rebrand the plugin to the new Packlink PRO logo and Figtree font, with black delivery type icons and a black drop-off map pin at checkout (upgrades the packlink/integration-core shared library to 4.4.3)
+
 ## [v4.4.3](https://github.com/packlink-dev/woocommerce_module/compare/v4.4.2...v4.4.3) - 2026-09-24
 ### Fixed
 - Shipment incident notifications were rejected instead of updating the order, and event names sent with a plural "shipments." prefix were rejected for every event type (upgrades the packlink/integration-core shared library)

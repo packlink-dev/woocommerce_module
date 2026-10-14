@@ -4,7 +4,7 @@ Tags: shipping, delivery, carrier, order, package
 Requires at least: 4.7
 Requires PHP: 7.0
 Tested up to: 7.0.3
-Stable tag: 4.4.3
+Stable tag: 4.4.4
 License: LICENSE-2.0
 License URI: http://www.apache.org/licenses/LICENSE-2.0
 
@@ -93,6 +93,12 @@ Click <a href="https://support-pro.packlink.com/hc/es-es/articles/210158585" tar
 
 
 == Changelog ==
+
+#### 4.4.4 - October 14th, 2026
+
+**Updates**
+
+- Rebrand the plugin to the new Packlink PRO logo and Figtree font, with black delivery type icons and a black drop-off map pin at checkout (upgrades the packlink/integration-core shared library to 4.4.3)
 
 #### 4.4.3 - September 24th, 2026
 
