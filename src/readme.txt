@@ -4,7 +4,7 @@ Tags: shipping, delivery, carrier, order, package
 Requires at least: 4.7
 Requires PHP: 7.0
 Tested up to: 7.0.3
-Stable tag: 4.4.4
+Stable tag: 4.4.5
 License: LICENSE-2.0
 License URI: http://www.apache.org/licenses/LICENSE-2.0
 
@@ -45,7 +45,7 @@ Join 20,000+ online stores already using Packlink PRO and start optimizing your 
 <li><strong>Dedicated Local Support:</strong> Get expert help from a single point of contact.</li>
 </ul>
 
-**<a href="https://auth.packlink.com/en-GB/woocommerce/register" target="_blank" title="Subscription">Register free</a> in Packlink PRO and get started!**
+**<a href="https://pro.packlink.com/authentication/en-GB/woocommerce/register?tenant_id=PACKLINKPRO" target="_blank" title="Subscription">Register free</a> in Packlink PRO and get started!**
 
 
 == Installation ==
@@ -93,6 +93,12 @@ Click <a href="https://support-pro.packlink.com/hc/es-es/articles/210158585" tar
 
 
 == Changelog ==
+
+#### 4.4.5 - October 21st, 2026
+
+**Updates**
+
+- Update the "Register free" link in the plugin description to point directly to the Packlink PRO registration page
 
 #### 4.4.4 - October 14th, 2026
 

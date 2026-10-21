@@ -1,5 +1,8 @@
 *** Packlink PRO Changelog ***
 
+2026-10-21 - version 4.4.5
+- Update the "Register free" link in the plugin description to point directly to the Packlink PRO registration page
+
 2026-10-14 - version 4.4.4
 - Rebrand the plugin to the new Packlink PRO logo and Figtree font, with black delivery type icons and a black drop-off map pin at checkout (upgrades the packlink/integration-core shared library to 4.4.3)
 

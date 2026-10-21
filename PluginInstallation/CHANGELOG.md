@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [v4.4.5](https://github.com/packlink-dev/woocommerce_module/compare/v4.4.4...v4.4.5) - 2026-10-21
+### Changed
+- "Register free" link in the plugin description points directly to the Packlink PRO registration page
+
 ## [v4.4.4](https://github.com/packlink-dev/woocommerce_module/compare/v4.4.3...v4.4.4) - 2026-10-14
 ### Changed
 - Rebrand the plugin to the new Packlink PRO logo and Figtree font, with black delivery type icons and a black drop-off map pin at checkout (upgrades the packlink/integration-core shared library to 4.4.3)
