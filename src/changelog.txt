@@ -1,5 +1,8 @@
 *** Packlink PRO Changelog ***
 
+2026-10-23 - version 4.4.6
+- Fix the block checkout rejecting the order with "Please choose a drop-off location." although a drop-off location was selected, when the payment method was changed before or after choosing the location
+
 2026-10-21 - version 4.4.5
 - Update the "Register free" link in the plugin description to point directly to the Packlink PRO registration page
 

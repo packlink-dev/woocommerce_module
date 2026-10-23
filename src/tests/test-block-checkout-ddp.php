@@ -284,6 +284,106 @@ class BlockCheckoutDdpTest extends WP_UnitTestCase {
 	}
 
 	/**
+	 * The Store API fires the update-order-meta hook on every draft order update (`PUT /checkout`) as
+	 * well as on the final `POST /checkout`, so the selection must survive the first run - otherwise the
+	 * real submission fails with "Please choose a drop-off location.".
+	 */
+	public function test_the_drop_off_selection_survives_a_draft_order_update() {
+		$this->make_drop_off();
+		WC()->session->set( 'chosen_shipping_methods', array( self::BASE_ID ) );
+		WC()->session->set( Shipping_Method_Helper::DROP_OFF_ID, '44' );
+		WC()->session->set(
+			Shipping_Method_Helper::DROP_OFF_EXTRA,
+			array(
+				'name'    => 'Kiosk',
+				'city'    => 'Madrid',
+				'zip'     => '28001',
+				'address' => 'Gran Via 1',
+			)
+		);
+
+		$order   = wc_create_order();
+		$handler = new Block_Checkout_Handler();
+		$handler->checkout_update_drop_off( $order );
+		$handler->checkout_update_drop_off( $order );
+
+		$this->assertSame( '44', (string) WC()->session->get( Shipping_Method_Helper::DROP_OFF_ID ) );
+		$map = Shipping_Method_Helper::get_drop_off_map_for_order( $order->get_id() );
+		$this->assertNotNull( $map );
+		$this->assertSame( '44', (string) $map->get_drop_off_point_id() );
+	}
+
+	/**
+	 * A draft order update without a location must not leave an error notice behind: the Store API cart
+	 * validation puts notices back into the session, so one left here rejected every later submission
+	 * with 409 "Please choose a drop-off location." even after the shopper chose a location.
+	 */
+	public function test_a_draft_order_update_without_a_location_leaves_no_notice() {
+		$this->make_drop_off();
+		WC()->session->set( 'chosen_shipping_methods', array( self::BASE_ID ) );
+		WC()->session->set( Shipping_Method_Helper::DROP_OFF_ID, '' );
+		wc_clear_notices();
+
+		$order   = wc_create_order();
+		$handler = new Block_Checkout_Handler();
+		$handler->checkout_update_drop_off( $order );
+		$handler->validate_drop_off_selection( $order, new WP_REST_Request( 'PUT', '/wc/store/v1/checkout' ) );
+
+		$this->assertSame( 0, wc_notice_count( 'error' ) );
+		$this->assertNull( Shipping_Method_Helper::get_drop_off_map_for_order( $order->get_id() ) );
+	}
+
+	/**
+	 * The order submission without a location is rejected with an error for that request only.
+	 */
+	public function test_placing_the_order_without_a_location_is_rejected() {
+		$this->make_drop_off();
+		WC()->session->set( 'chosen_shipping_methods', array( self::BASE_ID ) );
+		WC()->session->set( Shipping_Method_Helper::DROP_OFF_ID, '' );
+		wc_clear_notices();
+
+		try {
+			( new Block_Checkout_Handler() )->validate_drop_off_selection(
+				wc_create_order(),
+				new WP_REST_Request( 'POST', '/wc/store/v1/checkout' )
+			);
+			$this->fail( 'Placing a drop-off order without a location must be rejected.' );
+		} catch ( \Automattic\WooCommerce\StoreApi\Exceptions\RouteException $exception ) {
+			$this->assertSame( 'packlink_drop_off_location_missing', $exception->getErrorCode() );
+		}
+
+		$this->assertSame( 0, wc_notice_count( 'error' ) );
+	}
+
+	/**
+	 * The order submission with a chosen location passes the validation.
+	 */
+	public function test_placing_the_order_with_a_location_is_accepted() {
+		$this->make_drop_off();
+		WC()->session->set( 'chosen_shipping_methods', array( self::BASE_ID ) );
+		WC()->session->set( Shipping_Method_Helper::DROP_OFF_ID, '46' );
+
+		( new Block_Checkout_Handler() )->validate_drop_off_selection(
+			wc_create_order(),
+			new WP_REST_Request( 'POST', '/wc/store/v1/checkout' )
+		);
+
+		$this->assertSame( 0, wc_notice_count( 'error' ) );
+	}
+
+	/**
+	 * Once the order is placed WooCommerce empties the cart, and the selection must not leak into the
+	 * shopper's next order.
+	 */
+	public function test_the_drop_off_selection_is_cleared_when_the_cart_is_emptied() {
+		WC()->session->set( Shipping_Method_Helper::DROP_OFF_ID, '45' );
+
+		( new Block_Checkout_Handler() )->clear_drop_off_selection();
+
+		$this->assertSame( '', WC()->session->get( Shipping_Method_Helper::DROP_OFF_ID ) );
+	}
+
+	/**
 	 * Runs the handler and returns just the rate details.
 	 *
 	 * @param array $payload Rate ids as the JavaScript sends them.
