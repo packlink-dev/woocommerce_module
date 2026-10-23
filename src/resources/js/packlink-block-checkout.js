@@ -57,8 +57,10 @@ window.onload = () => {
 	 * Initialize Packlink shipping methods on block checkout.
 	 */
 	function initialize() {
+		// The block checkout unmounts the rates control while it recalculates after a rate change, and the
+		// MutationObserver can fire in that window, so any level of this chain may be missing.
 		const shippingOptions = document.getElementsByClassName('wc-block-components-shipping-rates-control')
-			.item(0).children[0].children[0];
+			.item(0)?.children[0]?.children[0];
 		if (!shippingOptions) {
 			return;
 		}
