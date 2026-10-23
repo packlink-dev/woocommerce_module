@@ -1,7 +1,13 @@
 *** Packlink PRO Changelog ***
 
-2026-09-30 - version 4.4.4
+2026-10-23 - version 4.4.6
 - Fix the block checkout rejecting the order with "Please choose a drop-off location." although a drop-off location was selected, when the payment method was changed before or after choosing the location
+
+2026-10-21 - version 4.4.5
+- Update the "Register free" link in the plugin description to point directly to the Packlink PRO registration page
+
+2026-10-14 - version 4.4.4
+- Rebrand the plugin to the new Packlink PRO logo and Figtree font, with black delivery type icons and a black drop-off map pin at checkout (upgrades the packlink/integration-core shared library to 4.4.3)
 
 2026-09-24 - version 4.4.3
 - Fix shipment incident notifications being rejected instead of updating the order, and event names sent with a plural "shipments." prefix being rejected for every event type (upgrades the packlink/integration-core shared library)
