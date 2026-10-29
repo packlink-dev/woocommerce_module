@@ -473,6 +473,12 @@ class Plugin {
 	 * @return array
 	 */
 	public function create_configuration_link( array $links ) {
+		// The filter is registered on load, but deactivate_if_woocommerce_inactive() can deactivate the plugin
+		// later in the same request; its settings page is then gone, so the link would lead nowhere.
+		if ( ! Shop_Helper::is_plugin_enabled() ) {
+			return $links;
+		}
+
 		$action_links = array(
 			'configuration' => '<a href="' . Shop_Helper::get_plugin_page_url() . '" aria-label="' . esc_attr__( 'View Packlink configuration', 'packlink-pro-shipping' ) . '">' . esc_html__( 'Configuration', 'packlink-pro-shipping' ) . '</a>',
 		);

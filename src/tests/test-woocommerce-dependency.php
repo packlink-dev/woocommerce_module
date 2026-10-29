@@ -111,6 +111,32 @@ class WooCommerceDependencyTest extends WP_UnitTestCase {
 	}
 
 	/**
+	 * The Configuration link is registered while the plugin is still active, before the same request
+	 * deactivates it; the inactive row must not link to a settings page that no longer exists.
+	 */
+	public function test_configuration_link_is_not_shown_once_the_plugin_is_deactivated() {
+		$GLOBALS['pagenow'] = 'plugins.php';
+		update_option( 'active_plugins', array( Shop_Helper::get_plugin_name() ) );
+
+		$this->plugin->deactivate_if_woocommerce_inactive();
+		$links = $this->plugin->create_configuration_link( array( 'activate' => '<a href="#">Activate</a>' ) );
+
+		$this->assertArrayNotHasKey( 'configuration', $links );
+		$this->assertArrayHasKey( 'activate', $links );
+	}
+
+	/**
+	 * While the plugin is active the Configuration link is shown first.
+	 */
+	public function test_configuration_link_is_shown_while_the_plugin_is_active() {
+		update_option( 'active_plugins', array( 'woocommerce/woocommerce.php', Shop_Helper::get_plugin_name() ) );
+
+		$links = $this->plugin->create_configuration_link( array( 'deactivate' => '<a href="#">Deactivate</a>' ) );
+
+		$this->assertSame( array( 'configuration', 'deactivate' ), array_keys( $links ) );
+	}
+
+	/**
 	 * The plugin row message spans the list and names the missing dependency.
 	 */
 	public function test_plugin_row_explains_the_deactivation() {
