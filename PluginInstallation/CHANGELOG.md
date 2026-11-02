@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [v4.4.7](https://github.com/packlink-dev/woocommerce_module/compare/v4.4.6...v4.4.7) - 2026-10-29
+### Fixed
+- Packlink PRO stayed active after WooCommerce was deactivated, with its page showing "Unknown error" and rejecting a valid API key; the plugin now deactivates itself with a message that it requires WooCommerce, and activating it without WooCommerce returns to the plugin list with that message instead of an error page
+
 ## [v4.4.6](https://github.com/packlink-dev/woocommerce_module/compare/v4.4.5...v4.4.6) - 2026-10-23
 ### Fixed
 - Block checkout rejecting the order with "Please choose a drop-off location." although a drop-off location was selected, when the payment method was changed before or after choosing the location

@@ -4,7 +4,7 @@ Tags: shipping, delivery, carrier, order, package
 Requires at least: 4.7
 Requires PHP: 7.0
 Tested up to: 7.0.3
-Stable tag: 4.4.6
+Stable tag: 4.4.7
 License: LICENSE-2.0
 License URI: http://www.apache.org/licenses/LICENSE-2.0
 
@@ -93,6 +93,12 @@ Click <a href="https://support-pro.packlink.com/hc/es-es/articles/210158585" tar
 
 
 == Changelog ==
+
+#### 4.4.7 - October 29th, 2026
+
+**Updates**
+
+- Fix Packlink PRO staying active after WooCommerce was deactivated, with its page showing "Unknown error" and rejecting a valid API key; the plugin now deactivates itself and explains that it requires WooCommerce
 
 #### 4.4.6 - October 23rd, 2026
 

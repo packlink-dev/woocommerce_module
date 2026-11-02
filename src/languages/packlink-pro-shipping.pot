@@ -852,3 +852,7 @@ msgstr ""
 #: resources/views/meta-post-box.php
 msgid "Print"
 msgstr ""
+
+#: resources/views/woocommerce-inactive-message.php
+msgid "The plugin has been deactivated because it requires WooCommerce. Please install and activate WooCommerce, then activate Packlink PRO Shipping again."
+msgstr ""
