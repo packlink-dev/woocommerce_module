@@ -63,6 +63,14 @@ $data = $this->resolve_view_arguments();
 	</template>
 </div>
 
+<?php
+// Simulated prices panel data (CR-SET-72-02): no Packlink call, so login and registration draw it at once.
+try {
+	$packlink_simulated_prices = ( new \Packlink\BusinessLogic\Controllers\SimulatedPricesController() )->getConfiguration();
+} catch ( \Exception $e ) {
+	$packlink_simulated_prices = null;
+}
+?>
 <script>
 	document.addEventListener(
 		'DOMContentLoaded',
@@ -78,11 +86,19 @@ $data = $this->resolve_view_arguments();
 				'login': {
 					submit: "<?php echo Shop_Helper::get_controller_url( 'Login', 'login' ); //phpcs:ignore ?>",
 					listOfCountriesUrl: "<?php echo Shop_Helper::get_controller_url( 'Regions', 'get_regions' ); //phpcs:ignore ?>",
-					logoPath: "" // Not used. Logos are retrieved based on the base resource url.
+					logoPath: "", // Not used. Logos are retrieved based on the base resource url.
+					simulatedPricesDataUrl: "<?php echo Shop_Helper::get_controller_url( 'Simulated_Prices', 'get_data' ); //phpcs:ignore ?>",
+					simulatedPricesSearchUrl: "<?php echo Shop_Helper::get_controller_url( 'Simulated_Prices', 'search' ); //phpcs:ignore ?>",
+					simulatedPricesLocationSearchUrl: "<?php echo Shop_Helper::get_controller_url( 'Warehouse', 'search_postal_codes' ); //phpcs:ignore ?>",
+					simulatedPricesConfiguration: <?php echo wp_json_encode( $packlink_simulated_prices ); ?>
 				},
 				'register': {
 					getRegistrationData: "<?php echo Shop_Helper::get_controller_url( 'Register', 'get' ); //phpcs:ignore ?>",
-					submit: "<?php echo Shop_Helper::get_controller_url( 'Register', 'submit' ); //phpcs:ignore ?>"
+					submit: "<?php echo Shop_Helper::get_controller_url( 'Register', 'submit' ); //phpcs:ignore ?>",
+					simulatedPricesDataUrl: "<?php echo Shop_Helper::get_controller_url( 'Simulated_Prices', 'get_data' ); //phpcs:ignore ?>",
+					simulatedPricesSearchUrl: "<?php echo Shop_Helper::get_controller_url( 'Simulated_Prices', 'search' ); //phpcs:ignore ?>",
+					simulatedPricesLocationSearchUrl: "<?php echo Shop_Helper::get_controller_url( 'Warehouse', 'search_postal_codes' ); //phpcs:ignore ?>",
+					simulatedPricesConfiguration: <?php echo wp_json_encode( $packlink_simulated_prices ); ?>
 				},
 				'onboarding-state': {
 					getState: "<?php echo Shop_Helper::get_controller_url( 'Onboarding_State', 'get_current_state' ); //phpcs:ignore ?>"
@@ -134,7 +150,10 @@ $data = $this->resolve_view_arguments();
 					getCurrencyDetailsUrl: "<?php echo Shop_Helper::get_controller_url( 'System_Info', 'get' ); //phpcs:ignore ?>",
 					systemId: "<?php echo System_Info_Service::SYSTEM_ID; ?>",
 					getSubscriptionPlanUrl: "<?php echo Shop_Helper::get_controller_url( 'Subscription', 'get_plan' ); //phpcs:ignore ?>",
-					getPromotionalBannerUrl: "<?php echo Shop_Helper::get_controller_url( 'Subscription', 'get_promotional_banner' ); //phpcs:ignore ?>"
+					getPromotionalBannerUrl: "<?php echo Shop_Helper::get_controller_url( 'Subscription', 'get_promotional_banner' ); //phpcs:ignore ?>",
+					simulatedPricesDataUrl: "<?php echo Shop_Helper::get_controller_url( 'Simulated_Prices', 'get_data' ); //phpcs:ignore ?>",
+					simulatedPricesSearchUrl: "<?php echo Shop_Helper::get_controller_url( 'Simulated_Prices', 'search' ); //phpcs:ignore ?>",
+					simulatedPricesLocationSearchUrl: "<?php echo Shop_Helper::get_controller_url( 'Warehouse', 'search_postal_codes' ); //phpcs:ignore ?>"
 				},
 				'pick-shipping-service': {
 					getActiveServicesUrl: "<?php echo Shop_Helper::get_controller_url( 'Shipping_Service', 'get_active' ); //phpcs:ignore ?>",

@@ -24,6 +24,7 @@ use Logeecom\Infrastructure\TaskExecutor\Interfaces\TaskExecutorInterface;
 use Logeecom\Infrastructure\TaskExecutor\Interfaces\TaskStatusProviderInterface;
 use Packlink\Brands\Packlink\PacklinkConfigurationService;
 use Packlink\BusinessLogic\BootstrapComponent;
+use Packlink\BusinessLogic\SimulatedPrices\Interfaces\ShopOriginProvider;
 use Packlink\BusinessLogic\Brand\BrandConfigurationService;
 use Packlink\BusinessLogic\CashOnDelivery\Model\CashOnDelivery;
 use Packlink\BusinessLogic\CashOnDelivery\Services\OfflinePaymentsServices;
@@ -48,6 +49,7 @@ use Packlink\BusinessLogic\Scheduler\Interfaces\SchedulerInterface;
 use Packlink\WooCommerce\Components\IntegrationRegistration\Integration_Registration_Data_Provider;
 use Packlink\WooCommerce\Components\IntegrationRegistration\Integration_Reset_Service;
 use Packlink\WooCommerce\Components\Services\Customs_Mapping_Service;
+use Packlink\WooCommerce\Components\Services\Shop_Origin_Provider;
 use Packlink\WooCommerce\Components\Services\Ddp_Cost_Service;
 use Packlink\WooCommerce\Components\Services\Offline_Payments_Service;
 use Packlink\WooCommerce\Components\Services\Packlink_WordPress_Scheduler;
@@ -179,6 +181,13 @@ class Bootstrap_Component extends BootstrapComponent {
                 return new Customs_Mapping_Service();
             }
         );
+
+		ServiceRegister::registerService(
+			ShopOriginProvider::CLASS_NAME,
+			static function () {
+				return new Shop_Origin_Provider();
+			}
+		);
 
 		ServiceRegister::registerService(
 			ShopShippingMethodService::CLASS_NAME,

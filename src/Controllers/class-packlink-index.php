@@ -78,6 +78,7 @@ class Packlink_Index extends Packlink_Base_Controller {
             'Cash_On_Delivery',
 			'Customs',
 			'Subscription',
+			'Simulated_Prices',
 		);
 
 		return in_array( $controller_name, $allowed_controllers, true );
