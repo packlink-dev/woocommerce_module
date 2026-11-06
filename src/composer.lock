@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7c5bb63e7712ea4d81477a023140044b",
+    "content-hash": "8ed11962a0514854d88f5ab37aa1f960",
     "packages": [
         {
             "name": "iio/libmergepdf",
@@ -62,16 +62,16 @@
         },
         {
             "name": "packlink/integration-core",
-            "version": "v4.4.3",
+            "version": "dev-CR-SET-72-Simulated-Prices",
             "source": {
                 "type": "git",
                 "url": "git@github.com:packlink-dev/ecommerce_module_core.git",
-                "reference": "cbee61363f91f9a4badd51dffee360f8fbce7ae4"
+                "reference": "bc51566aedd245cf80d43be33a57dd3c3f93c94b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/packlink-dev/ecommerce_module_core/zipball/cbee61363f91f9a4badd51dffee360f8fbce7ae4",
-                "reference": "cbee61363f91f9a4badd51dffee360f8fbce7ae4",
+                "url": "https://api.github.com/repos/packlink-dev/ecommerce_module_core/zipball/bc51566aedd245cf80d43be33a57dd3c3f93c94b",
+                "reference": "bc51566aedd245cf80d43be33a57dd3c3f93c94b",
                 "shasum": ""
             },
             "require": {
@@ -113,7 +113,7 @@
                 "proprietary"
             ],
             "description": "Packlink integrations core library",
-            "time": "2026-10-14T07:38:40+00:00"
+            "time": "2026-11-06T13:37:08+00:00"
         },
         {
             "name": "setasign/fpdf",
@@ -1857,7 +1857,9 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {},
+    "stability-flags": {
+        "packlink/integration-core": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
@@ -1870,5 +1872,5 @@
     "platform-overrides": {
         "php": "7.0.8"
     },
-    "plugin-api-version": "2.9.0"
+    "plugin-api-version": "2.11.0"
 }
