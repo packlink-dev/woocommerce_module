@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [v4.4.8](https://github.com/packlink-dev/woocommerce_module/compare/v4.4.7...v4.4.8) - 2026-11-18
+### Changed
+- "Register free" link in the plugin description no longer carries the unused `tenant_id` parameter
+
 ## [v4.4.7](https://github.com/packlink-dev/woocommerce_module/compare/v4.4.6...v4.4.7) - 2026-10-29
 ### Fixed
 - Packlink PRO stayed active after WooCommerce was deactivated, with its page showing "Unknown error" and rejecting a valid API key; the plugin now deactivates itself with a message that it requires WooCommerce, and activating it without WooCommerce returns to the plugin list with that message instead of an error page
