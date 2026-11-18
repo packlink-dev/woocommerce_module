@@ -2,6 +2,7 @@
 
 2026-11-18 - version 4.4.8
 - Update the "Register free" link in the plugin description to drop the unused tenant_id parameter
+- Declare compatibility with WooCommerce 11.3.0
 
 2026-10-29 - version 4.4.7
 - Fix Packlink PRO staying active after WooCommerce was deactivated, with its page showing "Unknown error" and rejecting a valid API key; the plugin now deactivates itself and explains that it requires WooCommerce
