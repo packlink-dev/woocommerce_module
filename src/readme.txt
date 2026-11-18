@@ -99,6 +99,7 @@ Click <a href="https://support-pro.packlink.com/hc/es-es/articles/210158585" tar
 **Updates**
 
 - Update the "Register free" link in the plugin description to drop the unused tenant_id parameter
+- Declare compatibility with WooCommerce 11.3.0
 
 #### 4.4.7 - October 29th, 2026
 
