@@ -4,7 +4,7 @@ Tags: shipping, delivery, carrier, order, package
 Requires at least: 4.7
 Requires PHP: 7.0
 Tested up to: 7.1.4
-Stable tag: 4.4.7
+Stable tag: 4.4.8
 License: LICENSE-2.0
 License URI: http://www.apache.org/licenses/LICENSE-2.0
 
@@ -93,6 +93,12 @@ Click <a href="https://support-pro.packlink.com/hc/es-es/articles/210158585" tar
 
 
 == Changelog ==
+
+#### 4.4.8 - November 18th, 2026
+
+**Updates**
+
+- Update the "Register free" link in the plugin description to drop the unused tenant_id parameter
 
 #### 4.4.7 - October 29th, 2026
 
